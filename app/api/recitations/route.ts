@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query } from "@/lib/db"
 import { createNotification } from "@/lib/notifications"
+import { validateQuranReference, getRiwayaArabicName, getRecitationTypeArabicName } from "@/lib/external/quran-api"
+import type { Riwaya, RecitationType } from "@/lib/external/quran-api"
 
 // GET /api/recitations - list recitations
 export async function GET(req: NextRequest) {
@@ -57,7 +59,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/recitations - submit new recitation (Al-Fatiha only)
+// POST /api/recitations - submit new recitation
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession()
@@ -65,10 +67,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
 
-    const { audioUrl, audioDuration, notes, qiraah } = await req.json()
+    const body = await req.json()
+    const { 
+      audioUrl, 
+      audioDuration, 
+      notes,
+      // New required fields
+      surah_number,
+      from_ayah,
+      to_ayah,
+      recitation_type,
+      riwaya
+    } = body
 
+    // Validate required fields
     if (!audioUrl) {
       return NextResponse.json({ error: "رابط التسجيل الصوتي مطلوب" }, { status: 400 })
+    }
+
+    if (!surah_number || !from_ayah || !to_ayah) {
+      return NextResponse.json({ 
+        error: "يجب تحديد رقم السورة وآيات البداية والنهاية" 
+      }, { status: 400 })
+    }
+
+    if (!recitation_type) {
+      return NextResponse.json({ 
+        error: "يجب تحديد نوع التلاوة (حفظ، مراجعة، تجويد)" 
+      }, { status: 400 })
+    }
+
+    // Validate recitation type
+    const validRecitationTypes: RecitationType[] = ['memorization', 'review', 'tajweed', 'tilawa']
+    if (!validRecitationTypes.includes(recitation_type)) {
+      return NextResponse.json({ 
+        error: "نوع التلاوة غير صالح. الأنواع المتاحة: حفظ، مراجعة، تجويد، تلاوة" 
+      }, { status: 400 })
+    }
+
+    // Validate riwaya
+    const validRiwaya: Riwaya[] = ['hafs', 'warsh', 'qalun', 'duri', 'susi']
+    const selectedRiwaya: Riwaya = riwaya && validRiwaya.includes(riwaya) ? riwaya : 'hafs'
+
+    // Validate Quran reference
+    const validation = await validateQuranReference(surah_number, from_ayah, to_ayah)
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
     // Check if student already has a pending/in_review recitation (prevent duplicate submissions)
@@ -86,11 +130,32 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Map recitation_type to database enum
+    const dbRecitationType = recitation_type === 'memorization' ? 'hifd' 
+      : recitation_type === 'review' ? 'muraja3a'
+      : recitation_type === 'tajweed' ? 'tajweed'
+      : 'tilawa'
+
     const result = await query(
-      `INSERT INTO recitations (student_id, surah_name, surah_number, ayah_from, ayah_to, audio_url, audio_duration_seconds, submission_type, student_notes, qiraah, status)
-       VALUES ($1, 'الفاتحة', 1, 1, 7, $2, $3, 'recorded', $4, $5, 'pending')
+      `INSERT INTO recitations (
+        student_id, surah_name, surah_number, ayah_from, ayah_to, 
+        audio_url, audio_duration_seconds, submission_type, 
+        recitation_type, student_notes, qiraah, status
+      )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'recorded', $8, $9, $10, 'pending')
        RETURNING *`,
-      [session.sub, audioUrl, audioDuration || null, notes || null, qiraah || 'حفص عن عاصم']
+      [
+        session.sub, 
+        validation.surahName, 
+        surah_number, 
+        from_ayah, 
+        to_ayah, 
+        audioUrl, 
+        audioDuration || null, 
+        dbRecitationType,
+        notes || null, 
+        getRiwayaArabicName(selectedRiwaya)
+      ]
     )
 
     // Auto-assign a reader matching the student's gender and is active for evaluation
@@ -117,7 +182,7 @@ export async function POST(req: NextRequest) {
             userId: reader[0].id,
             type: 'recitation_received',
             title: 'تم تعيينك لتقييم تلاوة جديدة',
-            message: 'تم تعيينك لتقييم تلاوة جديدة لسورة الفاتحة. يرجى مراجعتها في أقرب وقت.',
+            message: `تم تعيينك لتقييم تلاوة جديدة لسورة ${validation.surahName} (${getRecitationTypeArabicName(recitation_type)}). يرجى مراجعتها في أقرب وقت.`,
             category: 'recitation',
             link: '/reader/recitations',
             relatedRecitationId: result[0].id as string,

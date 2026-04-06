@@ -16,12 +16,22 @@ export async function POST(req: NextRequest) {
       qualification,
       memorized_parts,
       years_of_experience,
+      // New required field for vetting
+      audio_url,
     } = await req.json()
 
-    // Validate required fields
+    // Validate required fields (including audio_url for vetting)
     if (!full_name_triple || !email || !password || !phone || !gender) {
       return NextResponse.json(
         { error: "جميع الحقول الإلزامية مطلوبة" },
+        { status: 400 }
+      )
+    }
+
+    // Audio URL is required for reader vetting
+    if (!audio_url) {
+      return NextResponse.json(
+        { error: "يجب إرفاق تسجيل صوتي للتقييم (تلاوة قصيرة)" },
         { status: 400 }
       )
     }
@@ -81,6 +91,14 @@ export async function POST(req: NextRequest) {
         memorized_parts || 0,
         years_of_experience || null,
       ]
+    )
+
+    // Save the trial audio in reader_applications table for vetting
+    await query(
+      `INSERT INTO reader_applications (user_id, audio_url, status, submitted_at)
+       VALUES ($1, $2, 'pending', NOW())
+       ON CONFLICT (user_id) DO UPDATE SET audio_url = $2, status = 'pending', submitted_at = NOW()`,
+      [user.id, audio_url]
     )
 
     // Notify admins about the new reader application

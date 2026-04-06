@@ -16,9 +16,12 @@ export async function GET() {
   const applications = await query(
     `SELECT u.id, u.name, u.email, u.gender, u.approval_status, u.created_at,
             rp.full_name_triple, rp.phone, rp.city, rp.qualification,
-            rp.memorized_parts, rp.years_of_experience, rp.certificate_file_url
+            rp.memorized_parts, rp.years_of_experience, rp.certificate_file_url,
+            ra.audio_url as trial_audio_url, ra.status as application_status,
+            ra.submitted_at, ra.reviewed_at, ra.reviewer_notes
      FROM users u
      LEFT JOIN reader_profiles rp ON rp.user_id = u.id
+     LEFT JOIN reader_applications ra ON ra.user_id = u.id
      WHERE u.role = 'reader'
      ORDER BY 
        CASE u.approval_status 
@@ -50,6 +53,14 @@ export async function PUT(req: NextRequest) {
   await query(
     `UPDATE users SET approval_status = $1 WHERE id = $2 AND role = 'reader'`,
     [newStatus, userId]
+  )
+
+  // Also update reader_applications table if exists
+  await query(
+    `UPDATE reader_applications 
+     SET status = $1, reviewer_id = $2, reviewed_at = NOW() 
+     WHERE user_id = $3`,
+    [newStatus, session!.sub, userId]
   )
 
   // Get reader info for email
