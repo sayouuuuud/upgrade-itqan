@@ -27,6 +27,25 @@ export async function getAllCourses(limit = 50, offset = 0): Promise<Course[]> {
   )
 }
 
+/**
+ * Get all courses filtered by teacher gender (for gender segregation)
+ * Returns courses where the teacher's gender matches the student's gender
+ */
+export async function getAllCoursesWithGenderFilter(
+  studentGender: string,
+  limit = 50,
+  offset = 0
+): Promise<Course[]> {
+  return query<Course>(
+    `SELECT c.* FROM courses c
+     JOIN users u ON c.teacher_id = u.id
+     WHERE u.gender = $1
+     ORDER BY c.createdAt DESC 
+     LIMIT $2 OFFSET $3`,
+    [studentGender, limit, offset]
+  )
+}
+
 export async function createCourse(
   teacherId: string,
   title: string,
