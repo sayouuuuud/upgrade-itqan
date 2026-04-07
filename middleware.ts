@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server"
 const publicPaths = ["/", "/about", "/contact", "/sitemap-page", "/login", "/login-admin", "/register", "/reader-register", "/forgot-password", "/reset-password", "/verify", "/privacy", "/terms", "/maintenance"]
 const apiPublicPaths = ["/api/auth", "/api/admin/homepage", "/api/admin/analytics", "/api/uploadthing"]
 
+// Academy public paths (for public lessons and invitations)
+const academyPublicPaths = ["/academy/public", "/academy/invite", "/academy/lesson"]
+
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
 
@@ -31,6 +34,11 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next()
     }
 
+    // Allow academy public paths (public lessons, invitations)
+    if (academyPublicPaths.some((p) => pathname.startsWith(p))) {
+        return NextResponse.next()
+    }
+
     // Check Better Auth session cookie
     const sessionCookie = req.cookies.get("better-auth.session_token")?.value || req.cookies.get("auth-token")?.value
 
@@ -41,6 +49,10 @@ export async function middleware(req: NextRequest) {
         // If trying to access admin panel, redirect to login-admin
         if (pathname.startsWith("/admin")) {
             return NextResponse.redirect(new URL("/login-admin", req.url))
+        }
+        // If trying to access academy, redirect to login
+        if (pathname.startsWith("/academy")) {
+            return NextResponse.redirect(new URL("/login", req.url))
         }
         // Redirect to login for protected routes
         return NextResponse.redirect(new URL("/login", req.url))
