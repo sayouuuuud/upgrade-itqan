@@ -4,12 +4,12 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getSession } from "@/lib/auth"
+import { auth } from "@/lib/better-auth-config"
 import * as courseQueries from "@/lib/db-queries/course"
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Course ID required" }, { status: 400 })
     }
 
-    const progress = await courseQueries.getStudentProgress(session.sub, courseId)
+    const progress = await courseQueries.getStudentProgress(session.user.id, courseId)
     return NextResponse.json({ success: true, data: progress })
   } catch (error) {
     console.error("[API] Error fetching progress:", error)
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     const progress = await courseQueries.updateStudentProgress(
-      session.sub,
+      session.user.id,
       courseId,
       lessonId,
       isCompleted || false

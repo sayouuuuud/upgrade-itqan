@@ -5,23 +5,22 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getSession } from "@/lib/auth"
+import { auth } from "@/lib/better-auth-config"
 import * as lessonQueries from "@/lib/db-queries/lesson"
 import * as courseQueries from "@/lib/db-queries/course"
 
 interface Params {
-  params: Promise<{ lessonId: string }>
+  params: { lessonId: string }
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
-    const session = await getSession()
+    const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    const { lessonId } = await params
 
-    const lesson = await lessonQueries.getLessonById(lessonId)
+    const lesson = await lessonQueries.getLessonById(params.lessonId)
     if (!lesson) {
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 })
     }
@@ -35,13 +34,12 @@ export async function GET(req: NextRequest, { params }: Params) {
 
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
-    const session = await getSession()
+    const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    const { lessonId } = await params
 
-    const lesson = await lessonQueries.getLessonById(lessonId)
+    const lesson = await lessonQueries.getLessonById(params.lessonId)
     if (!lesson) {
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 })
     }
@@ -52,12 +50,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 })
     }
 
-    if (course.teacher_id !== session.sub && session.role !== "admin") {
+    if (course.teacher_id !== session.user.id && session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const body = await req.json()
-    const updated = await lessonQueries.updateLesson(lessonId, body)
+    const updated = await lessonQueries.updateLesson(params.lessonId, body)
 
     return NextResponse.json({ success: true, data: updated })
   } catch (error) {
@@ -68,13 +66,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
-    const session = await getSession()
+    const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    const { lessonId } = await params
 
-    const lesson = await lessonQueries.getLessonById(lessonId)
+    const lesson = await lessonQueries.getLessonById(params.lessonId)
     if (!lesson) {
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 })
     }
@@ -84,11 +81,11 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 })
     }
 
-    if (course.teacher_id !== session.sub && session.role !== "admin") {
+    if (course.teacher_id !== session.user.id && session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const deleted = await lessonQueries.deleteLesson(lessonId)
+    const deleted = await lessonQueries.deleteLesson(params.lessonId)
     if (!deleted) {
       return NextResponse.json({ error: "Failed to delete lesson" }, { status: 500 })
     }

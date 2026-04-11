@@ -4,82 +4,90 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #1a1a1a;
+  --background: #FAFAF8;
+  --foreground: #0D1512;
   --card: #FFFFFF;
-  --card-foreground: #1a1a1a;
+  --card-foreground: #0D1512;
   --popover: #FFFFFF;
-  --popover-foreground: #1a1a1a;
-  --primary: #1B5E3B;
+  --popover-foreground: #0D1512;
+  --primary: #0D5A3C;
   --primary-foreground: #FFFFFF;
-  --secondary: #F0F5F2;
-  --secondary-foreground: #1B5E3B;
-  --muted: #f5f5f5;
-  --muted-foreground: #737373;
-  --accent: #1B5E3B;
-  --accent-foreground: #FFFFFF;
+  --secondary: #F5F5F0;
+  --secondary-foreground: #0D5A3C;
+  --muted: #F5F5F0;
+  --muted-foreground: #6B7280;
+  --accent: #C9A962;
+  --accent-foreground: #0D1512;
   --destructive: #DC2626;
   --destructive-foreground: #FFFFFF;
   --success: #16A34A;
   --success-foreground: #FFFFFF;
   --warning: #F59E0B;
-  --warning-foreground: #1a1a1a;
-  --border: #e5e5e5;
-  --input: #e5e5e5;
-  --ring: #0B3D2E;
-  --chart-1: #0B3D2E;
-  --chart-2: #D4A843;
+  --warning-foreground: #0D1512;
+  --border: #E8E8E3;
+  --input: #E8E8E3;
+  --ring: #0D5A3C;
+  --chart-1: #0D5A3C;
+  --chart-2: #C9A962;
   --chart-3: #16A34A;
   --chart-4: #3B82F6;
   --chart-5: #F59E0B;
-  --radius: 0.75rem;
+  --radius: 0.625rem;
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #1a1a1a;
-  --sidebar-primary: #0B3D2E;
+  --sidebar-foreground: #0D1512;
+  --sidebar-primary: #0D5A3C;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F0F5F2;
-  --sidebar-accent-foreground: #0B3D2E;
-  --sidebar-border: #e5e5e5;
-  --sidebar-ring: #0B3D2E;
+  --sidebar-accent: #F5F5F0;
+  --sidebar-accent-foreground: #0D5A3C;
+  --sidebar-border: #E8E8E3;
+  --sidebar-ring: #0D5A3C;
+  --gold: #C9A962;
+  --gold-light: #E8D9A8;
+  --emerald-deep: #0D5A3C;
+  --emerald-light: #E8F5EE;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #171717;
-  --card-foreground: #fafafa;
-  --popover: #171717;
-  --popover-foreground: #fafafa;
-  --primary: #D4A328;
-  --primary-foreground: #0B0F0E;
-  --secondary: #121F19;
-  --secondary-foreground: #D4A328;
-  --muted: #262626;
-  --muted-foreground: #a3a3a3;
-  --accent: #D4A328;
-  --accent-foreground: #0B0F0E;
+  --background: #080D0B;
+  --foreground: #F5F5F0;
+  --card: #0F1614;
+  --card-foreground: #F5F5F0;
+  --popover: #0F1614;
+  --popover-foreground: #F5F5F0;
+  --primary: #C9A962;
+  --primary-foreground: #080D0B;
+  --secondary: #1A2420;
+  --secondary-foreground: #C9A962;
+  --muted: #1A2420;
+  --muted-foreground: #9CA3AF;
+  --accent: #0D5A3C;
+  --accent-foreground: #F5F5F0;
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
   --success: #22C55E;
   --success-foreground: #FFFFFF;
   --warning: #FBBF24;
-  --warning-foreground: #1a1a1a;
-  --border: #262626;
-  --input: #262626;
-  --ring: #D4A328;
-  --chart-1: #D4A328;
-  --chart-2: #CBB17A;
+  --warning-foreground: #080D0B;
+  --border: #1F2D28;
+  --input: #1F2D28;
+  --ring: #C9A962;
+  --chart-1: #C9A962;
+  --chart-2: #0D5A3C;
   --chart-3: #22C55E;
   --chart-4: #60A5FA;
   --chart-5: #FBBF24;
-  --sidebar: #171717;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #D4A328;
-  --sidebar-primary-foreground: #040706;
-  --sidebar-accent: #121F19;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #262626;
-  --sidebar-ring: #D4A328;
+  --sidebar: #0F1614;
+  --sidebar-foreground: #F5F5F0;
+  --sidebar-primary: #C9A962;
+  --sidebar-primary-foreground: #080D0B;
+  --sidebar-accent: #1A2420;
+  --sidebar-accent-foreground: #F5F5F0;
+  --sidebar-border: #1F2D28;
+  --sidebar-ring: #C9A962;
+  --gold: #C9A962;
+  --gold-light: #E8D9A8;
+  --emerald-deep: #0D5A3C;
+  --emerald-light: #1A3D2E;
 }
 
 @theme inline {
@@ -202,6 +210,173 @@
 
 .animate-fade-up {
   animation: fade-up 0.6s ease-out forwards;
+}
+
+/* Homepage specific styles */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* Gold accent utilities */
+.text-gold {
+  color: var(--gold);
+}
+
+.bg-gold {
+  background-color: var(--gold);
+}
+
+.border-gold {
+  border-color: var(--gold);
+}
+
+.text-emerald-deep {
+  color: var(--emerald-deep);
+}
+
+.bg-emerald-deep {
+  background-color: var(--emerald-deep);
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 3D Perspective */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Glow pulse */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(13, 90, 60, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(13, 90, 60, 0.6);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Float animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+  75% {
+    transform: translateY(10px) rotate(-2deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Gradient text animation */
+@keyframes gradient-text {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-text {
+  background-size: 200% 200%;
+  animation: gradient-text 4s ease infinite;
+}
+
+/* Scale pulse */
+@keyframes scale-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-scale-pulse {
+  animation: scale-pulse 2s ease-in-out infinite;
+}
+
+/* Rotate slow */
+@keyframes rotate-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-rotate-slow {
+  animation: rotate-slow 20s linear infinite;
+}
+
+/* Bounce soft */
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce-soft {
+  animation: bounce-soft 2s ease-in-out infinite;
+}
+
+/* Shine animation for shiny text */
+@keyframes shine {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-shine {
+  animation: shine 3s linear infinite;
 }
 
 .waveform-bar {

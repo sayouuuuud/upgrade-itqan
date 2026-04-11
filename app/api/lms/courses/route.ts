@@ -1,20 +1,16 @@
 /**
- * GET /api/lms/courses - List all courses (with gender segregation for students)
+ * GET /api/lms/courses - List all courses
  * POST /api/lms/courses - Create a new course (TEACHER/ADMIN only)
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getSession } from "@/lib/auth"
+import { auth } from "@/lib/better-auth-config"
 import { checkRBAC } from "@/lib/rbac-middleware"
-import { queryOne } from "@/lib/db"
 import * as courseQueries from "@/lib/db-queries/course"
-
-// Roles that bypass gender segregation
-const BYPASS_GENDER_ROLES = ['admin', 'reciter_supervisor', 'student_supervisor']
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await auth.api.getSession({ headers: req.headers })
     
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -24,34 +20,13 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100)
     const offset = parseInt(searchParams.get("offset") || "0")
 
-    // If reader (teacher), only return their courses
-    if (session.role === "reader") {
-      const courses = await courseQueries.getCoursesByTeacher(session.sub)
+    // If teacher, only return their courses
+    if (session.user.role === "TEACHER") {
+      const courses = await courseQueries.getCoursesByTeacher(session.user.id)
       return NextResponse.json({ success: true, data: courses })
     }
 
-    // Check if user role bypasses gender filter
-    const bypassGenderFilter = BYPASS_GENDER_ROLES.includes(session.role)
-
-    if (bypassGenderFilter) {
-      // Admin/supervisor: return all courses
-      const courses = await courseQueries.getAllCourses(limit, offset)
-      return NextResponse.json({ success: true, data: courses })
-    }
-
-    // For students: filter courses by teacher gender matching student gender
-    const user = await queryOne<{ gender: string }>(
-      `SELECT gender FROM users WHERE id = $1`,
-      [session.sub]
-    )
-
-    if (user?.gender) {
-      // Return courses taught by teachers of the same gender
-      const courses = await courseQueries.getAllCoursesWithGenderFilter(user.gender, limit, offset)
-      return NextResponse.json({ success: true, data: courses })
-    }
-
-    // Fallback: if gender not set, return all courses
+    // For students/admin, return all active courses
     const courses = await courseQueries.getAllCourses(limit, offset)
     return NextResponse.json({ success: true, data: courses })
   } catch (error) {
@@ -62,14 +37,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await auth.api.getSession({ headers: req.headers })
     
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Check RBAC: Only reader (teacher) and admin can create courses
-    const hasPermission = await checkRBAC(session.sub, "create:course")
+    // Check RBAC: Only TEACHER and ADMIN can create courses
+    const hasPermission = await checkRBAC(session.user.id, "create:course")
     if (!hasPermission) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
@@ -85,7 +60,7 @@ export async function POST(req: NextRequest) {
     }
 
     const course = await courseQueries.createCourse(
-      session.sub,
+      session.user.id,
       title,
       description || "",
       category || "General"

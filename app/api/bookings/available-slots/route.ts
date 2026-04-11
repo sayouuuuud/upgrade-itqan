@@ -2,13 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession, requireRole } from "@/lib/auth"
 import { query } from "@/lib/db"
 
-// Roles that bypass gender segregation
-const BYPASS_GENDER_ROLES = ['admin', 'reciter_supervisor', 'student_supervisor']
-
 // GET /api/bookings/available-slots?date=YYYY-MM-DD
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  if (!session || !requireRole(session, ["student", "admin", "reciter_supervisor", "student_supervisor"])) {
+  if (!session || !requireRole(session, ["student"])) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
   }
 
@@ -20,23 +17,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "التاريخ مطلوب" }, { status: 400 })
   }
 
-  // Check if user role bypasses gender filter
-  const bypassGenderFilter = BYPASS_GENDER_ROLES.includes(session.role)
+  // Get student's gender
+  const studentRows = await query<{ gender: string }>(
+    `SELECT gender FROM users WHERE id = $1`, [session.sub]
+  )
+  const studentGender = studentRows[0]?.gender
 
   let genderFilter = ""
   const queryParams: unknown[] = [date]
 
-  if (!bypassGenderFilter) {
-    // Get student's gender for filtering
-    const studentRows = await query<{ gender: string }>(
-      `SELECT gender FROM users WHERE id = $1`, [session.sub]
-    )
-    const studentGender = studentRows[0]?.gender
-
-    if (studentGender) {
-      genderFilter = `AND u.gender = $${queryParams.length + 1}`
-      queryParams.push(studentGender)
-    }
+  if (studentGender) {
+    genderFilter = `AND (u.gender = $${queryParams.length + 1} OR u.gender IS NULL)`
+    queryParams.push(studentGender)
   }
 
   let readerFilter = ""

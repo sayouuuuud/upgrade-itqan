@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server"
 const publicPaths = ["/", "/about", "/contact", "/sitemap-page", "/login", "/login-admin", "/register", "/reader-register", "/forgot-password", "/reset-password", "/verify", "/privacy", "/terms", "/maintenance"]
 const apiPublicPaths = ["/api/auth", "/api/admin/homepage", "/api/admin/analytics", "/api/uploadthing"]
 
+// Academy public paths (for public lessons and invitations)
+const academyPublicPaths = ["/academy/public", "/academy/invite", "/academy/lesson"]
+
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
 
@@ -21,7 +24,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next()
     }
 
-    // Allow all auth routes
+    // Allow all auth routes (Better Auth handles /api/auth/*)
     if (pathname.startsWith("/api/auth")) {
         return NextResponse.next()
     }
@@ -31,8 +34,13 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next()
     }
 
-    // Check JWT auth token cookie
-    const sessionCookie = req.cookies.get("auth-token")?.value
+    // Allow academy public paths (public lessons, invitations)
+    if (academyPublicPaths.some((p) => pathname.startsWith(p))) {
+        return NextResponse.next()
+    }
+
+    // Check Better Auth session cookie
+    const sessionCookie = req.cookies.get("better-auth.session_token")?.value || req.cookies.get("auth-token")?.value
 
     if (!sessionCookie) {
         if (pathname.startsWith("/api/")) {
@@ -42,13 +50,19 @@ export async function middleware(req: NextRequest) {
         if (pathname.startsWith("/admin")) {
             return NextResponse.redirect(new URL("/login-admin", req.url))
         }
+        // If trying to access academy, redirect to login
+        if (pathname.startsWith("/academy")) {
+            return NextResponse.redirect(new URL("/login", req.url))
+        }
         // Redirect to login for protected routes
         return NextResponse.redirect(new URL("/login", req.url))
     }
 
     try {
-        // JWT token validation happens in route handlers
-        // Middleware just checks for token existence
+        // For now, we trust the session cookie validity
+        // Better Auth validates the session server-side in route handlers
+        // Additional role-based checks happen in route handlers
+        
         const response = NextResponse.next()
         return response
     } catch (err) {
@@ -60,11 +74,13 @@ export async function middleware(req: NextRequest) {
         const normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
         if (publicPaths.includes(normalizedPath || '/')) {
             const response = NextResponse.next()
+            response.cookies.delete("better-auth.session_token")
             response.cookies.delete("auth-token")
             return response
         }
 
         const response = NextResponse.redirect(new URL("/login", req.url))
+        response.cookies.delete("better-auth.session_token")
         response.cookies.delete("auth-token")
         return response
     }

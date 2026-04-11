@@ -4,13 +4,13 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getSession } from "@/lib/auth"
+import { auth } from "@/lib/better-auth-config"
 import * as lessonQueries from "@/lib/db-queries/lesson"
 import * as courseQueries from "@/lib/db-queries/course"
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Only teacher who created course or admin can create lessons
-    if (course.teacher_id !== session.sub && session.role !== "admin") {
+    if (course.teacher_id !== session.user.id && session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 

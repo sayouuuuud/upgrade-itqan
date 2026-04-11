@@ -5,11 +5,14 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "hana-lazan-secret-key-change-in-production"
 )
 
+export type AllRoles = "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor" | "teacher" | "parent" | "academy_admin"
+
 export interface JWTPayload {
   sub: string
   email: string
-  role: "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor"
+  role: AllRoles
   name: string
+  academy_roles?: string[] // For users with multiple academy roles
   iat: number
   exp: number
 }
@@ -40,8 +43,37 @@ export async function getSession(): Promise<JWTPayload | null> {
 
 export function requireRole(
   session: JWTPayload | null,
-  roles: ("student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor")[]
+  roles: AllRoles[]
 ): boolean {
   if (!session) return false
   return roles.includes(session.role)
+}
+
+// Check if user has any of the specified academy roles
+export function hasAcademyRole(
+  session: JWTPayload | null,
+  roles: string[]
+): boolean {
+  if (!session) return false
+  if (roles.includes(session.role)) return true
+  if (session.academy_roles) {
+    return session.academy_roles.some(r => roles.includes(r))
+  }
+  return false
+}
+
+// Get the user's primary academy role for routing
+export function getAcademyRole(session: JWTPayload | null): string | null {
+  if (!session) return null
+  if (['teacher', 'academy_admin', 'parent'].includes(session.role)) {
+    return session.role
+  }
+  if (session.academy_roles && session.academy_roles.length > 0) {
+    return session.academy_roles[0]
+  }
+  // Students enrolled in academy courses get academy_student role
+  if (session.role === 'student') {
+    return 'academy_student'
+  }
+  return null
 }

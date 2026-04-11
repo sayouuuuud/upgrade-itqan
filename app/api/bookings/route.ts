@@ -102,10 +102,8 @@ export async function POST(req: NextRequest) {
     let genderFilter = ""
     const queryParams: unknown[] = [slotStart, slotEnd, slotDate]
 
-    // GENDER SEGREGATION: Strictly match student gender with reader gender
-    // No fallback to NULL - student must be matched with same-gender reader
     if (studentGender) {
-      genderFilter = "AND u.gender = $4"
+      genderFilter = "AND (u.gender = $4 OR u.gender IS NULL)"
       queryParams.push(studentGender)
     }
 

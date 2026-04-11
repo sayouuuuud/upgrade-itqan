@@ -232,44 +232,6 @@ export function serverError(message = 'Internal Server Error') {
 }
 
 /**
- * Simple RBAC check by userId and action
- * Used in LMS routes for permission validation
- */
-export async function checkRBAC(userId: string, action: string): Promise<boolean> {
-  try {
-    // Get user role
-    const user = await queryOne<{ role: string }>(
-      'SELECT role FROM users WHERE id = $1',
-      [userId]
-    )
-    
-    if (!user) return false
-    
-    const role = user.role.toLowerCase()
-    
-    // Define permissions by action
-    const permissions: Record<string, string[]> = {
-      'create:course': ['admin', 'reader'],
-      'edit:course': ['admin', 'reader'],
-      'delete:course': ['admin'],
-      'create:lesson': ['admin', 'reader'],
-      'edit:lesson': ['admin', 'reader'],
-      'delete:lesson': ['admin', 'reader'],
-      'manage:users': ['admin', 'student_supervisor', 'reciter_supervisor'],
-      'view:analytics': ['admin', 'student_supervisor', 'reciter_supervisor'],
-    }
-    
-    const allowedRoles = permissions[action]
-    if (!allowedRoles) return false
-    
-    return allowedRoles.includes(role)
-  } catch (err) {
-    console.error('[RBAC] Error in checkRBAC:', err)
-    return false
-  }
-}
-
-/**
  * Helper: Require specific role
  */
 export async function requireRole(req: NextRequest, requiredRole: UserRole) {
