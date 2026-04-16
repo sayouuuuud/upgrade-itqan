@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion, useScroll, useTransform } from "framer-motion"
-import { 
-  BookOpen, GraduationCap, Users, Play, Mic2, Award, 
+import {
+  BookOpen, GraduationCap, Users, Play, Mic2, Award,
   Moon, Sun, Star, Trophy, Heart, ArrowLeft, Menu, X, Headphones, Video,
   CheckCircle2, Sparkles, Clock, Globe, Shield, Zap, MessageCircle
 } from "lucide-react"
@@ -61,7 +61,7 @@ export default function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { scrollYProgress } = useScroll()
-  
+
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
   const heroY = useTransform(scrollYProgress, [0, 0.2], [0, -50])
 
@@ -80,12 +80,11 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground" dir="rtl">
       {/* Header */}
-      <header 
-        className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${
-          scrolled 
-            ? "bg-background/90 backdrop-blur-lg border-b border-border shadow-sm" 
+      <header
+        className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${scrolled
+            ? "bg-background/90 backdrop-blur-lg border-b border-border shadow-sm"
             : "bg-transparent"
-        }`}
+          }`}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
@@ -101,9 +100,9 @@ export default function HomePage() {
 
             <nav className="hidden md:flex items-center gap-8">
               {["المميزات", "الأقسام", "آراء الطلاب"].map((label) => (
-                <Link 
+                <Link
                   key={label}
-                  href={`#${label}`} 
+                  href={`#${label}`}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {label}
@@ -118,8 +117,8 @@ export default function HomePage() {
               >
                 {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
-              
-              <Link 
+
+              <Link
                 href="/login"
                 className="hidden sm:flex h-10 px-5 bg-primary text-primary-foreground rounded-lg items-center justify-center text-sm font-medium hover:bg-primary/90 transition-colors"
               >
@@ -146,7 +145,7 @@ export default function HomePage() {
           >
             <div className="container mx-auto px-4 py-4 space-y-2">
               {["المميزات", "الأقسام", "آراء الطلاب"].map((label) => (
-                <Link 
+                <Link
                   key={label}
                   href={`#${label}`}
                   className="block py-2 text-muted-foreground hover:text-foreground"
@@ -155,7 +154,7 @@ export default function HomePage() {
                   {label}
                 </Link>
               ))}
-              <Link 
+              <Link
                 href="/login"
                 className="block py-2 text-primary font-medium"
                 onClick={() => setIsMenuOpen(false)}
@@ -168,7 +167,7 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <motion.section 
+      <motion.section
         style={{ opacity: heroOpacity, y: heroY }}
         className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden"
       >
@@ -177,7 +176,7 @@ export default function HomePage() {
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <circle cx="30" cy="30" r="1" fill="currentColor" className="text-foreground"/>
+                <circle cx="30" cy="30" r="1" fill="currentColor" className="text-foreground" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
@@ -200,13 +199,13 @@ export default function HomePage() {
 
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              <BlurText 
-                text="رحلتك نحو إتقان" 
+              <BlurText
+                text="رحلتك نحو إتقان"
                 className="text-foreground"
                 delay={80}
               />
-              <BlurText 
-                text="القرآن الكريم" 
+              <BlurText
+                text="القرآن الكريم"
                 className="text-primary mt-2"
                 delay={80}
                 direction="bottom"
@@ -224,7 +223,7 @@ export default function HomePage() {
             <FadeIn delay={0.5}>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Magnet padding={40} magnetStrength={3}>
-                  <Link 
+                  <Link
                     href="/register"
                     className="group flex items-center gap-2 h-14 px-8 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25"
                   >
@@ -232,7 +231,7 @@ export default function HomePage() {
                     <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                   </Link>
                 </Magnet>
-                <Link 
+                <Link
                   href="#sections"
                   className="flex items-center gap-2 h-14 px-8 bg-secondary text-secondary-foreground rounded-xl font-medium hover:bg-secondary/80 transition-colors"
                 >
@@ -259,13 +258,13 @@ export default function HomePage() {
         </div>
 
         {/* Scroll Indicator */}
-        <motion.div 
+        <motion.div
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
           <div className="w-6 h-10 rounded-full border-2 border-border flex items-start justify-center p-1">
-            <motion.div 
+            <motion.div
               className="w-1.5 h-1.5 rounded-full bg-primary"
               animate={{ y: [0, 16, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
@@ -297,17 +296,17 @@ export default function HomePage() {
                     {/* Decorative */}
                     <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-br-[80px]" />
                     <div className="absolute bottom-0 right-0 w-48 h-48 bg-black/10 rounded-tl-[100px]" />
-                    
+
                     <div className="relative z-10">
                       <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                         <GraduationCap className="w-8 h-8" />
                       </div>
-                      
+
                       <h3 className="text-2xl md:text-3xl font-bold mb-3">الأكاديمية القرآنية</h3>
                       <p className="text-primary-foreground/80 mb-6 leading-relaxed">
                         تعلم القرآن الكريم مع معلمين متخصصين، احفظ وأتقن التجويد واحصل على إجازات معتمدة
                       </p>
-                      
+
                       <ul className="space-y-3 mb-8">
                         {["حلقات حفظ تفاعلية", "متابعة يومية مكثفة", "مسارات تعليمية متدرجة", "شهادات وإجازات"].map((item, i) => (
                           <li key={i} className="flex items-center gap-3 text-primary-foreground/90">
@@ -316,7 +315,7 @@ export default function HomePage() {
                           </li>
                         ))}
                       </ul>
-                      
+
                       <div className="flex items-center gap-2 text-primary-foreground/90 group-hover:gap-4 transition-all">
                         <span className="font-medium">انضم للأكاديمية</span>
                         <ArrowLeft className="w-5 h-5" />
@@ -335,17 +334,17 @@ export default function HomePage() {
                     {/* Decorative */}
                     <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-br-[80px]" />
                     <div className="absolute bottom-0 right-0 w-48 h-48 bg-black/10 rounded-tl-[100px]" />
-                    
+
                     <div className="relative z-10">
                       <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                         <Headphones className="w-8 h-8" />
                       </div>
-                      
+
                       <h3 className="text-2xl md:text-3xl font-bold mb-3">حلقة القرآن</h3>
                       <p className="text-accent-foreground/80 mb-6 leading-relaxed">
                         استمع إلى أجمل التلاوات القرآنية من كبار القراء حول العالم بجودة صوت استثنائية
                       </p>
-                      
+
                       <ul className="space-y-3 mb-8">
                         {["تلاوات بجودة عالية", "قراء من حول العالم", "قوائم تشغيل مخصصة", "استماع بدون انترنت"].map((item, i) => (
                           <li key={i} className="flex items-center gap-3 text-accent-foreground/90">
@@ -354,7 +353,7 @@ export default function HomePage() {
                           </li>
                         ))}
                       </ul>
-                      
+
                       <div className="flex items-center gap-2 text-accent-foreground/90 group-hover:gap-4 transition-all">
                         <span className="font-medium">استكشف التلاوات</span>
                         <ArrowLeft className="w-5 h-5" />
@@ -371,7 +370,7 @@ export default function HomePage() {
       {/* Features Section - Redesigned */}
       <section id="features" className="py-24 md:py-32 relative overflow-hidden">
         <IslamicPattern />
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <FadeIn>
             <div className="text-center max-w-3xl mx-auto mb-20">
@@ -396,16 +395,16 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
             {/* Large Feature Card */}
             <FadeIn delay={0.1} className="md:col-span-2 lg:col-span-2">
-              <motion.div 
+              <motion.div
                 whileHover={{ y: -5 }}
                 className="relative h-full min-h-[280px] p-8 rounded-3xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden"
               >
                 <div className="absolute top-0 left-0 w-full h-full opacity-10">
                   <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                     <pattern id="grid-pattern" width="10" height="10" patternUnits="userSpaceOnUse">
-                      <circle cx="5" cy="5" r="1" fill="currentColor"/>
+                      <circle cx="5" cy="5" r="1" fill="currentColor" />
                     </pattern>
-                    <rect width="100" height="100" fill="url(#grid-pattern)"/>
+                    <rect width="100" height="100" fill="url(#grid-pattern)" />
                   </svg>
                 </div>
                 <div className="relative z-10">
@@ -433,7 +432,7 @@ export default function HomePage() {
 
             {/* Side Features */}
             <FadeIn delay={0.2}>
-              <motion.div 
+              <motion.div
                 whileHover={{ y: -5 }}
                 className="h-full min-h-[280px] p-6 rounded-3xl bg-card border border-border hover:border-accent/50 transition-colors"
               >
@@ -451,7 +450,7 @@ export default function HomePage() {
 
             {/* Stats Card */}
             <FadeIn delay={0.3}>
-              <motion.div 
+              <motion.div
                 whileHover={{ y: -5 }}
                 className="h-full min-h-[200px] p-6 rounded-3xl bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20"
               >
@@ -469,7 +468,7 @@ export default function HomePage() {
 
             {/* Medium Cards Row */}
             <FadeIn delay={0.4}>
-              <motion.div 
+              <motion.div
                 whileHover={{ y: -5 }}
                 className="p-6 rounded-3xl bg-card border border-border hover:border-primary/30 transition-colors"
               >
@@ -486,7 +485,7 @@ export default function HomePage() {
             </FadeIn>
 
             <FadeIn delay={0.5}>
-              <motion.div 
+              <motion.div
                 whileHover={{ y: -5 }}
                 className="p-6 rounded-3xl bg-card border border-border hover:border-primary/30 transition-colors"
               >
@@ -503,7 +502,7 @@ export default function HomePage() {
             </FadeIn>
 
             <FadeIn delay={0.6}>
-              <motion.div 
+              <motion.div
                 whileHover={{ y: -5 }}
                 className="p-6 rounded-3xl bg-card border border-border hover:border-primary/30 transition-colors"
               >
@@ -557,7 +556,7 @@ export default function HomePage() {
             <div className="relative">
               {/* Connection Line */}
               <div className="absolute top-8 right-8 left-8 h-0.5 bg-border hidden md:block" />
-              
+
               <div className="grid md:grid-cols-4 gap-8">
                 {learningPath.map((item, i) => (
                   <FadeIn key={i} delay={i * 0.15}>
@@ -582,7 +581,7 @@ export default function HomePage() {
       {/* Testimonials Section - Enhanced */}
       <section id="testimonials" className="py-24 md:py-32 relative overflow-hidden">
         <IslamicPattern animate={false} />
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <FadeIn>
             <div className="text-center max-w-2xl mx-auto mb-16">
@@ -601,23 +600,23 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
-              { 
-                quote: "بفضل الله ثم منصة إتقان، أتممت حفظ القرآن الكريم كاملاً في سنتين. المعلمون متميزون والمنهجية فعالة جداً", 
-                author: "أحمد محمد سالم", 
+              {
+                quote: "بفضل الله ثم منصة إتقان، أتممت حفظ القرآن الكريم كاملاً في سنتين. المعلمون متميزون والمنهجية فعالة جداً",
+                author: "أحمد محمد سالم",
                 role: "حافظ للقرآن الكريم",
                 country: "السعودية",
                 achievement: "أتم الحفظ"
               },
-              { 
-                quote: "كمعلمة، أجد في إتقان بيئة مثالية لتدريس القرآن. الأدوات التقنية تسهل المتابعة والتواصل مع الطالبات", 
-                author: "فاطمة علي الزهراء", 
+              {
+                quote: "كمعلمة، أجد في إتقان بيئة مثالية لتدريس القرآن. الأدوات التقنية تسهل المتابعة والتواصل مع الطالبات",
+                author: "فاطمة علي الزهراء",
                 role: "معلمة قرآن",
                 country: "مصر",
                 achievement: "معلمة متميزة"
               },
-              { 
-                quote: "ابني يحب جلسات إتقان كثيراً. المعلم صبور ومتفهم، والتقدم ملحوظ ماشاء الله. أنصح كل الآباء بهذه المنصة", 
-                author: "خالد عبدالرحمن", 
+              {
+                quote: "ابني يحب جلسات إتقان كثيراً. المعلم صبور ومتفهم، والتقدم ملحوظ ماشاء الله. أنصح كل الآباء بهذه المنصة",
+                author: "خالد عبدالرحمن",
                 role: "ولي أمر",
                 country: "الإمارات",
                 achievement: "ولي أمر راضٍ"
@@ -630,16 +629,16 @@ export default function HomePage() {
                 >
                   {/* Quote mark */}
                   <div className="absolute top-4 left-4 text-6xl text-primary/10 font-serif leading-none">"</div>
-                  
+
                   {/* Achievement badge */}
                   <div className="flex justify-end mb-4">
                     <span className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full">
                       {testimonial.achievement}
                     </span>
                   </div>
-                  
+
                   <p className="text-foreground/80 mb-6 leading-relaxed relative z-10">{testimonial.quote}</p>
-                  
+
                   <div className="flex items-center gap-4 pt-4 border-t border-border">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-bold text-lg">
                       {testimonial.author.charAt(0)}
@@ -653,10 +652,10 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Stars */}
                   <div className="flex gap-1 mt-4">
-                    {[1,2,3,4,5].map((star) => (
+                    {[1, 2, 3, 4, 5].map((star) => (
                       <Star key={star} className="w-4 h-4 text-accent fill-accent" />
                     ))}
                   </div>
@@ -690,20 +689,20 @@ export default function HomePage() {
               {/* Background with pattern */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
               <IslamicPattern className="opacity-10" animate={false} />
-              
+
               <div className="relative z-10 p-8 md:p-16 lg:p-20 text-center text-primary-foreground">
                 {/* Decorative elements */}
-                <motion.div 
+                <motion.div
                   className="absolute top-10 right-10 w-20 h-20 border border-white/20 rounded-full"
                   animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
                   transition={{ duration: 4, repeat: Infinity }}
                 />
-                <motion.div 
+                <motion.div
                   className="absolute bottom-10 left-10 w-16 h-16 border border-white/20 rotate-45"
                   animate={{ rotate: [45, 90, 45], opacity: [0.2, 0.4, 0.2] }}
                   transition={{ duration: 6, repeat: Infinity }}
                 />
-                
+
                 <motion.div
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
@@ -712,7 +711,7 @@ export default function HomePage() {
                 >
                   <BookOpen className="w-10 h-10" />
                 </motion.div>
-                
+
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
                   رحلة الألف ميل تبدأ بخطوة
                   <br />
@@ -721,10 +720,10 @@ export default function HomePage() {
                 <p className="text-primary-foreground/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
                   انضم إلى مجتمع إتقان وابدأ رحلتك مع القرآن الكريم. التسجيل مجاني وسريع.
                 </p>
-                
+
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
                   <Magnet padding={50} magnetStrength={2}>
-                    <Link 
+                    <Link
                       href="/register"
                       className="group flex items-center gap-3 h-14 px-10 bg-white text-primary rounded-2xl font-semibold hover:bg-white/90 transition-all shadow-xl"
                     >
@@ -732,7 +731,7 @@ export default function HomePage() {
                       <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                     </Link>
                   </Magnet>
-                  <Link 
+                  <Link
                     href="/about"
                     className="flex items-center gap-2 h-14 px-10 bg-white/10 text-primary-foreground rounded-2xl font-medium hover:bg-white/20 transition-colors border border-white/20"
                   >
@@ -740,7 +739,7 @@ export default function HomePage() {
                     <span>شاهد الفيديو التعريفي</span>
                   </Link>
                 </div>
-                
+
                 {/* Trust badges */}
                 <div className="flex flex-wrap items-center justify-center gap-6 pt-8 border-t border-white/20">
                   {[
@@ -819,9 +818,9 @@ export default function HomePage() {
               {/* Social Links */}
               <div className="flex gap-3">
                 {["twitter", "youtube", "telegram"].map((social) => (
-                  <Link 
+                  <Link
                     key={social}
-                    href="#" 
+                    href="#"
                     className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
                   >
                     <span className="sr-only">{social}</span>
@@ -830,35 +829,35 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-            
+
             {/* Links Columns */}
             {[
-              { 
-                title: "الأكاديمية", 
+              {
+                title: "الأكاديمية",
                 links: [
                   { label: "الدورات", href: "/academy/student/courses" },
                   { label: "المعلمون", href: "/academy/admin/teachers" },
                   { label: "المسارات التعليمية", href: "/academy/student/path" },
                   { label: "الشهادات", href: "#" },
-                ] 
+                ]
               },
-              { 
-                title: "حلقة القرآن", 
+              {
+                title: "حلقة القرآن",
                 links: [
                   { label: "التلاوات", href: "/student" },
                   { label: "القراء", href: "/student" },
                   { label: "القوائم", href: "/student" },
                   { label: "المفضلة", href: "/student" },
-                ] 
+                ]
               },
-              { 
-                title: "الدعم", 
+              {
+                title: "الدعم",
                 links: [
                   { label: "مركز المساعدة", href: "/contact" },
                   { label: "تواصل معنا", href: "/contact" },
                   { label: "الأسئلة الشائعة", href: "#" },
                   { label: "سياسة الخصوصية", href: "/privacy" },
-                ] 
+                ]
               },
             ].map((section, i) => (
               <div key={i}>
@@ -866,8 +865,8 @@ export default function HomePage() {
                 <ul className="space-y-3">
                   {section.links.map((link, j) => (
                     <li key={j}>
-                      <Link 
-                        href={link.href} 
+                      <Link
+                        href={link.href}
                         className="text-sm text-muted-foreground hover:text-primary transition-colors"
                       >
                         {link.label}
@@ -878,7 +877,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          
+
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-border">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
