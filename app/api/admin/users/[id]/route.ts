@@ -23,7 +23,8 @@ export async function GET(
                 AND us.last_active_at > NOW() - INTERVAL '5 minutes'
              ) as is_online,
              rp.full_name_triple, rp.city, rp.qualification, rp.memorized_parts,
-             rp.years_of_experience, rp.certificate_file_url, rp.specialization, rp.about_me
+             rp.years_of_experience, rp.certificate_file_url, rp.specialization, rp.about_me,
+             u.has_quran_access, u.has_academy_access, u.platform_preference
              FROM users u
              LEFT JOIN reader_profiles rp ON rp.user_id = u.id
              WHERE u.id = $1`,
@@ -146,12 +147,12 @@ export async function GET(
         let errorsLog: any[] = []
         if (user.role === 'student') {
             errorsLog = await db.query<any>(
-              `SELECT r.id as recitation_id, r.surah_name, rev.error_markers, rev.detailed_feedback, rev.created_at
+                `SELECT r.id as recitation_id, r.surah_name, rev.error_markers, rev.detailed_feedback, rev.created_at
                FROM reviews rev
                JOIN recitations r ON r.id = rev.recitation_id
                WHERE r.student_id = $1 AND (rev.error_markers IS NOT NULL AND rev.error_markers != '[]'::jsonb)
                ORDER BY rev.created_at DESC`,
-               [userId]
+                [userId]
             )
         }
 
@@ -218,16 +219,16 @@ export async function DELETE(
 
         // 1. Delete bookings (student or reader)
         await db.query('DELETE FROM bookings WHERE student_id = $1 OR reader_id = $1', [userId])
-        
+
         // 2. Delete recitations (student)
         await db.query('DELETE FROM recitations WHERE student_id = $1', [userId])
-        
+
         // 3. Delete conversations (student or reader) - messages will cascade
         await db.query('DELETE FROM conversations WHERE student_id = $1 OR reader_id = $1', [userId])
-        
+
         // 4. Delete notifications
         await db.query('DELETE FROM notifications WHERE user_id = $1 OR related_user_id = $1', [userId])
-        
+
         // 5. Delete activity logs of this user (but keep logs where they are the entity)
         await db.query('DELETE FROM activity_logs WHERE user_id = $1', [userId])
 

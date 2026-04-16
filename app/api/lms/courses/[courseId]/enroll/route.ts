@@ -9,11 +9,12 @@ import { auth } from "@/lib/better-auth-config"
 import * as courseQueries from "@/lib/db-queries/course"
 
 interface Params {
-  params: { courseId: string }
+  params: Promise<{ courseId: string }>
 }
 
 export async function POST(req: NextRequest, { params }: Params) {
   try {
+    const { courseId } = await params
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Student ID required" }, { status: 400 })
     }
 
-    const course = await courseQueries.getCourseById(params.courseId)
+    const course = await courseQueries.getCourseById(courseId)
     if (!course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 })
     }
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const enrollment = await courseQueries.enrollStudent(params.courseId, studentId)
+    const enrollment = await courseQueries.enrollStudent(courseId, studentId)
     return NextResponse.json({ success: true, data: enrollment }, { status: 201 })
   } catch (error) {
     console.error("[API] Error enrolling student:", error)
@@ -46,12 +47,13 @@ export async function POST(req: NextRequest, { params }: Params) {
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
+    const { courseId } = await params
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const course = await courseQueries.getCourseById(params.courseId)
+    const course = await courseQueries.getCourseById(courseId)
     if (!course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 })
     }
@@ -61,7 +63,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const students = await courseQueries.getEnrolledStudents(params.courseId)
+    const students = await courseQueries.getEnrolledStudents(courseId)
     return NextResponse.json({ success: true, data: students })
   } catch (error) {
     console.error("[API] Error fetching enrollments:", error)
@@ -71,6 +73,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
+    const { courseId } = await params
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -83,7 +86,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Student ID required" }, { status: 400 })
     }
 
-    const course = await courseQueries.getCourseById(params.courseId)
+    const course = await courseQueries.getCourseById(courseId)
     if (!course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 })
     }
@@ -93,7 +96,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const removed = await courseQueries.removeCourseEnrollment(params.courseId, studentId)
+    const removed = await courseQueries.removeCourseEnrollment(courseId, studentId)
     return NextResponse.json({ success: true, message: "Student removed from course" })
   } catch (error) {
     console.error("[API] Error removing student:", error)

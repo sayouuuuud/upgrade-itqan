@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
 
     // Get paginated users
     const users = await query(
-      `SELECT u.id, u.name, u.email, u.role, u.is_active, u.created_at, u.avatar_url, u.is_accepting_recitations,
+      `SELECT u.id, u.name, u.email, u.role, u.is_active, u.created_at, u.avatar_url, u.is_accepting_recitations, u.gender,
               (SELECT COUNT(*) FROM recitations r WHERE r.student_id = u.id) as recitations_count,
               rp.rating, rp.total_reviews, rp.nationality,
               EXISTS(
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
 
     const totalPages = Math.ceil(totalUsers / limit)
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       users,
       pagination: {
         currentPage: page,

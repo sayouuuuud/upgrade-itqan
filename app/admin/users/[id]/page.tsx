@@ -59,7 +59,33 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     const [error, setError] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState("info")
     const [isDeleting, setIsDeleting] = useState(false)
+    const [isUpdatingAccess, setIsUpdatingAccess] = useState(false)
     const { id } = use(params)
+
+    const handleAccessUpdate = async (field: 'has_quran_access' | 'has_academy_access' | 'platform_preference', value: any) => {
+        setIsUpdatingAccess(true)
+        try {
+            const res = await fetch(`/api/admin/users/${id}/access`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [field]: value })
+            })
+            if (!res.ok) throw new Error(t.admin.errorUpdatingUser || "Failed to update access")
+
+            // Assuming successful update, update local state
+            setData({
+                ...data,
+                user: {
+                    ...data.user,
+                    [field]: value
+                }
+            })
+        } catch (err: any) {
+            alert(err.message)
+        } finally {
+            setIsUpdatingAccess(false)
+        }
+    }
 
     const handleDeleteUser = async () => {
         if (!window.confirm(isAr ? "هل أنت متأكد من حذف هذا المستخدم نهائياً؟ لا يمكن التراجع عن هذا الإجراء." : "Are you sure you want to permanently delete this user? This action cannot be undone.")) {
@@ -129,18 +155,18 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                     <Badge variant={user.is_active ? "default" : "destructive"} className="px-3 py-1 font-bold">
                         {user.is_active ? t.active : t.blocked}
                     </Badge>
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
+                    <Button
+                        variant="outline"
+                        size="sm"
                         className="gap-2 font-bold px-4 rounded-xl h-9 border-primary/20 hover:bg-primary/5 hover:border-primary/50 text-foreground transition-all active:scale-95 shadow-sm"
                         onClick={() => router.push(`/admin/conversations?userId=${id}&userRole=${user.role}`)}
                     >
                         <MessageSquare className="w-4 h-4 text-primary" />
                         {t.admin.messageUser || "Message User"}
                     </Button>
-                    <Button 
-                        variant="destructive" 
-                        size="sm" 
+                    <Button
+                        variant="destructive"
+                        size="sm"
                         className="gap-2 font-bold px-4 rounded-xl bg-destructive hover:bg-destructive/90 h-9 shadow-lg shadow-destructive/20 transition-all active:scale-95"
                         onClick={() => handleDeleteUser()}
                         disabled={isDeleting}
@@ -174,11 +200,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                 <div className="flex flex-col sm:flex-row items-center gap-3">
                                     <h2 className="text-2xl font-black text-foreground">{user.name}</h2>
                                     <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize font-black px-4 py-1 rounded-full">
-                                        {user.role === 'student' ? (t.student.studentLabel || t.auth.student) : 
-                                         user.role === 'reader' ? (t.reader.readerLabel || t.auth.reader) :
-                                         user.role === 'student_supervisor' ? (t.auth.studentSupervisor || "Student Supervisor") :
-                                         user.role === 'reciter_supervisor' ? (t.auth.reciterSupervisor || "Reciter Supervisor") :
-                                         user.role === 'admin' ? t.auth.admin : user.role}
+                                        {user.role === 'student' ? (t.student.studentLabel || t.auth.student) :
+                                            user.role === 'reader' ? (t.reader.readerLabel || t.auth.reader) :
+                                                user.role === 'student_supervisor' ? (t.auth.studentSupervisor || "Student Supervisor") :
+                                                    user.role === 'reciter_supervisor' ? (t.auth.reciterSupervisor || "Reciter Supervisor") :
+                                                        user.role === 'admin' ? t.auth.admin : user.role}
                                     </Badge>
                                 </div>
                                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-muted-foreground text-sm font-bold">
@@ -194,14 +220,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
                         {/* Actions */}
                         <div className="flex justify-center sm:justify-start gap-3 shrink-0">
-                             <Button 
-                                 variant="outline" 
-                                 className="gap-2 font-bold px-6 rounded-2xl h-11 border-primary/20 hover:bg-primary/5 hover:border-primary/50 text-foreground transition-all active:scale-95 shadow-md"
-                                 onClick={() => router.push(`/admin/conversations?userId=${id}&userRole=${user.role}`)}
-                             >
-                                 <MessageSquare className="w-5 h-5 text-primary" />
-                                 {t.admin.messageUser || "Message User"}
-                             </Button>
+                            <Button
+                                variant="outline"
+                                className="gap-2 font-bold px-6 rounded-2xl h-11 border-primary/20 hover:bg-primary/5 hover:border-primary/50 text-foreground transition-all active:scale-95 shadow-md"
+                                onClick={() => router.push(`/admin/conversations?userId=${id}&userRole=${user.role}`)}
+                            >
+                                <MessageSquare className="w-5 h-5 text-primary" />
+                                {t.admin.messageUser || "Message User"}
+                            </Button>
                         </div>
                     </div>
                 </CardContent>
@@ -246,11 +272,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                 <div className="flex justify-between items-center py-2 border-b border-border/30">
                                     <span className="text-muted-foreground font-bold">{t.auth.role}</span>
                                     <Badge variant="outline" className="bg-muted/50 text-foreground capitalize border-border/50 font-bold">
-                                        {user.role === 'student' ? (t.student.studentLabel || t.auth.student) : 
-                                         user.role === 'reader' ? (t.reader.readerLabel || t.auth.reader) :
-                                         user.role === 'student_supervisor' ? (t.auth.studentSupervisor || "Student Supervisor") :
-                                         user.role === 'reciter_supervisor' ? (t.auth.reciterSupervisor || "Reciter Supervisor") :
-                                         user.role === 'admin' ? t.auth.admin : user.role}
+                                        {user.role === 'student' ? (t.student.studentLabel || t.auth.student) :
+                                            user.role === 'reader' ? (t.reader.readerLabel || t.auth.reader) :
+                                                user.role === 'student_supervisor' ? (t.auth.studentSupervisor || "Student Supervisor") :
+                                                    user.role === 'reciter_supervisor' ? (t.auth.reciterSupervisor || "Reciter Supervisor") :
+                                                        user.role === 'admin' ? t.auth.admin : user.role}
                                     </Badge>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-border/30">
@@ -263,7 +289,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                 </div>
                             </CardContent>
                         </Card>
- 
+
                         <Card className="border-border/50 shadow-2xl shadow-black/5 rounded-3xl bg-card/60 backdrop-blur-xl border">
                             <CardHeader className="border-b border-border/50 pb-4 mb-4 bg-muted/20 rounded-t-3xl">
                                 <CardTitle className="text-base font-black text-foreground flex items-center gap-3">
@@ -353,6 +379,69 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                             </CardContent>
                         </Card>
                     )}
+
+                    {/* Access Control Card */}
+                    <Card className="border-border/50 shadow-2xl shadow-black/5 rounded-3xl bg-card/60 backdrop-blur-xl border mt-6 overflow-hidden">
+                        <CardHeader className="border-b border-border/50 pb-4 mb-4 bg-muted/20 rounded-t-3xl">
+                            <CardTitle className="text-base font-black text-foreground flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                                    <Shield className="w-5 h-5" />
+                                </div>
+                                {isAr ? 'صلاحيات الوصول' : 'Access Permissions'}
+                                {isUpdatingAccess && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground mr-auto rtl:ml-auto rtl:mr-0" />}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex justify-between items-center py-3 border-b border-border/30">
+                                <div>
+                                    <span className="text-foreground font-bold block">{isAr ? 'منصة القرآن الكريم' : 'Quran Platform Access'}</span>
+                                    <span className="text-xs text-muted-foreground">{isAr ? 'السماح بالدخول لمقرأة إتقان' : 'Allow access to Quran recitation platform'}</span>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={user.has_quran_access}
+                                        onChange={(e) => handleAccessUpdate('has_quran_access', e.target.checked)}
+                                        disabled={isUpdatingAccess}
+                                    />
+                                    <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] rtl:after:left-auto rtl:after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+                            <div className="flex justify-between items-center py-3 border-b border-border/30">
+                                <div>
+                                    <span className="text-foreground font-bold block">{isAr ? 'منصة الأكاديمية (LMS)' : 'Academy Platform Access (LMS)'}</span>
+                                    <span className="text-xs text-muted-foreground">{isAr ? 'السماح بالدخول للأكاديمية والدورات' : 'Allow access to Academy courses'}</span>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={user.has_academy_access}
+                                        onChange={(e) => handleAccessUpdate('has_academy_access', e.target.checked)}
+                                        disabled={isUpdatingAccess}
+                                    />
+                                    <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] rtl:after:left-auto rtl:after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+                            <div className="flex justify-between items-center py-3">
+                                <div>
+                                    <span className="text-foreground font-bold block">{isAr ? 'المنصة الافتراضية' : 'Default Platform Preference'}</span>
+                                    <span className="text-xs text-muted-foreground">{isAr ? 'تحديد المنصة التي سيتم توجيه المستخدم لها عند تسجيل الدخول' : 'Platform to redirect to at login'}</span>
+                                </div>
+                                <select
+                                    className="h-9 rounded-xl border border-border/50 bg-muted/30 px-3 text-sm font-bold disabled:opacity-50"
+                                    value={user.platform_preference || ''}
+                                    onChange={(e) => handleAccessUpdate('platform_preference', e.target.value)}
+                                    disabled={isUpdatingAccess}
+                                >
+                                    <option value="both">{isAr ? 'بدون تحديد ( اختيار المنصة عند الدخول )' : 'None (Choose on login)'}</option>
+                                    <option value="quran">{isAr ? 'القرآن الكريم' : 'Quran Platform'}</option>
+                                    <option value="academy">{isAr ? 'الأكاديمية' : 'Academy'}</option>
+                                </select>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
 
                 {/* STATS TAB */}
@@ -498,51 +587,51 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 </TabsContent>
 
                 {/* CHAT TAB - REMOVED for Phase 4 */}
-                
+
                 {/* ERRORS TAB (Student only) */}
                 {user.role === 'student' && (
-                  <TabsContent value="errors" className="space-y-6">
-                    {data.errorsLog && data.errorsLog.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {data.errorsLog.map((error: any, idx: number) => (
-                          <Card key={idx} className="border-red-500/20 shadow-2xl shadow-black/5 rounded-3xl bg-card/60 backdrop-blur-xl overflow-hidden border">
-                            <CardHeader className="bg-red-500/10 pb-4 border-b border-red-500/10">
-                              <CardTitle className="text-base font-black text-red-700 dark:text-red-400 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-1.5 rounded-lg bg-red-500/20">
-                                        <AlertTriangle className="w-4 h-4" />
-                                    </div>
-                                    <span>{t.reader.surah} {error.surah_name}</span>
+                    <TabsContent value="errors" className="space-y-6">
+                        {data.errorsLog && data.errorsLog.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {data.errorsLog.map((error: any, idx: number) => (
+                                    <Card key={idx} className="border-red-500/20 shadow-2xl shadow-black/5 rounded-3xl bg-card/60 backdrop-blur-xl overflow-hidden border">
+                                        <CardHeader className="bg-red-500/10 pb-4 border-b border-red-500/10">
+                                            <CardTitle className="text-base font-black text-red-700 dark:text-red-400 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-1.5 rounded-lg bg-red-500/20">
+                                                        <AlertTriangle className="w-4 h-4" />
+                                                    </div>
+                                                    <span>{t.reader.surah} {error.surah_name}</span>
+                                                </div>
+                                                <span className="text-red-700/60 dark:text-red-400/60 font-black text-xs">{new Date(error.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</span>
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="p-6 space-y-4">
+                                            {error.error_markers && error.error_markers.length > 0 && (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {error.error_markers.map((m: any, i: number) => (
+                                                        <Badge key={i} variant="outline" className="bg-red-500/5 text-red-600 dark:text-red-400 border-red-500/20 font-black px-3 py-1 rounded-xl">
+                                                            {m.type === 'tajweed' ? (isAr ? 'تجويد' : 'Tajweed') : (isAr ? 'نطق' : 'Pronunciation')}: {m.note}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 text-foreground text-sm font-bold leading-relaxed italic">
+                                                "{error.detailed_feedback}"
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : (
+                            <Card className="border-border/50 shadow-2xl shadow-black/5 rounded-3xl bg-card/60 backdrop-blur-xl text-muted-foreground min-h-[300px] flex items-center justify-center relative border">
+                                <div className="p-12 text-center">
+                                    <AlertCircle className="w-16 h-16 mx-auto mb-6 opacity-20 text-red-500" />
+                                    <p className="text-lg font-black">{isAr ? 'لا يوجد سجل أخطاء مسجل لهذا الطالب.' : 'No errors log recorded for this student.'}</p>
                                 </div>
-                                <span className="text-red-700/60 dark:text-red-400/60 font-black text-xs">{new Date(error.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</span>
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-6 space-y-4">
-                              {error.error_markers && error.error_markers.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                  {error.error_markers.map((m: any, i: number) => (
-                                    <Badge key={i} variant="outline" className="bg-red-500/5 text-red-600 dark:text-red-400 border-red-500/20 font-black px-3 py-1 rounded-xl">
-                                      {m.type === 'tajweed' ? (isAr ? 'تجويد' : 'Tajweed') : (isAr ? 'نطق' : 'Pronunciation')}: {m.note}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              )}
-                              <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 text-foreground text-sm font-bold leading-relaxed italic">
-                                "{error.detailed_feedback}"
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : (
-                      <Card className="border-border/50 shadow-2xl shadow-black/5 rounded-3xl bg-card/60 backdrop-blur-xl text-muted-foreground min-h-[300px] flex items-center justify-center relative border">
-                          <div className="p-12 text-center">
-                              <AlertCircle className="w-16 h-16 mx-auto mb-6 opacity-20 text-red-500" />
-                              <p className="text-lg font-black">{isAr ? 'لا يوجد سجل أخطاء مسجل لهذا الطالب.' : 'No errors log recorded for this student.'}</p>
-                          </div>
-                      </Card>
-                    )}
-                  </TabsContent>
+                            </Card>
+                        )}
+                    </TabsContent>
                 )}
             </Tabs>
         </div >

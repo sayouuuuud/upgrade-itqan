@@ -3,9 +3,10 @@ import { supabase } from '@/lib/supabase'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { inviteCode: string } }
+  { params }: { params: Promise<{ inviteCode: string }> }
 ) {
   try {
+    const { inviteCode } = await params
     const { data, error } = await supabase
       .from('invitations')
       .select(`
@@ -13,7 +14,7 @@ export async function GET(
         users (name),
         courses (name)
       `)
-      .eq('code', params.inviteCode)
+      .eq('code', inviteCode)
       .single()
 
     if (error) throw error

@@ -1,0 +1,17 @@
+admin:
+admin@test.com
+
+student:
+student@test.com
+
+reviewer:
+reviewer@test.com
+
+supervisor_students:
+supervisor_students@test.com
+
+supervisor_reviewers:
+supervisor_reviewers@test.com
+
+
+Password for all accounts : 123456

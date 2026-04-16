@@ -1,80 +1,42 @@
-import { betterAuth } from "better-auth"
-import { magicLink } from "better-auth/plugins"
-import pool from "./db"
+/**
+ * better-auth-config.ts
+ *
+ * Compatibility shim — this project uses a custom JWT-based auth system (lib/auth.ts).
+ * This file exports an `auth` object that mirrors the better-auth API surface
+ * used by legacy API routes (e.g. app/api/lms/courses/route.ts) so they compile
+ * and run correctly without requiring the actual better-auth library plugins.
+ */
 
-if (!pool) {
-  throw new Error("Database pool is not initialized. Check your DATABASE_URL environment variable.")
+import { getSession } from "@/lib/auth"
+import type { JWTPayload } from "@/lib/auth"
+import { headers } from "next/headers"
+
+export type BetterAuthSession = {
+    user: {
+        id: string
+        email: string
+        name: string
+        role: string
+    }
 }
 
 /**
- * Better Auth Configuration
- * Uses pg Pool directly via better-auth's built-in postgres support
+ * Adapts our custom getSession() to the better-auth `auth.api.getSession()` interface.
+ * Legacy routes call: `await auth.api.getSession({ headers: req.headers })`
  */
-
-export const auth = betterAuth({
-  database: {
-    db: pool as any,
-    type: "postgres",
-  },
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  basePath: "/api/auth",
-  secret: process.env.BETTER_AUTH_SECRET || process.env.JWT_SECRET || "your-secret-key-change-me",
-  
-  // Email & Password is a built-in feature in better-auth (not a plugin)
-  emailAndPassword: {
-    enabled: true,
-    minPasswordLength: 8,
-    maxPasswordLength: 128,
-    requireEmailVerification: false,
-  },
-
-  // Plugins
-  plugins: [
-    magicLink(),
-  ],
-
-  // User schema mapping with existing fields
-  user: {
-    fields: {
-      email: "email",
-      name: "name",
-      image: "image",
-      emailVerified: "emailVerified",
+export const auth = {
+    api: {
+        getSession: async (_opts?: { headers?: HeadersInit }): Promise<BetterAuthSession | null> => {
+            const session: JWTPayload | null = await getSession()
+            if (!session) return null
+            return {
+                user: {
+                    id: session.sub,
+                    email: session.email,
+                    name: session.name,
+                    role: session.role,
+                },
+            }
+        },
     },
-  },
-
-  // Session configuration
-  session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // Update every day
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // 5 minutes
-    },
-  },
-
-  // Hooks for custom logic
-  hooks: {
-    async afterSignUp({ user }: { user: { email: string } }) {
-      console.log("[v0] User signed up:", user.email)
-    },
-    async afterSignIn({ user }: { user: { email: string } }) {
-      console.log("[v0] User signed in:", user.email)
-    },
-  },
-
-  // Advanced options
-  advanced: {
-    useSecureCookies: process.env.NODE_ENV === "production",
-    crossSubDomainCookies: process.env.NODE_ENV === "production",
-  },
-})
-
-export async function getSession() {
-  try {
-    // @ts-ignore - Better Auth API
-    return await auth.api.getSession()
-  } catch (error) {
-    return null
-  }
 }

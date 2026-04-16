@@ -51,7 +51,7 @@ export default function ScheduleManagementPage() {
   const [newSlotDays, setNewSlotDays] = useState<number[]>([]) // Days for recurring
   const [isRecurring, setIsRecurring] = useState(false)
 
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>()
+  const [dateRange, setDateRange] = useState<any>()
   const [bulkTimes, setBulkTimes] = useState([{ id: 1, start: "09:00", end: "09:30" }])
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]) // Mon-Fri
 
@@ -209,13 +209,13 @@ export default function ScheduleManagementPage() {
   const currentDaySlots = slots.filter(s => {
     const dow = selectedDate.getDay()
     const dateStr = format(selectedDate, "yyyy-MM-dd")
-    
+
     // Show if it's a recurring slot for this day-of-week
     if ((s.is_recurring || !s.specific_date) && s.day_of_week === dow) return true
-    
+
     // Show if it's a specific date slot for THIS EXACT DATE
     if (s.specific_date && format(new Date(s.specific_date), "yyyy-MM-dd") === dateStr) return true
-    
+
     return false
   }).sort((a, b) => a.start_time.localeCompare(b.start_time))
 
@@ -273,8 +273,8 @@ export default function ScheduleManagementPage() {
                   hasSlots: (date) => {
                     const dow = date.getDay()
                     const dateStr = format(date, "yyyy-MM-dd")
-                    return slots.some(s => 
-                      (s.specific_date && format(new Date(s.specific_date), "yyyy-MM-dd") === dateStr) || 
+                    return slots.some(s =>
+                      (s.specific_date && format(new Date(s.specific_date), "yyyy-MM-dd") === dateStr) ||
                       ((s.is_recurring || !s.specific_date) && s.day_of_week === dow)
                     )
                   }
@@ -286,7 +286,7 @@ export default function ScheduleManagementPage() {
             </CardContent>
           </Card>
 
-          <Button 
+          <Button
             className="w-full h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-sm"
             onClick={() => {
               setIsRecurring(false)
@@ -299,7 +299,7 @@ export default function ScheduleManagementPage() {
             {t.reader.addNewSlotTitle}
           </Button>
 
-          <Button 
+          <Button
             variant="outline"
             className="w-full h-12 rounded-xl border-[#D4A843] text-[#D4A843] hover:bg-[#D4A843]/10 font-bold"
             onClick={() => setBulkDialogOpen(true)}
@@ -372,8 +372,8 @@ export default function ScheduleManagementPage() {
                   {currentDaySlots.map((slot) => {
                     const isRec = slot.is_recurring || !slot.specific_date
                     return (
-                      <div 
-                        key={slot.id} 
+                      <div
+                        key={slot.id}
                         className={cn(
                           "group flex items-center justify-between p-4 rounded-xl border transition-all",
                           isRec ? "border-primary/20 bg-primary/[0.02]" : "border-border bg-card"
@@ -393,7 +393,7 @@ export default function ScheduleManagementPage() {
                           </div>
                         </div>
                         <Button
-                          variant="ghost" 
+                          variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg group-hover:opacity-100 opacity-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                           onClick={() => handleDeleteSlot(slot.id, isRec)}
@@ -440,7 +440,7 @@ export default function ScheduleManagementPage() {
               سيتم تقسيم أي فترة زمنية تختارها إلى مواعيد مدة كل منها 30 دقيقة، بما يتوافق مع مدة الجلسة.
             </p>
           </div>
-          
+
           <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
             {/* Multi-day Selection for Recurring */}
             {isRecurring && (
@@ -453,14 +453,14 @@ export default function ScheduleManagementPage() {
                       <button
                         key={idx}
                         onClick={() => {
-                          setNewSlotDays(prev => 
+                          setNewSlotDays(prev =>
                             prev.includes(idx) ? prev.filter(d => d !== idx) : [...prev, idx]
                           )
                         }}
                         className={cn(
                           "px-3 h-10 rounded-xl text-xs font-bold transition-all border shrink-0",
-                          isSelected 
-                            ? "bg-primary text-white border-primary shadow-md shadow-primary/20" 
+                          isSelected
+                            ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
                             : "bg-muted/50 text-muted-foreground border-border hover:border-primary/30"
                         )}
                       >
@@ -476,9 +476,9 @@ export default function ScheduleManagementPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t.reader.selectTime}</Label>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setNewSlotPeriods([...newSlotPeriods, { id: Date.now(), start: "09:00", end: "09:30" }])}
                   className="h-7 text-[10px] font-black uppercase text-primary hover:bg-primary/5"
                 >
@@ -486,7 +486,7 @@ export default function ScheduleManagementPage() {
                   {t.reader.addPeriod || "إضافة فترة"}
                 </Button>
               </div>
-              
+
               <div className="space-y-3">
                 {newSlotPeriods.map((period, index) => (
                   <div key={period.id} className="group relative flex items-center gap-2 bg-muted/30 p-3 rounded-xl border border-border/50 hover:border-primary/30 transition-all">
@@ -535,14 +535,14 @@ export default function ScheduleManagementPage() {
 
             {/* Recurring Toggle */}
             <div className="flex items-center space-x-3 rtl:space-x-reverse bg-card/50 p-4 rounded-xl border border-border shadow-inner">
-              <Checkbox 
-                id="isRecurring" 
-                checked={isRecurring} 
+              <Checkbox
+                id="isRecurring"
+                checked={isRecurring}
                 onCheckedChange={(checked) => setIsRecurring(!!checked)}
                 className="w-5 h-5 rounded-md border-primary text-primary"
               />
-              <Label 
-                htmlFor="isRecurring" 
+              <Label
+                htmlFor="isRecurring"
                 className="flex flex-col gap-0.5 cursor-pointer flex-1"
               >
                 <span className="text-sm font-bold text-foreground">
@@ -557,15 +557,15 @@ export default function ScheduleManagementPage() {
           </div>
 
           <DialogFooter className="p-6 bg-muted/20 border-t border-border gap-3">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="rounded-xl font-bold h-11"
               onClick={() => setDialogOpen(false)}
               disabled={submitting}
             >
               {t.cancel}
             </Button>
-            <Button 
+            <Button
               className="bg-primary hover:bg-primary/90 text-white font-bold px-8 rounded-xl h-11 shadow-lg shadow-primary/20 flex-1"
               onClick={handleAddSlot}
               disabled={submitting}
@@ -643,14 +643,14 @@ export default function ScheduleManagementPage() {
                     <button
                       key={idx}
                       onClick={() => {
-                        setSelectedDays(prev => 
+                        setSelectedDays(prev =>
                           prev.includes(idx) ? prev.filter(d => d !== idx) : [...prev, idx]
                         )
                       }}
                       className={cn(
                         "px-4 py-3 rounded-xl text-sm font-bold transition-all border shrink-0",
-                        selectedDays.includes(idx) 
-                          ? "bg-[#D4A843] text-white border-[#D4A843] shadow-md shadow-amber-500/20" 
+                        selectedDays.includes(idx)
+                          ? "bg-[#D4A843] text-white border-[#D4A843] shadow-md shadow-amber-500/20"
                           : "bg-muted/50 text-muted-foreground border-border hover:border-amber-500/30"
                       )}
                     >
@@ -703,8 +703,8 @@ export default function ScheduleManagementPage() {
                       </Button>
                     </div>
                   ))}
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full border-dashed h-12 rounded-xl text-primary font-bold hover:bg-primary/5"
                     onClick={() => setBulkTimes([...bulkTimes, { id: Date.now(), start: "09:00", end: "09:30" }])}
                   >
@@ -717,7 +717,7 @@ export default function ScheduleManagementPage() {
 
             <DialogFooter className="p-6 bg-muted/20 border-t border-border">
               <Button variant="ghost" className="rounded-xl font-bold" onClick={() => setBulkDialogOpen(false)}>{t.cancel}</Button>
-              <Button 
+              <Button
                 className="bg-[#D4A843] hover:bg-[#C39732] text-white font-black px-10 rounded-xl shadow-lg shadow-amber-500/20"
                 onClick={handleBulkAdd}
                 disabled={submitting}

@@ -7,18 +7,35 @@ import dns from "dns"
 // Fix for Node 18+ DNS resolution issues with Supabase IPv6 endpoints
 dns.setDefaultResultOrder("ipv4first")
 
-const pool = process.env.DATABASE_URL ? new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  max: 10,                        // max concurrent connections
-  min: 2,                         // keep 2 connections warm always
-  idleTimeoutMillis: 30000,       // close idle connections after 30s
-  connectionTimeoutMillis: 8000,  // give up after 8s
-  allowExitOnIdle: false,
-}) : null
+declare global {
+  var _dbPool: Pool | undefined
+}
+
+let pool: Pool | null = null
+
+if (process.env.DATABASE_URL) {
+  const poolConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+    max: 10,                        // max concurrent connections
+    min: 2,                         // keep 2 connections warm always
+    idleTimeoutMillis: 30000,       // close idle connections after 30s
+    connectionTimeoutMillis: 8000,  // give up after 8s
+    allowExitOnIdle: false,
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    pool = new Pool(poolConfig)
+  } else {
+    if (!global._dbPool) {
+      global._dbPool = new Pool(poolConfig)
+    }
+    pool = global._dbPool
+  }
+}
 
 // Warm up pool on startup (keeps 2 connections open so first requests are fast)
-if (pool) {
+if (pool && process.env.NODE_ENV === 'production') {
   pool.connect().then(c => c.release()).catch(() => {})
   pool.connect().then(c => c.release()).catch(() => {})
 }

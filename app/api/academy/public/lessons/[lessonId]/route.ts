@@ -3,9 +3,10 @@ import { supabase } from '@/lib/supabase'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { lessonId: string } }
+  { params }: { params: Promise<{ lessonId: string }> }
 ) {
   try {
+    const { lessonId } = await params
     const { data, error } = await supabase
       .from('lessons')
       .select(`
@@ -13,7 +14,7 @@ export async function GET(
         courses (name, description, teacher_id),
         users (name, bio)
       `)
-      .eq('id', params.lessonId)
+      .eq('id', lessonId)
       .eq('is_public', true)
       .single()
 

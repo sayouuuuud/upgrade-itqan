@@ -22,14 +22,17 @@ export async function POST(req: NextRequest) {
       name: string
       email: string
       password_hash: string
-      role: "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor"
+      role: "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor" | "parent" | "teacher" | "academy_admin"
       is_active: boolean
       is_locked: boolean
       failed_login_count: number
       approval_status: string
+      has_academy_access: boolean
+      has_quran_access: boolean
     }>(
       `SELECT id, name, email, password_hash, role, is_active, is_locked,
-              COALESCE(failed_login_count, 0) AS failed_login_count, approval_status
+              COALESCE(failed_login_count, 0) AS failed_login_count, approval_status,
+              has_academy_access, has_quran_access
        FROM users WHERE email = $1`,
       [email.toLowerCase()]
     )
@@ -147,7 +150,7 @@ export async function POST(req: NextRequest) {
     const userAgent = req.headers.get("user-agent") || "Unknown"
     const { getDetailedDeviceType, getCountryFromIp } = await import('@/lib/geo')
     const deviceDetail = getDetailedDeviceType(userAgent)
-    
+
     // Geolocation from IP
     let country = req.headers.get('x-vercel-ip-country') || req.headers.get('cf-ipcountry') || null
     if ((!country || country === 'N/A') && ip) {
@@ -158,7 +161,7 @@ export async function POST(req: NextRequest) {
     await query(
       `INSERT INTO activity_logs (user_id, action, description, ip_address, user_agent)
        VALUES ($1, 'login_success', $2, $3, $4)`,
-       [user.id, `Successful login from ${deviceDetail}${country ? ` (${country})` : ''}`, ip, userAgent]
+      [user.id, `Successful login from ${deviceDetail}${country ? ` (${country})` : ''}`, ip, userAgent]
     ).catch(() => { })
 
     if (activeRole === 'admin' || activeRole === 'student_supervisor' || activeRole === 'reciter_supervisor') {
@@ -176,6 +179,8 @@ export async function POST(req: NextRequest) {
       email: user.email,
       role: activeRole,
       name: user.name,
+      has_academy_access: user.has_academy_access,
+      has_quran_access: user.has_quran_access,
     })
 
     // insert a new session for the active active token

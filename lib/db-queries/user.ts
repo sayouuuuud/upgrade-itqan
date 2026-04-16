@@ -3,8 +3,9 @@
  * Handles user operations for both auth and LMS
  */
 
-import { query, queryOne } from "./db"
-import type { LMSUser, UserRole } from "./types/lms"
+import { query, queryOne } from "../db"
+import { UserRole } from "../types/lms"
+import type { User as LMSUser } from "../types/lms"
 
 export async function getUserById(userId: string): Promise<LMSUser | null> {
   return queryOne<LMSUser>(
@@ -24,7 +25,7 @@ export async function createLMSUser(
   userId: string,
   email: string,
   name: string,
-  role: UserRole = "STUDENT",
+  role: UserRole = UserRole.STUDENT,
   gender?: string
 ): Promise<LMSUser | null> {
   return queryOne<LMSUser>(
@@ -76,7 +77,7 @@ export async function getUserPermissions(userId: string): Promise<string[]> {
      WHERE u.id = $1`,
     [userId]
   )
-  return permissions.map(p => p.permission_id)
+  return permissions.map((p: any) => p.permission_id)
 }
 
 export async function hasPermission(userId: string, permissionId: string): Promise<boolean> {

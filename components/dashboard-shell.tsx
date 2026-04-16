@@ -9,6 +9,7 @@ import { LanguageSwitcher } from '@/components/language-switcher'
 import { GlobalSearch } from '@/components/global-search'
 import { NotificationDropdown } from '@/components/notification-dropdown'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { ModeSwitcher } from '@/components/mode-switcher'
 import {
   LayoutDashboard, Mic, FileText, Calendar, Bell, User, LogOut,
   Menu, X, Users, Settings, BarChart3, ClipboardList, Clock, MessageSquare,
@@ -27,6 +28,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
       {
         items: [
           { href: '/student', label: t.student.dashboard, icon: LayoutDashboard },
+          { href: '/student/submit', label: t.student.submitTask || "تسليم تلاوة", icon: Mic || null },
           { href: '/student/recitations', label: t.student.recitations, icon: FileText },
           { href: '/student/sessions', label: t.student.sessions, icon: CalendarCheck },
           { href: '/student/chat', label: t.student.chat, icon: MessageSquare },
@@ -148,7 +150,15 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { t } = useI18n()
-  const [user, setUser] = useState<{ name: string; email: string; role: string; avatar_url?: string | null } | null>(null)
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    role: string;
+    avatar_url?: string | null;
+    academy_role?: string | null;
+    has_quran_access?: boolean;
+    has_academy_access?: boolean;
+  } | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [avatarError, setAvatarError] = useState(false)
@@ -238,13 +248,13 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
       )}>
         <div className={cn('py-1 flex items-center justify-center border-b border-border relative overflow-hidden', isReader ? 'bg-primary/5' : 'bg-card')}>
           <Link href="/" className="w-full block px-4">
-            <img 
-              src={branding.dashboardLogoUrl || "/branding/dashboard-logo.png"} 
-              alt={t.appName} 
-              className="w-full h-auto min-h-[40px] max-h-[100px] object-contain dark:brightness-150 dark:contrast-125 transition-all" 
+            <img
+              src={branding.dashboardLogoUrl || "/branding/dashboard-logo.png"}
+              alt={t.appName}
+              className="w-full h-auto min-h-[40px] max-h-[100px] object-contain dark:brightness-150 dark:contrast-125 transition-all"
             />
           </Link>
-          
+
           <button className="lg:hidden p-1" onClick={() => setSidebarOpen(false)} aria-label="close">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -330,6 +340,13 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
                 <GlobalSearch role={role as 'admin' | 'reader'} />
               </div>
             )}
+            <ModeSwitcher
+              currentMode="library"
+              userRole={role}
+              academyRole={user?.academy_role}
+              hasQuranAccess={user?.has_quran_access}
+              hasAcademyAccess={user?.has_academy_access}
+            />
             <ThemeToggle />
             <LanguageSwitcher variant="outline" />
 

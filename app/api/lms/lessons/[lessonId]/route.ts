@@ -10,17 +10,18 @@ import * as lessonQueries from "@/lib/db-queries/lesson"
 import * as courseQueries from "@/lib/db-queries/course"
 
 interface Params {
-  params: { lessonId: string }
+  params: Promise<{ lessonId: string }>
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
+    const { lessonId } = await params
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const lesson = await lessonQueries.getLessonById(params.lessonId)
+    const lesson = await lessonQueries.getLessonById(lessonId)
     if (!lesson) {
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 })
     }
@@ -34,12 +35,13 @@ export async function GET(req: NextRequest, { params }: Params) {
 
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
+    const { lessonId } = await params
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const lesson = await lessonQueries.getLessonById(params.lessonId)
+    const lesson = await lessonQueries.getLessonById(lessonId)
     if (!lesson) {
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 })
     }
@@ -55,7 +57,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     }
 
     const body = await req.json()
-    const updated = await lessonQueries.updateLesson(params.lessonId, body)
+    const updated = await lessonQueries.updateLesson(lessonId, body)
 
     return NextResponse.json({ success: true, data: updated })
   } catch (error) {
@@ -66,12 +68,13 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
+    const { lessonId } = await params
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const lesson = await lessonQueries.getLessonById(params.lessonId)
+    const lesson = await lessonQueries.getLessonById(lessonId)
     if (!lesson) {
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 })
     }
@@ -85,7 +88,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const deleted = await lessonQueries.deleteLesson(params.lessonId)
+    const deleted = await lessonQueries.deleteLesson(lessonId)
     if (!deleted) {
       return NextResponse.json({ error: "Failed to delete lesson" }, { status: 500 })
     }

@@ -1,82 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { requireRole, JWTPayload } from '@/lib/auth'
-import { cookies } from 'next/headers'
-import { jwtDecode } from 'jwt-decode'
-
-async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')?.value
-  if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
-}
+import { getSession } from '@/lib/auth'
+import { query } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  
-  if (!session || !requireRole(session, ['teacher', 'academy_admin'])) {
+  if (!session || !['teacher', 'admin', 'academy_admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select(`
-        *,
-        courses (name)
-      `)
-      .eq('teacher_id', session.sub)
-      .order('due_date', { ascending: false })
+    const rows = await query<any>(`
+      SELECT 
+        t.*,
+        c.title as course_name,
+        (SELECT COUNT(*)::int FROM task_submissions ts WHERE ts.task_id = t.id) as submitted_count,
+        (SELECT COUNT(*)::int FROM enrollments e WHERE e.course_id = t.course_id AND e.status = 'active') as total_students
+      FROM tasks t
+      LEFT JOIN courses c ON t.course_id = c.id
+      WHERE t.teacher_id = $1
+      ORDER BY t.due_date DESC
+    `, [session.sub])
 
-    if (error) throw error
-
-    return NextResponse.json(data)
+    return NextResponse.json(rows)
   } catch (error) {
-    console.error('Error fetching tasks:', error)
+    console.error('[API] Error fetching teacher tasks:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  
-  if (!session || !requireRole(session, ['teacher', 'academy_admin'])) {
+  if (!session || !['teacher', 'admin', 'academy_admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
     const body = await req.json()
-    const { course_id, title, description, task_type, due_date } = body
+    const { course_id, title, description, task_type, due_date, max_score } = body
 
     if (!course_id || !title || !task_type || !due_date) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+      return NextResponse.json({ error: 'Missing required fields: course_id, title, task_type, due_date' }, { status: 400 })
     }
 
-    const { data, error } = await supabase
-      .from('tasks')
-      .insert([
-        {
-          course_id,
-          teacher_id: session.sub,
-          title,
-          description,
-          task_type,
-          due_date,
-          status: 'pending',
-          created_at: new Date().toISOString()
-        }
-      ])
-      .select()
+    // Verify teacher owns this course
+    const courseCheck = await query(`SELECT id FROM courses WHERE id = $1 AND teacher_id = $2`, [course_id, session.sub])
+    if (courseCheck.length === 0) {
+      return NextResponse.json({ error: 'Course not found or unauthorized' }, { status: 403 })
+    }
 
-    if (error) throw error
+    const result = await query<any>(`
+      INSERT INTO tasks (course_id, teacher_id, title, description, task_type, due_date, max_score, status, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', NOW())
+      RETURNING *
+    `, [course_id, session.sub, title, description || null, task_type, due_date, max_score || 100])
 
-    return NextResponse.json(data[0], { status: 201 })
+    return NextResponse.json({ success: true, data: result[0] }, { status: 201 })
   } catch (error) {
-    console.error('Error creating task:', error)
+    console.error('[API] Error creating task:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

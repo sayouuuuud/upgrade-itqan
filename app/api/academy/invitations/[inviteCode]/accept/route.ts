@@ -17,8 +17,9 @@ async function getSession(): Promise<JWTPayload | null> {
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { inviteCode: string } }
+  { params }: { params: Promise<{ inviteCode: string }> }
 ) {
+  const { inviteCode } = await params
   const session = await getSession()
 
   if (!session) {
@@ -30,7 +31,7 @@ export async function POST(
     const { data: invitation, error: invError } = await supabase
       .from('invitations')
       .select('*')
-      .eq('code', params.inviteCode)
+      .eq('code', inviteCode)
       .single()
 
     if (invError) throw invError
@@ -65,7 +66,7 @@ export async function POST(
     const { error: updateError } = await supabase
       .from('invitations')
       .update({ accepted_at: new Date().toISOString(), accepted_by: session.sub })
-      .eq('code', params.inviteCode)
+      .eq('code', inviteCode)
 
     if (updateError) throw updateError
 

@@ -11,7 +11,7 @@ import * as courseQueries from "@/lib/db-queries/course"
 export async function GET(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
-    
+
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
-    
+
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

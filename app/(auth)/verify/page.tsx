@@ -99,7 +99,15 @@ function VerifyContent() {
             }
 
             // Success, redirect to appropriate dashboard
-            if (data.user.role === "student") router.push("/student")
+            if (data.user.role === "parent") router.push("/academy/parent")
+            else if (data.user.role === "teacher") router.push("/academy/teacher")
+            else if (data.user.role === "student") {
+                if (data.user.has_academy_access && !data.user.has_quran_access) {
+                    router.push("/academy/student")
+                } else {
+                    router.push("/student")
+                }
+            }
             else if (data.user.role === "reader") router.push("/reader")
             else router.push("/admin")
 

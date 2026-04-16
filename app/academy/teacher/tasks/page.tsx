@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -33,11 +34,11 @@ export default function TeacherTasksPage() {
     return <div className="text-center py-8">جاري التحميل...</div>
   }
 
-  const filteredTasks = tasks.filter(t => 
+  const filteredTasks = tasks.filter(t =>
     filter === 'all' ? true : t.status === filter
   )
 
-  const statusColor = {
+  const statusColor: Record<string, 'secondary' | 'outline' | 'default' | 'destructive'> = {
     pending: 'secondary',
     submitted: 'outline',
     graded: 'default',
@@ -62,15 +63,17 @@ export default function TeacherTasksPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">المهام</h1>
-        <Button>
-          <Plus className="w-4 h-4 ml-2" />
-          مهمة جديدة
-        </Button>
+        <Link href="/academy/teacher/tasks/new">
+          <Button>
+            <Plus className="w-4 h-4 ml-2" />
+            مهمة جديدة
+          </Button>
+        </Link>
       </div>
 
       <div className="flex gap-2">
         {(['all', 'pending', 'submitted', 'graded'] as const).map((f) => (
-          <Button 
+          <Button
             key={f}
             variant={filter === f ? 'default' : 'outline'}
             onClick={() => setFilter(f)}
@@ -101,7 +104,9 @@ export default function TeacherTasksPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline">عرض الإرسالات</Button>
+                  <Link href={`/academy/teacher/tasks/${task.id}/grade`}>
+                    <Button size="sm" variant="outline">عرض الإرسالات</Button>
+                  </Link>
                   <Button size="sm" variant="outline">تعديل</Button>
                 </div>
               </div>

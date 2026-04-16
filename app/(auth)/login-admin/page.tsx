@@ -1,38 +1,45 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n/context'
-import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, AlertTriangle } from 'lucide-react'
 
 export default function AdminLoginPage() {
     const [showPw, setShowPw] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [notAdminError, setNotAdminError] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const router = useRouter()
     const { t } = useI18n()
+    // Guard: run the auth check only ONCE to prevent infinite redirect loop
+    const authChecked = useRef(false)
 
     useEffect(() => {
+        if (authChecked.current) return
+        authChecked.current = true
+
         async function checkAuth() {
             try {
                 const res = await fetch('/api/auth/me')
                 if (res.ok) {
                     const data = await res.json()
-                    // If already an admin, go to admin dashboard
                     const allowedRoles = ['admin', 'student_supervisor', 'reciter_supervisor']
-                    if (data.user && allowedRoles.includes(data.user.role)) {
-                        router.push('/admin')
+                    if (data.user && !allowedRoles.includes(data.user.role)) {
+                        // Logged in but NOT an admin role 
+                        setNotAdminError(true)
                     }
                 }
-            } catch (err) {
-                // ignore
+            } catch {
+                // network error 
             }
         }
         checkAuth()
-    }, [router])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -54,15 +61,27 @@ export default function AdminLoginPage() {
             }
 
             // Redirect based on role (should be admin)
+            // Use window.location.href (full page load) so the new auth cookie
+            // is included in the very first request to /admin — prevents redirect loop
             const role = data.user?.role || 'admin'
             const adminRoles = ['admin', 'student_supervisor', 'reciter_supervisor']
             if (adminRoles.includes(role)) {
-                router.push('/admin')
+                window.location.href = '/admin'
             } else {
-                router.push(`/${role}`)
+                window.location.href = `/${role}`
             }
         } catch {
             setError(t.auth.connectionError)
+            setLoading(false)
+        }
+    }
+
+    async function handleLogout() {
+        setLoading(true)
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' })
+            window.location.reload()
+        } catch {
             setLoading(false)
         }
     }
@@ -101,41 +120,59 @@ export default function AdminLoginPage() {
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">{t.auth.email}</label>
-                            <div className="relative">
-                                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 transition-colors" />
-                                <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" dir="ltr" className="w-full pr-10 pl-4 py-3 bg-secondary/30 dark:bg-secondary/10 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors text-sm text-foreground" required />
+                    {notAdminError ? (
+                        <div className="space-y-6 text-center">
+                            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex flex-col items-center gap-3">
+                                <AlertTriangle className="w-10 h-10 text-amber-500" />
+                                <div>
+                                    <h3 className="font-bold text-amber-800 dark:text-amber-400 mb-1 text-lg">غير مصرح بالدخول</h3>
+                                    <p className="text-sm text-amber-700 dark:text-amber-500">حسابك الحالي مسجل دخول، ولكنه لا يملك صلاحيات الإدارة.</p>
+                                </div>
                             </div>
+                            <button onClick={handleLogout} disabled={loading} className="w-full bg-secondary border border-border hover:bg-secondary/80 text-foreground font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-60">
+                                {loading ? (
+                                    <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                ) : null}
+                                تسجيل الخروج والمحاولة مرة أخرى
+                            </button>
                         </div>
-                        <div>
-                            <div className="flex items-center justify-between mb-1">
-                                <label htmlFor="password" className="block text-sm font-medium text-foreground">{t.auth.password}</label>
-                                <Link href="/forgot-password" className="text-xs text-primary hover:underline">{t.auth.forgotPassword}</Link>
+                    ) : (
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">{t.auth.email}</label>
+                                <div className="relative">
+                                    <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 transition-colors" />
+                                    <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" dir="ltr" className="w-full pr-10 pl-4 py-3 bg-secondary/30 dark:bg-secondary/10 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors text-sm text-foreground" required />
+                                </div>
                             </div>
-                            <div className="relative">
-                                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 transition-colors" />
-                                <input id="password" type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="........" dir="ltr" className="w-full pr-10 pl-10 py-3 bg-secondary/30 dark:bg-secondary/10 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors text-sm text-foreground" required />
-                                <button type="button" onClick={() => setShowPw(!showPw)} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="toggle password">
-                                    {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                </button>
+                            <div>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label htmlFor="password" className="block text-sm font-medium text-foreground">{t.auth.password}</label>
+                                    <Link href="/forgot-password" className="text-xs text-primary hover:underline">{t.auth.forgotPassword}</Link>
+                                </div>
+                                <div className="relative">
+                                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 transition-colors" />
+                                    <input id="password" type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="........" dir="ltr" className="w-full pr-10 pl-10 py-3 bg-secondary/30 dark:bg-secondary/10 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors text-sm text-foreground" required />
+                                    <button type="button" onClick={() => setShowPw(!showPw)} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="toggle password">
+                                        {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60">
-                            {loading ? (
-                                <span className="flex items-center gap-2">
-                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    {t.auth.signingIn}
-                                </span>
-                            ) : (
-                                <>
-                                    <span>{t.login} كمدير</span>
-                                    <ArrowLeft className="w-4 h-4" />
-                                </>
-                            )}
-                        </button>
-                    </form>
+                            <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60">
+                                {loading ? (
+                                    <span className="flex items-center gap-2">
+                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        {t.auth.signingIn}
+                                    </span>
+                                ) : (
+                                    <>
+                                        <span>{t.login} كمدير</span>
+                                        <ArrowLeft className="w-4 h-4" />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    )}
                 </div>
             </main>
 

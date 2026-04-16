@@ -14,14 +14,14 @@ import {
   Menu, X, Users, Settings, Trophy, MessageSquare, ClipboardList,
   GraduationCap, PlayCircle, FileText, Target, Award, Star,
   HelpCircle, Megaphone, UserPlus, BarChart3, Clock, Video,
-  BookMarked, Route, Globe, Sparkles
+  BookMarked, Route, Globe, Sparkles, Grid, UserCheck, Shield
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 
 type NavItem = { href: string; label: string; icon: React.ElementType; badge?: number | string | null }
 type NavSection = { title?: string; items: NavItem[] }
 
-type AcademyRole = 'academy_student' | 'teacher' | 'academy_admin' | 'parent'
+type AcademyRole = 'academy_student' | 'teacher' | 'academy_admin' | 'parent' | 'supervisor'
 
 const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection[], label: string, name: string, sublabel: string } => {
   const configs: Record<AcademyRole, { sections: NavSection[], label: string, name: string, sublabel: string }> = {
@@ -31,6 +31,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
           items: [
             { href: '/academy/student', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
             { href: '/academy/student/courses', label: t.academy?.myCourses || 'دوراتي', icon: BookOpen },
+            { href: '/academy/student/courses/browse', label: t.academy?.browseCourses || 'تصفح الدورات', icon: GraduationCap },
             { href: '/academy/student/memorization', label: t.academy?.memorization || 'الحفظ والمراجعة', icon: BookMarked },
             { href: '/academy/student/tasks', label: t.academy?.tasks || 'المهام', icon: ClipboardList },
             { href: '/academy/student/sessions', label: t.academy?.liveSessions || 'الجلسات الحية', icon: Video },
@@ -63,6 +64,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
           items: [
             { href: '/academy/teacher', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
             { href: '/academy/teacher/courses', label: t.academy?.myCourses || 'دوراتي', icon: BookOpen },
+            { href: '/academy/teacher/enrollment-requests', label: t.academy?.enrollmentRequests || 'طلبات الانضمام', icon: Bell },
             { href: '/academy/teacher/schedule', label: t.academy?.schedule || 'الجدول', icon: Calendar },
             { href: '/academy/teacher/tasks', label: t.academy?.tasks || 'المهام', icon: ClipboardList },
             { href: '/academy/teacher/students', label: t.academy?.myStudents || 'طلابي', icon: Users },
@@ -101,7 +103,9 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
           title: t.management || 'الإدارة',
           items: [
             { href: '/academy/admin/courses', label: t.academy?.courses || 'الدورات', icon: BookOpen },
+            { href: '/academy/admin/categories', label: t.academy?.categories || 'التصنيفات', icon: Grid },
             { href: '/academy/admin/teachers', label: t.academy?.teachers || 'المدرسين', icon: GraduationCap },
+            { href: '/academy/admin/teacher-applications', label: t.academy?.teacherApplications || 'طلبات التدريس', icon: UserCheck },
             { href: '/academy/admin/students', label: t.academy?.students || 'الطلاب', icon: Users },
             { href: '/academy/admin/paths', label: t.academy?.learningPaths || 'المسارات التعليمية', icon: Route },
             { href: '/academy/admin/invitations', label: t.academy?.invitations || 'الدعوات', icon: UserPlus },
@@ -126,6 +130,8 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
         {
           title: t.admin?.settings || 'الإعدادات',
           items: [
+            { href: '/academy/admin/access-control', label: t.academy?.accessControl || 'التحكم بالوصول', icon: Shield },
+            { href: '/academy/admin/halaqat', label: t.academy?.halaqat || 'الحلقات', icon: GraduationCap },
             { href: '/academy/admin/settings', label: t.admin?.systemSettings || 'إعدادات النظام', icon: Settings },
           ]
         }
@@ -155,6 +161,28 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
       label: t.academy?.parentPortal || 'بوابة ولي الأمر',
       name: t.academy?.parent || 'ولي أمر',
       sublabel: t.academy?.parentAccount || 'حساب ولي الأمر'
+    },
+    supervisor: {
+      sections: [
+        {
+          items: [
+            { href: '/academy/supervisor/content', label: t.academy?.contentReview || 'إشراف المحتوى', icon: BookOpen },
+            { href: '/academy/supervisor/forum', label: t.academy?.forumModeration || 'إشراف المنتدى', icon: MessageSquare },
+            { href: '/academy/supervisor/fiqh', label: t.academy?.fiqhQuestions || 'الأسئلة الفقهية', icon: HelpCircle },
+            { href: '/academy/supervisor/quality', label: t.academy?.qualityMonitor || 'مراقبة الجودة', icon: BarChart3 },
+          ]
+        },
+        {
+          title: t.shell?.account || 'الحساب',
+          items: [
+            { href: '/academy/supervisor/notifications', label: t.student?.notifications || 'الإشعارات', icon: Bell },
+            { href: '/academy/supervisor/profile', label: t.student?.profile || 'الملف الشخصي', icon: User },
+          ]
+        }
+      ],
+      label: t.academy?.supervisorPortal || 'لوحة المشرف',
+      name: t.academy?.supervisor || 'مشرف',
+      sublabel: t.academy?.academySupervisor || 'مشرف الأكاديمية'
     }
   }
 
@@ -166,12 +194,12 @@ interface AcademyDashboardShellProps {
   children: React.ReactNode
   headerTitle?: string
   showModeSwitcher?: boolean
-  libraryRole?: 'student' | 'reader' | null
+  libraryRole?: string | null
 }
 
-export function AcademyDashboardShell({ 
-  role, 
-  children, 
+export function AcademyDashboardShell({
+  role,
+  children,
   headerTitle,
   showModeSwitcher = true,
   libraryRole = null
@@ -180,7 +208,15 @@ export function AcademyDashboardShell({
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { t } = useI18n()
-  const [user, setUser] = useState<{ name: string; email: string; role: string; avatar_url?: string | null } | null>(null)
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    role: string;
+    avatar_url?: string | null;
+    gender?: string;
+    has_quran_access?: boolean;
+    has_academy_access?: boolean;
+  } | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [avatarError, setAvatarError] = useState(false)
   const { branding } = usePublicSettings()
@@ -222,12 +258,12 @@ export function AcademyDashboardShell({
   }
 
   return (
-    <div className="h-screen flex overflow-hidden bg-background transition-colors duration-500">
+    <div className={`h-screen flex overflow-hidden bg-background transition-colors duration-500 ${user?.gender?.toLowerCase() === 'female' ? 'theme-female' : ''}`}>
       {/* Overlay */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden" 
-          onClick={() => setSidebarOpen(false)} 
+        <div
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
@@ -240,15 +276,15 @@ export function AcademyDashboardShell({
         {/* Logo */}
         <div className="py-1 flex items-center justify-center border-b border-border relative overflow-hidden bg-gradient-to-l from-blue-500/5 to-transparent">
           <Link href="/" className="w-full block px-4">
-            <img 
-              src={branding?.dashboardLogoUrl || "/branding/dashboard-logo.png"} 
-              alt={t.appName} 
-              className="w-full h-auto min-h-[40px] max-h-[100px] object-contain dark:brightness-150 dark:contrast-125 transition-all" 
+            <img
+              src={branding?.dashboardLogoUrl || "/branding/dashboard-logo.png"}
+              alt={t.appName}
+              className="w-full h-auto min-h-[40px] max-h-[100px] object-contain dark:brightness-150 dark:contrast-125 transition-all"
             />
           </Link>
-          <button 
-            className="lg:hidden p-1" 
-            onClick={() => setSidebarOpen(false)} 
+          <button
+            className="lg:hidden p-1"
+            onClick={() => setSidebarOpen(false)}
             aria-label="close"
           >
             <X className="w-5 h-5 text-muted-foreground" />
@@ -279,9 +315,9 @@ export function AcademyDashboardShell({
               {section.items.map((item) => {
                 const active = isActive(item.href)
                 return (
-                  <Link 
-                    key={item.href} 
-                    href={item.href} 
+                  <Link
+                    key={item.href}
+                    href={item.href}
                     onClick={() => setSidebarOpen(false)}
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm group relative',
@@ -320,11 +356,11 @@ export function AcademyDashboardShell({
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl mb-2 bg-muted/30 border border-border transition-colors">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-sm ring-2 ring-background shadow-sm shrink-0">
               {user?.avatar_url && !avatarError ? (
-                <img 
-                  src={user.avatar_url} 
-                  alt={config.name} 
-                  className="w-full h-full object-cover" 
-                  onError={() => setAvatarError(true)} 
+                <img
+                  src={user.avatar_url}
+                  alt={config.name}
+                  className="w-full h-full object-cover"
+                  onError={() => setAvatarError(true)}
                 />
               ) : (
                 <span>{(config.name || 'U')[0]}</span>
@@ -338,8 +374,8 @@ export function AcademyDashboardShell({
             </div>
           </div>
 
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm text-muted-foreground hover:text-blue-600"
           >
             <Globe className="w-4 h-4" />
@@ -352,9 +388,9 @@ export function AcademyDashboardShell({
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
         <header className="h-16 border-b border-border flex items-center justify-between px-6 lg:px-8 bg-background/95 backdrop-blur-md z-10 sticky top-0">
           <div className="flex items-center gap-4">
-            <button 
-              className="lg:hidden p-2 text-muted-foreground hover:text-blue-600" 
-              onClick={() => setSidebarOpen(true)} 
+            <button
+              className="lg:hidden p-2 text-muted-foreground hover:text-blue-600"
+              onClick={() => setSidebarOpen(true)}
               aria-label="open menu"
             >
               <Menu className="w-5 h-5" />
@@ -366,10 +402,12 @@ export function AcademyDashboardShell({
           <div className="flex items-center gap-4">
             {/* Mode Switcher */}
             {showModeSwitcher && libraryRole && (
-              <ModeSwitcher 
-                currentMode="academy" 
+              <ModeSwitcher
+                currentMode="academy"
                 userRole={libraryRole}
                 academyRole={role}
+                hasQuranAccess={user?.has_quran_access}
+                hasAcademyAccess={user?.has_academy_access}
               />
             )}
 

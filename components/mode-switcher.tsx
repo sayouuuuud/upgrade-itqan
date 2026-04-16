@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/context'
-import { 
-  BookOpen, 
-  GraduationCap, 
-  Mic, 
+import {
+  BookOpen,
+  GraduationCap,
+  Mic,
   ChevronDown,
   Check
 } from 'lucide-react'
@@ -25,9 +25,11 @@ interface ModeSwitcherProps {
   currentMode: 'library' | 'academy'
   userRole: string
   academyRole?: string | null
+  hasQuranAccess?: boolean
+  hasAcademyAccess?: boolean
 }
 
-export function ModeSwitcher({ currentMode, userRole, academyRole }: ModeSwitcherProps) {
+export function ModeSwitcher({ currentMode, userRole, academyRole, hasQuranAccess, hasAcademyAccess }: ModeSwitcherProps) {
   const router = useRouter()
   const pathname = usePathname()
   const { t } = useI18n()
@@ -36,20 +38,24 @@ export function ModeSwitcher({ currentMode, userRole, academyRole }: ModeSwitche
   // Define available modes based on user role
   const modes: Mode[] = []
 
-  // Library mode (for students and readers)
-  if (['student', 'reader'].includes(userRole)) {
+  // Library mode (for students and readers and admins)
+  if (hasQuranAccess) {
+    let libraryHref = '/student'
+    if (userRole === 'reader') libraryHref = '/reader'
+    if (['admin', 'student_supervisor', 'reciter_supervisor'].includes(userRole)) libraryHref = '/admin'
+
     modes.push({
       id: 'library',
-      label: t.modeSwitcher?.library || 'المكتبة الصوتية',
+      label: t.modeSwitcher?.library || 'المقرأة',
       icon: Mic,
-      href: userRole === 'student' ? '/student' : '/reader',
-      description: t.modeSwitcher?.libraryDesc || 'تلاوات وتسميع القرآن',
+      href: libraryHref,
+      description: t.modeSwitcher?.libraryDesc || 'تلاوات وتسميع القرآن والتصحيح',
       color: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30'
     })
   }
 
-  // Academy mode (for academy students, teachers, parents)
-  if (academyRole || ['teacher', 'parent', 'academy_admin'].includes(userRole)) {
+  // Academy mode (for academy students, teachers, parents, admins)
+  if (hasAcademyAccess) {
     const academyHref = getAcademyHref(userRole, academyRole)
     modes.push({
       id: 'academy',
@@ -61,6 +67,17 @@ export function ModeSwitcher({ currentMode, userRole, academyRole }: ModeSwitche
     })
   }
 
+  // Close dropdown on outside click — must be before any early return to satisfy React hooks rules
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (isOpen && !(e.target as Element).closest('.mode-switcher')) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
+  }, [isOpen])
+
   // Don't show switcher if only one mode available
   if (modes.length <= 1) return null
 
@@ -68,7 +85,7 @@ export function ModeSwitcher({ currentMode, userRole, academyRole }: ModeSwitche
 
   function getAcademyHref(role: string, academyRole?: string | null): string {
     if (role === 'teacher') return '/academy/teacher'
-    if (role === 'academy_admin') return '/academy/admin'
+    if (role === 'academy_admin' || role === 'admin') return '/academy/admin'
     if (role === 'parent') return '/academy/parent'
     if (academyRole === 'teacher') return '/academy/teacher'
     if (academyRole === 'academy_admin') return '/academy/admin'
@@ -81,17 +98,6 @@ export function ModeSwitcher({ currentMode, userRole, academyRole }: ModeSwitche
       router.push(mode.href)
     }
   }
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (isOpen && !(e.target as Element).closest('.mode-switcher')) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('click', handleClick)
-    return () => document.removeEventListener('click', handleClick)
-  }, [isOpen])
 
   return (
     <div className="mode-switcher relative">

@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Users, Search, Mail, TrendingUp, Award } from 'lucide-react'
+import { Users, Search, Mail, TrendingUp, Award, UserPlus } from 'lucide-react'
+import Link from 'next/link'
 
 export default function TeacherStudentsPage() {
   const [students, setStudents] = useState<any[]>([])
@@ -39,17 +40,27 @@ export default function TeacherStudentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-4">الطلاب</h1>
-        <div className="relative">
-          <Search className="absolute right-3 top-3 w-5 h-5 text-gray-400" />
-          <Input
-            placeholder="ابحث عن طالب..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pr-10"
-          />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">الطلاب</h1>
+          <p className="text-muted-foreground">قم بإدارة وتتبع طلابك في الأكاديمية</p>
         </div>
+        <Link href="/academy/teacher/students/create">
+          <Button className="flex items-center gap-2">
+            <UserPlus className="w-4 h-4" />
+            إضافة طالب جديد
+          </Button>
+        </Link>
+      </div>
+
+      <div className="relative max-w-md">
+        <Search className="absolute right-3 top-3 w-5 h-5 text-gray-400" />
+        <Input
+          placeholder="ابحث عن طالب..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pr-10"
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

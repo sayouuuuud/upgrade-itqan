@@ -1,81 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { requireRole, JWTPayload } from '@/lib/auth'
-import { cookies } from 'next/headers'
-import { jwtDecode } from 'jwt-decode'
-
-async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')?.value
-  if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
-}
+import { getSession, requireRole } from '@/lib/auth'
+import { query } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  
-  if (!session || !requireRole(session, ['teacher', 'academy_admin'])) {
+  if (!session || !requireRole(session, ['teacher', 'admin', 'academy_admin'])) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-
+  
   try {
-    const { data, error } = await supabase
-      .from('courses')
-      .select(`
-        *,
-        lessons(count),
-        user_enrollments(count)
-      `)
-      .eq('teacher_id', session.sub)
-
-    if (error) throw error
-
-    return NextResponse.json(data)
+    const q = `
+      SELECT 
+        c.id, c.title, c.description, c.thumbnail_url, c.level, c.status,
+        c.category_id, COALESCE(cat.name, '') as category_name,
+        COUNT(DISTINCT l.id)::int as total_lessons,
+        COUNT(DISTINCT e.id)::int as total_enrolled,
+        COUNT(DISTINCT CASE WHEN e.status = 'pending' THEN e.id END)::int as pending_requests,
+        c.created_at
+      FROM courses c
+      LEFT JOIN categories cat ON c.category_id = cat.id
+      LEFT JOIN lessons l ON l.course_id = c.id
+      LEFT JOIN enrollments e ON e.course_id = c.id
+      WHERE c.teacher_id = $1
+      GROUP BY c.id, c.title, c.description, c.thumbnail_url, c.level, c.status, c.category_id, cat.name, c.created_at
+      ORDER BY c.created_at DESC
+    `
+    const rows = await query<any>(q, [session.sub])
+    return NextResponse.json({ data: rows })
   } catch (error) {
-    console.error('Error fetching courses:', error)
+    console.error('[API] Error fetching teacher courses:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  
-  if (!session || !requireRole(session, ['teacher', 'academy_admin'])) {
+  if (!session || !requireRole(session, ['teacher', 'admin', 'academy_admin'])) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-
+  
   try {
     const body = await req.json()
-    const { name, description, category_id, level, status } = body
+    const { title, description, thumbnail_url, level, category_id } = body
 
-    if (!name) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    if (!title || !level) {
+      return NextResponse.json({ error: 'Title and level are required' }, { status: 400 })
     }
 
-    const { data, error } = await supabase
-      .from('courses')
-      .insert([
-        {
-          name,
-          description,
-          category_id,
-          level: level || 'beginner',
-          status: status || 'draft',
-          teacher_id: session.sub,
-          created_at: new Date().toISOString()
-        }
-      ])
-      .select()
-
-    if (error) throw error
-
-    return NextResponse.json(data[0], { status: 201 })
+    const q = `
+      INSERT INTO courses (title, description, thumbnail_url, level, status, category_id, teacher_id, created_at)
+      VALUES ($1, $2, $3, $4, 'draft', $5, $6, NOW())
+      RETURNING *
+    `
+    const params = [title, description || null, thumbnail_url || null, level, category_id || null, session.sub]
+    const rows = await query<any>(q, params)
+    
+    return NextResponse.json({ data: rows[0] }, { status: 201 })
   } catch (error) {
-    console.error('Error creating course:', error)
+    console.error('[API] Error creating course:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

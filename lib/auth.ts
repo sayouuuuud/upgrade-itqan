@@ -13,6 +13,9 @@ export interface JWTPayload {
   role: AllRoles
   name: string
   academy_roles?: string[] // For users with multiple academy roles
+  has_academy_access?: boolean
+  has_quran_access?: boolean
+  platform_preference?: string
   iat: number
   exp: number
 }

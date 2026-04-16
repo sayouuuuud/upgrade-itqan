@@ -62,7 +62,42 @@ export async function middleware(req: NextRequest) {
         // For now, we trust the session cookie validity
         // Better Auth validates the session server-side in route handlers
         // Additional role-based checks happen in route handlers
-        
+
+        // Use jose to read auth-token if it is the custom JWT
+        // (Note: better-auth.session_token wouldn't be decoded here natively unless we duplicate BetterAuth logic,
+        // but for now we decode where possible or let the layout handle advanced checks)
+        if (sessionCookie) {
+            const { verifyToken } = await import("@/lib/auth")
+            const sessionPayload = await verifyToken(sessionCookie)
+
+            if (sessionPayload) {
+                // Check if user has academy access before allowing them into /academy
+                if (pathname.startsWith("/academy") && !academyPublicPaths.some(p => pathname.startsWith(p))) {
+                    // If access is explicitly false (ignoring undefined for older sessions), deny access
+                    if (sessionPayload.has_academy_access === false && sessionPayload.role !== 'admin') {
+                        return NextResponse.redirect(new URL("/student", req.url))
+                    }
+                }
+
+                // Check for supervisor paths
+                if (pathname.startsWith("/academy/supervisor")) {
+                    const supervisorRoles = ['supervisor', 'content_supervisor', 'fiqh_supervisor', 'quality_supervisor', 'academy_admin'];
+                    const hasSupRole = supervisorRoles.includes(sessionPayload.role) ||
+                        sessionPayload.academy_roles?.some(r => supervisorRoles.includes(r));
+                    if (!hasSupRole && sessionPayload.role !== 'admin') {
+                        return NextResponse.redirect(new URL("/academy", req.url))
+                    }
+                }
+
+                // Check for parent paths
+                if (pathname.startsWith("/academy/parent")) {
+                    if (sessionPayload.role !== 'parent' && sessionPayload.role !== 'admin') {
+                        return NextResponse.redirect(new URL("/academy", req.url))
+                    }
+                }
+            }
+        }
+
         const response = NextResponse.next()
         return response
     } catch (err) {

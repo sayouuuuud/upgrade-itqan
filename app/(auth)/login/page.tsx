@@ -22,7 +22,8 @@ export default function LoginPage() {
         if (res.ok) {
           const data = await res.json()
           if (data.user) {
-            router.push(`/${data.user.role}`)
+            const loginRole = data.user.role
+            router.push(loginRole === 'parent' ? '/academy/parent' : `/${loginRole}`)
           }
         }
       } catch (err) {
@@ -53,7 +54,7 @@ export default function LoginPage() {
 
       // Redirect based on role
       const role = data.user?.role || 'student'
-      router.push(`/${role}`)
+      router.push(role === 'parent' ? '/academy/parent' : `/${role}`)
     } catch {
       setError(t.auth.connectionError)
       setLoading(false)

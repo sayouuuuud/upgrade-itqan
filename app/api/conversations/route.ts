@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
                 `INSERT INTO conversations (student_id, reader_id, is_ticket, ticket_status) VALUES ($1, $2, true, 'open') RETURNING id`,
                 [session.role === "student" ? session.sub : null, session.role === "reader" ? session.sub : null]
             )
-            
+
             // Notify admins about the new ticket
             try {
                 const { createNotificationForAdmins } = await import('@/lib/notifications')
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
                 console.error("Failed to notify admins of new ticket:", notifyErr)
             }
 
-            conversationId = result[0].id;
+            conversationId = result[0].id as string;
         } else if (session.role === "admin") {
             // Admin creating a conversation with a user
             const { userId, userRole } = body
@@ -91,13 +91,13 @@ export async function POST(req: NextRequest) {
 
                 const existing = await query(existingQuery, [session.sub, userId])
                 if (existing.length > 0) {
-                    conversationId = existing[0].id;
+                    conversationId = existing[0].id as string;
                 } else {
-                    const result = await query(
+                    const result: any = await query(
                         `INSERT INTO conversations (admin_id, student_id, reader_id) VALUES ($1, $2, $3) RETURNING id`,
                         [session.sub, targetStudentId, targetReaderId]
                     )
-                    conversationId = result[0].id;
+                    conversationId = result[0].id as string;
                 }
             } else {
                 return NextResponse.json({ error: "userId and userRole are required" }, { status: 400 })
@@ -131,13 +131,13 @@ export async function POST(req: NextRequest) {
             )
 
             if (existing.length > 0) {
-                conversationId = existing[0].id;
+                conversationId = existing[0].id as string;
             } else {
                 const result = await query(
                     `INSERT INTO conversations (student_id, reader_id) VALUES ($1, $2) RETURNING id`,
                     [finalStudentId, finalReaderId]
                 )
-                conversationId = result[0].id;
+                conversationId = result[0].id as string;
             }
         }
 

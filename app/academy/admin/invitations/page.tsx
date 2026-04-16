@@ -37,7 +37,7 @@ export default function AdminInvitationsPage() {
     filter === 'all' ? true : i.status === filter
   )
 
-  const statusColor = {
+  const statusColor: Record<string, 'secondary' | 'default' | 'destructive'> = {
     pending: 'secondary',
     accepted: 'default',
     expired: 'destructive'
@@ -61,8 +61,8 @@ export default function AdminInvitationsPage() {
             onClick={() => setFilter(f)}
           >
             {f === 'all' ? 'الكل' :
-             f === 'pending' ? 'معلقة' :
-             f === 'accepted' ? 'مقبولة' : 'منتهية'}
+              f === 'pending' ? 'معلقة' :
+                f === 'accepted' ? 'مقبولة' : 'منتهية'}
           </Button>
         ))}
       </div>
@@ -77,7 +77,7 @@ export default function AdminInvitationsPage() {
                     <p className="font-semibold">{inv.email}</p>
                     <Badge variant={statusColor[inv.status as keyof typeof statusColor]}>
                       {inv.status === 'pending' ? 'معلقة' :
-                       inv.status === 'accepted' ? 'مقبولة' : 'منتهية'}
+                        inv.status === 'accepted' ? 'مقبولة' : 'منتهية'}
                     </Badge>
                   </div>
                   <div className="text-xs text-gray-600 space-y-1">

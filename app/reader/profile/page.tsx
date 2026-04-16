@@ -68,20 +68,20 @@ export default function ReaderProfilePage() {
     <div className="space-y-6 max-w-2xl">
       <div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t.profile.title}</h1>
-          <p className="text-sm text-gray-500 mt-1">{t.profile.subtitle}</p>
+          <h1 className="text-2xl font-bold text-foreground">{t.profile.title}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t.profile.subtitle}</p>
         </div>
       </div>
 
       {/* Avatar & Name Card */}
-      <Card className="border-gray-100 rounded-2xl shadow-sm bg-white">
+      <Card className="border-border rounded-2xl shadow-sm bg-card">
         <CardContent className="pt-6">
           <div className="flex items-center gap-5">
             <AvatarUpload currentUrl={profile?.avatar_url} name={profile?.name} size="lg" onUploaded={handleAvatarUploaded} />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{profile?.name}</h2>
-              <p className="text-sm text-gray-500">{t.shell.certifiedReader}</p>
-              <p className="text-xs text-gray-400 mt-1">{profile?.email}</p>
+              <h2 className="text-xl font-bold text-foreground">{profile?.name}</h2>
+              <p className="text-sm text-muted-foreground">{t.shell.certifiedReader}</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">{profile?.email}</p>
               <p className="text-xs text-primary dark:text-emerald-400 mt-2 font-medium">{t.profile.clickToChangeAvatar}</p>
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function ReaderProfilePage() {
               <Textarea id="reader-bio" value={bio} onChange={e => setBio(e.target.value)} rows={3} placeholder="أكتب نبذة عن تخصصك..." className="border-border bg-muted/30 rounded-xl focus:ring-primary/20" />
             </div>
             <div className="flex items-center gap-3">
-              <Button type="submit" disabled={saving} className="bg-[#0B3D2E] text-white hover:bg-[#0A3528] rounded-xl font-bold">
+              <Button type="submit" disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-bold">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : t.profile.saveChanges}
               </Button>
               {saved && <span className="flex items-center gap-1 text-sm text-emerald-600 font-medium"><CheckCircle className="w-4 h-4" /> {t.profile.saved}</span>}
@@ -150,7 +150,7 @@ export default function ReaderProfilePage() {
             </div>
             {pwError && <p className="text-sm text-red-600">{pwError}</p>}
             <div className="flex items-center gap-3">
-              <Button type="submit" disabled={pwSaving} className="bg-[#0B3D2E] text-white hover:bg-[#0A3528] rounded-xl font-bold">
+              <Button type="submit" disabled={pwSaving} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-bold">
                 {pwSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : t.profile.updatePassword}
               </Button>
               {pwSaved && <span className="flex items-center gap-1 text-sm text-emerald-600 font-medium"><CheckCircle className="w-4 h-4" /> {t.profile.passwordUpdated}</span>}

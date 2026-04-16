@@ -1,0 +1,254 @@
+"use client"
+
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { useI18n } from '@/lib/i18n/context'
+import { cn } from '@/lib/utils'
+import { PlayCircle, ChevronRight, ChevronLeft, ArrowRight, CheckCircle2, ListVideo, BookOpen } from 'lucide-react'
+
+export default function LessonPage() {
+  const params = useParams()
+  const router = useRouter()
+  const { t } = useI18n()
+
+  const courseId = params.id as string
+  const lessonId = params.lessonId as string
+
+  const [lessonData, setLessonData] = useState<any>(null)
+  const [courseLessons, setCourseLessons] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [errorText, setErrorText] = useState('')
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true)
+        // Fetch lesson
+        const lRes = await fetch(`/api/academy/student/lessons/${lessonId}`)
+        if (!lRes.ok) {
+          const err = await lRes.json()
+          setErrorText(err.error || 'حدث خطأ في تحميل الدرس')
+          setLoading(false)
+          return
+        }
+        const lData = await lRes.json()
+        setLessonData(lData.lesson)
+
+        // Fetch course for sidebar
+        const cRes = await fetch(`/api/academy/student/courses/${courseId}`)
+        if (cRes.ok) {
+          const cData = await cRes.json()
+          setCourseLessons(cData.lessons || [])
+        }
+
+      } catch (e) {
+        setErrorText('حدث خطأ في الاتصال')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [lessonId, courseId])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (errorText || !lessonData) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <PlayCircle className="w-16 h-16 text-red-500/50 mb-4" />
+        <h2 className="text-2xl font-bold mb-2 text-foreground">{errorText}</h2>
+        <button onClick={() => router.push(`/academy/student/courses/${courseId}`)} className="text-blue-600 hover:underline mt-4">
+          العودة لصفحة الدورة
+        </button>
+      </div>
+    )
+  }
+
+  // Determine current index for next/prev
+  const currentIndex = courseLessons.findIndex(l => l.id === lessonId)
+  const prevLesson = currentIndex > 0 ? courseLessons[currentIndex - 1] : null
+  const nextLesson = currentIndex < courseLessons.length - 1 ? courseLessons[currentIndex + 1] : null
+
+  const isYouTube = lessonData.video_url?.includes('youtube.com') || lessonData.video_url?.includes('youtu.be')
+  const getOutputVideoUrl = (url: string) => {
+    if (!url) return null;
+    if (url.includes('youtube.com/watch?v=')) return `https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`
+    if (url.includes('youtu.be/')) return `https://www.youtube.com/embed/${url.split('youtu.be/')[1]}`
+    return url;
+  }
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto min-h-[calc(100vh-100px)]">
+
+      {/* Main Content (Left side in LTR, Right side in RTL natively Flex handles it) */}
+      <div className="flex-1 flex flex-col min-w-0">
+
+        {/* Breadcrumb / Back */}
+        <div className="mb-4">
+          <Link href={`/academy/student/courses/${courseId}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-blue-600 transition-colors">
+            <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+            العودة للدورة: {lessonData.course_title}
+          </Link>
+        </div>
+
+        {/* Video Player */}
+        <div className="bg-black w-full aspect-video rounded-2xl overflow-hidden shadow-xl border border-border/5 mb-6 relative group">
+          {lessonData.video_url ? (
+            isYouTube ? (
+              <iframe
+                src={getOutputVideoUrl(lessonData.video_url)!}
+                className="w-full h-full"
+                allowFullScreen
+              />
+            ) : (
+              <video
+                src={lessonData.video_url}
+                controls
+                className="w-full h-full object-contain"
+                controlsList="nodownload"
+              />
+            )
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-blue-900 to-blue-950 flex flex-col items-center justify-center">
+              <PlayCircle className="w-20 h-20 text-blue-500/50 mb-4" />
+              <p className="text-blue-200 font-medium text-lg">لا يوجد فيديو لهذا الدرس بعد</p>
+            </div>
+          )}
+        </div>
+
+        {/* Lesson Details */}
+        <div className="bg-card rounded-2xl border border-border p-6 md:p-8 lg:p-10 flex-1">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold text-xs rounded-full">
+                  الدرس {lessonData.order_index}
+                </span>
+                {lessonData.duration_minutes && (
+                  <span className="text-sm text-muted-foreground whitespace-nowrap font-medium">
+                    {lessonData.duration_minutes} دقيقة
+                  </span>
+                )}
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                {lessonData.title}
+              </h1>
+            </div>
+
+            <button
+              onClick={async () => {
+                if (lessonData.is_completed) return;
+                try {
+                  const res = await fetch(`/api/academy/student/lessons/${lessonId}/complete`, { method: 'POST' });
+                  if (res.ok) {
+                    setLessonData({ ...lessonData, is_completed: true });
+                  } else {
+                    const err = await res.json();
+                    alert(err.error || 'حدث خطأ');
+                  }
+                } catch {
+                  alert('حدث خطأ في الاتصال');
+                }
+              }}
+              className={cn(
+                "shrink-0 px-4 py-2 border rounded-xl text-sm font-bold flex items-center gap-2 transition-colors",
+                lessonData.is_completed
+                  ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                  : "border-border hover:bg-muted text-muted-foreground"
+              )}
+            >
+              <CheckCircle2 className="w-5 h-5" />
+              {lessonData.is_completed ? 'مكتمل' : 'تحديد كمكتمل'}
+            </button>
+          </div>
+
+          <div className="prose prose-blue dark:prose-invert max-w-none text-muted-foreground mb-10 leading-relaxed font-medium whitespace-pre-wrap">
+            {lessonData.description || lessonData.content || <span className="opacity-50">لا يوجد وصف للدرس.</span>}
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mt-auto pt-8 border-t border-border">
+            {prevLesson ? (
+              <Link
+                href={`/academy/student/courses/${courseId}/lesson/${prevLesson.id}`}
+                className="px-5 py-3 rounded-xl border border-border bg-card hover:bg-muted text-foreground flex items-center gap-2 text-sm font-bold transition-colors"
+              >
+                <ChevronRight className="w-4 h-4 rtl:rotate-180" />
+                الدرس السابق
+              </Link>
+            ) : <div />}
+
+            {nextLesson && (
+              <Link
+                href={`/academy/student/courses/${courseId}/lesson/${nextLesson.id}`}
+                className="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 text-sm font-bold transition-colors shadow-sm ml-auto"
+              >
+                الدرس التالي
+                <ChevronLeft className="w-4 h-4 rtl:rotate-180" />
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Sidebar: Course Content */}
+      <div className="w-full lg:w-80 shrink-0">
+        <div className="bg-card rounded-2xl border border-border sticky top-24 overflow-hidden shadow-sm flex flex-col max-h-[calc(100vh-120px)]">
+          <div className="p-5 border-b border-border bg-muted/30">
+            <h3 className="font-bold flex items-center gap-2 text-foreground">
+              <ListVideo className="w-5 h-5 text-blue-600" />
+              قائمة الدروس
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1 truncate">
+              {lessonData.course_title}
+            </p>
+          </div>
+
+          <div className="overflow-y-auto flex-1 custom-scrollbar">
+            <div className="flex flex-col p-2">
+              {courseLessons.map((lesson, idx) => {
+                const isActive = lesson.id === lessonId
+                return (
+                  <Link
+                    key={lesson.id}
+                    href={`/academy/student/courses/${courseId}/lesson/${lesson.id}`}
+                    className={cn(
+                      "flex items-center gap-3 p-3 text-sm rounded-xl transition-all cursor-pointer",
+                      isActive
+                        ? "bg-blue-600 text-white shadow-md font-bold"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground font-medium"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold transition-colors",
+                      isActive ? "bg-white/20 text-white" : "bg-muted-foreground/10 text-muted-foreground"
+                    )}>
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate">{lesson.title}</p>
+                      {lesson.duration_minutes && (
+                        <p className={cn("text-[10px] mt-0.5", isActive ? "text-blue-100" : "opacity-60")}>
+                          {lesson.duration_minutes} دقيقة
+                        </p>
+                      )}
+                    </div>
+                    {isActive && <div className="shrink-0 w-1.5 h-1.5 rounded-full bg-white ml-1" />}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  )
+}

@@ -4,7 +4,7 @@
  */
 
 import { query, queryOne } from "../db"
-import type { ParentStudentRelation } from "../types/lms"
+import type { ParentStudentLink as ParentStudentRelation } from "../types/lms"
 
 export async function linkParentToStudent(
   parentId: string,
@@ -76,7 +76,7 @@ export async function removeParentStudentLink(parentId: string, studentId: strin
 }
 
 export async function checkRelationshipExists(parentId: string, studentId: string): Promise<boolean> {
-  const result = await query(
+  const result = await query<{ exists: boolean }>(
     `SELECT EXISTS(
        SELECT 1 FROM parent_student_relations 
        WHERE parent_id = $1 AND student_id = $2 AND status = 'active'

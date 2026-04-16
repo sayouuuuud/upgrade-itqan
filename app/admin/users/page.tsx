@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { useI18n } from "@/lib/i18n/context"
 import { Button } from "@/components/ui/button"
@@ -89,7 +90,7 @@ export default function AdminUsersPage() {
     fetchUsers(1, query) // Fetch with search
   }
 
-  
+
   const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
     try {
       const res = await fetch("/api/admin/users", {
@@ -187,8 +188,8 @@ export default function AdminUsersPage() {
             {t.admin.usersManagementDesc}
           </p>
         </div>
-        <Button 
-          className="w-full sm:w-auto rounded-2xl font-black bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 h-12 px-6 gap-2" 
+        <Button
+          className="w-full sm:w-auto rounded-2xl font-black bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 h-12 px-6 gap-2"
           onClick={() => {
             const defaultRole = currentUserRole === 'reciter_supervisor' ? 'reader' : 'student'
             setFormData({ name: "", email: "", password: "", role: defaultRole, gender: "" })
@@ -266,21 +267,27 @@ export default function AdminUsersPage() {
                   </tr>
                 ) : (
                   users.map((user: any, idx: number) => (
-                    <tr
+                    <motion.tr
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: idx * 0.05 }}
                       key={user.id}
                       onClick={() => router.push(`/admin/users/${user.id}`)}
                       className="hover:bg-muted/30 transition-colors group cursor-pointer whitespace-nowrap"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shrink-0 border transition-all ${avatarColors[idx % avatarColors.length]}`}>
+                          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shrink-0 border transition-all ${user.gender === 'female' ? 'bg-pink-500/10 text-pink-500 border-pink-500/20' : avatarColors[idx % avatarColors.length]}`}>
                             {user.avatar_url ? (
                               <img src={user.avatar_url} alt={user.name} className="w-full h-full rounded-2xl object-cover" />
-                            ) : (user.name || "U").charAt(0)}
+                            ) : (
+                              user.gender === 'female' ? <UserIcon className="w-5 h-5 opacity-80" /> : (user.name || "U").charAt(0)
+                            )}
                           </div>
-                          <div className="min-w-0">
-                            <p className="font-black text-foreground text-sm group-hover:text-primary transition-colors">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-black text-foreground text-sm group-hover:text-primary transition-colors flex items-center gap-1.5">
                               {user.name}
+                              {user.gender === 'female' && <span className="w-1.5 h-1.5 rounded-full bg-pink-400 opacity-60 inline-block" title="طالبة / معلمة" />}
                             </p>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">ID: #{user.id.substring(0, 8)}</span>
@@ -376,9 +383,9 @@ export default function AdminUsersPage() {
                           </button>
                         </div>
                       </td>
-                    </tr>
+                    </motion.tr>
                   )
-                ))}
+                  ))}
               </tbody>
             </table>
           )}
@@ -394,7 +401,7 @@ export default function AdminUsersPage() {
               </span>
             )}
           </div>
-          
+
           {pagination && pagination.totalPages > 1 && (
             <div className="flex items-center gap-2">
               <Button
@@ -407,7 +414,7 @@ export default function AdminUsersPage() {
                 <ChevronRight className={`w-4 h-4 ${isAr ? "ml-1" : "mr-1"}`} />
                 {isAr ? "السابق" : "Previous"}
               </Button>
-              
+
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                   let pageNum
@@ -420,7 +427,7 @@ export default function AdminUsersPage() {
                   } else {
                     pageNum = pagination.currentPage - 2 + i
                   }
-                  
+
                   return (
                     <Button
                       key={pageNum}
@@ -435,7 +442,7 @@ export default function AdminUsersPage() {
                   )
                 })}
               </div>
-              
+
               <Button
                 variant="outline"
                 size="sm"

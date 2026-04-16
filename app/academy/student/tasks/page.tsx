@@ -211,7 +211,7 @@ export default function StudentTasksPage() {
             return (
               <Link
                 key={task.id}
-                href={`/academy/student/tasks/${task.id}`}
+                href={`/academy/student/tasks/${task.id}/submit`}
                 className="block bg-card rounded-xl border border-border p-4 hover:border-blue-500/50 hover:shadow-md transition-all group"
               >
                 <div className="flex items-start gap-4">

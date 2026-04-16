@@ -17,6 +17,9 @@ interface UserProfile {
   avatar_url: string | null
   phone: string | null
   gender: string | null
+  has_quran_access?: boolean
+  has_academy_access?: boolean
+  platform_preference?: string
 }
 
 export default function ProfilePage() {
@@ -24,6 +27,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [platformPreference, setPlatformPreference] = useState('both')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -43,6 +47,7 @@ export default function ProfilePage() {
           setProfile(d.user)
           setName(d.user.name || '')
           setPhone(d.user.phone || '')
+          setPlatformPreference(d.user.platform_preference || 'both')
         }
       })
       .finally(() => setLoading(false))
@@ -64,11 +69,11 @@ export default function ProfilePage() {
       const res = await fetch('/api/auth/me', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone }),
+        body: JSON.stringify({ name, phone, platform_preference: platformPreference }),
       })
       if (res.ok) {
         const d = await res.json()
-        setProfile(p => p ? { ...p, name: d.user.name } : p)
+        setProfile(p => p ? { ...p, name: d.user.name, platform_preference: d.user.platform_preference } : p)
         setSaved(true)
         setTimeout(() => setSaved(false), 3000)
       }
@@ -214,6 +219,24 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   
+                  {profile?.has_quran_access && profile?.has_academy_access && (
+                    <div className="space-y-2">
+                       <Label htmlFor="platform_preference" className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">
+                         {isAr ? "المنصة المفضلة" : "Preferred Platform"}
+                       </Label>
+                       <select 
+                         id="platform_preference" 
+                         value={platformPreference} 
+                         onChange={e => setPlatformPreference(e.target.value)} 
+                         className="w-full h-12 px-4 border-border bg-muted/30 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all border font-medium appearance-none"
+                       >
+                         <option value="both">{isAr ? "الاثنان معاً" : "Both"}</option>
+                         <option value="quran">{isAr ? "المقرأة" : "Quran Library"}</option>
+                         <option value="academy">{isAr ? "الأكاديمية" : "Academy"}</option>
+                       </select>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">{t.auth.email}</Label>
                     <Input 

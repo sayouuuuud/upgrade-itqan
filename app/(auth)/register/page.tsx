@@ -14,6 +14,8 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [gender, setGender] = useState('')
+  const [role, setRole] = useState('student')
+  const [platform, setPlatform] = useState('both')
   const router = useRouter()
   const { t } = useI18n()
 
@@ -49,7 +51,7 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, gender: gender || undefined }),
+        body: JSON.stringify({ name, email, password, gender: gender || undefined, platform_choice: role === 'parent' ? 'academy' : platform, register_role: role }),
       })
       const data = await res.json()
 
@@ -152,6 +154,31 @@ export default function RegisterPage() {
                 </select>
               </div>
             </div>
+
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-foreground/80 mb-1">نوع الحساب</label>
+              <div className="relative">
+                <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
+                <select id="role" value={role} onChange={(e) => setRole(e.target.value)} className="w-full pr-4 pl-10 py-3 bg-secondary/20 dark:bg-secondary/10 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors text-sm text-foreground appearance-none" required>
+                  <option value="student" className="bg-card">طالب</option>
+                  <option value="parent" className="bg-card">ولي أمر</option>
+                </select>
+              </div>
+            </div>
+
+            {role !== 'parent' && (
+            <div>
+              <label htmlFor="platform" className="block text-sm font-medium text-foreground/80 mb-1">المنصة المراد التسجيل بها</label>
+              <div className="relative">
+                <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
+                <select id="platform" value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full pr-4 pl-10 py-3 bg-secondary/20 dark:bg-secondary/10 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors text-sm text-foreground appearance-none" required>
+                  <option value="both" className="bg-card">الاثنان معاً (المقرأة والأكاديمية)</option>
+                  <option value="quran" className="bg-card">المقرأة (تسميع القرآن فقط)</option>
+                  <option value="academy" className="bg-card">الأكاديمية (الدورات التعليمية فقط)</option>
+                </select>
+              </div>
+            </div>
+            )}
 
             <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60">
               {loading ? (

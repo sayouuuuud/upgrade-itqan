@@ -17,8 +17,9 @@ async function getSession(): Promise<JWTPayload | null> {
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { lessonId: string } }
+  { params }: { params: Promise<{ lessonId: string }> }
 ) {
+  const { lessonId } = await params
   const session = await getSession()
 
   if (!session) {
@@ -29,7 +30,7 @@ export async function POST(
     const { data: lesson, error: lessonError } = await supabase
       .from('lessons')
       .select('course_id')
-      .eq('id', params.lessonId)
+      .eq('id', lessonId)
       .eq('is_public', true)
       .single()
 
@@ -54,7 +55,7 @@ export async function POST(
       .from('public_lesson_subscribers')
       .insert([
         {
-          lesson_id: params.lessonId,
+          lesson_id: lessonId,
           user_id: session.sub,
           subscribed_at: new Date().toISOString()
         }

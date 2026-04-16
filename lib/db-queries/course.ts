@@ -4,7 +4,7 @@
  */
 
 import { query, queryOne } from "../db"
-import type { Course, CourseEnrollment, StudentProgress } from "../types/lms"
+import type { Course, Enrollment as CourseEnrollment, LessonProgress as StudentProgress } from "../types/lms"
 
 export async function getCourseById(courseId: string): Promise<Course | null> {
   return queryOne<Course>(

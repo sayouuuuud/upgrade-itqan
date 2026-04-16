@@ -1,9 +1,15 @@
-import { auth } from "@/lib/better-auth-config"
-import { toNextJsHandler } from "better-auth/next-js"
+import { NextResponse } from "next/server"
 
 /**
- * Better Auth API Routes
- * Catch-all handler for all authentication requests: login, signup, logout, etc.
+ * Auth catch-all stub.
+ * This project uses custom JWT-based auth routes under /api/auth/*.
+ * The better-auth library route handler was removed; return 404 for
+ * any unmatched path that lands here.
  */
+export async function GET() {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+}
 
-export const { GET, POST } = toNextJsHandler(auth)
+export async function POST() {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+}
