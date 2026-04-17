@@ -1,6 +1,15 @@
 import { UTApi } from "uploadthing/server";
 
-const utapi = new UTApi();
+// Lazily initialize UTApi so it doesn't throw during Next.js build
+// if the UPLOADTHING_SECRET environment variable is missing.
+let utapiInstance: UTApi | null = null;
+
+function getUtapi(): UTApi {
+    if (!utapiInstance) {
+        utapiInstance = new UTApi();
+    }
+    return utapiInstance;
+}
 
 export interface StorageUploadResult {
     url: string;
@@ -18,6 +27,7 @@ export async function uploadToStorage(
     filename: string,
     contentType: string
 ): Promise<StorageUploadResult> {
+    const utapi = getUtapi();
     // Correct way to handle Buffer in environments with File API
     const file = new File([buffer as any], filename, { type: contentType });
     const response = await utapi.uploadFiles(file);
@@ -38,8 +48,12 @@ export async function uploadToStorage(
  * Deletes a file from UploadThing using its key.
  */
 export async function deleteFromStorage(key: string): Promise<{ success: boolean }> {
+    const utapi = getUtapi();
     const response = await utapi.deleteFiles(key);
     return { success: response.success };
 }
 
-export default utapi;
+// Export a getter or proxy if someone needs the raw utapi object,
+// but since it's an internal utility, exporting default is usually fine if we make it a proxy or just remove it if unused.
+// We'll export a getter to maintain compatibility if it was imported.
+export default getUtapi;
