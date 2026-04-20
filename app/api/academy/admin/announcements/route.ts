@@ -8,11 +8,7 @@ async function getSession(): Promise<JWTPayload | null> {
   const cookieStore = await cookies()
   const sessionCookie = cookieStore.get('session')?.value
   if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
+  try { return jwtDecode<JWTPayload>(sessionCookie) } catch { return null }
 }
 
 export async function GET(req: NextRequest) {
@@ -22,15 +18,12 @@ export async function GET(req: NextRequest) {
   }
   try {
     const { data, error } = await supabase
-      .from('users')
-      .select('*, courses(count)')
-      .eq('role', 'teacher')
+      .from('announcements')
+      .select('*')
       .order('created_at', { ascending: false })
-
     if (error) throw error
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching teachers:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -41,33 +34,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
-    const { name, email, password, gender } = await req.json()
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: 'Name, email and password are required' }, { status: 400 })
+    const { title_ar, content_ar, target_audience, priority, is_published } = await req.json()
+    if (!title_ar || !content_ar) {
+      return NextResponse.json({ error: 'Title and content required' }, { status: 400 })
     }
-
-    // Create user with teacher role
     const { data, error } = await supabase
-      .from('users')
+      .from('announcements')
       .insert({
-        name,
-        email,
-        password_hash: password, // should be hashed in production - handled by trigger/auth
-        role: 'teacher',
-        gender: gender || 'male',
-        is_active: true,
+        title_ar,
+        content_ar,
+        target_audience: target_audience || 'all',
+        priority: priority || 'normal',
+        is_published: is_published || false,
         created_at: new Date().toISOString(),
       })
-      .select()
-      .single()
-
+      .select().single()
     if (error) throw error
     return NextResponse.json(data, { status: 201 })
-  } catch (error: any) {
-    console.error('Error creating teacher:', error)
-    if (error.code === '23505') {
-      return NextResponse.json({ error: 'البريد الإلكتروني مستخدم بالفعل' }, { status: 409 })
-    }
+  } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
