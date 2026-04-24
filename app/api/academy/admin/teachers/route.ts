@@ -1,6 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { getSession, requireRole } from '@/lib/auth'
+
+import bcrypt from 'bcryptjs'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
@@ -33,13 +35,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Name, email and password are required' }, { status: 400 })
     }
 
+    // Hash password
+    const salt = await bcrypt.genSalt(10)
+    const password_hash = await bcrypt.hash(password, salt)
+
     // Create user with teacher role
     const { data, error } = await supabase
       .from('users')
       .insert({
         name,
         email,
-        password_hash: password, // should be hashed in production - handled by trigger/auth
+        password_hash: password_hash,
         role: 'teacher',
         gender: gender || 'male',
         is_active: true,

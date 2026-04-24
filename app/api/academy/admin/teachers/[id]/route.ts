@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { getSession, requireRole } from '@/lib/auth'
 
@@ -40,7 +40,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   }
   const { id } = await params
   try {
-    const { error } = await supabase.from('users').update({ is_active: false }).eq('id', id).eq('role', 'teacher')
+    const { error } = await supabase.from('users').delete().eq('id', id).eq('role', 'teacher')
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (error) {
