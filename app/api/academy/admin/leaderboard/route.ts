@@ -1,19 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { requireRole, JWTPayload } from '@/lib/auth'
-import { cookies } from 'next/headers'
-import { jwtDecode } from 'jwt-decode'
-
-async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')?.value
-  if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
-}
+import { getSession, requireRole } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()

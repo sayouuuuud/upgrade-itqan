@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
 
     if (loginType === "admin") {
       // Admin login page check
-      const allowedAdminRoles = ["admin", "student_supervisor", "reciter_supervisor"];
+      const allowedAdminRoles = ["admin", "academy_admin", "student_supervisor", "reciter_supervisor"];
       if (!allowedAdminRoles.includes(user.role)) {
         return NextResponse.json(
           { error: "غير مصرح لك بالدخول كمدير" },
@@ -135,10 +135,8 @@ export async function POST(req: NextRequest) {
       }
       activeRole = user.role;
     } else {
-      // Normal login page check: Force admin to student
-      if (user.role === "admin") {
-        activeRole = "student";
-      }
+      // Normal login: admin and academy_admin keep their roles
+      // Other privileged roles stay as-is
     }
 
     // Successful login — reset failed count

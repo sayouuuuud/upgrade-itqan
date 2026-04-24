@@ -1,23 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { requireRole, JWTPayload } from '@/lib/auth'
-import { cookies } from 'next/headers'
-import { jwtDecode } from 'jwt-decode'
-
-async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')?.value
-  if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
-}
+import { getSession, requireRole } from '@/lib/auth'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession()
-  if (!session || !requireRole(session, ['academy_admin'])) {
+  if (!session || !requireRole(session, ['academy_admin', 'admin'])) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const { id } = await params
@@ -48,7 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession()
-  if (!session || !requireRole(session, ['academy_admin'])) {
+  if (!session || !requireRole(session, ['academy_admin', 'admin'])) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const { id } = await params
