@@ -1,49 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { requireRole, JWTPayload } from '@/lib/auth'
-import { cookies } from 'next/headers'
-import { jwtDecode } from 'jwt-decode'
-
-async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')?.value
-  if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
-}
+import { getSession } from '@/lib/auth'
+import { query } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
   
-  if (!session || !requireRole(session, ['student', 'teacher', 'parent', 'academy_admin'])) {
+  if (!session || !['student', 'teacher', 'parent', 'academy_admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const { data, error } = await supabase
-      .from('user_points')
-      .select('*')
-      .eq('user_id', session.sub)
-      .single()
+    // Get user points
+    const pointsData = await query(`
+      SELECT * FROM user_points WHERE user_id = $1
+    `, [session.sub])
 
-    if (error && error.code !== 'PGRST116') throw error
-
-    const points = data || { user_id: session.sub, total_points: 0 }
+    const points = pointsData[0] || { user_id: session.sub, points: 0 }
 
     // Get points log
-    const { data: pointsLog, error: logError } = await supabase
-      .from('points_log')
-      .select('*')
-      .eq('user_id', session.sub)
-      .order('created_at', { ascending: false })
-      .limit(20)
+    const pointsLog = await query(`
+      SELECT * FROM points_log
+      WHERE user_id = $1
+      ORDER BY created_at DESC
+      LIMIT 20
+    `, [session.sub])
 
-    if (logError) throw logError
-
-    return NextResponse.json({ points, log: pointsLog })
+    return NextResponse.json({ data: { points, log: pointsLog } })
   } catch (error) {
     console.error('Error fetching points:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

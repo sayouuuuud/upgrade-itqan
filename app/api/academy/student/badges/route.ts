@@ -1,36 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { requireRole, JWTPayload } from '@/lib/auth'
-import { cookies } from 'next/headers'
-import { jwtDecode } from 'jwt-decode'
-
-async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')?.value
-  if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
-}
+import { getSession } from '@/lib/auth'
+import { query } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
   
-  if (!session || !requireRole(session, ['student', 'teacher', 'parent', 'academy_admin'])) {
+  if (!session || !['student', 'teacher', 'parent', 'academy_admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const { data, error } = await supabase
-      .from('badges')
-      .select('*')
-      .eq('user_id', session.sub)
+    const rows = await query(`
+      SELECT * FROM badges WHERE user_id = $1 ORDER BY earned_at DESC
+    `, [session.sub])
 
-    if (error) throw error
-
-    return NextResponse.json(data)
+    return NextResponse.json({ data: rows })
   } catch (error) {
     console.error('Error fetching badges:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

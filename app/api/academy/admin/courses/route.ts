@@ -1,27 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { getSession, requireRole } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
+import { query } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
   
-  if (!session || !requireRole(session, ['academy_admin', 'admin'])) {
+  if (!session || !['academy_admin', 'admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const { data, error } = await supabase
-      .from('courses')
-      .select(`
-        *,
-        lessons(count),
-        enrollments(count)
-      `)
-      .order('created_at', { ascending: false })
+    const rows = await query(`
+      SELECT 
+        c.*,
+        u.name as teacher_name,
+        COUNT(DISTINCT l.id)::int as total_lessons,
+        COUNT(DISTINCT e.id)::int as total_enrolled
+      FROM courses c
+      LEFT JOIN users u ON c.teacher_id = u.id
+      LEFT JOIN lessons l ON l.course_id = c.id
+      LEFT JOIN enrollments e ON e.course_id = c.id
+      GROUP BY c.id, u.name
+      ORDER BY c.created_at DESC
+    `)
 
-    if (error) throw error
-
-    return NextResponse.json(data)
+    return NextResponse.json({ data: rows })
   } catch (error) {
     console.error('Error fetching courses:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -30,29 +33,21 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!session || !requireRole(session, ['academy_admin', 'admin'])) {
+  if (!session || !['academy_admin', 'admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
     const body = await req.json()
-    const { title, description, category_id, status } = body
+    const { title, description, category_id, status, teacher_id } = body
     if (!title) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
 
-    const { data, error } = await supabase
-      .from('courses')
-      .insert({
-        title,
-        description: description || null,
-        category_id: category_id || null,
-        status: status || 'draft',
-        is_published: status === 'published',
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .single()
+    const result = await query(`
+      INSERT INTO courses (title, description, category_id, status, teacher_id, created_at)
+      VALUES ($1, $2, $3, $4, $5, NOW())
+      RETURNING *
+    `, [title, description || null, category_id || null, status || 'draft', teacher_id || null])
 
-    if (error) throw error
-    return NextResponse.json(data, { status: 201 })
+    return NextResponse.json({ data: result[0] }, { status: 201 })
   } catch (error) {
     console.error('Error creating course:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

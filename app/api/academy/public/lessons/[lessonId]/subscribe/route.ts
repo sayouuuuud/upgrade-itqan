@@ -1,19 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { cookies } from 'next/headers'
-import { jwtDecode } from 'jwt-decode'
-import { JWTPayload } from '@/lib/auth'
-
-async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')?.value
-  if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
-}
+import { getSession } from '@/lib/auth'
+import { query } from '@/lib/db'
 
 export async function POST(
   req: NextRequest,
@@ -27,41 +14,38 @@ export async function POST(
   }
 
   try {
-    const { data: lesson, error: lessonError } = await supabase
-      .from('lessons')
-      .select('course_id')
-      .eq('id', lessonId)
-      .eq('is_public', true)
-      .single()
+    // Get lesson
+    const lessons = await query(`
+      SELECT course_id FROM lessons WHERE id = $1 AND is_public = true
+    `, [lessonId])
 
-    if (lessonError) throw lessonError
+    if (lessons.length === 0) {
+      return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
+    }
+
+    const courseId = lessons[0].course_id
 
     // Subscribe user to the course
-    const { error: enrollError } = await supabase
-      .from('user_enrollments')
-      .insert([
-        {
-          user_id: session.sub,
-          course_id: lesson.course_id,
-          status: 'active',
-          enrolled_at: new Date().toISOString()
-        }
-      ])
+    try {
+      await query(`
+        INSERT INTO enrollments (student_id, course_id, status, enrolled_at)
+        VALUES ($1, $2, 'active', NOW())
+      `, [session.sub, courseId])
+    } catch (e: any) {
+      // Ignore if already enrolled (duplicate key error)
+      if (e.code !== '23505') throw e
+    }
 
-    if (enrollError && enrollError.code !== '23505') throw enrollError // 23505 = already enrolled
-
-    // Track subscription
-    const { error: subError } = await supabase
-      .from('public_lesson_subscribers')
-      .insert([
-        {
-          lesson_id: lessonId,
-          user_id: session.sub,
-          subscribed_at: new Date().toISOString()
-        }
-      ])
-
-    if (subError && subError.code !== '23505') throw subError
+    // Track public lesson subscription
+    try {
+      await query(`
+        INSERT INTO public_lesson_subscribers (lesson_id, user_id, subscribed_at)
+        VALUES ($1, $2, NOW())
+      `, [lessonId, session.sub])
+    } catch (e: any) {
+      // Ignore if already subscribed
+      if (e.code !== '23505') throw e
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
