@@ -60,7 +60,6 @@ export default function AdminLoginPage() {
                 return
             }
 
-            // Redirect based on role (should be admin)
             // Use window.location.href (full page load) so the new auth cookie
             // is included in the very first request to /admin — prevents redirect loop
             const role = data.user?.role || 'admin'
