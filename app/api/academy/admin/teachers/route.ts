@@ -1,23 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { getSession, requireRole } from '@/lib/auth'
-
+import { getSession } from '@/lib/auth'
+import { query } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  if (!session || !requireRole(session, ['academy_admin', 'admin'])) {
+  if (!session || !['academy_admin', 'admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*, courses(count)')
-      .eq('role', 'teacher')
-      .order('created_at', { ascending: false })
-
-    if (error) throw error
-    return NextResponse.json(data)
+    const rows = await query(`
+      SELECT 
+        u.*,
+        COUNT(DISTINCT c.id)::int as courses_count,
+        COUNT(DISTINCT e.student_id)::int as total_students
+      FROM users u
+      LEFT JOIN courses c ON u.id = c.teacher_id
+      LEFT JOIN enrollments e ON c.id = e.course_id AND e.status = 'active'
+      WHERE u.role = 'teacher'
+      GROUP BY u.id
+      ORDER BY u.created_at DESC
+    `)
+    return NextResponse.json({ data: rows })
   } catch (error) {
     console.error('Error fetching teachers:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -26,7 +30,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!session || !requireRole(session, ['academy_admin', 'admin'])) {
+  if (!session || !['academy_admin', 'admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
@@ -40,22 +44,14 @@ export async function POST(req: NextRequest) {
     const password_hash = await bcrypt.hash(password, salt)
 
     // Create user with teacher role
-    const { data, error } = await supabase
-      .from('users')
-      .insert({
-        name,
-        email,
-        password_hash: password_hash,
-        role: 'teacher',
-        gender: gender || 'male',
-        is_active: true,
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .single()
+    const result = await query(`
+      INSERT INTO users (name, email, password_hash, role, gender, is_active, has_academy_access, created_at)
+      VALUES ($1, $2, $3, 'teacher', $4, true, true, NOW())
+      RETURNING id, name, email, role, gender, is_active, has_academy_access, created_at
+    `, [name, email.toLowerCase().trim(), password_hash, gender || 'male'])
 
-    if (error) throw error
-    return NextResponse.json(data, { status: 201 })
+
+    return NextResponse.json({ data: result[0] }, { status: 201 })
   } catch (error: any) {
     console.error('Error creating teacher:', error)
     if (error.code === '23505') {

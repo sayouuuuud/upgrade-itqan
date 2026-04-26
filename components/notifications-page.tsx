@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n/context"
 import {
     Bell, CheckCheck, Mic, Calendar, Award, MessageSquare,
     UserCheck, UserX, Loader2, BookOpen, ChevronRight, Settings,
-    Inbox, HardDrive, Clock
+    Inbox, HardDrive, Clock, X, Filter
 } from "lucide-react"
 
 type Notification = {
@@ -22,6 +22,13 @@ type Notification = {
     created_at: string
     related_recitation_id: string | null
     related_booking_id: string | null
+}
+
+type FilterOptions = {
+    type: string | null
+    category: string | null
+    readStatus: 'all' | 'read' | 'unread'
+    dateRange: 'all' | 'today' | 'week' | 'month'
 }
 
 const TYPE_ICON: Record<string, React.ElementType> = {
@@ -39,6 +46,33 @@ const TYPE_ICON: Record<string, React.ElementType> = {
     new_announcement: Bell,
     new_contact_message: MessageSquare,
     general: Bell,
+}
+
+const TYPE_LABELS: Record<string, string> = {
+    recitation_received: "تقرير جديد",
+    recitation_reviewed: "تقرير تم مراجعته",
+    mastered: "اتقان",
+    needs_session: "جلسة مطلوبة",
+    session_booked: "جلسة محجوزة",
+    session_reminder: "تذكير الجلسة",
+    new_reader_application: "طلب قارئ جديد",
+    reader_approved: "قارئ موافق عليه",
+    reader_rejected: "قارئ مرفوض",
+    new_recitation_admin: "تقرير جديد للمسؤول",
+    new_message: "رسالة جديدة",
+    new_announcement: "إعلان جديد",
+    new_contact_message: "رسالة تواصل",
+    general: "عام",
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+    recitation: "التقارير",
+    session: "الجلسات",
+    account: "الحساب",
+    message: "الرسائل",
+    announcement: "الإعلانات",
+    booking: "الحجوزات",
+    general: "عام",
 }
 
 const TYPE_COLOR: Record<string, string> = {
@@ -69,6 +103,15 @@ export default function NotificationsPage() {
     const [hasMore, setHasMore] = useState(false)
     const [loadingMore, setLoadingMore] = useState(false)
     const [unreadCount, setUnreadCount] = useState(0)
+    
+    // Filter state
+    const [filters, setFilters] = useState<FilterOptions>({
+        type: null,
+        category: null,
+        readStatus: 'all',
+        dateRange: 'all'
+    })
+    const [showFilters, setShowFilters] = useState(false)
 
     const load = useCallback(async (pageNum = 1) => {
         if (pageNum === 1) setLoading(true)
@@ -127,11 +170,48 @@ export default function NotificationsPage() {
         return `${t.daysAgo} ${d}`
     }
 
-    if (loading) return (
-        <div className="flex justify-center items-center min-h-[500px]">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        </div>
-    )
+    // Date range filter helper
+    const isWithinDateRange = (date: string, range: string): boolean => {
+        const notifDate = new Date(date).getTime()
+        const now = Date.now()
+        const oneDay = 24 * 60 * 60 * 1000
+        
+        switch (range) {
+            case 'today':
+                return now - notifDate < oneDay
+            case 'week':
+                return now - notifDate < 7 * oneDay
+            case 'month':
+                return now - notifDate < 30 * oneDay
+            default:
+                return true
+        }
+    }
+
+    // Apply all filters
+    const filteredNotifications = useMemo(() => {
+        return notifications.filter(n => {
+            if (filters.type && n.type !== filters.type) return false
+            if (filters.category && n.category !== filters.category) return false
+            if (filters.readStatus === 'read' && !n.is_read) return false
+            if (filters.readStatus === 'unread' && n.is_read) return false
+            if (!isWithinDateRange(n.created_at, filters.dateRange)) return false
+            return true
+        })
+    }, [notifications, filters])
+
+    // Check if any filters are active
+    const hasActiveFilters = filters.type || filters.category || filters.readStatus !== 'all' || filters.dateRange !== 'all'
+    
+    // Reset filters
+    const resetFilters = () => {
+        setFilters({
+            type: null,
+            category: null,
+            readStatus: 'all',
+            dateRange: 'all'
+        })
+    }
 
     return (
         <div className={cn(
@@ -160,30 +240,142 @@ export default function NotificationsPage() {
                     </div>
                 </div>
                 
-                {unreadCount > 0 && (
+                <div className="flex items-center gap-3">
                     <button
-                        onClick={markAllRead}
-                        disabled={markingAll}
-                        className="group flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary-foreground bg-primary px-8 py-4 rounded-2xl hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-70"
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={cn(
+                            "group flex items-center gap-2 text-xs font-black uppercase tracking-widest px-8 py-4 rounded-2xl transition-all hover:-translate-y-1 active:scale-95 border-2",
+                            showFilters 
+                                ? "border-primary bg-primary/10 text-primary" 
+                                : "border-border bg-muted/50 text-foreground hover:border-primary/30"
+                        )}
                     >
-                        {markingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4 transition-transform group-hover:scale-110 ml-1" />}
-                        {t.notifications.markAllRead}
+                        <Filter className="w-4 h-4" />
+                        تصفية
                     </button>
-                )}
+
+                    {unreadCount > 0 && (
+                        <button
+                            onClick={markAllRead}
+                            disabled={markingAll}
+                            className="group flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary-foreground bg-primary px-8 py-4 rounded-2xl hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-70"
+                        >
+                            {markingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4 transition-transform group-hover:scale-110 ml-1" />}
+                            {t.notifications.markAllRead}
+                        </button>
+                    )}
+                </div>
             </div>
 
+            {/* Filter Panel */}
+            {showFilters && (
+                <div className="bg-card border-2 border-primary/20 rounded-3xl p-8 mb-8 animate-in fade-in duration-300">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {/* Type Filter */}
+                        <div>
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">النوع</label>
+                            <select
+                                value={filters.type || ''}
+                                onChange={(e) => setFilters({ ...filters, type: e.target.value || null })}
+                                className="w-full bg-muted border border-border rounded-xl px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            >
+                                <option value="">جميع الأنواع</option>
+                                {Object.entries(TYPE_LABELS).map(([type, label]) => (
+                                    <option key={type} value={type}>{label}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Category Filter */}
+                        <div>
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">الفئة</label>
+                            <select
+                                value={filters.category || ''}
+                                onChange={(e) => setFilters({ ...filters, category: e.target.value || null })}
+                                className="w-full bg-muted border border-border rounded-xl px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            >
+                                <option value="">جميع الفئات</option>
+                                {Object.entries(CATEGORY_LABELS).map(([cat, label]) => (
+                                    <option key={cat} value={cat}>{label}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Read Status Filter */}
+                        <div>
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">الحالة</label>
+                            <select
+                                value={filters.readStatus}
+                                onChange={(e) => setFilters({ ...filters, readStatus: e.target.value as any })}
+                                className="w-full bg-muted border border-border rounded-xl px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            >
+                                <option value="all">الكل</option>
+                                <option value="unread">غير المقروءة</option>
+                                <option value="read">المقروءة</option>
+                            </select>
+                        </div>
+
+                        {/* Date Range Filter */}
+                        <div>
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">النطاق الزمني</label>
+                            <select
+                                value={filters.dateRange}
+                                onChange={(e) => setFilters({ ...filters, dateRange: e.target.value as any })}
+                                className="w-full bg-muted border border-border rounded-xl px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            >
+                                <option value="all">كل الفترات</option>
+                                <option value="today">اليوم</option>
+                                <option value="week">هذا الأسبوع</option>
+                                <option value="month">هذا الشهر</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {hasActiveFilters && (
+                        <button
+                            onClick={resetFilters}
+                            className="mt-6 w-full flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted/30 border-2 border-dashed border-border px-6 py-3 rounded-xl hover:border-primary/50 hover:text-primary transition-all"
+                        >
+                            <X className="w-4 h-4" />
+                            إعادة تعيين الفلاتر
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* Results info */}
+            {hasActiveFilters && (
+                <div className="mb-6 flex items-center justify-between bg-primary/5 border border-primary/20 rounded-2xl px-6 py-3">
+                    <p className="text-sm font-bold text-foreground">
+                        {filteredNotifications.length} من {notifications.length} إشعار
+                    </p>
+                    <button
+                        onClick={resetFilters}
+                        className="text-xs font-bold text-primary hover:underline"
+                    >
+                        مسح الفلاتر
+                    </button>
+                </div>
+            )}
+
             {/* Notifications List */}
-            {notifications.length === 0 ? (
+            {filteredNotifications.length === 0 ? (
                 <div className="bg-card border-2 border-dashed border-border rounded-[40px] p-24 text-center shadow-none flex flex-col items-center justify-center min-h-[400px]">
                     <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-8 border border-border shadow-inner">
                         <Bell className="w-10 h-10 text-muted-foreground opacity-20" />
                     </div>
-                    <h3 className="text-2xl font-black text-foreground mb-3 tracking-tight uppercase tracking-widest">{t.notifications.noNotifications}</h3>
-                    <p className="text-muted-foreground font-bold max-w-sm mx-auto leading-relaxed">{t.notifications.noNotificationsDesc}</p>
+                    <h3 className="text-2xl font-black text-foreground mb-3 tracking-tight uppercase tracking-widest">
+                        {hasActiveFilters ? "لا توجد إشعارات مطابقة" : t.notifications.noNotifications}
+                    </h3>
+                    <p className="text-muted-foreground font-bold max-w-sm mx-auto leading-relaxed">
+                        {hasActiveFilters 
+                            ? "جرب تغيير الفلاتر للعثور على الإشعارات" 
+                            : t.notifications.noNotificationsDesc}
+                    </p>
                 </div>
             ) : (
                 <div className="grid gap-4">
-                    {notifications.map(n => {
+                    {filteredNotifications.map(n => {
                         const Icon = TYPE_ICON[n.type] || Bell
                         const iconClass = TYPE_COLOR[n.type] || "bg-muted text-muted-foreground border-border"
                         const isUnread = !n.is_read
@@ -255,6 +447,13 @@ export default function NotificationsPage() {
                         ) : <Inbox className="w-4 h-4 text-primary transition-transform group-hover:scale-125 ml-1" />}
                         {loadingMore ? t.loading : t.notifications.showMore}
                     </button>
+                </div>
+            )}
+
+            {/* Loading state for filter operation */}
+            {loading && (
+                <div className="flex justify-center items-center min-h-[500px]">
+                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
                 </div>
             )}
             </div>

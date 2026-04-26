@@ -1,19 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { cookies } from 'next/headers'
-import { jwtDecode } from 'jwt-decode'
-import { JWTPayload } from '@/lib/auth'
-
-async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')?.value
-  if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
-}
+import { getSession } from '@/lib/auth'
+import { query } from '@/lib/db'
 
 export async function POST(
   req: NextRequest,
@@ -28,16 +15,18 @@ export async function POST(
 
   try {
     // Get invitation
-    const { data: invitation, error: invError } = await supabase
-      .from('invitations')
-      .select('*')
-      .eq('code', inviteCode)
-      .single()
+    const invitations = await query(`
+      SELECT * FROM invitations WHERE code = $1
+    `, [inviteCode])
 
-    if (invError) throw invError
+    if (invitations.length === 0) {
+      return NextResponse.json({ error: 'Invitation not found' }, { status: 404 })
+    }
+
+    const invitation = invitations[0] as any
 
     // Check if expired
-    if (new Date(invitation.expires_at) < new Date()) {
+    if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) {
       return NextResponse.json({ error: 'Invitation expired' }, { status: 410 })
     }
 
@@ -48,27 +37,21 @@ export async function POST(
 
     // If it's a course invitation, enroll in course
     if (invitation.course_id) {
-      const { error: enrollError } = await supabase
-        .from('user_enrollments')
-        .insert([
-          {
-            user_id: session.sub,
-            course_id: invitation.course_id,
-            status: 'active',
-            enrolled_at: new Date().toISOString()
-          }
-        ])
-
-      if (enrollError && enrollError.code !== '23505') throw enrollError
+      try {
+        await query(`
+          INSERT INTO enrollments (student_id, course_id, status, enrolled_at)
+          VALUES ($1, $2, 'active', NOW())
+        `, [session.sub, invitation.course_id])
+      } catch (e: any) {
+        // Ignore if already enrolled
+        if (e.code !== '23505') throw e
+      }
     }
 
     // Mark invitation as accepted
-    const { error: updateError } = await supabase
-      .from('invitations')
-      .update({ accepted_at: new Date().toISOString(), accepted_by: session.sub })
-      .eq('code', inviteCode)
-
-    if (updateError) throw updateError
+    await query(`
+      UPDATE invitations SET accepted_at = NOW(), accepted_by = $1 WHERE code = $2
+    `, [session.sub, inviteCode])
 
     return NextResponse.json({ success: true })
   } catch (error) {

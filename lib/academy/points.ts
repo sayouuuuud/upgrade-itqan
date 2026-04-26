@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { query, queryOne } from '@/lib/db'
 import { PointsAction, MemorizationQuality } from '@/lib/types'
 
 export interface PointsConfig {
@@ -40,46 +40,32 @@ export async function awardPoints(
   metadata?: Record<string, any>
 ): Promise<void> {
   try {
-    // Update or create user points record
-    const { data: existing, error: fetchError } = await supabase
-      .from('user_points')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
+    // Get existing user points
+    const existing = await queryOne<{ user_id: string; points: number }>(
+      `SELECT * FROM user_points WHERE user_id = $1`,
+      [userId]
+    )
 
-    if (fetchError && fetchError.code !== 'PGRST116') throw fetchError
-
-    const newTotal = (existing?.total_points || 0) + points
+    const newTotal = (existing?.points || 0) + points
 
     if (existing) {
-      const { error: updateError } = await supabase
-        .from('user_points')
-        .update({ total_points: newTotal, updated_at: new Date().toISOString() })
-        .eq('user_id', userId)
-      
-      if (updateError) throw updateError
+      await query(
+        `UPDATE user_points SET points = $1, updated_at = NOW() WHERE user_id = $2`,
+        [newTotal, userId]
+      )
     } else {
-      const { error: insertError } = await supabase
-        .from('user_points')
-        .insert([{ user_id: userId, total_points: points, created_at: new Date().toISOString() }])
-      
-      if (insertError) throw insertError
+      await query(
+        `INSERT INTO user_points (user_id, points, created_at) VALUES ($1, $2, NOW())`,
+        [userId, points]
+      )
     }
 
     // Log the points transaction
-    const { error: logError } = await supabase
-      .from('points_log')
-      .insert([
-        {
-          user_id: userId,
-          points,
-          action,
-          metadata: metadata || {},
-          created_at: new Date().toISOString()
-        }
-      ])
-
-    if (logError) throw logError
+    await query(
+      `INSERT INTO points_log (user_id, points, action, metadata, created_at)
+       VALUES ($1, $2, $3, $4, NOW())`,
+      [userId, points, action, JSON.stringify(metadata || {})]
+    )
 
     // Check and award badges
     await checkAndAwardBadges(userId, newTotal)
@@ -161,34 +147,29 @@ export async function checkAndAwardBadges(userId: string, totalPoints: number): 
     const eligibleBadges = badges.filter(b => totalPoints >= b.threshold)
 
     // Get existing badges
-    const { data: existingBadges, error: fetchError } = await supabase
-      .from('badges')
-      .select('badge_id')
-      .eq('user_id', userId)
+    const existingBadges = await query<{ badge_id: string }>(
+      `SELECT badge_id FROM badges WHERE user_id = $1`,
+      [userId]
+    )
 
-    if (fetchError) throw fetchError
-
-    const existingIds = new Set(existingBadges?.map(b => b.badge_id) || [])
+    const existingIds = new Set(existingBadges.map(b => b.badge_id))
 
     // Award new badges
     for (const badge of eligibleBadges) {
       if (!existingIds.has(badge.id)) {
-        const { error: insertError } = await supabase
-          .from('badges')
-          .insert([
-            {
-              user_id: userId,
-              badge_id: badge.id,
-              badge_name: badge.name,
-              badge_description: badge.description,
-              earned_at: new Date().toISOString()
-            }
-          ])
+        try {
+          await query(
+            `INSERT INTO badges (user_id, badge_id, badge_name, badge_description, earned_at)
+             VALUES ($1, $2, $3, $4, NOW())`,
+            [userId, badge.id, badge.name, badge.description]
+          )
 
-        if (insertError && insertError.code !== '23505') throw insertError // 23505 = unique violation
-
-        // Award badge earned points
-        await awardPoints(userId, pointsConfig.badge_earned, 'badge_earned', { badge_id: badge.id })
+          // Award badge earned points
+          await awardPoints(userId, pointsConfig.badge_earned, 'badge_earned', { badge_id: badge.id })
+        } catch (e) {
+          // Ignore if already exists
+          console.debug('Badge already exists:', badge.id)
+        }
       }
     }
   } catch (error) {
@@ -202,14 +183,12 @@ export async function getStreakBonus(userId: string): Promise<number> {
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-    const { data: logs, error } = await supabase
-      .from('memorization_log')
-      .select('created_at')
-      .eq('user_id', userId)
-      .gte('created_at', thirtyDaysAgo.toISOString())
-      .order('created_at', { ascending: false })
-
-    if (error) throw error
+    const logs = await query<{ created_at: string }>(
+      `SELECT created_at FROM memorization_log
+       WHERE user_id = $1 AND created_at >= $2
+       ORDER BY created_at DESC`,
+      [userId, thirtyDaysAgo.toISOString()]
+    )
 
     if (!logs || logs.length === 0) return 0
 

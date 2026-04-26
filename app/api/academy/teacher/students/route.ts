@@ -1,72 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { requireRole, JWTPayload } from '@/lib/auth'
-import { cookies } from 'next/headers'
-import { jwtDecode } from 'jwt-decode'
-
-async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')?.value
-  if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
-}
+import { getSession } from '@/lib/auth'
+import { query } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
   
-  if (!session || !requireRole(session, ['teacher', 'academy_admin'])) {
+  if (!session || !['teacher', 'academy_admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    // Get teacher's courses
-    const { data: courses, error: coursesError } = await supabase
-      .from('courses')
-      .select('id')
-      .eq('teacher_id', session.sub)
-
-    if (coursesError) throw coursesError
-
-    const courseIds = courses?.map(c => c.id) || []
-
-    // Get students enrolled in those courses
-    const { data, error } = await supabase
-      .from('user_enrollments')
-      .select(`
-        *,
-        users (id, name, email),
-        courses (name)
-      `)
-      .in('course_id', courseIds)
-
-    if (error) throw error
-
-    // Aggregate stats per student
-    const studentStats = new Map()
-    data?.forEach(enrollment => {
-      if (!studentStats.has(enrollment.user_id)) {
-        studentStats.set(enrollment.user_id, {
-          id: enrollment.user_id,
-          name: enrollment.users?.name,
-          email: enrollment.users?.email,
-          courses_count: 0,
-          tasks_completed: 0,
-          tasks_total: 0,
-          progress_percentage: 0,
-          total_points: 0,
-          last_activity: new Date(),
-          badges_count: 0
-        })
-      }
-      const student = studentStats.get(enrollment.user_id)
-      student.courses_count++
-    })
-
-    return NextResponse.json(Array.from(studentStats.values()))
+    // Get students enrolled in teacher's courses with aggregated stats
+    const q = `
+      SELECT DISTINCT
+        u.id,
+        u.name,
+        u.email,
+        COUNT(DISTINCT e.id)::int as courses_count,
+        COALESCE(SUM(CASE WHEN ts.status = 'submitted' THEN 1 ELSE 0 END), 0)::int as tasks_completed,
+        COALESCE(SUM(CASE WHEN ts.id IS NOT NULL THEN 1 ELSE 0 END), 0)::int as tasks_total,
+        COALESCE(SUM(up.points), 0)::int as total_points,
+        MAX(e.enrolled_at) as last_activity,
+        COUNT(DISTINCT b.id)::int as badges_count
+      FROM users u
+      JOIN enrollments e ON u.id = e.student_id
+      JOIN courses c ON e.course_id = c.id
+      LEFT JOIN tasks t ON c.id = t.course_id
+      LEFT JOIN task_submissions ts ON u.id = ts.student_id AND t.id = ts.task_id
+      LEFT JOIN user_points up ON u.id = up.user_id
+      LEFT JOIN badges b ON u.id = b.user_id
+      WHERE c.teacher_id = $1 AND e.status = 'active'
+      GROUP BY u.id, u.name, u.email
+      ORDER BY MAX(e.enrolled_at) DESC
+    `
+    const rows = await query(q, [session.sub])
+    return NextResponse.json({ data: rows })
   } catch (error) {
     console.error('Error fetching students:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

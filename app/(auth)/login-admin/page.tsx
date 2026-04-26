@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
             }
         }
         checkAuth()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     async function handleSubmit(e: React.FormEvent) {
@@ -68,7 +68,8 @@ export default function AdminLoginPage() {
             if (adminRoles.includes(role)) {
                 window.location.href = '/admin'
             } else {
-                window.location.href = `/${role}`
+                const rolePath = ['student', 'teacher', 'parent'].includes(role) ? `/academy/${role}` : `/${role}`
+                window.location.href = rolePath
             }
         } catch {
             setError(t.auth.connectionError)

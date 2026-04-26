@@ -7,7 +7,7 @@ interface Invitation {
   id: string
   email: string
   status: 'pending' | 'accepted' | 'expired'
-  role: string
+  role_to_assign: string
   invited_by_name?: string
   created_at: string
   accepted_at?: string

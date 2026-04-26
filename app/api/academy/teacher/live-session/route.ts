@@ -1,50 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { requireRole, JWTPayload } from '@/lib/auth'
-import { cookies } from 'next/headers'
-import { jwtDecode } from 'jwt-decode'
-
-async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')?.value
-  if (!sessionCookie) return null
-  try {
-    return jwtDecode<JWTPayload>(sessionCookie)
-  } catch {
-    return null
-  }
-}
+import { getSession } from '@/lib/auth'
+import { query } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
   
-  if (!session || !requireRole(session, ['teacher', 'academy_admin'])) {
+  if (!session || !['teacher', 'academy_admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const { data, error } = await supabase
-      .from('course_sessions')
-      .select('*')
-      .eq('teacher_id', session.sub)
-      .eq('status', 'live')
-      .single()
+    const rows = await query(`
+      SELECT cs.*, COUNT(sa.id)::int as participant_count
+      FROM course_sessions cs
+      LEFT JOIN session_attendance sa ON cs.id = sa.session_id
+      WHERE cs.teacher_id = $1 AND cs.status = 'live'
+      GROUP BY cs.id
+      LIMIT 1
+    `, [session.sub])
 
-    if (error && error.code !== 'PGRST116') throw error
-
-    if (!data) {
+    if (rows.length === 0) {
       return NextResponse.json(null)
     }
 
-    // Get session participants
-    const { data: participants, error: partError } = await supabase
-      .from('session_attendance')
-      .select('*')
-      .eq('session_id', data.id)
+    const session_id = rows[0].id
+    const participants = await query(`
+      SELECT sa.* FROM session_attendance sa WHERE sa.session_id = $1
+    `, [session_id])
 
-    if (partError) throw partError
-
-    return NextResponse.json({ ...data, participants })
+    return NextResponse.json({ ...rows[0], participants })
   } catch (error) {
     console.error('Error fetching live session:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

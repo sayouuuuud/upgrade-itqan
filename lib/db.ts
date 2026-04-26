@@ -55,7 +55,7 @@ export async function query<T = Record<string, unknown>>(
     return result.rows as T[]
   } catch (error) {
     console.error("[DB] Query error:", error)
-    return [] as T[]
+    throw error  // ← إرمي الخطأ بدل إخفائه — كان يُخفي constraint violations!
   }
 }
 
