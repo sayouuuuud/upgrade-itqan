@@ -61,6 +61,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `حجم الملف يتجاوز ${limitDesc}` }, { status: 400 })
     }
 
+    // Check if UploadThing is configured
+    if (!process.env.UPLOADTHING_SECRET || !process.env.UPLOADTHING_TOKEN) {
+      console.error("[Upload] UploadThing not configured - missing UPLOADTHING_SECRET or UPLOADTHING_TOKEN")
+      return NextResponse.json({ 
+        error: "فشل رفع الملف",
+        details: "UploadThing not configured" 
+      }, { status: 503 })
+    }
+
     // Upload to storage as-is (conversion already done client-side)
     const result = await uploadToStorage(buffer, file.name, file.type)
 
@@ -71,8 +80,11 @@ export async function POST(req: NextRequest) {
       public_id: result.key,
     }, { status: 201 })
   } catch (error) {
-    console.error("Upload error:", error)
-    return NextResponse.json({ error: "فشل رفع الملف" }, { status: 500 })
+    console.error("[Upload] Error:", error)
+    return NextResponse.json({ 
+      error: "فشل رفع الملف",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }
 
