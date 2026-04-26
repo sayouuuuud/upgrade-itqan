@@ -17,7 +17,7 @@ export async function POST(
     // 1. Check if already enrolled or requested
     const checkQuery = `SELECT id FROM enrollments WHERE course_id = $1 AND student_id = $2`
     const existing = await query(checkQuery, [courseId, session.sub])
-    
+
     if (existing.length > 0) {
       return NextResponse.json({ error: 'طلب انضمام مسبق موجود' }, { status: 409 })
     }
@@ -32,10 +32,9 @@ export async function POST(
     const result = await query(insertQuery, [courseId, session.sub])
 
     return NextResponse.json({ success: true, message: 'تم إرسال طلب الانضمام بنجاح', data: result[0] })
-  } catch (error) {
-    // Fallback if enrollments table does not exist or missing columns
-    // I noticed in prompt: `status = 'active'` for enrollments e 
+  } catch (error: any) {
+    // Return exact error message for debugging
     console.error('[API] Error enrolling:', error)
-    return NextResponse.json({ error: 'Internal server error while enrolling' }, { status: 500 })
+    return NextResponse.json({ error: error.message || 'Internal server error while enrolling', details: error.stack }, { status: 500 })
   }
 }
