@@ -13,9 +13,12 @@ declare global {
 
 let pool: Pool | null = null
 
-if (process.env.DATABASE_URL) {
+// Use POSTGRES_URL (from Supabase) as primary, fallback to DATABASE_URL
+const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL
+
+if (databaseUrl) {
   const poolConfig = {
-    connectionString: process.env.DATABASE_URL,
+    connectionString: databaseUrl,
     ssl: { rejectUnauthorized: false },
     max: 10,                        // max concurrent connections
     min: 2,                         // keep 2 connections warm always
@@ -45,7 +48,7 @@ export async function query<T = Record<string, unknown>>(
   params?: unknown[]
 ): Promise<T[]> {
   if (!pool) {
-    console.warn("[DB] No DATABASE_URL - Using mock data mode")
+    console.warn("[DB] No POSTGRES_URL or DATABASE_URL - Using mock data mode")
     return [] as T[]
   }
 
