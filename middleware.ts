@@ -15,7 +15,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // In development/demo mode, skip auth for dashboard pages
-    if (!process.env.DATABASE_URL) {
+    if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) {
         return NextResponse.next()
     }
 

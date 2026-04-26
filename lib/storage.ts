@@ -6,7 +6,18 @@ let utapiInstance: UTApi | null = null;
 
 function getUtapi(): UTApi {
     if (!utapiInstance) {
-        utapiInstance = new UTApi();
+        const secret = process.env.UPLOADTHING_SECRET;
+        const appId = process.env.UPLOADTHING_APP_ID;
+        
+        if (!secret || !appId) {
+            throw new Error("UPLOADTHING_SECRET and UPLOADTHING_APP_ID must be set");
+        }
+        
+        // Initialize UTApi with explicit credentials
+        utapiInstance = new UTApi({
+            apiKey: secret,
+            appId: appId,
+        });
     }
     return utapiInstance;
 }

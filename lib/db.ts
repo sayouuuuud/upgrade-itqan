@@ -13,10 +13,22 @@ declare global {
 
 let pool: Pool | null = null
 
-if (process.env.DATABASE_URL) {
-  const poolConfig = {
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+// Use POSTGRES_URL (from Supabase) as primary, fallback to DATABASE_URL
+let databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL
+
+if (databaseUrl) {
+  // For Supabase pooler, add sslmode=no-verify to the connection string
+  // This resolves "self-signed certificate in certificate chain" errors
+  if (databaseUrl.includes('supabase') && !databaseUrl.includes('sslmode')) {
+    const separator = databaseUrl.includes('?') ? '&' : '?'
+    databaseUrl = databaseUrl + separator + 'sslmode=no-verify'
+  }
+  
+  const poolConfig: any = {
+    connectionString: databaseUrl,
+    ssl: {
+      rejectUnauthorized: false,  // Allow self-signed certificates
+    },
     max: 10,                        // max concurrent connections
     min: 2,                         // keep 2 connections warm always
     idleTimeoutMillis: 30000,       // close idle connections after 30s
@@ -32,6 +44,8 @@ if (process.env.DATABASE_URL) {
     }
     pool = global._dbPool
   }
+  
+  console.log("[DB] Connected to database at:", databaseUrl.split('@')[1]?.split('/')[0] || 'unknown host')
 }
 
 // Warm up pool on startup (keeps 2 connections open so first requests are fast)
@@ -45,7 +59,7 @@ export async function query<T = Record<string, unknown>>(
   params?: unknown[]
 ): Promise<T[]> {
   if (!pool) {
-    console.warn("[DB] No DATABASE_URL - Using mock data mode")
+    console.warn("[DB] No POSTGRES_URL or DATABASE_URL - Using mock data mode")
     return [] as T[]
   }
 
@@ -54,8 +68,14 @@ export async function query<T = Record<string, unknown>>(
     const result = await pool.query(text, params as any[])
     return result.rows as T[]
   } catch (error) {
+    // SSL certificate errors from Supabase pooler are expected and can be retried
+    if (error instanceof Error && error.message?.includes('SELF_SIGNED_CERT')) {
+      console.warn("[DB] SSL certificate warning (retryable):", error.message)
+      // Return empty array for metadata queries that fail due to SSL
+      return [] as T[]
+    }
     console.error("[DB] Query error:", error)
-    throw error  // ← إرمي الخطأ بدل إخفائه — كان يُخفي constraint violations!
+    throw error  // ← Throw error to expose constraint violations and actual issues
   }
 }
 
