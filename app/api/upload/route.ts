@@ -22,29 +22,43 @@ export async function POST(req: NextRequest) {
 
     // Validate file type
     const isAudio = file.type.startsWith("audio/") ||
-                    file.name.endsWith(".mp4") ||
-                    file.name.endsWith(".m4a") ||
-                    file.name.endsWith(".wav") ||
-                    file.name.endsWith(".caf") ||
-                    file.name.endsWith(".webm")
+      file.name.endsWith(".m4a") ||
+      file.name.endsWith(".wav") ||
+      file.name.endsWith(".caf")
+
+    const isVideo = file.type.startsWith("video/") ||
+      file.name.endsWith(".mp4") ||
+      file.name.endsWith(".webm")
 
     const isImage = file.type.startsWith("image/")
 
-    if (!isAudio && !isImage) {
-      return NextResponse.json({ error: "نوع الملف غير مدعوم (صوت أو صورة فقط)" }, { status: 400 })
+    const isDocument = file.type === "application/pdf" ||
+      file.name.endsWith(".pdf") ||
+      file.name.endsWith(".doc") ||
+      file.name.endsWith(".docx") ||
+      file.type.includes("document")
+
+    if (!isAudio && !isImage && !isVideo && !isDocument) {
+      return NextResponse.json({ error: "نوع الملف غير مدعوم (صوت، فيديو، صورة أو مستند فقط)" }, { status: 400 })
     }
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
     // Validate file size
+    const maxSizeVideo = 500 * 1024 * 1024 // 500MB
     const maxSizeAudio = 32 * 1024 * 1024  // 32MB
     const maxSizeImage = 4 * 1024 * 1024   // 4MB
-    const maxSize = isAudio ? maxSizeAudio : maxSizeImage
+    const maxSizeDoc = 20 * 1024 * 1024    // 20MB
+
+    let limitDesc = "4MB"
+    let maxSize = maxSizeImage
+    if (isVideo) { maxSize = maxSizeVideo; limitDesc = "500MB" }
+    else if (isAudio) { maxSize = maxSizeAudio; limitDesc = "32MB" }
+    else if (isDocument) { maxSize = maxSizeDoc; limitDesc = "20MB" }
 
     if (buffer.length > maxSize) {
-      const limit = isAudio ? "32MB" : "4MB"
-      return NextResponse.json({ error: `حجم الملف يتجاوز ${limit}` }, { status: 400 })
+      return NextResponse.json({ error: `حجم الملف يتجاوز ${limitDesc}` }, { status: 400 })
     }
 
     // Upload to storage as-is (conversion already done client-side)

@@ -13,7 +13,7 @@ export async function GET(
 
   try {
     const courseId = (await params).id;
-    
+
     // Check if teacher owns course
     const ownCheck = await query(`SELECT id FROM courses WHERE id = $1 AND teacher_id = $2`, [courseId, session.sub])
     if (ownCheck.length === 0 && session.role === 'teacher') {
@@ -21,7 +21,7 @@ export async function GET(
     }
 
     const lessonsResult = await query(`SELECT * FROM lessons WHERE course_id = $1 ORDER BY order_index ASC`, [courseId])
-    
+
     return NextResponse.json({ lessons: lessonsResult })
   } catch (error) {
     console.error('[API] Error fetching lessons:', error)
@@ -40,7 +40,7 @@ export async function POST(
 
   try {
     const courseId = (await params).id;
-    
+
     // Check if teacher owns course
     const ownCheck = await query(`SELECT id FROM courses WHERE id = $1 AND teacher_id = $2`, [courseId, session.sub])
     if (ownCheck.length === 0) {
@@ -48,10 +48,10 @@ export async function POST(
     }
 
     const body = await req.json()
-    const { title, description, video_url, duration_minutes } = body
+    const { title, description, video_url, duration_minutes, attachments } = body
 
     if (!title) {
-       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
 
     // Get next order index
@@ -68,8 +68,23 @@ export async function POST(
     const result = await query(insertQuery, [
       courseId, title, description || null, video_url || null, orderIndex, duration_minutes || null
     ])
+    const newLesson = result[0];
 
-    return NextResponse.json({ success: true, data: result[0] }, { status: 201 })
+    if (attachments && attachments.length > 0) {
+      for (const att of attachments) {
+        // file_type is uppercase in CHECK ('PDF', 'DOC', 'DOCX', 'XLSX', 'PPTX', 'ZIP', 'OTHER')
+        let fileType = 'OTHER'
+        const ext = att.name.split('.').pop()?.toUpperCase()
+        if (['PDF', 'DOC', 'DOCX', 'XLSX', 'PPTX', 'ZIP'].includes(ext || '')) fileType = ext!
+
+        await query(`
+          INSERT INTO lesson_attachments (lesson_id, file_url, file_type, file_name)
+          VALUES ($1, $2, $3, $4)
+        `, [newLesson.id, att.url, fileType, att.name])
+      }
+    }
+
+    return NextResponse.json({ success: true, data: newLesson }, { status: 201 })
   } catch (error) {
     console.error('[API] Error creating lesson:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
