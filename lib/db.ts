@@ -14,12 +14,21 @@ declare global {
 let pool: Pool | null = null
 
 // Use POSTGRES_URL (from Supabase) as primary, fallback to DATABASE_URL
-const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL
+let databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL
 
 if (databaseUrl) {
-  const poolConfig = {
+  // For Supabase pooler, add sslmode=no-verify to the connection string
+  // This resolves "self-signed certificate in certificate chain" errors
+  if (databaseUrl.includes('supabase') && !databaseUrl.includes('sslmode')) {
+    const separator = databaseUrl.includes('?') ? '&' : '?'
+    databaseUrl = databaseUrl + separator + 'sslmode=no-verify'
+  }
+  
+  const poolConfig: any = {
     connectionString: databaseUrl,
-    ssl: { rejectUnauthorized: false },
+    ssl: {
+      rejectUnauthorized: false,  // Allow self-signed certificates
+    },
     max: 10,                        // max concurrent connections
     min: 2,                         // keep 2 connections warm always
     idleTimeoutMillis: 30000,       // close idle connections after 30s
@@ -35,6 +44,8 @@ if (databaseUrl) {
     }
     pool = global._dbPool
   }
+  
+  console.log("[DB] Connected to database at:", databaseUrl.split('@')[1]?.split('/')[0] || 'unknown host')
 }
 
 // Warm up pool on startup (keeps 2 connections open so first requests are fast)
@@ -58,7 +69,7 @@ export async function query<T = Record<string, unknown>>(
     return result.rows as T[]
   } catch (error) {
     console.error("[DB] Query error:", error)
-    throw error  // ← إرمي الخطأ بدل إخفائه — كان يُخفي constraint violations!
+    throw error  // ← Throw error to expose constraint violations and actual issues
   }
 }
 
