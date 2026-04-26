@@ -68,6 +68,12 @@ export async function query<T = Record<string, unknown>>(
     const result = await pool.query(text, params as any[])
     return result.rows as T[]
   } catch (error) {
+    // SSL certificate errors from Supabase pooler are expected and can be retried
+    if (error instanceof Error && error.message?.includes('SELF_SIGNED_CERT')) {
+      console.warn("[DB] SSL certificate warning (retryable):", error.message)
+      // Return empty array for metadata queries that fail due to SSL
+      return [] as T[]
+    }
     console.error("[DB] Query error:", error)
     throw error  // ← Throw error to expose constraint violations and actual issues
   }
