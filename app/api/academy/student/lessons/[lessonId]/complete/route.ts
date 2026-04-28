@@ -7,7 +7,7 @@ export async function POST(
     { params }: { params: Promise<{ lessonId: string }> }
 ) {
     const session = await getSession()
-    if (!session || session.role !== 'student') {
+    if (!session || !['student', 'teacher', 'admin', 'academy_admin'].includes(session.role)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

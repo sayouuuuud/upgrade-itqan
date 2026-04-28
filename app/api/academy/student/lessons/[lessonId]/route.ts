@@ -36,15 +36,24 @@ export async function GET(
       }
     }
 
-    // 3. check completion (if lesson_progress exists, try to fetch, if errors return false)
+    // 3. check completion
     let is_completed = false
     try {
       const compQ = `SELECT completed_at FROM lesson_progress WHERE lesson_id = $1 AND student_id = $2`
       const comps = await query(compQ, [lessonId, session.sub])
       if (comps.length > 0) is_completed = true
-    } catch(e) {}
+    } catch (e) { }
 
-    return NextResponse.json({ lesson, is_completed })
+    // 4. Fetch attachments
+    const attachments = await query(`SELECT id, file_url, file_type, file_name FROM lesson_attachments WHERE lesson_id = $1`, [lessonId])
+
+    return NextResponse.json({
+      lesson: {
+        ...lesson,
+        attachments: attachments || []
+      },
+      is_completed
+    })
   } catch (error) {
     console.error('[API] Error fetching lesson:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

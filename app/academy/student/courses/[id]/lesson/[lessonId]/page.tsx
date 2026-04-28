@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
-import { PlayCircle, ChevronRight, ChevronLeft, ArrowRight, CheckCircle2, ListVideo, BookOpen } from 'lucide-react'
+import { PlayCircle, ChevronRight, ChevronLeft, ArrowRight, CheckCircle2, ListVideo, BookOpen, Download, FileIcon, Loader2 } from 'lucide-react'
 
 export default function LessonPage() {
   const params = useParams()
@@ -19,6 +19,7 @@ export default function LessonPage() {
   const [courseLessons, setCourseLessons] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [errorText, setErrorText] = useState('')
+  const [isCompleting, setIsCompleting] = useState(false)
 
   useEffect(() => {
     async function fetchData() {
@@ -143,35 +144,93 @@ export default function LessonPage() {
             </div>
 
             <button
+              disabled={lessonData.is_completed || isCompleting}
               onClick={async () => {
                 if (lessonData.is_completed) return;
                 try {
+                  setIsCompleting(true)
                   const res = await fetch(`/api/academy/student/lessons/${lessonId}/complete`, { method: 'POST' });
                   if (res.ok) {
                     setLessonData({ ...lessonData, is_completed: true });
+                    // Update sidebar status locally
+                    setCourseLessons(prev => prev.map(l => l.id === lessonId ? { ...l, is_completed: true } : l))
                   } else {
                     const err = await res.json();
                     alert(err.error || 'حدث خطأ');
                   }
                 } catch {
                   alert('حدث خطأ في الاتصال');
+                } finally {
+                  setIsCompleting(false)
                 }
               }}
               className={cn(
                 "shrink-0 px-4 py-2 border rounded-xl text-sm font-bold flex items-center gap-2 transition-colors",
                 lessonData.is_completed
                   ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                  : "border-border hover:bg-muted text-muted-foreground"
+                  : "border-border hover:bg-muted text-muted-foreground disabled:opacity-50"
               )}
             >
-              <CheckCircle2 className="w-5 h-5" />
+              {isCompleting ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
               {lessonData.is_completed ? 'مكتمل' : 'تحديد كمكتمل'}
             </button>
           </div>
 
+          {/* Success Banner */}
+          {lessonData.is_completed && nextLesson && (
+            <div className="mb-8 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="flex items-center gap-4 text-center sm:text-right">
+                <div className="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-green-500/20">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-green-800 dark:text-green-300">أحسنت! لقد أتممت هذا الدرس</h3>
+                  <p className="text-sm text-green-700/80 dark:text-green-400/80">أنت الآن مستعد للانتقال للدرس التالي</p>
+                </div>
+              </div>
+              <Link
+                href={`/academy/student/courses/${courseId}/lesson/${nextLesson.id}`}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2"
+              >
+                انتقل للدرس التالي
+                <ChevronLeft className="w-4 h-4 rtl:rotate-180" />
+              </Link>
+            </div>
+          )}
+
           <div className="prose prose-blue dark:prose-invert max-w-none text-muted-foreground mb-10 leading-relaxed font-medium whitespace-pre-wrap">
             {lessonData.description || lessonData.content || <span className="opacity-50">لا يوجد وصف للدرس.</span>}
           </div>
+
+          {/* Attachments Section */}
+          {lessonData.attachments && lessonData.attachments.length > 0 && (
+            <div className="mb-10 p-6 bg-muted/30 rounded-2xl border border-border border-dashed">
+              <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-foreground">
+                <Download className="w-5 h-5 text-blue-600" />
+                المرفقات والملفات التعزيزية
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {lessonData.attachments.map((att: any) => (
+                  <a
+                    key={att.id}
+                    href={att.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-4 bg-card border border-border rounded-xl hover:border-blue-500 hover:shadow-md transition-all flex items-center gap-4 group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      <FileIcon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-foreground truncate">{att.file_name}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">{att.file_type}</p>
+                    </div>
+                    <Download className="w-4 h-4 text-muted-foreground group-hover:text-blue-600 transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Navigation Buttons */}
           <div className="flex flex-wrap items-center justify-between gap-4 mt-auto pt-8 border-t border-border">
@@ -234,11 +293,16 @@ export default function LessonPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="truncate">{lesson.title}</p>
-                      {lesson.duration_minutes && (
-                        <p className={cn("text-[10px] mt-0.5", isActive ? "text-blue-100" : "opacity-60")}>
-                          {lesson.duration_minutes} دقيقة
-                        </p>
-                      )}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {lesson.duration_minutes && (
+                          <p className={cn("text-[10px]", isActive ? "text-blue-100" : "opacity-60")}>
+                            {lesson.duration_minutes} دقيقة
+                          </p>
+                        )}
+                        {lesson.is_completed && (
+                          <CheckCircle2 className={cn("w-3 h-3", isActive ? "text-white" : "text-green-500")} />
+                        )}
+                      </div>
                     </div>
                     {isActive && <div className="shrink-0 w-1.5 h-1.5 rounded-full bg-white ml-1" />}
                   </Link>

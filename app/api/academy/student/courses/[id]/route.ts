@@ -14,7 +14,7 @@ export async function GET(
   try {
     const p = await params;
     const courseId = p.id;
-    
+
     // 1. Course Details
     const courseQuery = `
       SELECT c.*, 
@@ -36,10 +36,13 @@ export async function GET(
 
     // 2. Lessons
     const lessonsQuery = `
-      SELECT id, title, description, order_index, duration_minutes
-      FROM lessons WHERE course_id = $1 ORDER BY order_index ASC
+      SELECT l.id, l.title, l.description, l.order_index, l.duration_minutes,
+             (SELECT COUNT(*)>0 FROM lesson_progress lp WHERE lp.lesson_id = l.id AND lp.student_id = $2) as is_completed
+      FROM lessons l 
+      WHERE l.course_id = $1 
+      ORDER BY l.order_index ASC
     `
-    const lessons = await query<any>(lessonsQuery, [courseId])
+    const lessons = await query<any>(lessonsQuery, [courseId, session.sub])
 
     // 3. Enrollment Status
     const enrollmentQuery = `
@@ -51,10 +54,10 @@ export async function GET(
       enrollment_status = enrollmentRows[0].status // 'pending' or 'active' or 'rejected'
     }
 
-    return NextResponse.json({ 
-      course, 
-      lessons, 
-      enrollment_status 
+    return NextResponse.json({
+      course,
+      lessons,
+      enrollment_status
     })
   } catch (error) {
     console.error('[API] Error fetching course detail:', error)
