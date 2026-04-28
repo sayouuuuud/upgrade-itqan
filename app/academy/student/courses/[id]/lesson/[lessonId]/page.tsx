@@ -23,6 +23,7 @@ export default function LessonPage() {
 
   useEffect(() => {
     async function fetchData() {
+      if (!lessonId) return;
       try {
         setLoading(true)
         // Fetch lesson
@@ -34,13 +35,18 @@ export default function LessonPage() {
           return
         }
         const lData = await lRes.json()
-        setLessonData(lData.lesson)
+        // Merge is_completed into lesson data for easier access
+        const fullLessonData = { ...lData.lesson, is_completed: lData.is_completed };
+        setLessonData(fullLessonData)
 
-        // Fetch course for sidebar
-        const cRes = await fetch(`/api/academy/student/courses/${courseId}`)
-        if (cRes.ok) {
-          const cData = await cRes.json()
-          setCourseLessons(cData.lessons || [])
+        // Fetch course for sidebar - Use courseId from params or fallback to lesson's course_id
+        const effectiveCourseId = courseId || fullLessonData.course_id
+        if (effectiveCourseId) {
+          const cRes = await fetch(`/api/academy/student/courses/${effectiveCourseId}`)
+          if (cRes.ok) {
+            const cData = await cRes.json()
+            setCourseLessons(cData.lessons || [])
+          }
         }
 
       } catch (e) {
@@ -83,6 +89,12 @@ export default function LessonPage() {
     if (url.includes('youtube.com/watch?v=')) return `https://www.youtube.com/embed/${url.split('v=')[1]?.split('&')[0]}`
     if (url.includes('youtu.be/')) return `https://www.youtube.com/embed/${url.split('youtu.be/')[1]}`
     return url;
+  }
+
+  const getDownloadUrl = (url: string, name: string) => {
+    if (!url) return '#';
+    // Use our internal proxy to avoid CORS and Cloudinary 401 issues
+    return `/api/academy/student/lessons/download?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}`;
   }
 
   return (
@@ -213,7 +225,8 @@ export default function LessonPage() {
                 {lessonData.attachments.map((att: any) => (
                   <a
                     key={att.id}
-                    href={att.file_url}
+                    href={getDownloadUrl(att.file_url, att.file_name)}
+                    download={att.file_name}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-4 bg-card border border-border rounded-xl hover:border-blue-500 hover:shadow-md transition-all flex items-center gap-4 group"

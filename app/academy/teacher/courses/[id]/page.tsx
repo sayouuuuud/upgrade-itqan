@@ -154,6 +154,7 @@ export default function ManageCoursePage() {
           body: JSON.stringify({
             ...newLesson,
             duration_minutes: newLesson.duration_minutes ? Number(newLesson.duration_minutes) : undefined,
+            attachments
           })
         })
         if (res.ok) {
@@ -195,7 +196,7 @@ export default function ManageCoursePage() {
       video_url: lesson.video_url || '',
       duration_minutes: lesson.duration_minutes ? lesson.duration_minutes.toString() : ''
     })
-    setAttachments([])
+    setAttachments(lesson.attachments || [])
     setShowAddLesson(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }

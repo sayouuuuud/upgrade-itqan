@@ -23,7 +23,7 @@ export async function GET(
     `
     const courses = await query<any>(courseQuery, [courseId, session.sub])
     if (courses.length === 0) {
-       return NextResponse.json({ error: 'Course not found or unauthorized' }, { status: 404 })
+      return NextResponse.json({ error: 'Course not found or unauthorized' }, { status: 404 })
     }
 
     // Lessons
@@ -34,6 +34,27 @@ export async function GET(
       ORDER BY order_index ASC
     `
     const lessons = await query<any>(lessonsQuery, [courseId])
+
+    // Fetch attachments for these lessons
+    if (lessons.length > 0) {
+      const lessonIds = lessons.map(l => l.id)
+      const attachmentsQuery = `
+        SELECT id, lesson_id, file_url, file_name, file_type
+        FROM lesson_attachments
+        WHERE lesson_id = ANY($1)
+      `
+      const allAttachments = await query<any>(attachmentsQuery, [lessonIds])
+
+      // Map attachments to lessons
+      lessons.forEach(lesson => {
+        lesson.attachments = allAttachments.filter(a => a.lesson_id === lesson.id).map(a => ({
+          id: a.id,
+          name: a.file_name,
+          url: a.file_url,
+          type: a.file_type
+        }))
+      })
+    }
 
     // Pending requests count
     const pendingQuery = `
@@ -81,13 +102,13 @@ export async function PUT(
       RETURNING *
     `
     const result = await query(updateQuery, [
-      title, 
-      description, 
-      thumbnail_url, 
-      level, 
-      category_id, 
-      status, 
-      courseId, 
+      title,
+      description,
+      thumbnail_url,
+      level,
+      category_id,
+      status,
+      courseId,
       session.sub
     ])
 

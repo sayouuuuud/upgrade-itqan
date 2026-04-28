@@ -31,8 +31,13 @@ export async function uploadToStorage(
     }
 
     // Cloudinary needs resource_type: 'video' for both video and audio files
-    const isVideoOrAudio = contentType.startsWith('video/') || contentType.startsWith('audio/');
-    const resourceType = isVideoOrAudio ? 'video' : 'auto';
+    // For PDFs and docs, use 'raw' to avoid 401/processing issues in the 'image' bucket
+    let resourceType: 'image' | 'video' | 'raw' | 'auto' = 'auto';
+    if (contentType.startsWith('video/') || contentType.startsWith('audio/')) {
+        resourceType = 'video';
+    } else if (contentType === 'application/pdf' || contentType.includes('msword') || contentType.includes('officedocument')) {
+        resourceType = 'raw';
+    }
 
     // Remove extension for public_id as Cloudinary adds it automatically based on format
     const publicId = filename.replace(/\.[^/.]+$/, "");
@@ -41,7 +46,9 @@ export async function uploadToStorage(
         const stream = cloudinary.uploader.upload_stream(
             {
                 resource_type: resourceType,
-                public_id: publicId
+                public_id: publicId,
+                folder: 'itqaan-academy',
+                access_mode: 'public'
             },
             (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
                 if (error) {

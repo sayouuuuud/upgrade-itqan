@@ -30,6 +30,7 @@ export default function CourseDetailPage() {
 
   useEffect(() => {
     async function fetchCourse() {
+      if (!courseId) return;
       try {
         const res = await fetch(`/api/academy/student/courses/${courseId}`)
         if (res.ok) {
@@ -45,7 +46,11 @@ export default function CourseDetailPage() {
         setLoading(false)
       }
     }
-    fetchCourse()
+    if (courseId) {
+      fetchCourse()
+    } else {
+      setLoading(false)
+    }
   }, [courseId])
 
   const handleEnroll = async () => {
@@ -53,7 +58,7 @@ export default function CourseDetailPage() {
     try {
       const res = await fetch(`/api/academy/student/courses/${courseId}/enroll`, { method: 'POST' })
       if (res.ok) {
-        setData(prev => prev ? {...prev, enrollment_status: 'pending'} : prev)
+        setData(prev => prev ? { ...prev, enrollment_status: 'pending' } : prev)
       } else {
         const json = await res.json()
         alert(json.error || 'حدث خطأ')
@@ -100,12 +105,12 @@ export default function CourseDetailPage() {
       <div className="relative rounded-2xl overflow-hidden bg-blue-900 border border-blue-800">
         <div className="absolute inset-0">
           {course.thumbnail_url ? (
-             <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover opacity-30" />
+            <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover opacity-30" />
           ) : (
-             <div className="w-full h-full bg-gradient-to-br from-blue-700 to-blue-950 opacity-90" />
+            <div className="w-full h-full bg-gradient-to-br from-blue-700 to-blue-950 opacity-90" />
           )}
         </div>
-        
+
         <div className="relative z-10 p-8 md:p-12 lg:px-16 lg:py-16">
           <div className="flex flex-wrap gap-2 mb-4">
             <span className="px-3 py-1 bg-white/10 text-white border border-white/20 rounded-full text-xs font-bold backdrop-blur-sm">
@@ -117,11 +122,11 @@ export default function CourseDetailPage() {
               </span>
             )}
           </div>
-          
+
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl leading-tight">
             {course.title}
           </h1>
-          
+
           <div className="flex items-center gap-6 text-blue-100 text-sm mb-6 max-w-3xl">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 opacity-70" />
@@ -136,16 +141,16 @@ export default function CourseDetailPage() {
               <span className="font-medium">{course.total_enrolled} طالب</span>
             </div>
           </div>
-          
+
           {course.description && (
             <p className="text-blue-50 max-w-3xl text-lg mb-8 opacity-90 leading-relaxed font-medium">
               {course.description}
             </p>
           )}
-          
+
           <div className="mt-8 flex gap-4">
             {enrollment_status === 'none' && (
-              <button 
+              <button
                 onClick={handleEnroll}
                 disabled={enrolling}
                 className="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white text-base font-bold rounded-xl transition-all shadow-lg flex items-center gap-2 disabled:opacity-70"
@@ -160,10 +165,10 @@ export default function CourseDetailPage() {
                 )}
               </button>
             )}
-            
+
             {enrollment_status === 'pending' && (
               <button disabled className="px-8 py-3.5 bg-white/10 text-white text-base font-bold rounded-xl border border-white/20 flex items-center gap-2 cursor-not-allowed">
-                 <Clock className="w-5 h-5" />
+                <Clock className="w-5 h-5" />
                 {t.academy?.enrollmentPending || 'في انتظار موافقة الأستاذ'}
               </button>
             )}
@@ -175,7 +180,7 @@ export default function CourseDetailPage() {
             )}
 
             {enrollment_status === 'active' && lessons.length > 0 && (
-              <Link 
+              <Link
                 href={`/academy/student/courses/${courseId}/lesson/${lessons[0].id}`}
                 className="px-8 py-3.5 bg-green-500 hover:bg-green-400 text-white text-base font-bold rounded-xl transition-all shadow-lg flex items-center gap-2"
               >
@@ -196,7 +201,7 @@ export default function CourseDetailPage() {
             <span className="text-sm font-normal text-muted-foreground ml-2">({lessons.length} درس)</span>
           </h2>
         </div>
-        
+
         <div className="divide-y divide-border">
           {lessons.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
@@ -213,10 +218,10 @@ export default function CourseDetailPage() {
                     {lesson.title}
                   </h3>
                   {lesson.duration_minutes && (
-                     <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                       <Clock className="w-3 h-3" />
-                       {lesson.duration_minutes} دقيقة
-                     </p>
+                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {lesson.duration_minutes} دقيقة
+                    </p>
                   )}
                 </div>
                 <div>
@@ -225,7 +230,7 @@ export default function CourseDetailPage() {
                       <Lock className="w-4 h-4" />
                     </div>
                   ) : (
-                    <Link 
+                    <Link
                       href={`/academy/student/courses/${courseId}/lesson/${lesson.id}`}
                       className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-600 flex items-center justify-center transition-colors shadow-sm cursor-pointer"
                     >
