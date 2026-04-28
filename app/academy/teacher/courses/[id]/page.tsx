@@ -259,15 +259,36 @@ export default function ManageCoursePage() {
                       </div>
                       <div className="col-span-2">
                         <label className="text-sm font-bold block mb-1">المحتوى المرئي (فيديو)</label>
-                        <div className="flex gap-2">
-                          <input type="url" placeholder="رابط يوتيوب أو Vimeo" value={newLesson.video_url} onChange={e => setNewLesson({ ...newLesson, video_url: e.target.value })} className="flex-1 p-3 rounded-xl border border-border bg-background text-left dir-ltr focus:ring-2 focus:ring-blue-500 outline-none" />
-                          <div className="relative">
-                            <input type="file" accept="video/*" onChange={e => handleFileUpload(e, 'lesson_video')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                            <button type="button" disabled={uploadingFiles['lesson_video']} className="h-full px-4 bg-muted hover:bg-muted/80 text-foreground font-bold border border-border rounded-xl flex items-center gap-2 transition-colors">
-                              {uploadingFiles['lesson_video'] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Video className="w-4 h-4" />}
-                              رفع فيديو
-                            </button>
+                        <div className="flex flex-col gap-3">
+                          <div className="flex gap-2">
+                            <input type="url" placeholder="رابط يوتيوب أو Vimeo" value={newLesson.video_url} onChange={e => setNewLesson({ ...newLesson, video_url: e.target.value })} className="flex-1 p-3 rounded-xl border border-border bg-background text-left dir-ltr focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <div className="relative">
+                              <input type="file" accept="video/*" onChange={e => handleFileUpload(e, 'lesson_video')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                              <button type="button" disabled={uploadingFiles['lesson_video']} className="h-full px-4 bg-muted hover:bg-muted/80 text-foreground font-bold border border-border rounded-xl flex items-center gap-2 transition-colors">
+                                {uploadingFiles['lesson_video'] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Video className="w-4 h-4" />}
+                                رفع فيديو
+                              </button>
+                            </div>
                           </div>
+
+                          {/* Video Preview */}
+                          {newLesson.video_url && (
+                            <div className="w-full relative rounded-xl overflow-hidden bg-black aspect-video border border-border">
+                              {(newLesson.video_url.includes('youtube.com') || newLesson.video_url.includes('youtu.be')) ? (
+                                <iframe
+                                  src={`https://www.youtube.com/embed/${newLesson.video_url.includes('youtu.be') ? newLesson.video_url.split('youtu.be/')[1] : newLesson.video_url.split('v=')[1]?.split('&')[0]}`}
+                                  className="w-full h-full"
+                                  allowFullScreen
+                                />
+                              ) : (
+                                <video
+                                  src={newLesson.video_url}
+                                  controls
+                                  className="w-full h-full object-contain"
+                                />
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
 

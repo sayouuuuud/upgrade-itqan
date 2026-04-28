@@ -59,10 +59,10 @@ export async function POST(
     const orderResult = await query<any>(orderQuery, [courseId])
     const orderIndex = orderResult[0]?.next_order || 1
 
-    // Insert
+    // Insert (populate both lesson_order and order_index to satisfy db constraints)
     const insertQuery = `
-      INSERT INTO lessons (course_id, title, description, video_url, order_index, duration_minutes, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      INSERT INTO lessons (course_id, title, description, video_url, order_index, lesson_order, duration_minutes, created_at)
+      VALUES ($1, $2, $3, $4, $5, $5, $6, NOW())
       RETURNING *
     `
     const result = await query(insertQuery, [

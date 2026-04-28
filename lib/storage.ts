@@ -1,15 +1,10 @@
-import { UTApi } from "uploadthing/server";
+import { v2 as cloudinary, UploadApiErrorResponse, UploadApiResponse } from 'cloudinary';
 
-// Lazily initialize UTApi so it doesn't throw during Next.js build
-// if the UPLOADTHING_SECRET environment variable is missing.
-let utapiInstance: UTApi | null = null;
-
-function getUtapi(): UTApi {
-    if (!utapiInstance) {
-        utapiInstance = new UTApi();
-    }
-    return utapiInstance;
-}
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export interface StorageUploadResult {
     url: string;
@@ -19,41 +14,73 @@ export interface StorageUploadResult {
 }
 
 /**
- * Uploads a file buffer to UploadThing.
- * Note: UTApi.uploadFiles expects a File object or an array of Files.
+ * Uploads a file to Cloudinary.
+ * Accepts a Web File object (preferred) or a Buffer.
  */
 export async function uploadToStorage(
-    buffer: Buffer,
-    filename: string,
-    contentType: string
+    fileOrBuffer: File | Buffer,
+    filename: string, // fallback or explicitly requested name
+    contentType: string // fallback type
 ): Promise<StorageUploadResult> {
-    const utapi = getUtapi();
-    // Correct way to handle Buffer in environments with File API
-    const file = new File([buffer as any], filename, { type: contentType });
-    const response = await utapi.uploadFiles(file);
+    let buffer: Buffer;
 
-    if (!response.data) {
-        throw new Error(response.error?.message || "Upload failed");
+    if (typeof File !== 'undefined' && fileOrBuffer instanceof File) {
+        buffer = Buffer.from(await fileOrBuffer.arrayBuffer());
+    } else {
+        buffer = fileOrBuffer as Buffer;
     }
 
-    return {
-        url: (response.data as any).ufsUrl || response.data.url,
-        key: response.data.key,
-        name: response.data.name,
-        size: response.data.size,
-    };
+    // Cloudinary needs resource_type: 'video' for both video and audio files
+    const isVideoOrAudio = contentType.startsWith('video/') || contentType.startsWith('audio/');
+    const resourceType = isVideoOrAudio ? 'video' : 'auto';
+
+    // Remove extension for public_id as Cloudinary adds it automatically based on format
+    const publicId = filename.replace(/\.[^/.]+$/, "");
+
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            {
+                resource_type: resourceType,
+                public_id: publicId
+            },
+            (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
+                if (error) {
+                    console.error("[Cloudinary] Upload Error:", error);
+                    return reject(new Error(error.message));
+                }
+
+                if (result) {
+                    resolve({
+                        url: result.secure_url,
+                        key: result.public_id, // Important for deletion
+                        name: filename,
+                        size: result.bytes,
+                    });
+                } else {
+                    reject(new Error("Unknown error during upload"));
+                }
+            }
+        );
+        stream.end(buffer);
+    });
 }
 
 /**
- * Deletes a file from UploadThing using its key.
+ * Deletes a file from Cloudinary using its key.
  */
 export async function deleteFromStorage(key: string): Promise<{ success: boolean }> {
-    const utapi = getUtapi();
-    const response = await utapi.deleteFiles(key);
-    return { success: response.success };
-}
+    try {
+        // Attempt to delete it as image first (default)
+        let result = await cloudinary.uploader.destroy(key, { invalidate: true });
 
-// Export a getter or proxy if someone needs the raw utapi object,
-// but since it's an internal utility, exporting default is usually fine if we make it a proxy or just remove it if unused.
-// We'll export a getter to maintain compatibility if it was imported.
-export default getUtapi;
+        if (result.result === 'not found') {
+            // If not found, it might be a video or audio, so try deleting as video
+            result = await cloudinary.uploader.destroy(key, { invalidate: true, resource_type: 'video' });
+        }
+
+        return { success: result.result === 'ok' };
+    } catch (e) {
+        console.error("[Cloudinary] Delete Error:", e);
+        return { success: false };
+    }
+}

@@ -1,68 +1,50 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { uploadToStorage, deleteFromStorage } from "@/lib/storage"
+import { transliterate } from "transliteration"
 
-// POST /api/upload - upload audio or image file to UploadThing
-// NOTE: Audio format conversion (WebM → WAV/MP4) now happens client-side
-// in RecitationRecorder.tsx before the file reaches this endpoint.
+// POST /api/upload - upload file to UploadThing
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession()
     if (!session) return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
 
     const formData = await req.formData()
-
-    // Support both 'audio' and 'image' field names
     const file = (formData.get("audio") || formData.get("image") || formData.get("file")) as File | null
-    const folder = (formData.get("folder") as string) || "uploads"
 
     if (!file) {
       return NextResponse.json({ error: "لم يتم تحميل ملف" }, { status: 400 })
     }
 
-    // Validate file type
-    const isAudio = file.type.startsWith("audio/") ||
-      file.name.endsWith(".m4a") ||
-      file.name.endsWith(".wav") ||
-      file.name.endsWith(".caf")
-
-    const isVideo = file.type.startsWith("video/") ||
-      file.name.endsWith(".mp4") ||
-      file.name.endsWith(".webm")
-
+    // Detect file category
+    const isAudio = file.type.startsWith("audio/") || [".m4a", ".wav", ".caf"].some(e => file.name.endsWith(e))
+    const isVideo = file.type.startsWith("video/") || [".mp4", ".webm"].some(e => file.name.endsWith(e))
     const isImage = file.type.startsWith("image/")
-
     const isDocument = file.type === "application/pdf" ||
-      file.name.endsWith(".pdf") ||
-      file.name.endsWith(".doc") ||
-      file.name.endsWith(".docx") ||
+      [".pdf", ".doc", ".docx"].some(e => file.name.endsWith(e)) ||
       file.type.includes("document")
 
     if (!isAudio && !isImage && !isVideo && !isDocument) {
-      return NextResponse.json({ error: "نوع الملف غير مدعوم (صوت، فيديو، صورة أو مستند فقط)" }, { status: 400 })
+      return NextResponse.json({ error: "نوع الملف غير مدعوم" }, { status: 400 })
     }
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
+    // Size limits check
+    const maxSize = isVideo ? 500 * 1024 * 1024
+      : isAudio ? 32 * 1024 * 1024
+        : isDocument ? 20 * 1024 * 1024
+          : 4 * 1024 * 1024
 
-    // Validate file size
-    const maxSizeVideo = 500 * 1024 * 1024 // 500MB
-    const maxSizeAudio = 32 * 1024 * 1024  // 32MB
-    const maxSizeImage = 4 * 1024 * 1024   // 4MB
-    const maxSizeDoc = 20 * 1024 * 1024    // 20MB
-
-    let limitDesc = "4MB"
-    let maxSize = maxSizeImage
-    if (isVideo) { maxSize = maxSizeVideo; limitDesc = "500MB" }
-    else if (isAudio) { maxSize = maxSizeAudio; limitDesc = "32MB" }
-    else if (isDocument) { maxSize = maxSizeDoc; limitDesc = "20MB" }
-
-    if (buffer.length > maxSize) {
-      return NextResponse.json({ error: `حجم الملف يتجاوز ${limitDesc}` }, { status: 400 })
+    if (file.size > maxSize) {
+      return NextResponse.json({ error: `حجم الملف يتجاوز الحد المسموح` }, { status: 400 })
     }
 
-    // Upload to storage as-is (conversion already done client-side)
-    const result = await uploadToStorage(buffer, file.name, file.type)
+    // Sanitize filename - remove any non-ASCII chars to avoid UploadThing 400
+    const ext = file.name.includes('.') ? `.${file.name.split('.').pop()}` : ''
+    let base = transliterate(file.name.replace(/\.[^/.]+$/, '')).replace(/[^a-zA-Z0-9\-_]/g, '_').slice(0, 60)
+    if (base.length < 2) base = 'file'
+    const safeName = `${base}_${Date.now()}${ext}`
+
+    const result = await uploadToStorage(file, safeName, file.type)
 
     return NextResponse.json({
       url: result.url,
@@ -70,9 +52,13 @@ export async function POST(req: NextRequest) {
       imageUrl: isImage ? result.url : undefined,
       public_id: result.key,
     }, { status: 201 })
-  } catch (error) {
-    console.error("Upload error:", error)
-    return NextResponse.json({ error: "فشل رفع الملف" }, { status: 500 })
+
+  } catch (error: any) {
+    console.error("[Upload] Error:", error)
+    return NextResponse.json({
+      error: "فشل رفع الملف",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }
 
@@ -89,11 +75,9 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "معرف الملف مطلوب" }, { status: 400 })
     }
 
-    // Attempt to delete from UploadThing
     await deleteFromStorage(fileKey)
-
     return NextResponse.json({ success: true, message: "تم الحذف بنجاح" })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Delete upload error:", error)
     return NextResponse.json({ error: "فشل حذف الملف" }, { status: 500 })
   }

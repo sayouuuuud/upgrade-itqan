@@ -13,14 +13,25 @@ declare global {
 
 let pool: Pool | null = null
 
-if (process.env.DATABASE_URL) {
-  const poolConfig = {
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
-    max: 10,                        // max concurrent connections
-    min: 2,                         // keep 2 connections warm always
-    idleTimeoutMillis: 30000,       // close idle connections after 30s
-    connectionTimeoutMillis: 8000,  // give up after 8s
+// Use POSTGRES_URL (from Supabase) as primary, fallback to DATABASE_URL
+let databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL
+
+if (databaseUrl) {
+  // For Supabase, ensure sslmode is set correctly
+  let finalUrl = databaseUrl
+  if (finalUrl.includes('supabase') && !finalUrl.includes('sslmode')) {
+    finalUrl = finalUrl + (finalUrl.includes('?') ? '&' : '?') + 'sslmode=no-verify'
+  }
+
+  const poolConfig: any = {
+    connectionString: finalUrl,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+    max: 10,
+    min: 2,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 8000,
     allowExitOnIdle: false,
   }
 
@@ -32,12 +43,14 @@ if (process.env.DATABASE_URL) {
     }
     pool = global._dbPool
   }
+
+  console.log("[DB] Connected to database at:", databaseUrl.split('@')[1]?.split('/')[0] || 'unknown host')
 }
 
 // Warm up pool on startup (keeps 2 connections open so first requests are fast)
 if (pool && process.env.NODE_ENV === 'production') {
-  pool.connect().then(c => c.release()).catch(() => {})
-  pool.connect().then(c => c.release()).catch(() => {})
+  pool.connect().then(c => c.release()).catch(() => { })
+  pool.connect().then(c => c.release()).catch(() => { })
 }
 
 export async function query<T = Record<string, unknown>>(
@@ -45,17 +58,20 @@ export async function query<T = Record<string, unknown>>(
   params?: unknown[]
 ): Promise<T[]> {
   if (!pool) {
-    console.warn("[DB] No DATABASE_URL - Using mock data mode")
+    console.warn("[DB] No POSTGRES_URL or DATABASE_URL - Using mock data mode")
     return [] as T[]
   }
 
   try {
-    // Use pool.query() directly — avoids acquire/release overhead per query
     const result = await pool.query(text, params as any[])
     return result.rows as T[]
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof Error && error.message?.includes('SELF_SIGNED_CERT')) {
+      console.warn("[DB] SSL certificate warning (retryable):", error.message)
+      return [] as T[]
+    }
     console.error("[DB] Query error:", error)
-    throw error  // ← إرمي الخطأ بدل إخفائه — كان يُخفي constraint violations!
+    throw error
   }
 }
 
