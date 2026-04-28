@@ -7,7 +7,7 @@ import { useI18n } from '@/lib/i18n/context'
 import {
   ArrowRight, PlayCircle, Settings, Users, BookOpen, Clock,
   Trash2, Plus, GripVertical, CheckCircle2, UploadCloud,
-  FileText, Video, Image as ImageIcon, FileIcon, Loader2, Save, Trash
+  FileText, Video, Image as ImageIcon, FileIcon, Loader2, Save, Trash, Edit2
 } from 'lucide-react'
 
 type Tab = 'lessons' | 'settings' | 'students'
@@ -33,6 +33,7 @@ export default function ManageCoursePage() {
   // Add Lesson
   const [showAddLesson, setShowAddLesson] = useState(false)
   const [isSubmitLesson, setIsSubmitLesson] = useState(false)
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
   const [newLesson, setNewLesson] = useState({ title: '', description: '', video_url: '', duration_minutes: '' })
   const [attachments, setAttachments] = useState<any[]>([])
   const [uploadingFiles, setUploadingFiles] = useState<{ [key: string]: boolean }>({})
@@ -146,26 +147,64 @@ export default function ManageCoursePage() {
     if (!newLesson.title) return
     setIsSubmitLesson(true)
     try {
-      const res = await fetch(`/api/academy/teacher/courses/${courseId}/lessons`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newLesson,
-          duration_minutes: newLesson.duration_minutes ? Number(newLesson.duration_minutes) : undefined,
-          attachments
+      if (editingLessonId) {
+        const res = await fetch(`/api/academy/teacher/courses/${courseId}/lessons/${editingLessonId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...newLesson,
+            duration_minutes: newLesson.duration_minutes ? Number(newLesson.duration_minutes) : undefined,
+          })
         })
-      })
-      if (res.ok) {
-        await fetchCourseData()
-        setShowAddLesson(false)
-        setNewLesson({ title: '', description: '', video_url: '', duration_minutes: '' })
-        setAttachments([])
+        if (res.ok) {
+          await fetchCourseData()
+          setShowAddLesson(false)
+          setEditingLessonId(null)
+          setNewLesson({ title: '', description: '', video_url: '', duration_minutes: '' })
+          setAttachments([])
+        }
+      } else {
+        const res = await fetch(`/api/academy/teacher/courses/${courseId}/lessons`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...newLesson,
+            duration_minutes: newLesson.duration_minutes ? Number(newLesson.duration_minutes) : undefined,
+            attachments
+          })
+        })
+        if (res.ok) {
+          await fetchCourseData()
+          setShowAddLesson(false)
+          setNewLesson({ title: '', description: '', video_url: '', duration_minutes: '' })
+          setAttachments([])
+        }
       }
     } catch (e) {
       console.error(e)
     } finally {
       setIsSubmitLesson(false)
     }
+  }
+
+  const handleEditClick = (lesson: any) => {
+    setEditingLessonId(lesson.id)
+    setNewLesson({
+      title: lesson.title || '',
+      description: lesson.description || '',
+      video_url: lesson.video_url || '',
+      duration_minutes: lesson.duration_minutes ? lesson.duration_minutes.toString() : ''
+    })
+    setAttachments([])
+    setShowAddLesson(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleCancelLesson = () => {
+    setShowAddLesson(false)
+    setEditingLessonId(null)
+    setNewLesson({ title: '', description: '', video_url: '', duration_minutes: '' })
+    setAttachments([])
   }
 
   if (loading) {
@@ -242,7 +281,14 @@ export default function ManageCoursePage() {
               <div className="p-6 border-b border-border flex items-center justify-between bg-muted/10">
                 <h2 className="text-xl font-bold flex items-center gap-2">المحتوى التعليمي</h2>
                 <button
-                  onClick={() => setShowAddLesson(!showAddLesson)}
+                  onClick={() => {
+                    if (showAddLesson) {
+                      handleCancelLesson()
+                    } else {
+                      setShowAddLesson(true)
+                      setEditingLessonId(null)
+                    }
+                  }}
                   className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm shadow-md"
                 >
                   <Plus className="w-4 h-4" /> إضافة درس
@@ -327,10 +373,10 @@ export default function ManageCoursePage() {
                     </div>
 
                     <div className="flex gap-3 justify-end pt-4 border-t border-border">
-                      <button type="button" onClick={() => setShowAddLesson(false)} className="px-5 py-2.5 bg-muted hover:bg-muted/80 rounded-xl font-bold transition-colors">إلغاء</button>
+                      <button type="button" onClick={handleCancelLesson} className="px-5 py-2.5 bg-muted hover:bg-muted/80 rounded-xl font-bold transition-colors">إلغاء</button>
                       <button type="submit" disabled={isSubmitLesson || uploadingFiles['lesson_video'] || uploadingFiles['lesson_doc']} className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold flex items-center gap-2 transition-colors disabled:opacity-50">
                         {isSubmitLesson ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        حفظ الدرس
+                        {editingLessonId ? "تحديث الدرس" : "حفظ الدرس"}
                       </button>
                     </div>
                   </form>
@@ -356,7 +402,10 @@ export default function ManageCoursePage() {
                           {lesson.video_url && <span className="text-green-600 dark:text-green-500 font-medium"><CheckCircle2 className="w-3.5 h-3.5 inline mr-1" /> يوجد فيديو مفهرس</span>}
                         </p>
                       </div>
-                      <button title="حذف الدرس" className="p-2 text-red-500 opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"><Trash2 className="w-5 h-5" /></button>
+                      <div className="flex gap-1">
+                        <button title="تعديل الدرس" onClick={() => handleEditClick(lesson)} className="p-2 text-blue-500 opacity-0 group-hover:opacity-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"><Edit2 className="w-5 h-5" /></button>
+                        <button title="حذف الدرس" className="p-2 text-red-500 opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"><Trash2 className="w-5 h-5" /></button>
+                      </div>
                     </div>
                   ))
                 )}
