@@ -8,6 +8,7 @@ export type NotificationType =
     | "session_booked"            // student+reader: booking confirmed
     | "session_reminder"          // student+reader: 1h before session
     | "new_reader_application"    // admin: new reader applied
+    | "new_teacher_application"   // admin: new teacher applied
     | "reader_approved"           // reader: admin approved
     | "reader_rejected"           // reader: admin rejected
     | "new_recitation_admin"      // admin: new unassigned recitation

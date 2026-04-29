@@ -159,6 +159,14 @@ export function sendReaderRejectedEmail(to: string, readerName: string) {
   return sendDynamicEmail("reader_rejected", to, { readerName })
 }
 
+export function sendTeacherApprovedEmail(to: string, teacherName: string) {
+  return sendDynamicEmail("teacher_approved", to, { teacherName })
+}
+
+export function sendTeacherRejectedEmail(to: string, teacherName: string) {
+  return sendDynamicEmail("teacher_rejected", to, { teacherName })
+}
+
 export async function sendCertificateIssuedEmail(
   to: string,
   studentName: string,
