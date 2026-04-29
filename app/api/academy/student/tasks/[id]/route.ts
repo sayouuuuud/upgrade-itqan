@@ -29,7 +29,7 @@ export async function GET(
         t.course_id,
         c.title AS course_title,
         c.thumbnail_url AS course_thumbnail,
-        u.full_name AS teacher_name
+        u.name AS teacher_name
       FROM tasks t
       LEFT JOIN courses c ON c.id = t.course_id
       LEFT JOIN users u ON u.id = COALESCE(t.assigned_by, c.teacher_id)
