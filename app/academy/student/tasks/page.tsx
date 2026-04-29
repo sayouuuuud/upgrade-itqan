@@ -9,18 +9,31 @@ import {
   AlertCircle, BookOpen, Mic, FileText, HelpCircle
 } from 'lucide-react'
 
+type TaskKind = 'memorization' | 'recitation' | 'written' | 'quiz'
+
 interface Task {
   id: string
   title: string
   description?: string
   course_id: string
   course_title: string
-  type: 'memorization' | 'recitation' | 'written' | 'quiz'
+  type?: string
   due_date?: string
   points_value: number
   status: 'pending' | 'submitted' | 'graded' | 'late'
   grade?: number
   feedback?: string
+}
+
+// Map any DB task type (homework / recitation / audio / video / project / reading / ...)
+// to one of the four UI categories so icons, colors, and labels stay consistent.
+function normalizeTaskType(raw?: string | null): TaskKind {
+  const v = (raw || '').toLowerCase()
+  if (v === 'recitation' || v === 'audio') return 'recitation'
+  if (v === 'memorization' || v === 'memorize') return 'memorization'
+  if (v === 'quiz' || v === 'test' || v === 'exam') return 'quiz'
+  // homework, written, reading, file, video, image, project, mixed, text, ...
+  return 'written'
 }
 
 export default function StudentTasksPage() {
@@ -204,7 +217,8 @@ export default function StudentTasksPage() {
       ) : (
         <div className="space-y-4">
           {filteredTasks.map((task) => {
-            const TypeIcon = typeIcons[task.type]
+            const kind = normalizeTaskType(task.type)
+            const TypeIcon = typeIcons[kind]
             const StatusIcon = statusConfig[task.status].icon
             const dueStatus = getDueStatus(task.due_date)
 
@@ -218,10 +232,10 @@ export default function StudentTasksPage() {
                   {/* Type Icon */}
                   <div className={cn(
                     "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
-                    task.type === 'memorization' && "bg-green-100 text-green-600 dark:bg-green-900/30",
-                    task.type === 'recitation' && "bg-blue-100 text-blue-600 dark:bg-blue-900/30",
-                    task.type === 'written' && "bg-purple-100 text-purple-600 dark:bg-purple-900/30",
-                    task.type === 'quiz' && "bg-orange-100 text-orange-600 dark:bg-orange-900/30"
+                    kind === 'memorization' && "bg-green-100 text-green-600 dark:bg-green-900/30",
+                    kind === 'recitation' && "bg-blue-100 text-blue-600 dark:bg-blue-900/30",
+                    kind === 'written' && "bg-purple-100 text-purple-600 dark:bg-purple-900/30",
+                    kind === 'quiz' && "bg-orange-100 text-orange-600 dark:bg-orange-900/30"
                   )}>
                     <TypeIcon className="w-6 h-6" />
                   </div>
@@ -253,12 +267,12 @@ export default function StudentTasksPage() {
                       <span className="flex items-center gap-1 text-muted-foreground">
                         <span className={cn(
                           "px-2 py-0.5 rounded text-xs",
-                          task.type === 'memorization' && "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-                          task.type === 'recitation' && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-                          task.type === 'written' && "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-                          task.type === 'quiz' && "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                          kind === 'memorization' && "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+                          kind === 'recitation' && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                          kind === 'written' && "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+                          kind === 'quiz' && "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
                         )}>
-                          {typeLabels[task.type]}
+                          {typeLabels[kind]}
                         </span>
                       </span>
                       <span className="flex items-center gap-1 text-yellow-600">
