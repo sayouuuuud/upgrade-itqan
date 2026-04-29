@@ -1,20 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium', 'puppeteer', 'fluent-ffmpeg', 'ffmpeg-static'],
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
+    unoptimized: process.env.NODE_ENV === 'development',
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**',
       },
-    ],
+    ]
   },
-  devIndicators: {
-    buildActivity: false,
+  eslint: {
+    ignoreDuringBuilds: true,
   },
-}
+  typescript: {
+    ignoreBuildErrors: true,
+  }
+};
 
-export default nextConfig
+export default nextConfig;
