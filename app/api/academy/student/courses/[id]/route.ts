@@ -39,7 +39,7 @@ export async function GET(
       SELECT l.id, l.title, l.description, l.order_index, l.duration_minutes,
              (SELECT COUNT(*)>0 FROM lesson_progress lp 
               JOIN enrollments e ON lp.enrollment_id = e.id
-              WHERE lp.lesson_id = l.id AND e.student_id = $2) as is_completed
+              WHERE lp.lesson_id = l.id AND e.student_id = $2 AND lp.is_completed = TRUE) as is_completed
       FROM lessons l 
       WHERE l.course_id = $1 
       ORDER BY l.order_index ASC
