@@ -17,10 +17,17 @@ let pool: Pool | null = null
 let databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL
 
 if (databaseUrl) {
-  // For Supabase, ensure sslmode is set correctly
+  // For Supabase, ensure sslmode is set correctly.
+  // pg v8.16+ treats `sslmode=require` as `verify-full`, which fails on the
+  // Supabase pooler's self-signed certificate chain. We force `no-verify`
+  // so the explicit `ssl: { rejectUnauthorized: false }` actually applies.
   let finalUrl = databaseUrl
-  if (finalUrl.includes('supabase') && !finalUrl.includes('sslmode')) {
-    finalUrl = finalUrl + (finalUrl.includes('?') ? '&' : '?') + 'sslmode=no-verify'
+  if (finalUrl.includes('supabase')) {
+    if (/sslmode=[^&]+/.test(finalUrl)) {
+      finalUrl = finalUrl.replace(/sslmode=[^&]+/, 'sslmode=no-verify')
+    } else {
+      finalUrl = finalUrl + (finalUrl.includes('?') ? '&' : '?') + 'sslmode=no-verify'
+    }
   }
 
   const poolConfig: any = {
@@ -65,11 +72,7 @@ export async function query<T = Record<string, unknown>>(
   try {
     const result = await pool.query(text, params as any[])
     return result.rows as T[]
-  } catch (error: any) {
-    if (error instanceof Error && error.message?.includes('SELF_SIGNED_CERT')) {
-      console.warn("[DB] SSL certificate warning (retryable):", error.message)
-      return [] as T[]
-    }
+  } catch (error) {
     console.error("[DB] Query error:", error)
     throw error
   }
