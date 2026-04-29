@@ -68,11 +68,9 @@ async function main() {
     course_id: COURSE_ID,
     title: "تسليم تلاوة - اختبار آلي",
     description: "سجّل تلاوة سورة الفاتحة وأرسلها صوتياً.",
-    type: "recitation",
-    submission_type: "audio",
+    task_type: "audio",
     due_date: dueDate,
     max_score: 100,
-    priority: "high",
     submission_instructions: "حاول التسجيل في مكان هادئ.",
   }
   const createRes = await fetch(`${BASE}/api/academy/teacher/tasks`, {
@@ -82,8 +80,18 @@ async function main() {
   })
   const createJson = await createRes.json().catch(() => ({}))
   console.log("  status:", createRes.status, "body:", JSON.stringify(createJson))
-  ok("POST /tasks returns 200", createRes.status === 200)
+  ok("POST /tasks returns 201", createRes.status === 201 || createRes.status === 200)
   ok("response has task id", !!createJson?.data?.id)
+  ok(
+    "task type stored as 'audio'",
+    createJson?.data?.type === "audio",
+    `got ${createJson?.data?.type}`,
+  )
+  ok(
+    "submission_instructions stored",
+    typeof createJson?.data?.submission_instructions === "string" &&
+      createJson.data.submission_instructions.length > 0,
+  )
   const taskId = createJson?.data?.id
   if (!taskId) {
     console.error("Cannot continue without task id")
@@ -109,11 +117,15 @@ async function main() {
   const studentTaskJson = await studentTaskRes.json().catch(() => ({}))
   console.log("  status:", studentTaskRes.status)
   ok("GET student task returns 200", studentTaskRes.status === 200)
-  const taskPayload = studentTaskJson.data || studentTaskJson
-  ok("payload has task title", !!taskPayload?.title || !!taskPayload?.task?.title)
+  ok("payload exposes task object", !!studentTaskJson?.task)
   ok(
-    "payload exposes submission_type",
-    (taskPayload?.submission_type || taskPayload?.task?.submission_type) === "audio",
+    "task type is 'audio'",
+    studentTaskJson?.task?.type === "audio",
+    `got ${studentTaskJson?.task?.type}`,
+  )
+  ok(
+    "task title returned",
+    typeof studentTaskJson?.task?.title === "string" && studentTaskJson.task.title.length > 0,
   )
 
   // ---------- Step 4: Student submits ----------
@@ -136,7 +148,7 @@ async function main() {
   )
   const submitJson = await submitRes.json().catch(() => ({}))
   console.log("  status:", submitRes.status, "body:", JSON.stringify(submitJson))
-  ok("POST submit returns 200", submitRes.status === 200)
+  ok("POST submit returns 200/201", submitRes.status === 200 || submitRes.status === 201)
   ok("submission has id", !!submitJson?.data?.id)
   ok(
     "submission_type stored",
