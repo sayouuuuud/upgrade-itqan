@@ -4,7 +4,7 @@ import { query } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  
+
   if (!session || !['teacher', 'academy_admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -16,9 +16,9 @@ export async function GET(req: NextRequest) {
         c.title as course_name,
         COUNT(DISTINCT sa.id)::int as attendance_count
       FROM course_sessions cs
-      LEFT JOIN courses c ON cs.course_id = c.id
+      JOIN courses c ON cs.course_id = c.id
       LEFT JOIN session_attendance sa ON cs.id = sa.session_id
-      WHERE cs.teacher_id = $1
+      WHERE c.teacher_id = $1
       GROUP BY cs.id, c.title
       ORDER BY cs.scheduled_at DESC
     `, [session.sub])
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  
+
   if (!session || !['teacher', 'academy_admin'].includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -52,10 +52,10 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await query(`
-      INSERT INTO course_sessions (course_id, teacher_id, title, description, scheduled_at, duration_minutes, status, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, 'scheduled', NOW())
+      INSERT INTO course_sessions (course_id, title, description, session_type, scheduled_at, duration_minutes, status, created_at)
+      VALUES ($1, $2, $3, 'live', $4, $5, 'scheduled', NOW())
       RETURNING *
-    `, [course_id, session.sub, title, description || null, scheduled_at, duration_minutes || 60])
+    `, [course_id, title, description || null, scheduled_at, duration_minutes || 60])
 
     return NextResponse.json({ data: result[0] }, { status: 201 })
   } catch (error) {

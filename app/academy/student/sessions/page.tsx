@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
-import { 
-  Video, Calendar, Clock, Users, PlayCircle, 
+import {
+  Video, Calendar, Clock, Users, PlayCircle,
   CheckCircle2, ExternalLink, BookOpen
 } from 'lucide-react'
 
@@ -20,7 +20,7 @@ interface Session {
   scheduled_at: string
   duration_minutes: number
   meeting_link?: string
-  status: 'scheduled' | 'live' | 'completed' | 'cancelled'
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
   recording_url?: string
   attendees_count?: number
 }
@@ -49,13 +49,13 @@ export default function StudentSessionsPage() {
   }, [])
 
   const now = new Date()
-  
+
   const filteredSessions = sessions.filter(session => {
     const sessionDate = new Date(session.scheduled_at)
     const sessionEnd = new Date(sessionDate.getTime() + session.duration_minutes * 60000)
 
     if (filter === 'live') {
-      return session.status === 'live' || (sessionDate <= now && sessionEnd >= now)
+      return session.status === 'in_progress' || (sessionDate <= now && sessionEnd >= now)
     }
     if (filter === 'upcoming') {
       return session.status === 'scheduled' && sessionDate > now
@@ -67,21 +67,21 @@ export default function StudentSessionsPage() {
   })
 
   const statusConfig = {
-    scheduled: { 
-      label: t.academy?.scheduled || 'مجدولة', 
-      color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
+    scheduled: {
+      label: t.academy?.scheduled || 'مجدولة',
+      color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
     },
-    live: { 
-      label: t.academy?.live || 'مباشر الآن', 
-      color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' 
+    in_progress: {
+      label: t.academy?.live || 'مباشر الآن',
+      color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
     },
-    completed: { 
-      label: t.academy?.completed || 'منتهية', 
-      color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+    completed: {
+      label: t.academy?.completed || 'منتهية',
+      color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
     },
-    cancelled: { 
-      label: t.academy?.cancelled || 'ملغاة', 
-      color: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' 
+    cancelled: {
+      label: t.academy?.cancelled || 'ملغاة',
+      color: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
     }
   }
 
@@ -100,12 +100,12 @@ export default function StudentSessionsPage() {
   const getTimeUntil = (dateStr: string) => {
     const date = new Date(dateStr)
     const diff = date.getTime() - now.getTime()
-    
+
     if (diff < 0) return null
-    
+
     const hours = Math.floor(diff / (1000 * 60 * 60))
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-    
+
     if (hours > 24) {
       const days = Math.floor(hours / 24)
       return `${days} ${t.academy?.days || 'يوم'}`
@@ -119,7 +119,7 @@ export default function StudentSessionsPage() {
   const isLive = (session: Session) => {
     const sessionDate = new Date(session.scheduled_at)
     const sessionEnd = new Date(sessionDate.getTime() + session.duration_minutes * 60000)
-    return session.status === 'live' || (sessionDate <= now && sessionEnd >= now)
+    return session.status === 'in_progress' || (sessionDate <= now && sessionEnd >= now)
   }
 
   if (loading) {
@@ -232,8 +232,8 @@ export default function StudentSessionsPage() {
                 key={session.id}
                 className={cn(
                   "bg-card rounded-xl border p-5 transition-all",
-                  sessionIsLive 
-                    ? "border-red-500 ring-2 ring-red-500/20" 
+                  sessionIsLive
+                    ? "border-red-500 ring-2 ring-red-500/20"
                     : "border-border hover:border-blue-500/50"
                 )}
               >
@@ -241,7 +241,7 @@ export default function StudentSessionsPage() {
                   {/* Icon */}
                   <div className={cn(
                     "w-14 h-14 rounded-xl flex items-center justify-center shrink-0",
-                    sessionIsLive 
+                    sessionIsLive
                       ? "bg-red-100 text-red-600 dark:bg-red-900/30 animate-pulse"
                       : "bg-blue-100 text-blue-600 dark:bg-blue-900/30"
                   )}>
@@ -254,11 +254,11 @@ export default function StudentSessionsPage() {
                       <h3 className="font-semibold text-lg">{session.title}</h3>
                       <span className={cn(
                         "px-2 py-0.5 rounded-full text-xs font-medium",
-                        sessionIsLive 
-                          ? statusConfig.live.color 
+                        sessionIsLive
+                          ? statusConfig.in_progress.color
                           : statusConfig[session.status].color
                       )}>
-                        {sessionIsLive ? statusConfig.live.label : statusConfig[session.status].label}
+                        {sessionIsLive ? statusConfig.in_progress.label : statusConfig[session.status].label}
                       </span>
                     </div>
 
