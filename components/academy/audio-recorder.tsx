@@ -1,46 +1,63 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
-import { Mic, Square, Play, Pause, RotateCcw, CheckCircle2 } from "lucide-react"
+import {
+  Mic,
+  Square,
+  Play,
+  Pause,
+  RotateCcw,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+} from "lucide-react"
 
 const MAX_SECONDS = 300 // 5 minutes
 
-type RecordingState = "idle" | "recording" | "saved"
+type RecordingState = "idle" | "recording" | "uploading" | "saved"
 
-interface AcademyAudioRecorderProps {
-  onRecorded: (blob: Blob, durationSec: number, mimeType: string) => void
-  onCleared?: () => void
+interface AudioRecorderProps {
+  /** Existing audio URL (e.g. from previous submission) */
+  value?: string | null
+  /** Called with the uploaded URL (or null when cleared) */
+  onChange: (url: string | null) => void
   disabled?: boolean
-  // Show "saved" state externally (e.g. after upload completes)
-  externallySaved?: boolean
 }
 
-export function AcademyAudioRecorder({
-  onRecorded,
-  onCleared,
+/**
+ * Self-contained audio recorder for academy tasks.
+ * Records, previews, and auto-uploads to /api/upload.
+ */
+export default function AudioRecorder({
+  value,
+  onChange,
   disabled,
-  externallySaved,
-}: AcademyAudioRecorderProps) {
-  const [state, setState] = useState<RecordingState>("idle")
+}: AudioRecorderProps) {
+  const [state, setState] = useState<RecordingState>(value ? "saved" : "idle")
   const [timer, setTimer] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [error, setError] = useState<string>("")
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<Blob[]>([])
-  const blobRef = useRef<Blob | null>(null)
-  const urlRef = useRef<string | null>(null)
+  const localUrlRef = useRef<string | null>(null)
   const audioElRef = useRef<HTMLAudioElement | null>(null)
   const mimeRef = useRef<string>("audio/webm")
 
+  const previewUrl = localUrlRef.current || value || null
+
   const getSupportedMimeType = () => {
     const types = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"]
+    if (typeof MediaRecorder === "undefined") return "audio/webm"
     for (const t of types) {
-      if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(t)) return t
+      if (MediaRecorder.isTypeSupported(t)) return t
     }
     return "audio/webm"
   }
 
+  // Recording timer
   useEffect(() => {
     if (state === "recording") {
       intervalRef.current = setInterval(() => {
@@ -62,9 +79,11 @@ export function AcademyAudioRecorder({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state])
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (urlRef.current) URL.revokeObjectURL(urlRef.current)
+      if (localUrlRef.current) URL.revokeObjectURL(localUrlRef.current)
+      streamRef.current?.getTracks().forEach(t => t.stop())
       if (recorderRef.current && recorderRef.current.state === "recording") {
         recorderRef.current.stop()
       }
@@ -77,10 +96,38 @@ export function AcademyAudioRecorder({
     return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`
   }
 
+  const uploadBlob = async (blob: Blob) => {
+    setState("uploading")
+    setError("")
+    try {
+      const ext =
+        mimeRef.current.includes("mp4")
+          ? "m4a"
+          : mimeRef.current.includes("webm")
+          ? "webm"
+          : "audio"
+      const file = new File([blob], `recording_${Date.now()}.${ext}`, {
+        type: mimeRef.current,
+      })
+      const formData = new FormData()
+      formData.append("audio", file)
+      const res = await fetch("/api/upload", { method: "POST", body: formData })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || "فشل رفع التسجيل")
+      onChange(json.url || json.audioUrl)
+      setState("saved")
+    } catch (err: any) {
+      setError(err?.message || "فشل رفع التسجيل")
+      setState("idle")
+    }
+  }
+
   const startRecording = useCallback(async () => {
     if (disabled) return
+    setError("")
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      streamRef.current = stream
       const mimeType = getSupportedMimeType()
       mimeRef.current = mimeType
 
@@ -94,11 +141,12 @@ export function AcademyAudioRecorder({
 
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: mimeRef.current })
-        blobRef.current = blob
-        if (urlRef.current) URL.revokeObjectURL(urlRef.current)
-        urlRef.current = URL.createObjectURL(blob)
-        stream.getTracks().forEach(t => t.stop())
-        onRecorded(blob, timer, mimeRef.current)
+        if (localUrlRef.current) URL.revokeObjectURL(localUrlRef.current)
+        localUrlRef.current = URL.createObjectURL(blob)
+        streamRef.current?.getTracks().forEach(t => t.stop())
+        streamRef.current = null
+        // Auto-upload after stopping
+        uploadBlob(blob)
       }
 
       recorder.start()
@@ -106,59 +154,68 @@ export function AcademyAudioRecorder({
       setState("recording")
     } catch (err) {
       console.error("[AudioRecorder] Failed to start:", err)
-      alert("لا يمكن الوصول إلى الميكروفون. يرجى السماح به في إعدادات المتصفح.")
+      setError(
+        "لا يمكن الوصول إلى الميكروفون. يرجى السماح به في إعدادات المتصفح.",
+      )
     }
-  }, [disabled, timer, onRecorded])
+  }, [disabled])
 
   const stopRecording = useCallback(() => {
     const r = recorderRef.current
     if (r && r.state === "recording") {
       r.stop()
     }
-    setState("saved")
   }, [])
 
   const reset = () => {
     setState("idle")
     setTimer(0)
     setIsPlaying(false)
-    blobRef.current = null
-    if (urlRef.current) URL.revokeObjectURL(urlRef.current)
-    urlRef.current = null
+    if (localUrlRef.current) URL.revokeObjectURL(localUrlRef.current)
+    localUrlRef.current = null
     if (audioElRef.current) {
       audioElRef.current.pause()
       audioElRef.current = null
     }
-    onCleared?.()
+    onChange(null)
   }
 
   const togglePlayback = () => {
-    if (!urlRef.current) return
+    if (!previewUrl) return
     if (isPlaying && audioElRef.current) {
       audioElRef.current.pause()
       setIsPlaying(false)
       return
     }
-    const audio = new Audio(urlRef.current)
+    const audio = new Audio(previewUrl)
     audioElRef.current = audio
     audio.onended = () => setIsPlaying(false)
     audio.play().catch(() => setIsPlaying(false))
     setIsPlaying(true)
   }
 
-  const showSaved = state === "saved" || externallySaved
+  const isSaved = state === "saved" || (!!value && state === "idle")
+  const isUploading = state === "uploading"
 
   return (
     <div className="bg-muted/40 border border-border rounded-xl p-6">
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          {error}
+        </div>
+      )}
+
       <div className="flex flex-col items-center gap-6">
         <div className="text-center">
           <div className="text-4xl font-mono font-light tracking-widest text-foreground">
             {formatTime(timer)}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {state === "idle" && "اضغط على زر التسجيل للبدء"}
+            {state === "idle" && !value && "اضغط على زر التسجيل للبدء"}
             {state === "recording" && "جاري التسجيل... اضغط للإيقاف"}
-            {showSaved && "تم تسجيل المقطع — يمكنك المعاينة أو إعادة التسجيل"}
+            {isUploading && "جاري حفظ التسجيل..."}
+            {isSaved && "تم تسجيل المقطع - يمكنك المعاينة أو إعادة التسجيل"}
           </p>
         </div>
 
@@ -185,15 +242,16 @@ export function AcademyAudioRecorder({
         <div className="flex items-center gap-6">
           <button
             type="button"
-            disabled={state === "idle" || disabled}
+            disabled={(state === "idle" && !value) || isUploading || disabled}
             onClick={reset}
             className="w-11 h-11 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-background flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             title="إعادة التسجيل"
+            aria-label="إعادة التسجيل"
           >
             <RotateCcw className="w-5 h-5" />
           </button>
 
-          {state === "idle" && (
+          {(state === "idle" && !isSaved) && (
             <button
               type="button"
               onClick={startRecording}
@@ -214,13 +272,22 @@ export function AcademyAudioRecorder({
               <Square className="w-6 h-6 fill-current" />
             </button>
           )}
-          {showSaved && state !== "recording" && (
+          {isUploading && (
+            <div
+              className="w-16 h-16 rounded-full bg-blue-500 text-white shadow-lg flex items-center justify-center"
+              aria-label="جاري الرفع"
+            >
+              <Loader2 className="w-7 h-7 animate-spin" />
+            </div>
+          )}
+          {isSaved && (
             <button
               type="button"
               onClick={startRecording}
               disabled={disabled}
               className="w-16 h-16 rounded-full bg-card border-2 border-border text-foreground shadow flex items-center justify-center hover:bg-muted transition disabled:opacity-50"
-              aria-label="إعادة التسجيل"
+              aria-label="تسجيل جديد"
+              title="تسجيل جديد"
             >
               <Mic className="w-7 h-7" />
             </button>
@@ -228,19 +295,24 @@ export function AcademyAudioRecorder({
 
           <button
             type="button"
-            disabled={!showSaved || disabled}
+            disabled={!previewUrl || isUploading || disabled}
             onClick={togglePlayback}
             className="w-11 h-11 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-background flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            title={isPlaying ? "إيقاف" : "تشغيل"}
+            title={isPlaying ? "إيقاف المعاينة" : "تشغيل المعاينة"}
+            aria-label={isPlaying ? "إيقاف المعاينة" : "تشغيل المعاينة"}
           >
-            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+            {isPlaying ? (
+              <Pause className="w-5 h-5" />
+            ) : (
+              <Play className="w-5 h-5 ml-0.5" />
+            )}
           </button>
         </div>
 
-        {showSaved && (
+        {isSaved && (
           <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
             <CheckCircle2 className="w-4 h-4" />
-            <span>التسجيل جاهز للإرسال</span>
+            <span>تم حفظ التسجيل</span>
           </div>
         )}
       </div>
