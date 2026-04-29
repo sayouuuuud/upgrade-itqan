@@ -189,8 +189,12 @@ export default function SubmitTaskPage() {
       const formData = new FormData()
       formData.append(field, file)
       const res = await fetch("/api/upload", { method: "POST", body: formData })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.error || "فشل الرفع")
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        const baseMsg = json?.error || "فشل الرفع"
+        const details = json?.details ? ` (${json.details})` : ""
+        throw new Error(baseMsg + details)
+      }
       return {
         url: json.url as string,
         name: file.name,
@@ -625,7 +629,7 @@ export default function SubmitTaskPage() {
               ) : (
                 <>
                   <Upload className="w-4 h-4" />
-                  {submission ? "إعادة التسليم" : "تسليم المهمة"}
+                  {submission ? "إعادة ال��سليم" : "تسليم المهمة"}
                 </>
               )}
             </button>
