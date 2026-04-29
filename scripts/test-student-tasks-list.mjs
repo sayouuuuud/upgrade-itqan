@@ -8,9 +8,9 @@ const TEACHER_ID = "70f5cd5b-1669-4ce3-9594-7ca01450a697"
 const STUDENT_ID = "0ccb904c-15e5-4c4b-b4ba-f6a9ab1d12a4"
 const COURSE_ID = "0ace7728-39f2-4c7c-aef0-2217ea7da951"
 
-async function tokenFor(userId, email, role) {
+async function tokenFor(sub, email, role, name = "Test User") {
   const secret = new TextEncoder().encode(SECRET)
-  return await new SignJWT({ userId, email, role })
+  return await new SignJWT({ sub, email, role, name })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("2h")
