@@ -165,6 +165,19 @@ export default function SubmitTaskPage() {
   const isOverdue = task?.due_date ? new Date() > new Date(task.due_date) : false
   const isGraded = submission?.status === "graded"
 
+  // At least one of these must be provided before submitting
+  const hasAnyContent =
+    !!textContent.trim() || !!fileData || !!imageData || !!audioUrl || !!videoData
+
+  // Specific media type missing for tasks that require it
+  const missingRequiredType =
+    (requiresAudio && !audioUrl) ||
+    (requiresVideo && !videoData) ||
+    (requiresImage && !imageData) ||
+    (requiresFile && !fileData && !imageData)
+
+  const canSubmit = !submitting && !uploading && hasAnyContent && !missingRequiredType
+
   const uploadFile = async (
     file: File,
     field: "audio" | "image" | "file",
@@ -220,7 +233,7 @@ export default function SubmitTaskPage() {
     e.preventDefault()
     setError("")
 
-    // Type-specific validation
+    // Type-specific required media
     if (requiresAudio && !audioUrl) {
       return setError("هذه المهمة تتطلب تسجيلاً صوتياً")
     }
@@ -233,17 +246,10 @@ export default function SubmitTaskPage() {
     if (requiresFile && !fileData && !imageData) {
       return setError("هذه المهمة تتطلب رفع ملف")
     }
-    if (
-      allowsText &&
-      !requiresAudio &&
-      !requiresVideo &&
-      !requiresFile &&
-      !requiresImage &&
-      !textContent.trim() &&
-      !fileData &&
-      !imageData
-    ) {
-      return setError("الرجاء كتابة الإجابة أو إرفاق ملف")
+
+    // At minimum, one of: text / file / image / audio / video
+    if (!hasAnyContent) {
+      return setError("لا يمكن إرسال تسليم فارغ. اكتب إجابة أو أرفق ملفاً.")
     }
 
     setSubmitting(true)
@@ -585,6 +591,17 @@ export default function SubmitTaskPage() {
             </section>
           )}
 
+          {/* Persistent hint */}
+          {!hasAnyContent && (
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60 rounded-lg flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>
+                يجب إكمال حقل واحد على الأقل قبل التسليم: اكتب الإجابة أو أرفق
+                ملفاً/صورة/تسجيلاً.
+              </span>
+            </div>
+          )}
+
           {/* Submit button */}
           <div className="flex flex-col-reverse sm:flex-row gap-3 sm:items-center sm:justify-end pt-2">
             <Link
@@ -595,8 +612,10 @@ export default function SubmitTaskPage() {
             </Link>
             <button
               type="submit"
-              disabled={submitting || !!uploading}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm"
+              disabled={!canSubmit}
+              aria-disabled={!canSubmit}
+              title={!hasAnyContent ? "أكمل حقلاً واحداً على الأقل" : undefined}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm"
             >
               {submitting ? (
                 <>
