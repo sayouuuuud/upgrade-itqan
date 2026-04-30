@@ -33,12 +33,12 @@ export async function GET(
         e.status as enrollment_status,
         e.enrolled_at,
         COUNT(DISTINCT l.id)::int as total_lessons,
-        COUNT(DISTINCT lp.lesson_id)::int as completed_lessons
+        COUNT(DISTINCT CASE WHEN lp.is_completed = true THEN lp.lesson_id END)::int as completed_lessons
       FROM enrollments e
       JOIN courses c ON e.course_id = c.id
       JOIN users u ON c.teacher_id = u.id
       LEFT JOIN lessons l ON l.course_id = c.id
-      LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.student_id = $1
+      LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.enrollment_id = e.id
       WHERE e.student_id = $1 AND e.status = 'active'
       GROUP BY c.id, c.title, c.level, u.name, e.status, e.enrolled_at
     `, [childId])
@@ -51,7 +51,7 @@ export async function GET(
         ts.status,
         ts.score,
         ts.submitted_at,
-        ts.teacher_comment,
+        ts.feedback as teacher_comment,
         c.title as course_title
       FROM task_submissions ts
       JOIN tasks t ON ts.task_id = t.id
