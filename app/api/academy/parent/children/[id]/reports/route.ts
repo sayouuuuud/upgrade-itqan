@@ -5,28 +5,28 @@ import { query } from '@/lib/db'
 // GET /api/academy/parent/children/[id]/reports
 // Returns detailed report for a specific child: attendance, submissions, grades, teacher comments
 export async function GET(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-    const session = await getSession()
-    if (!session || session.role !== 'parent') {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await getSession()
+  if (!session || session.role !== 'parent') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const childId = (await params).id
+
+    // Verify parent-child relationship
+    const link = await query<any>(
+      `SELECT id FROM parent_children WHERE parent_id = $1 AND child_id = $2 AND status = 'active'`,
+      [session.sub, childId]
+    )
+    if (link.length === 0) {
+      return NextResponse.json({ error: 'Unauthorized: Not your child' }, { status: 403 })
     }
 
-    try {
-        const childId = (await params).id
-
-        // Verify parent-child relationship
-        const link = await query<any>(
-            `SELECT id FROM parent_child_links WHERE parent_id = $1 AND child_id = $2 AND status = 'active'`,
-            [session.sub, childId]
-        )
-        if (link.length === 0) {
-            return NextResponse.json({ error: 'Unauthorized: Not your child' }, { status: 403 })
-        }
-
-        // Courses enrolled
-        const courses = await query<any>(`
+    // Courses enrolled
+    const courses = await query<any>(`
       SELECT 
         c.id, c.title, c.level,
         u.name as teacher_name,
@@ -43,8 +43,8 @@ export async function GET(
       GROUP BY c.id, c.title, c.level, u.name, e.status, e.enrolled_at
     `, [childId])
 
-        // Task submissions
-        const submissions = await query<any>(`
+    // Task submissions
+    const submissions = await query<any>(`
       SELECT 
         t.title as task_title,
         t.due_date,
@@ -61,8 +61,8 @@ export async function GET(
       LIMIT 20
     `, [childId])
 
-        // Overall stats
-        const stats = await query<any>(`
+    // Overall stats
+    const stats = await query<any>(`
       SELECT
         COUNT(DISTINCT e.id)::int as total_courses,
         COUNT(DISTINCT ts.id)::int as total_submissions,
@@ -74,13 +74,13 @@ export async function GET(
       WHERE e.student_id = $1 AND e.status = 'active'
     `, [childId])
 
-        return NextResponse.json({
-            courses,
-            submissions,
-            stats: stats[0] || {}
-        })
-    } catch (error) {
-        console.error('[API] Error fetching child reports:', error)
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
+    return NextResponse.json({
+      courses,
+      submissions,
+      stats: stats[0] || {}
+    })
+  } catch (error) {
+    console.error('[API] Error fetching child reports:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
