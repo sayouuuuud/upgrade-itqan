@@ -170,9 +170,117 @@ $$ LANGUAGE plpgsql;
 
 
 -- ////////////////////////////////////////////////////////////////////////////
--- END OF EXECUTABLE SQL
+-- SECTION 2 - REFERENCE TEMPLATES (DOCUMENTATION ONLY - DO NOT EXECUTE)
 -- ////////////////////////////////////////////////////////////////////////////
--- Application-level query templates that contain $1 / $2 placeholders are
--- documented in `scripts/A-security-queries.reference.md`. Those queries are
--- run from Node code via `pg` parameter binding and must NOT be pasted into
--- the SQL editor.
+-- Every line below is a line comment (starts with --) so the whole file
+-- can be safely executed in the Supabase SQL editor. These templates use
+-- $1 / $2 parameter bindings and are run from Node code via `pg`. To run
+-- one manually, copy the body, remove the leading `-- `, and replace each
+-- $1 with a literal value (e.g. a quoted UUID).
+--
+-- ----------------------------------------------------------------------------
+-- A-4: Fetch fresh permission flags from DB (used by middleware / handlers)
+-- ----------------------------------------------------------------------------
+-- SELECT
+--   u.id,
+--   u.role,
+--   u.name,
+--   u.email,
+--   u.is_active,
+--   u.has_quran_access,
+--   u.has_academy_access,
+--   u.platform_preference,
+--   u.approval_status,
+--   u.last_login_at,
+--   COALESCE(u.academy_roles, ARRAY[]::VARCHAR[]) AS academy_roles,
+--   EXISTS (
+--     SELECT 1
+--     FROM user_sessions us
+--     WHERE us.user_id = u.id
+--       AND us.last_active_at > NOW() - INTERVAL '5 minutes'
+--   ) AS is_online
+-- FROM users u
+-- WHERE u.id = $1;
+--
+-- ----------------------------------------------------------------------------
+-- A-5: Get a user active sessions (used before revocation)
+-- ----------------------------------------------------------------------------
+-- SELECT
+--   us.id          AS session_id,
+--   us.user_id,
+--   us.token,
+--   us.created_at,
+--   us.last_active_at,
+--   us.expires_at,
+--   us.ip_address,
+--   us.user_agent
+-- FROM user_sessions us
+-- WHERE us.user_id = $1
+--   AND us.expires_at > NOW()
+-- ORDER BY us.last_active_at DESC;
+--
+-- ----------------------------------------------------------------------------
+-- A-5: Revoke all sessions for a disabled user (run from admin handler)
+-- ----------------------------------------------------------------------------
+-- DELETE FROM user_sessions   WHERE user_id = $1;
+-- DELETE FROM refresh_tokens  WHERE user_id = $1;
+--
+-- ----------------------------------------------------------------------------
+-- A-4: Mode Switcher - fetch actual DB flags instead of cached JWT values
+-- ----------------------------------------------------------------------------
+-- SELECT
+--   u.id,
+--   u.has_quran_access,
+--   u.has_academy_access,
+--   u.platform_preference,
+--   u.role,
+--   COALESCE(u.academy_roles, ARRAY[]::VARCHAR[]) AS academy_roles
+-- FROM users u
+-- WHERE u.id = $1;
+--
+-- ----------------------------------------------------------------------------
+-- A-1: Diagnostic - check role-based access decision for student routes
+-- ----------------------------------------------------------------------------
+-- SELECT
+--   u.id,
+--   u.role,
+--   u.name,
+--   CASE
+--     WHEN u.role = 'teacher' THEN 'DENY - student paths'
+--     WHEN u.role = 'student' THEN 'ALLOW - student paths'
+--     WHEN u.role IN ('supervisor', 'content_supervisor') THEN 'DENY - student paths'
+--     ELSE 'CHECK - student paths'
+--   END AS student_path_access,
+--   COALESCE(u.academy_roles, ARRAY[]::VARCHAR[]) AS academy_roles
+-- FROM users u
+-- WHERE u.id = $1;
+--
+-- ----------------------------------------------------------------------------
+-- A-3: Approve a teacher application (run server-side in a transaction)
+-- ----------------------------------------------------------------------------
+-- UPDATE users
+-- SET role               = 'teacher',
+--     approval_status    = 'approved',
+--     is_active          = true,
+--     has_academy_access = true,
+--     platform_preference = COALESCE(platform_preference, 'academy'),
+--     academy_roles = (
+--       SELECT ARRAY(
+--         SELECT DISTINCT unnest(
+--           COALESCE(academy_roles, ARRAY[]::VARCHAR[]) || ARRAY['teacher']::VARCHAR[]
+--         )
+--       )
+--     )
+-- WHERE id = $1;
+--
+-- DELETE FROM user_sessions  WHERE user_id = $1;
+-- DELETE FROM refresh_tokens WHERE user_id = $1;
+--
+-- ----------------------------------------------------------------------------
+-- A-6: Delete a rejected reader application (or call the function defined above)
+-- ----------------------------------------------------------------------------
+-- SELECT delete_rejected_reader_application($1);
+--
+-- ////////////////////////////////////////////////////////////////////////////
+-- END OF FILE
+-- ////////////////////////////////////////////////////////////////////////////
