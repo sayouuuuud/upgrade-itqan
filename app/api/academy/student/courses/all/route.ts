@@ -2,34 +2,72 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 
+// C-1: GET /api/academy/student/courses/all — browse all published courses
+// يظهر كل الدورات المنشورة مع حالة الـ enrollment للطالب الحالي
 export async function GET(req: NextRequest) {
   const session = await getSession()
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  
+
+  const { searchParams } = req.nextUrl
+  const categoryId = searchParams.get('category')
+  const search = searchParams.get('search')
+  const level = searchParams.get('level')
+
   try {
+    const params: any[] = [session.sub]
+    let whereExtra = ''
+
+    if (categoryId) {
+      params.push(categoryId)
+      whereExtra += ` AND c.category_id = $${params.length}`
+    }
+
+    if (level) {
+      params.push(level)
+      whereExtra += ` AND COALESCE(c.difficulty_level, c.level, 'beginner') = $${params.length}`
+    }
+
+    if (search) {
+      params.push(`%${search}%`)
+      whereExtra += ` AND (c.title ILIKE $${params.length} OR c.description ILIKE $${params.length})`
+    }
+
     const q = `
       SELECT 
-        c.id, c.title, c.description, c.thumbnail_url, c.level, c.status,
+        c.id,
+        c.title,
+        c.description,
+        c.thumbnail_url,
+        COALESCE(c.difficulty_level, c.level, 'beginner') as level,
+        c.status,
+        c.created_at,
         COALESCE(cat.name, 'غير محدد') as category_name,
+        c.category_id,
         COALESCE(u.name, 'غير محدد') as teacher_name,
         COUNT(DISTINCT l.id)::int as total_lessons,
-        COUNT(DISTINCT e.id)::int as total_enrolled,
-        c.created_at
+        COUNT(DISTINCT e_all.id)::int as total_enrolled,
+        -- enrollment status للطالب الحالي
+        MAX(CASE WHEN e_me.student_id = $1 THEN e_me.status ELSE NULL END) as my_enrollment_status,
+        MAX(CASE WHEN e_me.student_id = $1 THEN e_me.id ELSE NULL END) as my_enrollment_id
       FROM courses c
       LEFT JOIN users u ON c.teacher_id = u.id
       LEFT JOIN categories cat ON c.category_id = cat.id
-      LEFT JOIN lessons l ON l.course_id = c.id
-      LEFT JOIN enrollments e ON e.course_id = c.id AND e.status = 'active'
+      LEFT JOIN lessons l ON l.course_id = c.id AND l.status = 'published'
+      LEFT JOIN enrollments e_all ON e_all.course_id = c.id AND e_all.status = 'active'
+      LEFT JOIN enrollments e_me ON e_me.course_id = c.id AND e_me.student_id = $1
       WHERE c.status = 'published'
-      GROUP BY c.id, c.title, c.description, c.thumbnail_url, c.level, c.status, cat.name, u.name, c.created_at
+      ${whereExtra}
+      GROUP BY c.id, c.title, c.description, c.thumbnail_url, c.difficulty_level, c.level, c.status, cat.name, c.category_id, u.name, c.created_at
       ORDER BY c.created_at DESC
     `
-    const rows = await query<any>(q, [])
+
+    const rows = await query<any>(q, params)
     return NextResponse.json({ data: rows })
   } catch (error) {
     console.error('[API] Error fetching all courses:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+

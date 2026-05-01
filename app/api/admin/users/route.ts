@@ -127,6 +127,31 @@ export async function PATCH(req: NextRequest) {
     if (typeof isActive === "boolean") {
       values.push(isActive)
       updates.push(`is_active = $${values.length}`)
+      // A-4/A-5: Keep is_disabled in sync so middleware can detect the change
+      // on the very next request without needing a full session refresh.
+      updates.push(`is_disabled = ${!isActive}`)
+      
+      // A-5: If disabling user, invalidate all sessions in real-time
+      // NOTE: We DO NOT call supabase.auth.admin.deleteUser — that would
+      // permanently delete the user. We only revoke sessions/tokens so the
+      // user is logged out everywhere on next request. The middleware (A-4)
+      // re-checks `is_active` from the DB on every sensitive request and
+      // will redirect to /login if the flag is false.
+      if (!isActive) {
+        try {
+          // 1) Delete all local session records (custom JWT sessions table)
+          await query(`DELETE FROM user_sessions WHERE user_id = $1`, [userId])
+
+          // 2) Delete refresh tokens so no new access tokens can be issued
+          await query(`DELETE FROM refresh_tokens WHERE user_id = $1`, [userId])
+            .catch(() => { /* table may not exist in some envs */ })
+
+          console.log("[v0] A-5: Cleared all sessions/refresh tokens for disabled user:", userId)
+        } catch (err) {
+          console.error("[v0] A-5: Failed to clear sessions for disabled user:", err)
+          // Continue — middleware will still enforce is_active on next request
+        }
+      }
     }
 
     if (role) {

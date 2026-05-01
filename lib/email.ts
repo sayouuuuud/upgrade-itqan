@@ -365,3 +365,48 @@ export function sendSessionReminderEmail(
     html,
   })
 }
+
+// B-4: إيميل الطالب الجديد المنشأ بواسطة المدرس
+export function sendStudentCreatedByTeacherEmail(to: string, studentName: string, teacherName: string, plainPassword?: string) {
+  const html = `
+    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333; border: 1px solid #e2e8f0; border-radius: 12px;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h1 style="color: #0B3D2E; font-size: 24px; margin-bottom: 4px;">إتقان التعليمية</h1>
+        <p style="color: #64748b; font-size: 13px;">تم إنشاء حسابك بنجاح</p>
+      </div>
+
+      <h2 style="color: #0B3D2E; font-size: 18px;">أهلاً ${studentName} 👋</h2>
+      <p style="color: #475569; line-height: 1.7;">
+        تم إنشاء حسابك في منصة <strong>إتقان التعليمية</strong> بواسطة أستاذك <strong>${teacherName}</strong>.
+      </p>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin: 20px 0;">
+        <p style="margin: 8px 0; text-align: center;"><strong>بيانات الدخول الخاصة بك</strong></p>
+        <p style="margin: 8px 0;"><strong>البريد الإلكتروني:</strong> ${to}</p>
+        ${plainPassword ? `<p style="margin: 8px 0;"><strong>كلمة المرور:</strong> <span style="letter-spacing: 2px;">${plainPassword}</span></p>` : ''}
+      </div>
+
+      <div style="margin: 24px 0; text-align: center;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://itqan.app'}/login" target="_blank"
+           style="display: inline-block; background-color: #0B3D2E; color: white; text-decoration: none;
+                  padding: 14px 36px; border-radius: 10px; font-weight: bold; font-size: 16px;">
+          🔗 تسجيل الدخول لمنصة الأكاديمية
+        </a>
+      </div>
+
+      <p style="color: #ef4444; font-size: 13px; text-align: center; font-weight: bold;">
+        يرجى تغيير كلمة المرور فور تسجيل الدخول لأول مرة.
+      </p>
+
+      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+      <p style="font-size: 12px; color: #94a3b8; text-align: center;">منصة إتقان التعليمية — جميع الحقوق محفوظة</p>
+    </div>
+  `
+  return sendEmail({
+    to,
+    subject: `🎉 أهلاً بك في أكاديمية إتقان — بيانات الدخول لحسابك الجديد`,
+    body: `مرحباً ${studentName}، تم إنشاء حسابك بواسطة أستاذك ${teacherName}. البريد: ${to}، كلمة المرور: ${plainPassword || 'غير مرفقة'}. يرجى تغيير كلمة المرور فور الدخول.`,
+    html,
+  })
+}
+

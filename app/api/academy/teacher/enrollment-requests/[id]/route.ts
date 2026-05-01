@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
+import { createNotification } from '@/lib/notifications'
 
 // PATCH /api/academy/teacher/enrollment-requests/[id]
 // Accept or reject an enrollment request
@@ -45,19 +46,36 @@ export async function PATCH(
 
         if (result.length === 0) return NextResponse.json({ error: 'Enrollment not found' }, { status: 404 })
 
-        // Notify student
+        // B-6: إشعار للطالب باسم الدورة
         try {
             const enrollment = result[0] as any
-            const msg = dbStatus === 'active'
-                ? 'تمت الموافقة على طلب انضمامك للدورة'
-                : `تم رفض طلب انضمامك${reason ? ': ' + reason : ''}`
 
-            await query(
-                `INSERT INTO notifications (user_id, type, title, message, category, is_read, created_at)
-         VALUES ($1, 'general', $2, $2, 'course', FALSE, NOW())`,
-                [enrollment.student_id, msg]
+            // جلب اسم الدورة
+            const courseRes = await query<any>(
+                `SELECT title FROM courses WHERE id = $1`,
+                [enrollment.course_id]
             )
-        } catch { }
+            const courseTitle = courseRes[0]?.title || 'الدورة'
+
+            const notifTitle = dbStatus === 'active'
+                ? `✅ تم قبولك في دورة «${courseTitle}»`
+                : `❌ تم رفض طلبك للانضمام لدورة «${courseTitle}»`
+
+            const notifMsg = dbStatus === 'active'
+                ? `مبروك! تم قبول طلبك في دورة «${courseTitle}». يمكنك البدء الآن.`
+                : `تم رفض طلبك للانضمام لدورة «${courseTitle}»${reason ? '. السبب: ' + reason : ''}.`
+
+            await createNotification({
+                userId: enrollment.student_id,
+                type: 'general',
+                title: notifTitle,
+                message: notifMsg,
+                category: 'course',
+                link: dbStatus === 'active' ? '/academy/student/courses' : '/academy/student/courses/browse',
+            })
+        } catch (notifErr) {
+            console.error('[B-6] Failed to send enrollment notification:', notifErr)
+        }
 
         return NextResponse.json({ success: true, data: result[0] })
     } catch (error) {
@@ -65,3 +83,4 @@ export async function PATCH(
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
+

@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     // Check if already invited with pending status
     const existing = await query(
       `SELECT id, status FROM invitations 
-       WHERE email = $1 AND status = 'pending'`,
+       WHERE email = $1 AND status = 'PENDING'`,
       [email.toLowerCase()]
     )
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     const result = await query(`
       INSERT INTO invitations (email, role_to_assign, token, status, invited_by, expires_at, created_at)
-      VALUES ($1, $2, $3, 'pending', $4, $5, NOW())
+      VALUES ($1, $2, $3, 'PENDING', $4, $5, NOW())
       RETURNING *
     `, [email.toLowerCase(), role || 'student', token, session.sub, expiresAt])
 

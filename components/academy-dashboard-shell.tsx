@@ -415,7 +415,13 @@ export function AcademyDashboardShell({
             <LanguageSwitcher variant="outline" />
 
             <NotificationDropdown
-              role={role === 'academy_admin' ? 'admin' : 'student'}
+              role={
+                role === 'academy_admin' ? 'admin' :
+                role === 'teacher' ? 'academy/teacher' :
+                role === 'parent' ? 'academy/parent' :
+                role === 'supervisor' ? 'academy/supervisor' :
+                'academy/student'
+              }
               unreadCount={unreadCount}
               onRefresh={async () => {
                 const res = await fetch('/api/unread-counts')

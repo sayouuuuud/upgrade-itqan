@@ -38,53 +38,100 @@ export async function POST(req: NextRequest) {
         }
 
         // Check existing email
-        const existing = await query("SELECT id FROM users WHERE email = $1", [
+        const existing = await query("SELECT id, approval_status FROM users WHERE email = $1", [
             email.toLowerCase(),
         ])
-        if (existing.length > 0) {
-            return NextResponse.json(
-                { error: "البريد الإلكتروني مسجل مسبقاً" },
-                { status: 409 }
-            )
-        }
-
+        
+        let userId;
         const passwordHash = await bcrypt.hash(password, 10)
 
-        // Create user with pending_approval status
-        const users = await query<{ id: string }>(
-            `INSERT INTO users (name, email, password_hash, role, gender, approval_status)
-       VALUES ($1, $2, $3, 'teacher', $4, 'pending_approval')
-       RETURNING id`,
-            [full_name_triple, email.toLowerCase(), passwordHash, gender]
-        )
+        if (existing.length > 0) {
+            const user = existing[0]
+            if (user.approval_status === 'rejected') {
+                // المدرس اترفض قبل كده، نخليه يقدم من جديد ونحدث بياناته
+                await query(
+                    `UPDATE users 
+                     SET name = $1, password_hash = $2, gender = $3, approval_status = 'pending_approval' 
+                     WHERE id = $4`,
+                    [full_name_triple, passwordHash, gender, user.id]
+                )
+                userId = user.id
 
-        const user = users[0]
+                // تحديث الطلب السابق إن وُجد
+                const existingApp = await query("SELECT id FROM teacher_applications WHERE user_id = $1", [user.id])
+                if (existingApp.length > 0) {
+                    await query(
+                        `UPDATE teacher_applications 
+                         SET qualifications = $1, status = 'pending', created_at = NOW(), rejection_count = COALESCE(rejection_count, 0) + 1 
+                         WHERE user_id = $2`,
+                        [
+                            JSON.stringify({
+                                full_name_triple, phone, city: city || null, nationality: nationality || null,
+                                qualification: qualification || null, teaching_subjects: teaching_subjects || null,
+                                years_of_experience: years_of_experience || null,
+                            }),
+                            user.id
+                        ]
+                    )
+                } else {
+                    await query(
+                        `INSERT INTO teacher_applications (user_id, qualifications, cv_url, status, created_at, rejection_count)
+                         VALUES ($1, $2, $3, 'pending', NOW(), 1)`,
+                        [
+                            userId,
+                            JSON.stringify({
+                                full_name_triple, phone, city: city || null, nationality: nationality || null,
+                                qualification: qualification || null, teaching_subjects: teaching_subjects || null,
+                                years_of_experience: years_of_experience || null,
+                            }),
+                            null,
+                        ]
+                    )
+                }
+            } else {
+                return NextResponse.json(
+                    { error: "البريد الإلكتروني مسجل مسبقاً" },
+                    { status: 409 }
+                )
+            }
+        } else {
+            // Create user with pending_approval status
+            const users = await query<{ id: string }>(
+                `INSERT INTO users (name, email, password_hash, role, gender, approval_status)
+           VALUES ($1, $2, $3, 'teacher', $4, 'pending_approval')
+           RETURNING id`,
+                [full_name_triple, email.toLowerCase(), passwordHash, gender]
+            )
 
-        if (!user) {
-            return NextResponse.json(
-                { error: "حدث خطأ أثناء إنشاء الحساب" },
-                { status: 500 }
+            userId = users[0]?.id
+
+            if (!userId) {
+                return NextResponse.json(
+                    { error: "حدث خطأ أثناء إنشاء الحساب" },
+                    { status: 500 }
+                )
+            }
+
+            // Create teacher application
+            await query(
+                `INSERT INTO teacher_applications (user_id, qualifications, cv_url, status, created_at, rejection_count)
+           VALUES ($1, $2, $3, 'pending', NOW(), 0)`,
+                [
+                    userId,
+                    JSON.stringify({
+                        full_name_triple,
+                        phone,
+                        city: city || null,
+                        nationality: nationality || null,
+                        qualification: qualification || null,
+                        teaching_subjects: teaching_subjects || null,
+                        years_of_experience: years_of_experience || null,
+                    }),
+                    null,
+                ]
             )
         }
 
-        // Create teacher application
-        await query(
-            `INSERT INTO teacher_applications (user_id, qualifications, cv_url, status, created_at)
-       VALUES ($1, $2, $3, 'pending', NOW())`,
-            [
-                user.id,
-                JSON.stringify({
-                    full_name_triple,
-                    phone,
-                    city: city || null,
-                    nationality: nationality || null,
-                    qualification: qualification || null,
-                    teaching_subjects: teaching_subjects || null,
-                    years_of_experience: years_of_experience || null,
-                }),
-                null,
-            ]
-        )
 
         // Notify admins about the new teacher application
         try {

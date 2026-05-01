@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query } from "@/lib/db"
 import bcrypt from "bcryptjs"
+import { sendStudentCreatedByTeacherEmail } from "@/lib/email"
 
 export async function POST(req: NextRequest) {
     try {
@@ -46,6 +47,14 @@ export async function POST(req: NextRequest) {
        VALUES ($1, 'student_created_by_teacher', $2, $3)`,
             [session.sub, `أنشأ حساب الطالب الجديد ${user.name} (${user.email})`, ip]
         ).catch(() => { })
+
+        // إرسال البريد الإلكتروني للطالب ببيانات الدخول (B-4)
+        try {
+            const teacherName = session.name || "معلمك";
+            await sendStudentCreatedByTeacherEmail(email.toLowerCase(), name, teacherName, password);
+        } catch (emailErr) {
+            console.error("Failed to send student creation email:", emailErr);
+        }
 
         return NextResponse.json({ user })
     } catch (error: any) {

@@ -68,9 +68,53 @@ export async function middleware(req: NextRequest) {
         // but for now we decode where possible or let the layout handle advanced checks)
         if (sessionCookie) {
             const { verifyToken } = await import("@/lib/auth")
+            const { query } = await import("@/lib/db")
             const sessionPayload = await verifyToken(sessionCookie)
 
             if (sessionPayload) {
+                // A-4: Real-time permission invalidation - check DB flags on sensitive routes
+                const isSensitiveRoute = pathname.startsWith("/academy") || 
+                                        pathname.startsWith("/admin") || 
+                                        pathname.startsWith("/api/admin") ||
+                                        pathname.startsWith("/api/academy")
+
+                if (isSensitiveRoute && !academyPublicPaths.some(p => pathname.startsWith(p))) {
+                    try {
+                        // Fetch current user permissions from DB
+                        const userRes = await query<any>(
+                            `SELECT is_active, is_disabled, has_academy_access, has_quran_access, approval_status 
+                             FROM users WHERE id = $1 LIMIT 1`,
+                            [sessionPayload.sub]
+                        )
+
+                        if (userRes.length === 0 || userRes[0].is_disabled === true) {
+                            // User deleted or disabled - invalidate session
+                            const response = NextResponse.redirect(new URL("/login", req.url))
+                            response.cookies.delete("better-auth.session_token")
+                            response.cookies.delete("auth-token")
+                            return response
+                        }
+
+                        const dbUser = userRes[0]
+
+                        // Check if user is suspended/inactive
+                        if (dbUser.is_active === false && sessionPayload.role !== 'admin') {
+                            return NextResponse.redirect(new URL("/login", req.url))
+                        }
+
+                        // Check if user approval status changed (e.g., reader was rejected)
+                        if (dbUser.approval_status === 'rejected' && ['reader'].includes(sessionPayload.role)) {
+                            const response = NextResponse.redirect(new URL("/login", req.url))
+                            response.cookies.delete("better-auth.session_token")
+                            response.cookies.delete("auth-token")
+                            return response
+                        }
+                    } catch (dbErr) {
+                        console.log("[v0] A-4 DB check failed, continuing with cached session:", dbErr)
+                        // On DB error, allow request to continue with cached session
+                    }
+                }
+
                 // Check if user has academy access before allowing them into /academy
                 if (pathname.startsWith("/academy") && !academyPublicPaths.some(p => pathname.startsWith(p))) {
                     // If access is explicitly false (ignoring undefined for older sessions), deny access
@@ -93,6 +137,29 @@ export async function middleware(req: NextRequest) {
                 if (pathname.startsWith("/academy/parent")) {
                     if (sessionPayload.role !== 'parent' && sessionPayload.role !== 'admin') {
                         return NextResponse.redirect(new URL("/academy", req.url))
+                    }
+                }
+
+                // A-1: Prevent teachers / supervisors from accessing /academy/student/*
+                // by manually editing the URL. Redirect each role to its own dashboard.
+                if (pathname.startsWith("/academy/student")) {
+                    const studentAllowedRoles = ['student', 'admin', 'parent'];
+                    const hasStudentAccess = studentAllowedRoles.includes(sessionPayload.role) ||
+                        sessionPayload.academy_roles?.some(r => studentAllowedRoles.includes(r));
+
+                    if (!hasStudentAccess) {
+                        const role = sessionPayload.role
+                        const academyRoles = sessionPayload.academy_roles || []
+                        const supervisorRoles = ['supervisor', 'content_supervisor', 'fiqh_supervisor', 'quality_supervisor', 'academy_admin']
+
+                        let target = "/academy"
+                        if (role === 'teacher' || academyRoles.includes('teacher')) {
+                            target = "/academy/teacher"
+                        } else if (supervisorRoles.includes(role) || academyRoles.some(r => supervisorRoles.includes(r))) {
+                            target = "/academy/supervisor"
+                        }
+
+                        return NextResponse.redirect(new URL(target, req.url))
                     }
                 }
             }

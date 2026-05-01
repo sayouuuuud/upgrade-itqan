@@ -76,3 +76,65 @@ export async function GET(
         return NextResponse.json({ error: "حدث خطأ في الخادم" }, { status: 500 })
     }
 }
+
+// C-2: PATCH /api/admin/recitations/[id] — تحديث status أو internal_notes
+export async function PATCH(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const session = await getSession()
+        const allowedRoles: ("admin" | "student_supervisor" | "reciter_supervisor")[] = ["admin", "student_supervisor", "reciter_supervisor"]
+        if (!requireRole(session, allowedRoles)) {
+            return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
+        }
+
+        const { id } = await params
+        const body = await req.json()
+        const { status, internal_notes } = body
+
+        // بناء SET clause ديناميكي
+        const updates: string[] = []
+        const vals: any[] = []
+
+        if (status !== undefined) {
+            const allowed = ['pending', 'in_review', 'reviewed', 'mastered', 'needs_session', 'cancelled']
+            if (!allowed.includes(status)) {
+                return NextResponse.json({ error: `status غير مسموح. القيم المسموحة: ${allowed.join(', ')}` }, { status: 400 })
+            }
+            vals.push(status)
+            updates.push(`status = $${vals.length}`)
+
+            if (status === 'reviewed' || status === 'mastered' || status === 'needs_session') {
+                updates.push(`reviewed_at = NOW()`)
+            }
+        }
+
+        if (internal_notes !== undefined) {
+            vals.push(internal_notes)
+            updates.push(`internal_notes = $${vals.length}`)
+        }
+
+        if (updates.length === 0) {
+            return NextResponse.json({ error: 'لا توجد حقول للتحديث' }, { status: 400 })
+        }
+
+        updates.push(`updated_at = NOW()`)
+        vals.push(id)
+
+        const result = await db.query(
+            `UPDATE recitations SET ${updates.join(', ')} WHERE id = $${vals.length} RETURNING *`,
+            vals
+        )
+
+        if ((result as any[]).length === 0) {
+            return NextResponse.json({ error: "التسميع غير موجود" }, { status: 404 })
+        }
+
+        return NextResponse.json({ success: true, data: (result as any[])[0] })
+    } catch (error) {
+        console.error("Admin recitation PATCH error:", error)
+        return NextResponse.json({ error: "حدث خطأ في الخادم" }, { status: 500 })
+    }
+}
+

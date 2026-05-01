@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       LEFT JOIN task_submissions ts ON u.id = ts.student_id AND t.id = ts.task_id
       LEFT JOIN user_points up ON u.id = up.user_id
       LEFT JOIN badges b ON u.id = b.user_id
-      WHERE c.teacher_id = $1 AND e.status = 'active'
+      WHERE c.teacher_id = $1 AND e.status IN ('active', 'pending')
       GROUP BY u.id, u.name, u.email
       ORDER BY MAX(e.enrolled_at) DESC
     `
