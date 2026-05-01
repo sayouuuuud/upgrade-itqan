@@ -215,9 +215,10 @@ export default function NotificationsPage() {
 
     return (
         <div className={cn(
+            "overflow-x-hidden",
             isReader && "bg-card min-h-full -m-6 lg:-m-8 p-6 lg:p-8"
         )} dir={isAr ? "rtl" : "ltr"}>
-            <div className="max-w-4xl mx-auto pb-20">
+            <div className="max-w-4xl mx-auto pb-20 overflow-x-hidden">
             {/* Premium Header Zone */}
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
                 <div className="space-y-2">
@@ -240,11 +241,11 @@ export default function NotificationsPage() {
                     </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full md:w-auto">
                     <button
                         onClick={() => setShowFilters(!showFilters)}
                         className={cn(
-                            "group flex items-center gap-2 text-xs font-black uppercase tracking-widest px-8 py-4 rounded-2xl transition-all hover:-translate-y-1 active:scale-95 border-2",
+                            "group flex items-center justify-center gap-2 text-[11px] md:text-xs font-black uppercase tracking-widest px-4 md:px-8 py-3 md:py-4 rounded-2xl transition-all hover:-translate-y-1 active:scale-95 border-2 flex-1 md:flex-none",
                             showFilters 
                                 ? "border-primary bg-primary/10 text-primary" 
                                 : "border-border bg-muted/50 text-foreground hover:border-primary/30"
@@ -258,7 +259,7 @@ export default function NotificationsPage() {
                         <button
                             onClick={markAllRead}
                             disabled={markingAll}
-                            className="group flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary-foreground bg-primary px-8 py-4 rounded-2xl hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-70"
+                            className="group flex items-center justify-center gap-2 text-[11px] md:text-xs font-black uppercase tracking-widest text-primary-foreground bg-primary px-4 md:px-8 py-3 md:py-4 rounded-2xl hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-70 flex-1 md:flex-none"
                         >
                             {markingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4 transition-transform group-hover:scale-110 ml-1" />}
                             {t.notifications.markAllRead}
