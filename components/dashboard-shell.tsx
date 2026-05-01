@@ -283,10 +283,10 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
                     <item.icon className={cn("w-5 h-5 shrink-0 transition-transform duration-200", active && "scale-110")} />
                     <span className="font-medium">{item.label}</span>
                     {item.badge ? (
-                      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold">{item.badge}</span>
+                      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">{item.badge}</span>
                     ) : (item.label === t.student.notifications || item.label === t.notifications.title || item.href.includes('notifications')) ? (
                       unreadCount > 0 && (
-                        <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold">
+                        <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">
                           {unreadCount > 99 ? '99+' : unreadCount}
                         </span>
                       )

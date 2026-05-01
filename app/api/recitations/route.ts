@@ -65,10 +65,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
 
-    const { audioUrl, audioDuration, notes, qiraah } = await req.json()
+    const {
+      audioUrl,
+      audioDuration,
+      notes,
+      qiraah,
+      surahNumber,
+      surahName,
+      ayahFrom,
+      ayahTo,
+      recitationType,
+    } = await req.json()
 
     if (!audioUrl) {
       return NextResponse.json({ error: "رابط التسجيل الصوتي مطلوب" }, { status: 400 })
+    }
+
+    // Validate metadata - keep backwards compatible defaults if any are missing
+    const finalSurahNumber = Number(surahNumber) || 1
+    const finalSurahName = (typeof surahName === "string" && surahName.trim()) || "الفاتحة"
+    const finalAyahFrom = Number(ayahFrom) || 1
+    const finalAyahTo = Number(ayahTo) || finalAyahFrom
+    const validTypes = ["hifd", "muraja3a", "tilawa"] as const
+    const finalRecitationType = (validTypes as readonly string[]).includes(recitationType)
+      ? recitationType
+      : "tilawa"
+
+    if (finalAyahFrom < 1 || finalAyahTo < 1 || finalAyahFrom > finalAyahTo) {
+      return NextResponse.json({ error: "نطاق الآيات غير صالح" }, { status: 400 })
     }
 
     // Check if student already has a pending/in_review recitation (prevent duplicate submissions)
@@ -87,10 +111,21 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await query(
-      `INSERT INTO recitations (student_id, surah_name, surah_number, ayah_from, ayah_to, audio_url, audio_duration_seconds, submission_type, student_notes, qiraah, status)
-       VALUES ($1, 'الفاتحة', 1, 1, 7, $2, $3, 'recorded', $4, $5, 'pending')
+      `INSERT INTO recitations (student_id, surah_name, surah_number, ayah_from, ayah_to, audio_url, audio_duration_seconds, submission_type, recitation_type, student_notes, qiraah, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'recorded', $8, $9, $10, 'pending')
        RETURNING *`,
-      [session.sub, audioUrl, audioDuration || null, notes || null, qiraah || 'حفص عن عاصم']
+      [
+        session.sub,
+        finalSurahName,
+        finalSurahNumber,
+        finalAyahFrom,
+        finalAyahTo,
+        audioUrl,
+        audioDuration || null,
+        finalRecitationType,
+        notes || null,
+        qiraah || 'حفص عن عاصم',
+      ]
     )
 
     // Auto-assign a reader matching the student's gender and is active for evaluation

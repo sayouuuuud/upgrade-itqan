@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Mic, FileText, Clock, CheckCircle, Calendar, Loader2, ChevronLeft } from "lucide-react"
+import { Mic, FileText, Clock, CheckCircle, Calendar, Loader2, ChevronLeft, Plus } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
 import { useMemo } from "react"
 
@@ -59,11 +59,20 @@ export default function StudentRecitationsPage() {
 
   return (
     <div className="max-w-3xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t.student.myRecitations}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t.student.myRecitationsDesc}</p>
         </div>
+        <Link
+          href="/student/submit"
+          className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 self-start sm:self-auto"
+        >
+          <span className="flex items-center justify-center w-5 h-5 rounded-md bg-primary-foreground/15">
+            <Plus className="w-3.5 h-3.5" />
+          </span>
+          {t.student.newRecitation || "تسميع جديد"}
+        </Link>
       </div>
 
       {/* Filters */}

@@ -2,12 +2,15 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Mic, Square, Play, Pause, RotateCcw, Send, Info, Loader2 } from "lucide-react"
+import { Mic, Square, Play, Pause, RotateCcw, Send, Info, Loader2, BookOpen, Hash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useI18n } from "@/lib/i18n/context"
 import { useUploadThing } from "@/lib/uploadthing-client"
+import { SURAHS } from "@/lib/data/surahs"
 
 const MAX_SECONDS = 180 // 3 minutes
+
+type RecitationType = "hifd" | "muraja3a" | "tilawa"
 
 type RecordingState = "idle" | "recording" | "saved"
 
@@ -24,7 +27,14 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
   const [submitted, setSubmitted] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [qiraah, setQiraah] = useState("hafs")
+  const [surahNumber, setSurahNumber] = useState<number>(1)
+  const [ayahFrom, setAyahFrom] = useState<number>(1)
+  const [ayahTo, setAyahTo] = useState<number>(7)
+  const [recitationType, setRecitationType] = useState<RecitationType>("tilawa")
+  const [validationError, setValidationError] = useState<string | null>(null)
   const [holdTimer, setHoldTimer] = useState<NodeJS.Timeout | null>(null)
+
+  const selectedSurah = SURAHS.find((s) => s.number === surahNumber) || SURAHS[0]
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
@@ -123,6 +133,13 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
     6.2, 3.7, 5.8, 2.4, 7.5, 4.8, 3.1, 6.9,
     5.2, 2.7, 7.3, 4.6, 3.9, 6.1, 2.5, 5.5
   ]
+
+  // When surah changes, snap ayah range to full surah by default
+  useEffect(() => {
+    setAyahFrom(1)
+    setAyahTo(selectedSurah.verses)
+    setValidationError(null)
+  }, [surahNumber, selectedSurah.verses])
 
   useEffect(() => {
     if (recordingState === "recording") {
@@ -242,8 +259,27 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
 
   const { startUpload } = useUploadThing("audioUploader")
 
+  const validateBeforeSubmit = (): string | null => {
+    if (ayahFrom < 1 || ayahFrom > selectedSurah.verses) {
+      return `«من الآية» يجب أن يكون بين 1 و ${selectedSurah.verses}`
+    }
+    if (ayahTo < 1 || ayahTo > selectedSurah.verses) {
+      return `«إلى الآية» يجب أن يكون بين 1 و ${selectedSurah.verses}`
+    }
+    if (ayahFrom > ayahTo) {
+      return "«من الآية» لا يمكن أن تكون أكبر من «إلى الآية»"
+    }
+    return null
+  }
+
   const handleSubmit = async () => {
     if (!audioBlobRef.current) return
+    const err = validateBeforeSubmit()
+    if (err) {
+      setValidationError(err)
+      return
+    }
+    setValidationError(null)
     setSubmitting(true)
     try {
       const timestamp = Date.now()
@@ -285,7 +321,12 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
         body: JSON.stringify({
           audioUrl,
           audioDuration: timer,
-          qiraah: t.qiraat[qiraah]
+          qiraah: t.qiraat[qiraah],
+          surahNumber: selectedSurah.number,
+          surahName: selectedSurah.name,
+          ayahFrom,
+          ayahTo,
+          recitationType,
         }),
       })
 
@@ -327,7 +368,108 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-4 md:space-y-8 animate-in fade-in duration-500">
+    <div className="w-full max-w-3xl mx-auto space-y-4 md:space-y-6 animate-in fade-in duration-500">
+      {/* Recitation metadata form */}
+      <div className="bg-card rounded-2xl shadow-sm border border-border p-4 md:p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <BookOpen className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+          <h3 className="text-sm md:text-base font-bold text-foreground">معلومات التسميع</h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+          {/* Surah selector */}
+          <div className="md:col-span-2">
+            <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
+              السورة
+            </label>
+            <select
+              value={surahNumber}
+              onChange={(e) => setSurahNumber(parseInt(e.target.value, 10))}
+              disabled={recordingState === "recording" || submitting}
+              className="w-full bg-muted/50 border border-border rounded-xl py-2.5 md:py-3 px-3 md:px-4 text-sm md:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all appearance-none cursor-pointer disabled:opacity-50"
+              style={{ direction: 'rtl' }}
+            >
+              {SURAHS.map((s) => (
+                <option key={s.number} value={s.number}>
+                  {s.number}. {s.name} ({s.verses} آية)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Ayah from */}
+          <div>
+            <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
+              <span className="inline-flex items-center gap-1">
+                <Hash className="w-3 h-3" />
+                من الآية
+              </span>
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={selectedSurah.verses}
+              value={ayahFrom}
+              onChange={(e) => setAyahFrom(Math.max(1, parseInt(e.target.value, 10) || 1))}
+              disabled={recordingState === "recording" || submitting}
+              className="w-full bg-muted/50 border border-border rounded-xl py-2.5 md:py-3 px-3 md:px-4 text-sm md:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50"
+            />
+          </div>
+
+          {/* Ayah to */}
+          <div>
+            <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
+              <span className="inline-flex items-center gap-1">
+                <Hash className="w-3 h-3" />
+                إلى الآية
+              </span>
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={selectedSurah.verses}
+              value={ayahTo}
+              onChange={(e) => setAyahTo(Math.max(1, parseInt(e.target.value, 10) || 1))}
+              disabled={recordingState === "recording" || submitting}
+              className="w-full bg-muted/50 border border-border rounded-xl py-2.5 md:py-3 px-3 md:px-4 text-sm md:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50"
+            />
+          </div>
+
+          {/* Recitation type */}
+          <div className="md:col-span-2">
+            <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
+              نوع التسميع
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { value: "hifd", label: "حفظ" },
+                { value: "muraja3a", label: "مراجعة" },
+                { value: "tilawa", label: "تلاوة" },
+              ] as { value: RecitationType; label: string }[]).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setRecitationType(opt.value)}
+                  disabled={recordingState === "recording" || submitting}
+                  className={`py-2.5 md:py-3 px-3 rounded-xl text-sm md:text-base font-bold transition-all border ${recitationType === opt.value
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-muted/50 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+                    } disabled:opacity-50`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {validationError && (
+          <p className="mt-3 text-xs font-bold text-destructive bg-destructive/10 border border-destructive/30 rounded-lg px-3 py-2">
+            {validationError}
+          </p>
+        )}
+      </div>
+
       <div className="bg-card rounded-2xl shadow-sm border border-border p-4 md:p-8 flex flex-col items-center justify-center relative min-h-[400px] md:min-h-[450px]">
         <div className="mb-6 md:mb-10 text-center">
           <div className="text-5xl md:text-7xl font-mono font-light tracking-widest text-foreground mb-3">

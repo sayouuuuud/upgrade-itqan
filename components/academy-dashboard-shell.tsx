@@ -32,6 +32,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/student', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
             { href: '/academy/student/courses', label: t.academy?.myCourses || 'دوراتي', icon: BookOpen },
             { href: '/academy/student/courses/browse', label: t.academy?.browseCourses || 'تصفح الدورات', icon: GraduationCap },
+            { href: '/academy/student/enrollment-requests', label: t.academy?.enrollmentRequests || 'طلبات الانضمام', icon: UserPlus },
             { href: '/academy/student/memorization', label: t.academy?.memorization || 'الحفظ والمراجعة', icon: BookMarked },
             { href: '/academy/student/tasks', label: t.academy?.tasks || 'المهام', icon: ClipboardList },
             { href: '/academy/student/sessions', label: t.academy?.liveSessions || 'الجلسات الحية', icon: Video },
@@ -97,6 +98,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
           items: [
             { href: '/academy/admin', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
             { href: '/academy/admin/analytics', label: t.academy?.analytics || 'التحليلات', icon: BarChart3 },
+            { href: '/academy/admin/reports', label: t.academy?.reports || 'التقارير', icon: FileText },
           ]
         },
         {
@@ -274,7 +276,7 @@ export function AcademyDashboardShell({
         'bg-card border-l border-border'
       )}>
         {/* Logo */}
-        <div className="py-1 flex items-center justify-center border-b border-border relative overflow-hidden bg-gradient-to-l from-blue-500/5 to-transparent">
+        <div className="py-1 flex items-center justify-center border-b border-border relative overflow-hidden bg-gradient-to-l from-[#1E3A5F]/5 to-transparent">
           <Link href="/" className="w-full block px-4">
             <img
               src={branding?.dashboardLogoUrl || "/branding/dashboard-logo.png"}
@@ -293,7 +295,7 @@ export function AcademyDashboardShell({
 
         {/* Academy Badge */}
         <div className="px-4 py-3 border-b border-border">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1E3A5F]/10 text-[#1E3A5F] dark:text-[#7faad6]">
             <GraduationCap className="w-5 h-5" />
             <span className="font-semibold text-sm">{t.academy?.title || 'الأكاديمية'}</span>
             <Sparkles className="w-4 h-4 mr-auto" />
@@ -322,7 +324,7 @@ export function AcademyDashboardShell({
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm group relative',
                       active
-                        ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold shadow-sm'
+                        ? 'bg-[#1E3A5F]/10 text-[#1E3A5F] dark:text-[#7faad6] font-bold shadow-sm'
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     )}
                   >
@@ -332,17 +334,17 @@ export function AcademyDashboardShell({
                     )} />
                     <span className="font-medium">{item.label}</span>
                     {item.badge && (
-                      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold">
+                      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">
                         {item.badge}
                       </span>
                     )}
                     {item.href.includes('notifications') && unreadCount > 0 && !item.badge && (
-                      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold">
+                      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">
                         {unreadCount > 99 ? '99+' : unreadCount}
                       </span>
                     )}
                     {active && (
-                      <div className="absolute right-0 w-1 h-6 bg-blue-500 rounded-l-full" />
+                      <div className="absolute right-0 w-1 h-6 bg-[#1E3A5F] rounded-l-full" />
                     )}
                   </Link>
                 )
@@ -354,7 +356,7 @@ export function AcademyDashboardShell({
         {/* Bottom section */}
         <div className="p-4 border-t border-border mt-auto">
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl mb-2 bg-muted/30 border border-border transition-colors">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-sm ring-2 ring-background shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1E3A5F]/10 text-[#1E3A5F] dark:text-[#7faad6] flex items-center justify-center font-bold text-sm ring-2 ring-background shadow-sm shrink-0">
               {user?.avatar_url && !avatarError ? (
                 <img
                   src={user.avatar_url}
@@ -376,7 +378,7 @@ export function AcademyDashboardShell({
 
           <Link
             href="/"
-            className="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm text-muted-foreground hover:text-blue-600"
+            className="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm text-muted-foreground hover:text-[#1E3A5F] dark:hover:text-[#7faad6]"
           >
             <Globe className="w-4 h-4" />
             <span className="font-medium">{t.shell?.viewSite || 'عرض الموقع'}</span>
@@ -389,7 +391,7 @@ export function AcademyDashboardShell({
         <header className="h-16 border-b border-border flex items-center justify-between px-6 lg:px-8 bg-background/95 backdrop-blur-md z-10 sticky top-0">
           <div className="flex items-center gap-4">
             <button
-              className="lg:hidden p-2 text-muted-foreground hover:text-blue-600"
+              className="lg:hidden p-2 text-muted-foreground hover:text-[#1E3A5F] dark:hover:text-[#7faad6]"
               onClick={() => setSidebarOpen(true)}
               aria-label="open menu"
             >
