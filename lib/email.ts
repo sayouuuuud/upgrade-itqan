@@ -155,8 +155,8 @@ export function sendReaderApprovedEmail(to: string, readerName: string) {
   return sendDynamicEmail("reader_approved", to, { readerName })
 }
 
-export function sendReaderRejectedEmail(to: string, readerName: string) {
-  return sendDynamicEmail("reader_rejected", to, { readerName })
+export function sendReaderRejectedEmail(to: string, readerName: string, rejectionReason?: string) {
+  return sendDynamicEmail("reader_rejected", to, { readerName, rejectionReason: rejectionReason || '' })
 }
 
 export function sendTeacherApprovedEmail(to: string, teacherName: string) {
@@ -287,7 +287,7 @@ export function sendSessionLinkEmail(
       </p>
 
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin: 20px 0;">
-        <p style="margin: 8px 0;"><strong>📖 المقرئ:</strong> ${readerName}</p>
+        <p style="margin: 8px 0;"><strong>📖 المقر��:</strong> ${readerName}</p>
         <p style="margin: 8px 0;"><strong>📅 التاريخ:</strong> ${sessionDate}</p>
         <p style="margin: 8px 0;"><strong>🕐 الوقت:</strong> ${sessionTime}</p>
       </div>

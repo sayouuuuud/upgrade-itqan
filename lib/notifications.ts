@@ -55,9 +55,16 @@ export async function createNotification(input: CreateNotificationInput): Promis
                 input.relatedBookingId || null,
             ]
         )
-    } catch (err) {
-        // Never let notification failure break the main flow
-        console.error("Failed to create notification:", err)
+    } catch (err: any) {
+        console.error("[notifications] Failed to create notification:", {
+            error: err?.message,
+            code: err?.code,
+            detail: err?.detail,
+            constraint: err?.constraint,
+            type: input.type,
+            category: input.category,
+            userId: input.userId,
+        })
     }
 }
 

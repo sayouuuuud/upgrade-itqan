@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-const publicPaths = ["/", "/about", "/contact", "/sitemap-page", "/login", "/login-admin", "/register", "/reader-register", "/teacher-register", "/forgot-password", "/reset-password", "/verify", "/privacy", "/terms", "/maintenance"]
+const publicPaths = ["/", "/about", "/contact", "/sitemap-page", "/login", "/login-admin", "/register", "/reader-register", "/teacher-register", "/forgot-password", "/reset-password", "/verify", "/privacy", "/terms", "/maintenance", "/change-password"]
 const apiPublicPaths = ["/api/auth", "/api/admin/homepage", "/api/admin/analytics", "/api/uploadthing"]
 
 // Academy public paths (for public lessons and invitations)
@@ -80,9 +80,8 @@ export async function middleware(req: NextRequest) {
 
                 if (isSensitiveRoute && !academyPublicPaths.some(p => pathname.startsWith(p))) {
                     try {
-                        // Fetch current user permissions from DB
                         const userRes = await query<any>(
-                            `SELECT is_active, is_disabled, has_academy_access, has_quran_access, approval_status 
+                            `SELECT is_active, is_disabled, has_academy_access, has_quran_access, approval_status, must_change_password 
                              FROM users WHERE id = $1 LIMIT 1`,
                             [sessionPayload.sub]
                         )
@@ -97,9 +96,12 @@ export async function middleware(req: NextRequest) {
 
                         const dbUser = userRes[0]
 
-                        // Check if user is suspended/inactive
                         if (dbUser.is_active === false && sessionPayload.role !== 'admin') {
                             return NextResponse.redirect(new URL("/login", req.url))
+                        }
+
+                        if (dbUser.must_change_password === true && !pathname.startsWith("/api/auth/change-password")) {
+                            return NextResponse.redirect(new URL("/change-password", req.url))
                         }
 
                         // Check if user approval status changed (e.g., reader was rejected)
