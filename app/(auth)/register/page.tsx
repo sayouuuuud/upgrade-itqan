@@ -78,7 +78,12 @@ export default function RegisterPage() {
       if (data.requiresVerification) {
         router.push(`/verify?email=${encodeURIComponent(email)}`)
       } else {
-        router.push('/student')
+        // A-2: Route correctly based on platform_preference from registration response
+        if (platform === 'academy') {
+          router.push('/academy/student')
+        } else {
+          router.push('/student')
+        }
       }
     } catch {
       setError(t.auth.connectionError)

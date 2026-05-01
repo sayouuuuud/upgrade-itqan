@@ -127,6 +127,28 @@ export async function PATCH(req: NextRequest) {
     if (typeof isActive === "boolean") {
       values.push(isActive)
       updates.push(`is_active = $${values.length}`)
+      
+      // A-5: If disabling user, invalidate all sessions
+      if (!isActive) {
+        try {
+          // Clear all sessions for this user from Supabase auth
+          const supabaseAdmin = await import("@/lib/supabase")
+          await supabaseAdmin.default.auth.admin.deleteUser(userId)
+          
+          console.log("[v0] A-5: Deleted Supabase auth user sessions for:", userId)
+        } catch (err) {
+          console.log("[v0] A-5: Warning - could not delete Supabase sessions:", err)
+          // Continue anyway - local session invalidation is more critical
+        }
+        
+        // Delete all local session records
+        await query(
+          `DELETE FROM user_sessions WHERE user_id = $1`,
+          [userId]
+        )
+        
+        console.log("[v0] A-5: Cleared all local sessions for disabled user:", userId)
+      }
     }
 
     if (role) {
