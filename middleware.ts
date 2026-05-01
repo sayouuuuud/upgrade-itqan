@@ -95,6 +95,17 @@ export async function middleware(req: NextRequest) {
                         return NextResponse.redirect(new URL("/academy", req.url))
                     }
                 }
+
+                // A-1: Check for student paths - prevent teacher/supervisor from accessing student routes
+                if (pathname.startsWith("/academy/student")) {
+                    const studentAllowedRoles = ['student', 'admin', 'parent'];
+                    const hasStudentAccess = studentAllowedRoles.includes(sessionPayload.role) ||
+                        sessionPayload.academy_roles?.some(r => studentAllowedRoles.includes(r));
+                    if (!hasStudentAccess) {
+                        // Redirect teachers and supervisors away from student paths
+                        return NextResponse.redirect(new URL("/academy/teacher", req.url))
+                    }
+                }
             }
         }
 

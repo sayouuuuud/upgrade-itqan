@@ -91,3 +91,53 @@ export async function PUT(req: NextRequest) {
 
   return NextResponse.json({ success: true, status: newStatus })
 }
+
+// A-6: DELETE /api/admin/reader-applications - delete rejected reader application
+export async function DELETE(req: NextRequest) {
+  const session = await getSession()
+  const allowedRoles: ("admin" | "reciter_supervisor")[] = ["admin", "reciter_supervisor"]
+  if (!requireRole(session, allowedRoles)) {
+    return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
+  }
+
+  const { userId } = await req.json()
+
+  if (!userId) {
+    return NextResponse.json({ error: "معرف المستخدم مطلوب" }, { status: 400 })
+  }
+
+  // Only allow deletion of rejected applications
+  const reader = await query<{ approval_status: string }>(
+    `SELECT approval_status FROM users WHERE id = $1 AND role = 'reader'`,
+    [userId]
+  )
+
+  if (reader.length === 0) {
+    return NextResponse.json({ error: "المقرئ غير موجود" }, { status: 404 })
+  }
+
+  if (reader[0].approval_status !== 'rejected') {
+    return NextResponse.json({ error: "لا يمكن حذف طلب غير مرفوض" }, { status: 400 })
+  }
+
+  // Delete the reader application and user record
+  await query(
+    `DELETE FROM reader_profiles WHERE user_id = $1`,
+    [userId]
+  )
+
+  await query(
+    `DELETE FROM users WHERE id = $1`,
+    [userId]
+  )
+
+  await logAdminAction({
+    userId: session!.sub,
+    action: 'reader_application_deleted',
+    entityType: 'reader',
+    entityId: userId,
+    description: `Admin deleted rejected reader application for user ${userId}`,
+  })
+
+  return NextResponse.json({ success: true, message: "تم حذف الطلب بنجاح" })
+}
