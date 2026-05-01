@@ -36,11 +36,32 @@ export async function PUT(
       const teacher = userRes[0]
 
       if (status === 'approved') {
-        // Activate teacher account
+        // A-3: Activate teacher account with proper role setup
         await query(
-          `UPDATE users SET role = 'teacher', approval_status = 'approved' WHERE id = $1`,
+          `UPDATE users 
+           SET role = 'teacher', 
+               approval_status = 'approved',
+               is_active = true,
+               has_academy_access = true,
+               platform_preference = CASE WHEN platform_preference IS NULL THEN 'academy' ELSE platform_preference END
+           WHERE id = $1`,
           [app.user_id]
         )
+        
+        // Create teacher profile in academy_teachers table if needed
+        const existingTeacher = await query(
+          `SELECT id FROM academy_teachers WHERE user_id = $1`,
+          [app.user_id]
+        )
+        
+        if (existingTeacher.length === 0) {
+          await query(
+            `INSERT INTO academy_teachers (user_id, created_at) 
+             VALUES ($1, NOW())`,
+            [app.user_id]
+          )
+        }
+        
         // Send approval email
         if (teacher) {
           await sendTeacherApprovedEmail(teacher.email, teacher.name)
