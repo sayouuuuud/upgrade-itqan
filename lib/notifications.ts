@@ -27,7 +27,7 @@ export interface CreateNotificationInput {
     type: NotificationType
     title: string
     message: string
-    category?: "recitation" | "session" | "account" | "general" | "message" | "announcement" | "booking"
+    category?: "recitation" | "session" | "account" | "general" | "message" | "announcement" | "booking" | "course"
     link?: string                 // optional navigation link
     relatedRecitationId?: string
     relatedBookingId?: string
