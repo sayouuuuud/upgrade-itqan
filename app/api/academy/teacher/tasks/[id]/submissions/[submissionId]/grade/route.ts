@@ -31,7 +31,11 @@ export async function PUT(
 
     // Ownership check
     const tCheck = await query<any>(`
-      SELECT t.id, t.max_score, t.title, t.course_id, t.points_value
+      SELECT t.id,
+             t.max_score,
+             t.title,
+             t.course_id,
+             COALESCE(t.points_reward, 15) AS points_reward
         FROM tasks t 
         JOIN courses c ON t.course_id = c.id 
        WHERE t.id = $1 AND c.teacher_id = $2
@@ -87,7 +91,7 @@ export async function PUT(
     // Phase 5 (Gamification): award points to the student. Scale by score
     // when a max_score is known so partial credit gives partial points.
     try {
-      const basePoints = Number(task.points_value) || 50
+      const basePoints = Number(task.points_reward) || 15
       const max = Number(task.max_score) || 0
       const ratio = max > 0 ? Math.max(0, Math.min(1, Number(score) / max)) : 1
       const earned = Math.round(basePoints * ratio)
