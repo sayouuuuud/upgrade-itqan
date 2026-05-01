@@ -1,3 +1,8 @@
+ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_category_check;
+ALTER TABLE notifications
+  ADD CONSTRAINT notifications_category_check
+  CHECK (category IN ('recitation','booking','review','system','message','session','account','general','announcement','course'));
+
 ALTER TABLE enrollments DROP CONSTRAINT IF EXISTS enrollments_status_check;
 ALTER TABLE enrollments
   ADD CONSTRAINT enrollments_status_check
