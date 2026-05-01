@@ -173,6 +173,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/supervisor/content', label: t.academy?.contentReview || 'إشراف المحتوى', icon: BookOpen },
             { href: '/academy/supervisor/forum', label: t.academy?.forumModeration || 'إشراف المنتدى', icon: MessageSquare },
             { href: '/academy/supervisor/fiqh', label: t.academy?.fiqhQuestions || 'الأسئلة الفقهية', icon: HelpCircle },
+            { href: '/academy/supervisor/teachers', label: t.academy?.teacherVerification || 'توثيق المدرسين', icon: UserCheck },
             { href: '/academy/supervisor/quality', label: t.academy?.qualityMonitor || 'مراقبة الجودة', icon: BarChart3 },
           ]
         },
