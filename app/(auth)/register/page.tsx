@@ -76,12 +76,26 @@ export default function RegisterPage() {
       }
 
       if (data.requiresVerification) {
-        router.push(`/verify?email=${encodeURIComponent(email)}`)
+        // A-2: Pass the chosen platform through the verify step so the
+        // post-verification redirect lands on the correct dashboard.
+        const effectivePlatform = role === 'parent' ? 'academy' : platform
+        router.push(
+          `/verify?email=${encodeURIComponent(email)}&platform=${effectivePlatform}&role=${role}`
+        )
       } else {
-        // A-2: Route correctly based on platform_preference from registration response
-        if (platform === 'academy') {
+        // A-2: Route correctly based on what was actually saved server-side.
+        // Parents are forced to `academy` regardless of the local `platform`
+        // state, and `data.user.role` is the source of truth for routing.
+        const savedRole = data.user?.role || role
+        const effectivePlatform = savedRole === 'parent' ? 'academy' : platform
+
+        if (savedRole === 'parent') {
+          router.push('/academy/parent')
+        } else if (effectivePlatform === 'academy') {
           router.push('/academy/student')
         } else {
+          // 'both' or 'quran' → land on the Qur'an side; the Mode Switcher
+          // in the dashboard handles moving to /academy/student for 'both'.
           router.push('/student')
         }
       }

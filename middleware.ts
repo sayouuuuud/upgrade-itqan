@@ -140,14 +140,26 @@ export async function middleware(req: NextRequest) {
                     }
                 }
 
-                // A-1: Check for student paths - prevent teacher/supervisor from accessing student routes
+                // A-1: Prevent teachers / supervisors from accessing /academy/student/*
+                // by manually editing the URL. Redirect each role to its own dashboard.
                 if (pathname.startsWith("/academy/student")) {
                     const studentAllowedRoles = ['student', 'admin', 'parent'];
                     const hasStudentAccess = studentAllowedRoles.includes(sessionPayload.role) ||
                         sessionPayload.academy_roles?.some(r => studentAllowedRoles.includes(r));
+
                     if (!hasStudentAccess) {
-                        // Redirect teachers and supervisors away from student paths
-                        return NextResponse.redirect(new URL("/academy/teacher", req.url))
+                        const role = sessionPayload.role
+                        const academyRoles = sessionPayload.academy_roles || []
+                        const supervisorRoles = ['supervisor', 'content_supervisor', 'fiqh_supervisor', 'quality_supervisor', 'academy_admin']
+
+                        let target = "/academy"
+                        if (role === 'teacher' || academyRoles.includes('teacher')) {
+                            target = "/academy/teacher"
+                        } else if (supervisorRoles.includes(role) || academyRoles.some(r => supervisorRoles.includes(r))) {
+                            target = "/academy/supervisor"
+                        }
+
+                        return NextResponse.redirect(new URL(target, req.url))
                     }
                 }
             }
