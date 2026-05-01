@@ -1,38 +1,73 @@
+WITH expected(table_name, column_name, used_in) AS (
+  VALUES
+    ('user_points',            'user_id',                 'gamification.awardPoints'),
+    ('user_points',            'total_points',            'gamification.awardPoints / leaderboard'),
+    ('user_points',            'level',                   'gamification / leaderboard'),
+    ('user_points',            'streak_days',             'gamification.recomputeStreak'),
+    ('user_points',            'longest_streak',          'gamification.recomputeStreak'),
+    ('user_points',            'last_activity_date',      'gamification.recomputeStreak'),
+    ('points_log',             'user_id',                 'gamification.awardPoints'),
+    ('points_log',             'points',                  'gamification.awardPoints'),
+    ('points_log',             'reason',                  'gamification.awardPoints'),
+    ('points_log',             'description',             'gamification.awardPoints'),
+    ('points_log',             'related_entity_type',     'gamification.awardPoints'),
+    ('points_log',             'related_entity_id',       'gamification.awardPoints'),
+    ('points_log',             'created_at',              'student/points API + leaderboard'),
+    ('badges',                 'user_id',                 'student/badges API'),
+    ('badges',                 'badge_type',              'gamification.checkAndAwardBadges'),
+    ('badges',                 'badge_name',              'gamification.checkAndAwardBadges'),
+    ('badges',                 'badge_description',       'gamification.checkAndAwardBadges'),
+    ('badges',                 'badge_icon_url',          'gamification.checkAndAwardBadges'),
+    ('badges',                 'points_awarded',          'gamification.checkAndAwardBadges'),
+    ('badges',                 'awarded_at',              'student/badges API'),
+    ('fiqh_questions',         'asked_by',                'admin/fiqh GET'),
+    ('fiqh_questions',         'answered_by',             'admin/fiqh PATCH'),
+    ('fiqh_questions',         'is_published',            'admin/fiqh GET + PATCH'),
+    ('fiqh_questions',         'category',                'admin/fiqh GET filter'),
+    ('fiqh_questions',         'is_anonymous',            'admin/fiqh GET'),
+    ('fiqh_questions',         'asked_at',                'admin/fiqh GET'),
+    ('fiqh_questions',         'answered_at',             'admin/fiqh PATCH'),
+    ('academy_teachers',       'user_id',                 'supervisor/teachers GET'),
+    ('academy_teachers',       'is_verified',             'supervisor/teachers GET'),
+    ('academy_teachers',       'verified_by',             'supervisor/teachers PATCH'),
+    ('academy_teachers',       'verified_at',             'supervisor/teachers PATCH'),
+    ('academy_teachers',       'trust_score',             'supervisor/teachers GET'),
+    ('academy_teachers',       'specialization',          'supervisor/teachers GET'),
+    ('academy_teachers',       'years_experience',        'supervisor/teachers GET'),
+    ('academy_teachers',       'certifications',          'supervisor/teachers GET'),
+    ('teacher_verifications',  'teacher_user_id',         'supervisor/teachers PATCH'),
+    ('teacher_verifications',  'supervisor_id',           'supervisor/teachers PATCH'),
+    ('teacher_verifications',  'action',                  'supervisor/teachers PATCH'),
+    ('teacher_verifications',  'notes',                   'supervisor/teachers PATCH'),
+    ('teacher_verifications',  'created_at',              'supervisor/teachers PATCH'),
+    ('supervisor_assignments', 'supervisor_id',           'supervisor scope'),
+    ('tasks',                  'points_reward',           'grade route awardTaskPoints'),
+    ('tasks',                  'max_score',               'grade route'),
+    ('tasks',                  'course_id',               'grade route ownership'),
+    ('task_submissions',       'student_id',              'grade route'),
+    ('task_submissions',       'task_id',                 'grade route'),
+    ('task_submissions',       'score',                   'grade route'),
+    ('live_sessions',          'course_id',               'sessions/[id]/attend'),
+    ('session_attendance',     'session_id',              'sessions/[id]/attend'),
+    ('session_attendance',     'student_id',              'sessions/[id]/attend'),
+    ('session_attendance',     'joined_at',               'sessions/[id]/attend'),
+    ('enrollments',            'student_id',              'sessions/attend ownership'),
+    ('enrollments',            'course_id',               'sessions/attend ownership'),
+    ('enrollments',            'status',                  'sessions/attend ownership'),
+    ('users',                  'role',                    'all session checks'),
+    ('users',                  'name',                    'admin/fiqh + supervisor list'),
+    ('users',                  'avatar_url',              'admin/fiqh + supervisor list'),
+    ('users',                  'email',                   'supervisor list')
+)
 SELECT
-  'tables' AS section,
-  to_regclass('public.users')                  AS users,
-  to_regclass('public.user_points')            AS user_points,
-  to_regclass('public.points_log')             AS points_log,
-  to_regclass('public.badges')                 AS badges,
-  to_regclass('public.user_badges')            AS user_badges,
-  to_regclass('public.fiqh_questions')         AS fiqh_questions,
-  to_regclass('public.academy_teachers')       AS academy_teachers,
-  to_regclass('public.teacher_verifications')  AS teacher_verifications,
-  to_regclass('public.supervisor_assignments') AS supervisor_assignments,
-  to_regclass('public.tasks')                  AS tasks,
-  to_regclass('public.task_submissions')       AS task_submissions,
-  to_regclass('public.live_sessions')          AS live_sessions,
-  to_regclass('public.session_attendance')     AS session_attendance,
-  to_regclass('public.enrollments')            AS enrollments,
-  to_regclass('public.courses')                AS courses,
-  to_regclass('public.notifications')          AS notifications;
-
-SELECT table_name, column_name, data_type
-FROM information_schema.columns
-WHERE table_schema = 'public'
-  AND table_name IN (
-    'user_points','points_log','badges','user_badges',
-    'fiqh_questions','academy_teachers','teacher_verifications','supervisor_assignments',
-    'tasks','task_submissions','live_sessions','session_attendance',
-    'enrollments','courses','users','notifications'
-  )
-ORDER BY table_name, ordinal_position;
-
-SELECT con.conname, rel.relname AS table_name, pg_get_constraintdef(con.oid) AS def
-FROM pg_constraint con
-JOIN pg_class rel ON rel.oid = con.conrelid
-JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
-WHERE nsp.nspname = 'public'
-  AND rel.relname IN ('fiqh_questions','academy_teachers','teacher_verifications','points_log','tasks','enrollments')
-  AND con.contype = 'c'
-ORDER BY rel.relname, con.conname;
+  e.table_name,
+  e.column_name,
+  e.used_in,
+  CASE WHEN c.column_name IS NULL THEN 'MISSING' ELSE 'OK' END AS status,
+  c.data_type
+FROM expected e
+LEFT JOIN information_schema.columns c
+  ON c.table_schema = 'public'
+ AND c.table_name   = e.table_name
+ AND c.column_name  = e.column_name
+ORDER BY status DESC, e.table_name, e.column_name;
