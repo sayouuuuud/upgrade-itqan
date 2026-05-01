@@ -34,8 +34,12 @@ export async function POST(
       `
       SELECT cs.id, cs.title, cs.course_id, cs.status
         FROM course_sessions cs
-        JOIN enrollments e ON e.course_id = cs.course_id AND e.student_id = $1
        WHERE cs.id = $2
+         AND EXISTS (
+               SELECT 1 FROM enrollments e
+                WHERE e.course_id = cs.course_id
+                  AND e.student_id = $1
+             )
        LIMIT 1
       `,
       [session.sub, sessionId]

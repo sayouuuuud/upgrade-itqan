@@ -2,6 +2,8 @@
 -- Phase 2 / 5 / 6 — Schema gaps
 -- Adds the columns and tables that the new code depends on.
 -- All statements are idempotent (safe to re-run).
+-- Note: live sessions are stored in `course_sessions`, which already has
+-- a `course_id` column, so no live_sessions migration is needed.
 -- =================================================================
 
 -- ---------- 1) academy_teachers: verification & trust fields -----
@@ -48,20 +50,10 @@ CREATE TABLE IF NOT EXISTS supervisor_assignments (
 CREATE INDEX IF NOT EXISTS idx_supervisor_assignments_supervisor
   ON supervisor_assignments (supervisor_id) WHERE is_active = TRUE;
 
--- ---------- 4) live_sessions.course_id ---------------------------
--- Allows attend route to award gamification points by course.
-ALTER TABLE live_sessions
-  ADD COLUMN IF NOT EXISTS course_id UUID REFERENCES courses(id) ON DELETE SET NULL;
-
-CREATE INDEX IF NOT EXISTS idx_live_sessions_course
-  ON live_sessions (course_id) WHERE course_id IS NOT NULL;
-
--- ---------- 5) Done ----------------------------------------------
+-- ---------- 4) Done ----------------------------------------------
 SELECT
   (SELECT COUNT(*) FROM information_schema.columns
     WHERE table_name = 'academy_teachers'
       AND column_name IN ('verified_by','verified_at','verification_notes','trust_score','documents_url','experience_summary')) AS academy_teachers_added,
   (SELECT to_regclass('public.teacher_verifications')   IS NOT NULL) AS teacher_verifications_ok,
-  (SELECT to_regclass('public.supervisor_assignments')  IS NOT NULL) AS supervisor_assignments_ok,
-  (SELECT EXISTS (SELECT 1 FROM information_schema.columns
-                   WHERE table_name = 'live_sessions' AND column_name = 'course_id')) AS live_sessions_course_id_ok;
+  (SELECT to_regclass('public.supervisor_assignments')  IS NOT NULL) AS supervisor_assignments_ok;
