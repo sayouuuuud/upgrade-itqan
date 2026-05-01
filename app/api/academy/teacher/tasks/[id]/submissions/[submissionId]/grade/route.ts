@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 import { createNotification } from '@/lib/notifications'
+import { awardTaskPoints } from '@/lib/academy/gamification'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -30,9 +31,10 @@ export async function PUT(
 
     // Ownership check
     const tCheck = await query<any>(`
-      SELECT t.id, t.max_score, t.title, t.course_id FROM tasks t 
-      JOIN courses c ON t.course_id = c.id 
-      WHERE t.id = $1 AND c.teacher_id = $2
+      SELECT t.id, t.max_score, t.title, t.course_id, t.points_value
+        FROM tasks t 
+        JOIN courses c ON t.course_id = c.id 
+       WHERE t.id = $1 AND c.teacher_id = $2
     `, [taskId, session.sub])
 
     if (tCheck.length === 0) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -80,6 +82,36 @@ export async function PUT(
       })
     } catch (notifErr) {
       console.error('[C-7] Failed to send grade notification:', notifErr)
+    }
+
+    // Phase 5 (Gamification): award points to the student. Scale by score
+    // when a max_score is known so partial credit gives partial points.
+    try {
+      const basePoints = Number(task.points_value) || 50
+      const max = Number(task.max_score) || 0
+      const ratio = max > 0 ? Math.max(0, Math.min(1, Number(score) / max)) : 1
+      const earned = Math.round(basePoints * ratio)
+      if (earned > 0) {
+        const result = await awardTaskPoints(
+          submission.student_id,
+          earned,
+          taskId,
+          task.title,
+        )
+        // Notify the student about any newly unlocked badges.
+        for (const badgeType of result.new_badges) {
+          await createNotification({
+            userId: submission.student_id,
+            type: 'general',
+            title: '🏅 شارة جديدة!',
+            message: `حصلت على شارة جديدة بفضل إنجازاتك (${badgeType}).`,
+            category: 'general',
+            link: '/academy/student/badges',
+          }).catch(() => { /* non-fatal */ })
+        }
+      }
+    } catch (pointsErr) {
+      console.error('[Gamification] Failed to award task points:', pointsErr)
     }
 
     // C-6: إنشاء signed URL لملف التسليم إذا موجود
