@@ -1,20 +1,26 @@
 /**
- * Schema audit script for Phase 2 / 5 / 6.
- * Verifies that every column referenced by my new code actually exists.
+ * Schema audit for Phase 2 / 5 / 6.
+ * Verifies that every column referenced by the new code actually exists.
  *
  * Run with:
- *   node --env-file-if-exists=/vercel/share/.env.project --import tsx \
- *        scripts/audit-phase-2-5-6.ts
+ *   node --env-file-if-exists=/vercel/share/.env.project scripts/audit-phase-2-5-6.mjs
  */
-import { query } from '@/lib/db'
+import { Pool } from 'pg'
 
-type Expectation = {
-  table: string
-  required: string[]
-  source: string
+const url =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL ||
+  process.env.POSTGRES_PRISMA_URL ||
+  process.env.POSTGRES_URL_NON_POOLING
+
+if (!url) {
+  console.error('No DATABASE_URL/POSTGRES_URL found in env')
+  process.exit(2)
 }
 
-const expectations: Expectation[] = [
+const pool = new Pool({ connectionString: url, ssl: { rejectUnauthorized: false } })
+
+const expectations = [
   // Phase 5 — Gamification
   {
     source: 'lib/academy/gamification.ts',
@@ -42,7 +48,7 @@ const expectations: Expectation[] = [
     required: ['session_id', 'student_id', 'joined_at', 'attendance_status'],
   },
   {
-    source: 'app/api/academy/teacher/tasks/[id]/submissions/[submissionId]/grade/route.ts',
+    source: 'grade/route.ts',
     table: 'tasks',
     required: ['id', 'title', 'course_id', 'max_score', 'points_reward'],
   },
@@ -93,7 +99,7 @@ const expectations: Expectation[] = [
 async function main() {
   let problems = 0
   for (const exp of expectations) {
-    const rows = await query<{ column_name: string }>(
+    const { rows } = await pool.query(
       `SELECT column_name FROM information_schema.columns
         WHERE table_schema = 'public' AND table_name = $1`,
       [exp.table],
@@ -104,31 +110,57 @@ async function main() {
     console.log(`[${tag}] ${exp.source} -> ${exp.table}`)
     if (missing.length > 0) {
       problems++
-      console.log(`        missing columns: ${missing.join(', ')}`)
-      console.log(`        have:            ${[...have].sort().join(', ')}`)
+      console.log(`        missing: ${missing.join(', ')}`)
+      console.log(`        present: ${[...have].sort().join(', ')}`)
     }
   }
 
-  // Also check the fiqh status CHECK constraint accepts our values.
-  const fiqhStatusValues = ['pending', 'answered', 'published', 'rejected']
-  for (const v of fiqhStatusValues) {
+  // CHECK constraint for fiqh_questions.status — try inserting (and rolling back) to verify accepted values
+  const accepted = []
+  const rejected = []
+  for (const status of ['pending', 'answered', 'published', 'rejected']) {
+    const client = await pool.connect()
     try {
-      const ok = await query<{ ok: boolean }>(
-        `SELECT EXISTS (
-           SELECT 1 FROM fiqh_questions WHERE FALSE
-         ) AS ok`,
+      await client.query('BEGIN')
+      // Find any existing student id to satisfy FK
+      const r = await client.query(`SELECT id FROM users LIMIT 1`)
+      if (r.rows.length === 0) {
+        accepted.push(`${status}?(no users)`)
+        continue
+      }
+      const studentId = r.rows[0].id
+      await client.query(
+        `INSERT INTO fiqh_questions (student_id, question, status) VALUES ($1, $2, $3)`,
+        [studentId, '__audit__', status],
       )
-      void ok
+      accepted.push(status)
     } catch (e) {
-      // ignore
+      rejected.push(`${status} (${(e.message || '').slice(0, 80)})`)
+    } finally {
+      await client.query('ROLLBACK').catch(() => {})
+      client.release()
     }
   }
+  console.log(`[INF] fiqh_questions.status accepts: ${accepted.join(', ') || '(none)'}`)
+  if (rejected.length) console.log(`[INF] fiqh_questions.status rejects: ${rejected.join(' | ')}`)
 
-  // Sanity: badge_definitions seeded?
-  const defs = await query<{ count: string }>(
-    `SELECT COUNT(*)::text AS count FROM badge_definitions`,
-  ).catch(() => [{ count: 'ERR' }] as any)
-  console.log(`[INF] badge_definitions row count = ${defs[0]?.count ?? '?'}`)
+  // Badge defs seeded?
+  try {
+    const r = await pool.query(`SELECT COUNT(*)::int AS count FROM badge_definitions`)
+    console.log(`[INF] badge_definitions row count = ${r.rows[0].count}`)
+  } catch (e) {
+    console.log(`[INF] badge_definitions: ${e.message}`)
+  }
+
+  // teacher_verifications row count
+  try {
+    const r = await pool.query(`SELECT COUNT(*)::int AS count FROM teacher_verifications`)
+    console.log(`[INF] teacher_verifications row count = ${r.rows[0].count}`)
+  } catch (e) {
+    console.log(`[INF] teacher_verifications: ${e.message}`)
+  }
+
+  await pool.end()
 
   if (problems > 0) {
     console.log(`\n${problems} schema mismatch(es) found.`)
