@@ -31,10 +31,16 @@ export async function PATCH(
   const { id } = await params
   try {
     const body = await req.json()
+    // Schema CHECK constraint expects uppercase status values
+    const normalizedStatus = body.status ? String(body.status).toUpperCase() : null
+    const allowedStatuses = ['PENDING', 'ACCEPTED', 'EXPIRED', 'CANCELLED']
+    if (normalizedStatus && !allowedStatuses.includes(normalizedStatus)) {
+      return NextResponse.json({ error: 'Invalid status value' }, { status: 400 })
+    }
     const result = await query(`
       UPDATE invitations SET email = COALESCE($1, email), role_to_assign = COALESCE($2, role_to_assign),
         status = COALESCE($3, status), updated_at = NOW() WHERE id = $4 RETURNING *
-    `, [body.email || null, body.role_to_assign || null, body.status || null, id])
+    `, [body.email || null, body.role_to_assign || null, normalizedStatus, id])
     
     if (result.length === 0) {
       return NextResponse.json({ error: 'Invitation not found' }, { status: 404 })

@@ -7,16 +7,18 @@ export async function GET(
 ) {
   try {
     const { inviteCode } = await params
-    const rows = await query(`
-      SELECT 
-        i.*,
-        u.name as invited_by_name,
-        c.title as course_title
-      FROM invitations i
-      LEFT JOIN users u ON i.invited_by = u.id
-      LEFT JOIN courses c ON i.course_id = c.id
-      WHERE i.code = $1
-    `, [inviteCode])
+    // Schema columns are `token` and `target_course_id` (not `code`/`course_id`)
+    const rows = await query(
+      `SELECT 
+         i.*,
+         u.name as invited_by_name,
+         c.title as course_title
+       FROM invitations i
+       LEFT JOIN users u ON i.invited_by = u.id
+       LEFT JOIN courses c ON i.target_course_id = c.id
+       WHERE i.token = $1`,
+      [inviteCode]
+    )
 
     if (rows.length === 0) {
       return NextResponse.json({ error: 'Invitation not found' }, { status: 404 })

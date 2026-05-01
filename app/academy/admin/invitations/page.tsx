@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Mail, CheckCircle, X, Loader2, Send, Clock, Users } from 'lucide-react'
 
-interface Invitation {
+type InvitationStatus = 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'CANCELLED'
+
+interface RawInvitation {
   id: string
   email: string
-  status: 'pending' | 'accepted' | 'expired'
+  status: string
   role_to_assign: string
   invited_by_name?: string
   created_at: string
@@ -14,12 +16,25 @@ interface Invitation {
   expires_at?: string
 }
 
+interface Invitation extends Omit<RawInvitation, 'status'> {
+  status: InvitationStatus
+}
+
+// DB stores status in UPPERCASE per CHECK constraint; normalize defensively.
+function normalizeStatus(s: string): InvitationStatus {
+  const upper = (s || '').toUpperCase()
+  if (upper === 'PENDING' || upper === 'ACCEPTED' || upper === 'EXPIRED' || upper === 'CANCELLED') {
+    return upper
+  }
+  return 'PENDING'
+}
+
 const emptyForm = { email: '', role: 'student' }
 
 export default function AdminInvitationsPage() {
   const [invitations, setInvitations] = useState<Invitation[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'expired'>('all')
+  const [filter, setFilter] = useState<'all' | 'PENDING' | 'ACCEPTED' | 'EXPIRED'>('all')
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
@@ -32,7 +47,9 @@ export default function AdminInvitationsPage() {
       const res = await fetch('/api/academy/admin/invitations')
       if (res.ok) {
         const data = await res.json()
-        setInvitations(Array.isArray(data) ? data : data.data || [])
+        const raw: RawInvitation[] = Array.isArray(data) ? data : data.data || []
+        // Normalize status to uppercase to match DB CHECK constraint
+        setInvitations(raw.map((r) => ({ ...r, status: normalizeStatus(r.status) })))
       }
     } catch (err) {
       console.error('Failed to fetch invitations:', err)
@@ -100,18 +117,19 @@ export default function AdminInvitationsPage() {
 
   const stats = {
     all: invitations.length,
-    pending: invitations.filter(i => i.status === 'pending').length,
-    accepted: invitations.filter(i => i.status === 'accepted').length,
-    expired: invitations.filter(i => i.status === 'expired').length,
+    PENDING: invitations.filter(i => i.status === 'PENDING').length,
+    ACCEPTED: invitations.filter(i => i.status === 'ACCEPTED').length,
+    EXPIRED: invitations.filter(i => i.status === 'EXPIRED').length,
   }
 
   const statusStyles: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    accepted: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    expired: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    PENDING: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+    ACCEPTED: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    EXPIRED: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    CANCELLED: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
   }
   const statusLabel: Record<string, string> = {
-    pending: 'معلقة', accepted: 'مقبولة', expired: 'منتهية'
+    PENDING: 'معلقة', ACCEPTED: 'مقبولة', EXPIRED: 'منتهية', CANCELLED: 'ملغاة'
   }
   const roleLabel: Record<string, string> = {
     student: 'طالب', teacher: 'مدرس', academy_admin: 'مدير أكاديمية', parent: 'ولي أمر'
@@ -143,9 +161,9 @@ export default function AdminInvitationsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {([['all', 'الكل', 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700'],
-          ['pending', 'معلقة', 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700'],
-          ['accepted', 'مقبولة', 'bg-green-50 dark:bg-green-900/20 text-green-700'],
-          ['expired', 'منتهية', 'bg-red-50 dark:bg-red-900/20 text-red-700']] as const).map(([key, label, cls]) => (
+          ['PENDING', 'معلقة', 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700'],
+          ['ACCEPTED', 'مقبولة', 'bg-green-50 dark:bg-green-900/20 text-green-700'],
+          ['EXPIRED', 'منتهية', 'bg-red-50 dark:bg-red-900/20 text-red-700']] as const).map(([key, label, cls]) => (
           <button key={key} onClick={() => setFilter(key)}
             className={`p-3 rounded-xl text-center font-medium transition-all border-2 ${filter === key ? 'border-indigo-500' : 'border-transparent'} ${cls}`}>
             <div className="text-2xl font-bold">{stats[key]}</div>
@@ -184,15 +202,15 @@ export default function AdminInvitationsPage() {
                       <span className="flex items-center gap-1"><Users className="w-3 h-3" /> أُرسلت بواسطة: {inv.invited_by_name}</span>
                     )}
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(inv.created_at).toLocaleDateString('ar-EG')}</span>
-                    {inv.status === 'accepted' && inv.accepted_at && (
+                    {inv.status === 'ACCEPTED' && inv.accepted_at && (
                       <span className="flex items-center gap-1 text-green-600"><CheckCircle className="w-3 h-3" /> قُبلت في: {new Date(inv.accepted_at).toLocaleDateString('ar-EG')}</span>
                     )}
-                    {inv.expires_at && inv.status === 'pending' && (
+                    {inv.expires_at && inv.status === 'PENDING' && (
                       <span className="flex items-center gap-1 text-orange-500">تنتهي: {new Date(inv.expires_at).toLocaleDateString('ar-EG')}</span>
                     )}
                   </div>
                 </div>
-                {inv.status === 'pending' && (
+                {inv.status === 'PENDING' && (
                   <div className="flex gap-2 shrink-0">
                     <button
                       onClick={() => handleResend(inv.id)}

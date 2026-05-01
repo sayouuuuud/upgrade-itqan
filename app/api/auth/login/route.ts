@@ -190,8 +190,16 @@ export async function POST(req: NextRequest) {
       console.error("Failed to insert user session:", err)
     })
 
+    // #2: Return platform flags so the client can route to the right dashboard.
     const response = NextResponse.json({
-      user: { id: user.id, name: user.name, email: user.email, role: activeRole },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: activeRole,
+        has_academy_access: user.has_academy_access,
+        has_quran_access: user.has_quran_access,
+      },
     })
 
     response.cookies.set("auth-token", token, {

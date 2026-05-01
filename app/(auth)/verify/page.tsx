@@ -98,18 +98,22 @@ function VerifyContent() {
                 throw new Error(data.error || "فشل التحقق")
             }
 
-            // Success, redirect to appropriate dashboard
-            if (data.user.role === "parent") router.push("/academy/parent")
-            else if (data.user.role === "teacher") router.push("/academy/teacher")
-            else if (data.user.role === "student") {
-                if (data.user.has_academy_access && !data.user.has_quran_access) {
-                    router.push("/academy/student")
-                } else {
-                    router.push("/student")
-                }
+            // #2: Route to the correct dashboard based on role + platform access flags.
+            const u = data.user
+            if (u.role === "parent") router.push("/academy/parent")
+            else if (u.role === "teacher") router.push("/academy/teacher")
+            else if (u.role === "reader") router.push("/reader")
+            else if (u.role === "admin" || u.role === "academy_admin") {
+                router.push(u.role === "admin" ? "/admin" : "/academy/admin")
             }
-            else if (data.user.role === "reader") router.push("/reader")
-            else router.push("/admin")
+            else if (u.role === "student") {
+                const hasAcademy = u.has_academy_access !== false
+                const hasQuran = u.has_quran_access !== false
+                if (hasAcademy && !hasQuran) router.push("/academy/student")
+                else if (!hasAcademy && hasQuran) router.push("/student")
+                else router.push("/academy/student") // both → academy default
+            }
+            else router.push("/")
 
         } catch (err: any) {
             setError(err.message)
