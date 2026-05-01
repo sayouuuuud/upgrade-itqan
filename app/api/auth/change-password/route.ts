@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "جميع الحقول مطلوبة" }, { status: 400 })
         }
 
-        if (newPassword.length < 6) {
-            return NextResponse.json({ error: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" }, { status: 400 })
+        if (newPassword.length < 8) {
+            return NextResponse.json({ error: "كلمة المرور يجب أن تكون 8 أحرف على الأقل" }, { status: 400 })
         }
 
         const rows = await query<{ password_hash: string }>(
@@ -35,11 +35,23 @@ export async function POST(req: NextRequest) {
 
         const hash = await bcrypt.hash(newPassword, 10)
         await query(
-            `UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2`,
+            `UPDATE users 
+             SET password_hash = $1, 
+                 must_change_password = false, 
+                 password_changed_at = NOW(),
+                 updated_at = NOW() 
+             WHERE id = $2`,
             [hash, session.sub]
         )
 
-        return NextResponse.json({ message: "تم تغيير كلمة المرور بنجاح" })
+        await query(`DELETE FROM user_sessions WHERE user_id = $1`, [session.sub]).catch(() => {})
+        await query(`DELETE FROM refresh_tokens WHERE user_id = $1`, [session.sub]).catch(() => {})
+
+        const response = NextResponse.json({ success: true, message: "تم تغيير كلمة المرور بنجاح" })
+        response.cookies.delete("better-auth.session_token")
+        response.cookies.delete("auth-token")
+
+        return response
     } catch (error) {
         console.error("Change password error:", error)
         return NextResponse.json({ error: "حدث خطأ في الخادم" }, { status: 500 })

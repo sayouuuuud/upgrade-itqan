@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 import { sendTeacherApprovedEmail, sendTeacherRejectedEmail } from '@/lib/email'
+import { createNotification } from '@/lib/notifications'
 
 export async function PUT(
   req: NextRequest,
@@ -84,9 +85,16 @@ export async function PUT(
           console.log('[v0] A-3: academy_teachers profile step skipped:', profileErr)
         }
 
-        // Send approval email
         if (teacher) {
           await sendTeacherApprovedEmail(teacher.email, teacher.name)
+          await createNotification({
+            userId: app.user_id,
+            type: 'general',
+            title: 'تم اعتماد حسابك كأستاذ',
+            message: 'مبروك! تم قبول طلب انضمامك كأستاذ في الأكاديمية. يمكنك الآن البدء بإنشاء الدورات.',
+            category: 'account',
+            link: '/academy/teacher'
+          })
         }
       } else if (status === 'rejected') {
         // Mark as rejected but keep the account
@@ -94,9 +102,15 @@ export async function PUT(
           `UPDATE users SET approval_status = 'rejected' WHERE id = $1`,
           [app.user_id]
         )
-        // Send rejection email
         if (teacher) {
           await sendTeacherRejectedEmail(teacher.email, teacher.name)
+          await createNotification({
+            userId: app.user_id,
+            type: 'general',
+            title: 'تحديث بشأن طلب الانضمام كأستاذ',
+            message: 'نأسف لإبلاغك بأنه لم يتم اعتماد طلب انضمامك كأستاذ في الوقت الحالي.',
+            category: 'account'
+          })
         }
       }
     }
