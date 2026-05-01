@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useI18n } from '@/lib/i18n/context'
-import { Mic, CheckCircle, Calendar, ArrowLeft, ChevronDown, BookOpen, Shield, Award, Star } from 'lucide-react'
+import { Mic, CheckCircle, Calendar, ArrowLeft, ChevronDown, BookOpen, Shield, Award, Star, GraduationCap, Users, Trophy, Heart, Sparkles } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 
 export default function LandingPage() {
@@ -241,6 +241,123 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========== ACADEMY SHOWCASE ========== */}
+      <section id="academy" className="relative py-24 md:py-36 px-4 bg-[#FAF7F0] dark:bg-background overflow-hidden">
+        {/* Decorative background pattern */}
+        <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg stroke='%230B3D2E' stroke-width='1'%3E%3Cpath d='M40 0L80 40L40 80L0 40z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
+        <div className="absolute top-20 right-10 w-[300px] md:w-[500px] h-[300px] md:h-[500px] rounded-full bg-[#0B3D2E]/[0.04] dark:bg-[#0B3D2E]/10 blur-[120px] animate-blob-float pointer-events-none" />
+        <div className="absolute bottom-20 left-10 w-[250px] md:w-[400px] h-[250px] md:h-[400px] rounded-full bg-[#D4A843]/[0.05] dark:bg-[#D4A843]/10 blur-[100px] animate-blob-float-delayed pointer-events-none" />
+
+        <div className="container mx-auto max-w-6xl relative z-10">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="h-px flex-1 bg-[#0B3D2E]/10 dark:bg-foreground/10" />
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#0B3D2E]/[0.04] dark:bg-[#0B3D2E]/20 border border-[#0B3D2E]/10 dark:border-[#0B3D2E]/30">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4A843]" />
+              <span className="text-[#0B3D2E] dark:text-[#D4A843] text-[10px] md:text-xs font-black tracking-[0.2em] md:tracking-[0.3em] uppercase">{t.landing.academyLabel}</span>
+            </div>
+            <div className="h-px flex-1 bg-[#0B3D2E]/10 dark:bg-foreground/10" />
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-[#0B3D2E] dark:text-foreground text-center mb-6 text-balance leading-tight">
+            {t.landing.academyTitle}
+          </h2>
+          <p className="text-center text-[#0B3D2E]/60 dark:text-muted-foreground text-base md:text-lg mb-16 md:mb-20 max-w-2xl mx-auto px-4 font-medium leading-relaxed">
+            {t.landing.academyDesc}
+          </p>
+
+          {/* Academy bento grid */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
+            {/* Featured: Courses (large) */}
+            <div className="md:col-span-7 md:row-span-2 group relative bg-gradient-to-br from-[#0B3D2E] to-[#16503A] rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-12 overflow-hidden text-white">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4A843]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#D4A843]/20 transition-colors duration-700" />
+              <div className="absolute bottom-0 left-0 w-px h-32 bg-gradient-to-t from-[#D4A843]/40 to-transparent" />
+              <div className="relative">
+                <div className="w-16 h-16 bg-[#D4A843]/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 border border-[#D4A843]/20 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                  <BookOpen className="w-8 h-8 text-[#D4A843]" />
+                </div>
+                <h3 className="text-2xl md:text-4xl font-black mb-4 text-balance">{t.landing.academyCoursesTitle}</h3>
+                <p className="text-white/60 text-base md:text-lg leading-relaxed max-w-md font-medium mb-8">
+                  {t.landing.academyCoursesDesc}
+                </p>
+                <Link href="/academy" className="inline-flex items-center gap-2 text-[#D4A843] font-black text-sm tracking-wider group/link">
+                  <span>{t.landing.academyExploreBtn}</span>
+                  <ArrowLeft className="w-4 h-4 group-hover/link:-translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Teachers */}
+            <div className="md:col-span-5 group relative bg-white dark:bg-card border border-[#0B3D2E]/8 dark:border-border rounded-[2rem] p-7 md:p-8 hover:border-[#D4A843]/30 hover:shadow-2xl hover:shadow-[#0B3D2E]/5 transition-all duration-500 overflow-hidden">
+              <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-l from-[#D4A843] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="w-12 h-12 bg-[#0B3D2E]/8 dark:bg-[#0B3D2E]/20 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-[#0B3D2E] transition-colors duration-300">
+                <GraduationCap className="w-6 h-6 text-[#0B3D2E] dark:text-[#D4A843] group-hover:text-[#D4A843] transition-colors duration-300" />
+              </div>
+              <h3 className="text-xl md:text-2xl font-black text-[#0B3D2E] dark:text-foreground mb-2">{t.landing.academyTeachersTitle}</h3>
+              <p className="text-[#0B3D2E]/60 dark:text-muted-foreground leading-relaxed text-sm md:text-base font-medium">
+                {t.landing.academyTeachersDesc}
+              </p>
+            </div>
+
+            {/* Halaqat */}
+            <div className="md:col-span-5 group relative bg-white dark:bg-card border border-[#0B3D2E]/8 dark:border-border rounded-[2rem] p-7 md:p-8 hover:border-[#D4A843]/30 hover:shadow-2xl hover:shadow-[#0B3D2E]/5 transition-all duration-500 overflow-hidden">
+              <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-l from-[#D4A843] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="w-12 h-12 bg-[#D4A843]/10 dark:bg-[#D4A843]/15 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-[#D4A843] transition-colors duration-300">
+                <Users className="w-6 h-6 text-[#D4A843] group-hover:text-white transition-colors duration-300" />
+              </div>
+              <h3 className="text-xl md:text-2xl font-black text-[#0B3D2E] dark:text-foreground mb-2">{t.landing.academyHalaqatTitle}</h3>
+              <p className="text-[#0B3D2E]/60 dark:text-muted-foreground leading-relaxed text-sm md:text-base font-medium">
+                {t.landing.academyHalaqatDesc}
+              </p>
+            </div>
+
+            {/* Certificates */}
+            <div className="md:col-span-4 group relative bg-white dark:bg-card border border-[#0B3D2E]/8 dark:border-border rounded-[2rem] p-7 md:p-8 hover:border-[#D4A843]/30 hover:shadow-2xl hover:shadow-[#0B3D2E]/5 transition-all duration-500 overflow-hidden">
+              <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-l from-[#D4A843] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="w-12 h-12 bg-[#0B3D2E]/8 dark:bg-[#0B3D2E]/20 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-[#0B3D2E] transition-colors duration-300">
+                <Award className="w-6 h-6 text-[#0B3D2E] dark:text-[#D4A843] group-hover:text-[#D4A843] transition-colors duration-300" />
+              </div>
+              <h3 className="text-lg md:text-xl font-black text-[#0B3D2E] dark:text-foreground mb-2">{t.landing.academyCertsTitle}</h3>
+              <p className="text-[#0B3D2E]/60 dark:text-muted-foreground leading-relaxed text-sm font-medium">
+                {t.landing.academyCertsDesc}
+              </p>
+            </div>
+
+            {/* Parents */}
+            <div className="md:col-span-4 group relative bg-white dark:bg-card border border-[#0B3D2E]/8 dark:border-border rounded-[2rem] p-7 md:p-8 hover:border-[#D4A843]/30 hover:shadow-2xl hover:shadow-[#0B3D2E]/5 transition-all duration-500 overflow-hidden">
+              <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-l from-[#D4A843] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="w-12 h-12 bg-[#D4A843]/10 dark:bg-[#D4A843]/15 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-[#D4A843] transition-colors duration-300">
+                <Heart className="w-6 h-6 text-[#D4A843] group-hover:text-white transition-colors duration-300" />
+              </div>
+              <h3 className="text-lg md:text-xl font-black text-[#0B3D2E] dark:text-foreground mb-2">{t.landing.academyParentsTitle}</h3>
+              <p className="text-[#0B3D2E]/60 dark:text-muted-foreground leading-relaxed text-sm font-medium">
+                {t.landing.academyParentsDesc}
+              </p>
+            </div>
+
+            {/* Competitions */}
+            <div className="md:col-span-4 group relative bg-white dark:bg-card border border-[#0B3D2E]/8 dark:border-border rounded-[2rem] p-7 md:p-8 hover:border-[#D4A843]/30 hover:shadow-2xl hover:shadow-[#0B3D2E]/5 transition-all duration-500 overflow-hidden">
+              <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-l from-[#D4A843] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="w-12 h-12 bg-[#0B3D2E]/8 dark:bg-[#0B3D2E]/20 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-[#0B3D2E] transition-colors duration-300">
+                <Trophy className="w-6 h-6 text-[#0B3D2E] dark:text-[#D4A843] group-hover:text-[#D4A843] transition-colors duration-300" />
+              </div>
+              <h3 className="text-lg md:text-xl font-black text-[#0B3D2E] dark:text-foreground mb-2">{t.landing.academyCompetitionsTitle}</h3>
+              <p className="text-[#0B3D2E]/60 dark:text-muted-foreground leading-relaxed text-sm font-medium">
+                {t.landing.academyCompetitionsDesc}
+              </p>
+            </div>
+          </div>
+
+          {/* Academy CTA */}
+          <div className="flex justify-center mt-14 md:mt-16">
+            <Link href="/register" className="group bg-[#0B3D2E] text-white hover:bg-[#16503A] font-black py-4 md:py-5 px-10 md:px-12 rounded-2xl md:rounded-full transition-all duration-300 hover:scale-[1.02] md:hover:scale-105 active:scale-95 shadow-xl shadow-[#0B3D2E]/20 flex items-center justify-center gap-3 text-base md:text-lg">
+              <GraduationCap className="w-5 h-5 text-[#D4A843]" />
+              <span>{t.landing.academyJoinBtn}</span>
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            </Link>
           </div>
         </div>
       </section>
