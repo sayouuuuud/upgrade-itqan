@@ -10,6 +10,8 @@ export async function POST(req: NextRequest) {
     const { email, password, loginType } = await req.json()
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || null
 
+    console.log("[v0] Login attempt:", { email, loginType, hasPassword: !!password })
+
     if (!email || !password) {
       return NextResponse.json(
         { error: "البريد الإلكتروني وكلمة المرور مطلوبان" },
@@ -38,6 +40,8 @@ export async function POST(req: NextRequest) {
     )
 
     const user = users[0]
+
+    console.log("[v0] User lookup result:", { found: !!user, usersLength: users.length })
 
     // Log failed attempt helper
     const logFailed = async (userId?: string) => {
