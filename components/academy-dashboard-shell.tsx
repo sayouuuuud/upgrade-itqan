@@ -419,8 +419,10 @@ export function AcademyDashboardShell({
             <LanguageSwitcher variant="outline" />
 
             <NotificationDropdown
+              // #27: Always route academy users to academy notifications pages
+              // so they don't get redirected to the Qur'an side.
               role={
-                role === 'academy_admin' ? 'admin' :
+                role === 'academy_admin' ? 'academy/admin' :
                 role === 'teacher' ? 'academy/teacher' :
                 role === 'parent' ? 'academy/parent' :
                 role === 'supervisor' ? 'academy/supervisor' :

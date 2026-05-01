@@ -78,26 +78,31 @@ export async function middleware(req: NextRequest) {
                                         pathname.startsWith("/api/admin") ||
                                         pathname.startsWith("/api/academy")
 
+                let dbUser: any = null
                 if (isSensitiveRoute && !academyPublicPaths.some(p => pathname.startsWith(p))) {
                     try {
                         const userRes = await query<any>(
-                            `SELECT is_active, is_disabled, has_academy_access, has_quran_access, approval_status, must_change_password 
+                            `SELECT role, is_active, is_disabled, has_academy_access, has_quran_access, 
+                                    approval_status, must_change_password
                              FROM users WHERE id = $1 LIMIT 1`,
                             [sessionPayload.sub]
                         )
 
                         if (userRes.length === 0 || userRes[0].is_disabled === true) {
-                            // User deleted or disabled - invalidate session
+                            // User deleted or disabled - invalidate session (#14: real-time suspension)
                             const response = NextResponse.redirect(new URL("/login", req.url))
                             response.cookies.delete("better-auth.session_token")
                             response.cookies.delete("auth-token")
                             return response
                         }
 
-                        const dbUser = userRes[0]
+                        dbUser = userRes[0]
 
                         if (dbUser.is_active === false && sessionPayload.role !== 'admin') {
-                            return NextResponse.redirect(new URL("/login", req.url))
+                            const response = NextResponse.redirect(new URL("/login", req.url))
+                            response.cookies.delete("better-auth.session_token")
+                            response.cookies.delete("auth-token")
+                            return response
                         }
 
                         if (dbUser.must_change_password === true && !pathname.startsWith("/api/auth/change-password")) {
@@ -111,17 +116,50 @@ export async function middleware(req: NextRequest) {
                             response.cookies.delete("auth-token")
                             return response
                         }
+
+                        // #4: Detect role mismatch between JWT and DB (e.g., teacher just got approved).
+                        // Force re-login so the new role is reflected in the JWT and the user is
+                        // routed to the correct dashboard.
+                        if (dbUser.role && dbUser.role !== sessionPayload.role && sessionPayload.role !== 'admin') {
+                            const response = NextResponse.redirect(new URL("/login", req.url))
+                            response.cookies.delete("better-auth.session_token")
+                            response.cookies.delete("auth-token")
+                            return response
+                        }
                     } catch (dbErr) {
                         console.log("[v0] A-4 DB check failed, continuing with cached session:", dbErr)
                         // On DB error, allow request to continue with cached session
                     }
                 }
 
+                // #3: Use DB values for access flags so admin toggles take effect in real-time,
+                // not just on the next login. Fall back to JWT only if DB lookup failed.
+                const hasAcademyAccess = dbUser
+                    ? dbUser.has_academy_access !== false
+                    : sessionPayload.has_academy_access !== false
+                const hasQuranAccess = dbUser
+                    ? dbUser.has_quran_access !== false
+                    : sessionPayload.has_quran_access !== false
+
                 // Check if user has academy access before allowing them into /academy
                 if (pathname.startsWith("/academy") && !academyPublicPaths.some(p => pathname.startsWith(p))) {
-                    // If access is explicitly false (ignoring undefined for older sessions), deny access
-                    if (sessionPayload.has_academy_access === false && sessionPayload.role !== 'admin') {
-                        return NextResponse.redirect(new URL("/student", req.url))
+                    if (!hasAcademyAccess && sessionPayload.role !== 'admin') {
+                        // Send to /student if they still have quran access, else home
+                        const target = hasQuranAccess ? "/student" : "/"
+                        return NextResponse.redirect(new URL(target, req.url))
+                    }
+                }
+
+                // #3: Mirror the academy guard for the Qur'an side.
+                // Block /student, /reader paths if has_quran_access is false.
+                const quranPaths = ["/student", "/reader"]
+                const isQuranRoute = quranPaths.some(p => pathname === p || pathname.startsWith(p + "/"))
+                if (isQuranRoute) {
+                    if (!hasQuranAccess && sessionPayload.role !== 'admin' && sessionPayload.role !== 'reader') {
+                        const target = hasAcademyAccess
+                            ? `/academy/${sessionPayload.role === 'parent' ? 'parent' : 'student'}`
+                            : "/"
+                        return NextResponse.redirect(new URL(target, req.url))
                     }
                 }
 
