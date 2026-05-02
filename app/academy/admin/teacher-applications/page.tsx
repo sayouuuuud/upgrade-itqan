@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { CheckCircle2, XCircle, FileText, User, Phone, Globe, GraduationCap, Clock, BookOpen } from 'lucide-react'
+import { CheckCircle2, XCircle, FileText, User, Phone, Globe, GraduationCap, Clock, BookOpen, Trash2 } from 'lucide-react'
 
 export default function TeacherApplicationsPage() {
   const [applications, setApplications] = useState<any[]>([])
@@ -31,6 +31,20 @@ export default function TeacherApplicationsPage() {
         fetchApps()
       } else {
         alert('حدث خطأ')
+      }
+    } catch { }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return
+    try {
+      const res = await fetch(`/api/academy/admin/teacher-applications/${id}`, {
+        method: 'DELETE'
+      })
+      if (res.ok) {
+        fetchApps()
+      } else {
+        alert('حدث خطأ أثناء الحذف')
       }
     } catch { }
   }
@@ -175,12 +189,21 @@ export default function TeacherApplicationsPage() {
                     {new Date(app.created_at).toLocaleDateString('ar-SA')}
                   </p>
                 </div>
-                <span className={`px-3 py-1 text-xs font-bold rounded-full ${app.status === 'approved'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                  }`}>
-                  {app.status === 'approved' ? '✓ مقبول' : '✗ مرفوض'}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className={`px-3 py-1 text-xs font-bold rounded-full ${app.status === 'approved'
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    }`}>
+                    {app.status === 'approved' ? '✓ مقبول' : '✗ مرفوض'}
+                  </span>
+                  <button
+                    onClick={() => handleDelete(app.id)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    title="حذف الطلب"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))
           )}

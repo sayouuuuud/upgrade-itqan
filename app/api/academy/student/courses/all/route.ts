@@ -50,14 +50,14 @@ export async function GET(req: NextRequest) {
         COUNT(DISTINCT e_all.id)::int as total_enrolled,
         -- enrollment status للطالب الحالي
         MAX(CASE WHEN e_me.student_id = $1 THEN e_me.status ELSE NULL END) as my_enrollment_status,
-        MAX(CASE WHEN e_me.student_id = $1 THEN e_me.id ELSE NULL END) as my_enrollment_id
+        MAX(CASE WHEN e_me.student_id = $1 THEN e_me.id::text ELSE NULL END) as my_enrollment_id
       FROM courses c
       LEFT JOIN users u ON c.teacher_id = u.id
       LEFT JOIN categories cat ON c.category_id = cat.id
       LEFT JOIN lessons l ON l.course_id = c.id AND l.status = 'published'
       LEFT JOIN enrollments e_all ON e_all.course_id = c.id AND e_all.status = 'active'
       LEFT JOIN enrollments e_me ON e_me.course_id = c.id AND e_me.student_id = $1
-      WHERE c.status = 'published'
+      WHERE (c.status = 'published' OR c.is_published = true)
       ${whereExtra}
       GROUP BY c.id, c.title, c.description, c.thumbnail_url, c.difficulty_level, c.level, c.status, cat.name, c.category_id, u.name, c.created_at
       ORDER BY c.created_at DESC

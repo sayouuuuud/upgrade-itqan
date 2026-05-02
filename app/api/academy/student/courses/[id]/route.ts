@@ -25,7 +25,7 @@ export async function GET(
       LEFT JOIN users u ON c.teacher_id = u.id
       LEFT JOIN categories cat ON c.category_id = cat.id
       LEFT JOIN enrollments e ON e.course_id = c.id AND e.status = 'active'
-      WHERE c.id = $1
+      WHERE c.id = $1 AND (c.status = 'published' OR c.is_published = true)
       GROUP BY c.id, u.name, cat.name
     `
     const courseRows = await query<any>(courseQuery, [courseId])
@@ -41,7 +41,7 @@ export async function GET(
               JOIN enrollments e ON lp.enrollment_id = e.id
               WHERE lp.lesson_id = l.id AND e.student_id = $2 AND lp.is_completed = TRUE) as is_completed
       FROM lessons l 
-      WHERE l.course_id = $1 
+      WHERE l.course_id = $1 AND l.status = 'published'
       ORDER BY l.order_index ASC
     `
     const lessons = await query<any>(lessonsQuery, [courseId, session.sub])

@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
   }
 
-  const { userId, action } = await req.json()
+  const { userId, action, rejection_reason } = await req.json()
 
   if (!userId || !["approve", "reject"].includes(action)) {
     return NextResponse.json({ error: "بيانات غير صحيحة" }, { status: 400 })
@@ -70,12 +70,15 @@ export async function PUT(req: NextRequest) {
         link: '/reader'
       })
     } else {
-      await sendReaderRejectedEmail(reader[0].email, reader[0].name)
+      await sendReaderRejectedEmail(reader[0].email, reader[0].name, rejection_reason)
+      const notifMessage = rejection_reason 
+        ? `نأسف لإبلاغك بأنه لم يتم اعتماد طلب انضمامك. السبب: ${rejection_reason}`
+        : 'نأسف لإبلاغك بأنه لم يتم اعتماد طلب انضمامك في الوقت الحالي.'
       await createNotification({
         userId,
         type: 'reader_rejected',
         title: 'تحديث بشأن طلب الانضمام',
-        message: 'نأسف لإبلاغك بأنه لم يتم اعتماد طلب انضمامك في الوقت الحالي.',
+        message: notifMessage,
         category: 'account'
       })
     }
@@ -100,7 +103,18 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
   }
 
-  const { userId } = await req.json()
+  const { searchParams } = new URL(req.url)
+  let userId = searchParams.get("userId")
+  
+  if (!userId) {
+    try {
+      // Only try to read body if userId is not in query string
+      const body = await req.json()
+      userId = body.userId
+    } catch (e) {
+      // Body empty or not JSON
+    }
+  }
 
   if (!userId) {
     return NextResponse.json({ error: "معرف المستخدم مطلوب" }, { status: 400 })

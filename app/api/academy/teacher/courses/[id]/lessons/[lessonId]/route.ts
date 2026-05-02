@@ -27,15 +27,44 @@ export async function PATCH(
             attachments_count: body.attachments?.length ?? 'not provided',
             attachments: body.attachments
         }))
-        const allowedFields = ['title', 'description', 'video_url', 'duration_minutes', 'order_index']
+        let statusToSet = body.status;
+        if (statusToSet) {
+            if (session.role === 'teacher') {
+                // المدرس لا يمكنه نشر الدرس مباشرة
+                if (statusToSet === 'published' || statusToSet === 'approved') {
+                    statusToSet = 'pending_review';
+                }
+            } else {
+                // المشرف يرسل approved لتصبح published
+                if (statusToSet === 'approved') statusToSet = 'published';
+            }
+        }
+
+        const allowedFields = ['title', 'description', 'video_url', 'duration_minutes', 'order_index', 'status']
         const updates: string[] = []
         const values: unknown[] = []
 
         for (const field of allowedFields) {
-            if (body[field] !== undefined) {
+            if (field === 'status' && statusToSet !== undefined) {
+                values.push(statusToSet)
+                updates.push(`status = $${values.length}`)
+            } else if (field !== 'status' && body[field] !== undefined) {
                 values.push(body[field])
                 updates.push(`${field} = $${values.length}`)
             }
+        }
+
+        if (session.role !== 'teacher' && body.rejection_reason !== undefined) {
+            values.push(body.rejection_reason)
+            updates.push(`review_notes = $${values.length}`)
+            values.push(session.sub)
+            updates.push(`reviewed_by = $${values.length}`)
+            updates.push(`reviewed_at = NOW()`)
+        } else if (session.role === 'teacher' && statusToSet === 'pending_review') {
+            // عند إعادة التقديم من المدرس، يتم تصفير ملاحظات الرفض
+            updates.push(`review_notes = NULL`)
+            updates.push(`reviewed_by = NULL`)
+            updates.push(`reviewed_at = NULL`)
         }
 
         if (updates.length === 0 && !(body.attachments && Array.isArray(body.attachments))) {
@@ -99,8 +128,9 @@ export async function DELETE(
             if (own.length === 0) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
 
-        // Delete lesson progress first (FK constraint)
+        // Delete lesson dependencies first (FK constraints)
         await query(`DELETE FROM lesson_progress WHERE lesson_id = $1`, [lessonId]).catch(() => { })
+        await query(`DELETE FROM lesson_attachments WHERE lesson_id = $1`, [lessonId]).catch(() => { })
 
         const result = await query(`DELETE FROM lessons WHERE id = $1 RETURNING id`, [lessonId])
         if (result.length === 0) return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })

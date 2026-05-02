@@ -27,7 +27,7 @@ export interface CreateNotificationInput {
     type: NotificationType
     title: string
     message: string
-    category?: "recitation" | "session" | "account" | "general" | "message" | "announcement" | "booking"
+    category?: "recitation" | "session" | "account" | "general" | "message" | "announcement" | "booking" | "course"
     link?: string                 // optional navigation link
     relatedRecitationId?: string
     relatedBookingId?: string
@@ -55,9 +55,16 @@ export async function createNotification(input: CreateNotificationInput): Promis
                 input.relatedBookingId || null,
             ]
         )
-    } catch (err) {
-        // Never let notification failure break the main flow
-        console.error("Failed to create notification:", err)
+    } catch (err: any) {
+        console.error("[notifications] Failed to create notification:", {
+            error: err?.message,
+            code: err?.code,
+            detail: err?.detail,
+            constraint: err?.constraint,
+            type: input.type,
+            category: input.category,
+            userId: input.userId,
+        })
     }
 }
 
@@ -79,7 +86,7 @@ export async function createNotificationForMany(
 export async function getAdminUserIds(): Promise<string[]> {
     try {
         const result = await query(
-            `SELECT id FROM users WHERE role = 'admin' AND is_active = true`
+            `SELECT id FROM users WHERE role IN ('admin', 'academy_admin') AND is_active = true`
         )
         return (result as any[]).map(row => row.id)
     } catch (error) {

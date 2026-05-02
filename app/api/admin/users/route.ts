@@ -57,6 +57,7 @@ export async function GET(req: NextRequest) {
     // Get paginated users
     const users = await query(
       `SELECT u.id, u.name, u.email, u.role, u.is_active, u.created_at, u.avatar_url, u.is_accepting_recitations, u.gender,
+              u.has_academy_access, u.has_quran_access,
               (SELECT COUNT(*) FROM recitations r WHERE r.student_id = u.id) as recitations_count,
               rp.rating, rp.total_reviews, rp.nationality,
               EXISTS(
@@ -100,7 +101,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
     }
 
-    const { userId, isActive, role, name, email, password, gender } = await req.json()
+    const { userId, isActive, role, name, email, password, gender, has_academy_access, has_quran_access } = await req.json()
 
     if (!userId) {
       return NextResponse.json({ error: "معرف المستخدم مطلوب" }, { status: 400 })
@@ -182,6 +183,16 @@ export async function PATCH(req: NextRequest) {
       values.push(gender)
       updates.push(`gender = $${values.length}`)
     }
+    
+    if (typeof has_academy_access === "boolean") {
+      values.push(has_academy_access)
+      updates.push(`has_academy_access = $${values.length}`)
+    }
+
+    if (typeof has_quran_access === "boolean") {
+      values.push(has_quran_access)
+      updates.push(`has_quran_access = $${values.length}`)
+    }
 
     if (updates.length === 0) {
       return NextResponse.json({ error: "لا يوجد بيانات للتحديث" }, { status: 400 })
@@ -189,7 +200,7 @@ export async function PATCH(req: NextRequest) {
 
     values.push(userId)
     const result = await query(
-      `UPDATE users SET ${updates.join(", ")} WHERE id = $${values.length} RETURNING id, name, email, role, is_active`,
+      `UPDATE users SET ${updates.join(", ")} WHERE id = $${values.length} RETURNING id, name, email, role, is_active, has_academy_access, has_quran_access`,
       values
     )
 
@@ -229,7 +240,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
     }
 
-    const { name, email, password, role, gender } = await req.json()
+    const { name, email, password, role, gender, has_academy_access, has_quran_access } = await req.json()
 
     if (!name || !email || !password || !role) {
       return NextResponse.json({ error: "جميع الحقول مطلوبة" }, { status: 400 })
@@ -256,10 +267,18 @@ export async function POST(req: NextRequest) {
     const passwordHash = await bcrypt.hash(password, 10)
 
     const result = await query(
-      `INSERT INTO users (name, email, password_hash, role, email_verified, is_active, gender, approval_status)
-       VALUES ($1, $2, $3, $4, TRUE, TRUE, $5, 'approved')
-       RETURNING id, name, email, role, is_active, created_at, gender`,
-      [name, email.toLowerCase(), passwordHash, role, gender || null]
+      `INSERT INTO users (name, email, password_hash, role, email_verified, is_active, gender, approval_status, has_academy_access, has_quran_access)
+       VALUES ($1, $2, $3, $4, TRUE, TRUE, $5, 'approved', $6, $7)
+       RETURNING id, name, email, role, is_active, created_at, gender, has_academy_access, has_quran_access`,
+      [
+        name, 
+        email.toLowerCase(), 
+        passwordHash, 
+        role, 
+        gender || null, 
+        has_academy_access !== false, 
+        has_quran_access !== false
+      ]
     )
 
     if (role === 'reader') {

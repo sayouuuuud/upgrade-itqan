@@ -27,9 +27,13 @@ export default function AdminDashboard() {
         if (res.ok) {
           const json = await res.json()
           setData(json)
+        } else {
+          // Instead of failing silently, display an error
+          setData({ error: true, message: await res.text() } as any)
         }
       } catch (err) {
         console.error(err)
+        setData({ error: true, message: String(err) } as any)
       } finally {
         setLoading(false)
       }
@@ -41,13 +45,25 @@ export default function AdminDashboard() {
     }).catch(() => { })
   }, [])
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="flex justify-center p-20">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     )
   }
+
+  if (data && (data as any).error) {
+    return (
+      <div className="flex flex-col items-center justify-center p-20 gap-4">
+        <div className="text-red-500 font-bold text-xl">حدث خطأ أثناء تحميل البيانات</div>
+        <div className="text-muted-foreground">يرجى المحاولة مرة أخرى أو التواصل مع الدعم.</div>
+        <code className="bg-red-50 text-red-800 p-2 rounded text-sm">{(data as any).message}</code>
+      </div>
+    )
+  }
+
+  if (!data) return null;
 
   const { stats, latestRecitations } = data
 

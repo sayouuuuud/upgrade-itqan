@@ -21,17 +21,19 @@ export async function GET(req: NextRequest) {
         COALESCE(SUM(CASE WHEN ts.id IS NOT NULL THEN 1 ELSE 0 END), 0)::int as tasks_total,
         COALESCE(SUM(up.points), 0)::int as total_points,
         MAX(e.enrolled_at) as last_activity,
-        COUNT(DISTINCT b.id)::int as badges_count
+        COUNT(DISTINCT b.id)::int as badges_count,
+        COALESCE(AVG(e.progress_percentage), 0)::numeric(5,2) as progress_percentage
       FROM users u
-      JOIN enrollments e ON u.id = e.student_id
-      JOIN courses c ON e.course_id = c.id
+      LEFT JOIN enrollments e ON u.id = e.student_id
+      LEFT JOIN courses c ON e.course_id = c.id
       LEFT JOIN tasks t ON c.id = t.course_id
       LEFT JOIN task_submissions ts ON u.id = ts.student_id AND t.id = ts.task_id
       LEFT JOIN user_points up ON u.id = up.user_id
       LEFT JOIN badges b ON u.id = b.user_id
-      WHERE c.teacher_id = $1 AND e.status IN ('active', 'pending')
+      WHERE (c.teacher_id = $1 OR u.created_by = $1) 
+        AND (e.id IS NULL OR LOWER(e.status) IN ('active', 'pending', 'accepted', 'approved'))
       GROUP BY u.id, u.name, u.email
-      ORDER BY MAX(e.enrolled_at) DESC
+      ORDER BY MAX(e.enrolled_at) DESC NULLS LAST
     `
     const rows = await query(q, [session.sub])
     return NextResponse.json({ data: rows })

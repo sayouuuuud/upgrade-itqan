@@ -17,8 +17,8 @@ export default function TeacherStudentsPage() {
       try {
         const res = await fetch('/api/academy/teacher/students')
         if (res.ok) {
-          const data = await res.json()
-          setStudents(data)
+          const json = await res.json()
+          setStudents(Array.isArray(json) ? json : (json.data || []))
         }
       } catch (error) {
         console.error('Failed to fetch students:', error)
@@ -102,7 +102,7 @@ export default function TeacherStudentsPage() {
 
               <div className="flex gap-2 pt-2">
                 <Button size="sm" variant="outline" className="flex-1">عرض</Button>
-                <Button size="sm" variant="outline" className="flex-1">
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => window.location.href = `/academy/teacher/chat?studentId=${student.id}`}>
                   <Mail className="w-3 h-3 ml-1" />
                   تواصل
                 </Button>

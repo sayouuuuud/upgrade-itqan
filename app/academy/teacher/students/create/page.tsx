@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowRight, UserPlus, Mail, Lock, User } from 'lucide-react'
+import { ArrowRight, UserPlus, Mail, User, Info } from 'lucide-react'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n/context'
 
@@ -19,7 +19,6 @@ export default function CreateStudentPage() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: '',
         gender: 'male',
     })
 
@@ -45,8 +44,8 @@ export default function CreateStudentPage() {
                 throw new Error(data.error || 'حدث خطأ أثناء إنشاء حساب الطالب')
             }
 
-            setSuccess('تم إنشاء حساب الطالب بنجاح!')
-            setFormData({ name: '', email: '', password: '', gender: 'male' })
+            setSuccess('تم إنشاء حساب الطالب بنجاح! تم إرسال كلمة مرور مؤقتة إلى بريده الإلكتروني.')
+            setFormData({ name: '', email: '', gender: 'male' })
 
             // Navigate back after a short delay
             setTimeout(() => {
@@ -88,7 +87,7 @@ export default function CreateStudentPage() {
                         بيانات الطالب
                     </CardTitle>
                     <CardDescription>
-                        سيتم إنشاء حساب جديد للطالب ومنحه صلاحية الوصول للأكاديمية
+                        سيتم إنشاء حساب جديد للطالب وإرسال كلمة مرور مؤقتة إلى بريده الإلكتروني
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -136,23 +135,12 @@ export default function CreateStudentPage() {
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">كلمة المرور المؤقتة</label>
-                            <div className="relative">
-                                <Lock className="absolute right-3 top-3 w-4 h-4 text-muted-foreground" />
-                                <Input
-                                    name="password"
-                                    type="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="******"
-                                    className="pr-10 text-left"
-                                    dir="ltr"
-                                    required
-                                    minLength={6}
-                                />
+                        <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-900 flex gap-3">
+                            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                            <div className="text-sm text-blue-800 dark:text-blue-300">
+                                <p className="font-medium">كلمة مرور مؤقتة</p>
+                                <p className="text-blue-600 dark:text-blue-400 mt-1">سيتم إنشاء كلمة مرور مؤقتة تلقائياً وإرسالها للطالب عبر البريد الإلكتروني. سيُطلب منه تغييرها عند أول تسجيل دخول.</p>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">يجب أن تكون 6 أحرف على الأقل</p>
                         </div>
 
                         <div>

@@ -22,6 +22,9 @@ export default function AdminRecitationDetailsPage({ params }: { params: Promise
     const [data, setData] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [updating, setUpdating] = useState(false)
+    const [newStatus, setNewStatus] = useState("")
+    const [internalNotes, setInternalNotes] = useState("")
 
     useEffect(() => {
         async function fetchRecitation() {
@@ -38,6 +41,32 @@ export default function AdminRecitationDetailsPage({ params }: { params: Promise
         }
         fetchRecitation()
     }, [id, t.admin.failedToLoadData])
+
+    useEffect(() => {
+        if (data) {
+            setNewStatus(data.status)
+            setInternalNotes(data.internal_notes || "")
+        }
+    }, [data])
+
+    const handleUpdate = async () => {
+        setUpdating(true)
+        try {
+            const res = await fetch(`/api/admin/recitations/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus, internal_notes: internalNotes })
+            })
+            if (!res.ok) throw new Error(isAr ? "فشل التحديث" : "Failed to update")
+            const json = await res.json()
+            setData(json.data)
+            alert(isAr ? "تم التحديث بنجاح" : "Updated successfully")
+        } catch (err: any) {
+            alert(err.message)
+        } finally {
+            setUpdating(false)
+        }
+    }
 
     if (loading) {
         return (
@@ -193,6 +222,50 @@ export default function AdminRecitationDetailsPage({ params }: { params: Promise
 
                 {/* Sidebar Cards */}
                 <div className="space-y-6">
+                    {/* Management Card */}
+                    <Card className="border-primary/20 shadow-2xl shadow-primary/5 rounded-3xl bg-primary/5 border">
+                        <CardHeader className="pb-3 border-b border-primary/10">
+                            <CardTitle className="text-sm font-black text-primary uppercase tracking-widest">
+                                {isAr ? "إدارة التسميع" : "Recitation Management"}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4 space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-muted-foreground uppercase">{isAr ? "الحالة" : "Status"}</label>
+                                <select 
+                                    value={newStatus}
+                                    onChange={(e) => setNewStatus(e.target.value)}
+                                    className="w-full p-2.5 bg-card border border-border rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                                >
+                                    <option value="pending">{isAr ? "قيد الانتظار" : "Pending"}</option>
+                                    <option value="in_review">{isAr ? "قيد المراجعة" : "In Review"}</option>
+                                    <option value="reviewed">{isAr ? "تمت المراجعة" : "Reviewed"}</option>
+                                    <option value="mastered">{isAr ? "متقن" : "Mastered"}</option>
+                                    <option value="needs_session">{isAr ? "يحتاج جلسة" : "Needs Session"}</option>
+                                    <option value="cancelled">{isAr ? "ملغي" : "Cancelled"}</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-muted-foreground uppercase">{isAr ? "ملاحظات داخلية" : "Internal Notes"}</label>
+                                <textarea 
+                                    value={internalNotes}
+                                    onChange={(e) => setInternalNotes(e.target.value)}
+                                    placeholder={isAr ? "ملاحظات لا يراها الطالب..." : "Private notes..."}
+                                    className="w-full h-24 p-2.5 bg-card border border-border rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                                />
+                            </div>
+
+                            <Button 
+                                onClick={handleUpdate}
+                                disabled={updating}
+                                className="w-full h-12 bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20"
+                            >
+                                {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : (isAr ? "حفظ التغييرات" : "Save Changes")}
+                            </Button>
+                        </CardContent>
+                    </Card>
+
                     {/* Student Info */}
                     <Card className="border-border/50 shadow-2xl shadow-black/5 rounded-3xl bg-card/60 backdrop-blur-xl border">
                         <CardHeader className="pb-3 border-b border-border/50">

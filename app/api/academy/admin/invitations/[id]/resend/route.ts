@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
+import crypto from 'crypto'
 
 export async function POST(
   req: NextRequest,
@@ -16,10 +17,11 @@ export async function POST(
     const newToken = crypto.randomUUID()
     const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 
+    // Schema CHECK constraint: status IN ('PENDING','ACCEPTED','EXPIRED','CANCELLED')
     const result = await query(`
       UPDATE invitations SET 
         token = $1,
-        status = 'pending',
+        status = 'PENDING',
         expires_at = $2,
         updated_at = NOW()
       WHERE id = $3

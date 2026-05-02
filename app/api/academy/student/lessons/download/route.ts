@@ -37,10 +37,14 @@ export async function GET(req: NextRequest) {
 
         console.log(`[Download Proxy] Successfully fetched file. Size: ${buffer.byteLength} bytes`);
 
+        // Improve filename handling for Arabic and special characters
+        const safeFileName = encodeURIComponent(fileName);
+        
         return new NextResponse(buffer, {
             headers: {
                 'Content-Type': contentType,
-                'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}"`,
+                'Content-Disposition': `attachment; filename="${safeFileName}"; filename*=UTF-8''${safeFileName}`,
+                'Cache-Control': 'no-cache',
             }
         })
     } catch (error) {

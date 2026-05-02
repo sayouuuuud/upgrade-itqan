@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
+import crypto from 'crypto'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()

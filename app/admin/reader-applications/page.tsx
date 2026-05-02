@@ -58,6 +58,9 @@ export default function ReaderApplicationsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState("")
+  const [rejectingUserId, setRejectingUserId] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadApps() {
@@ -96,18 +99,21 @@ export default function ReaderApplicationsPage() {
     rejected: applications.filter(a => a.approval_status === "rejected").length,
   }
 
-  const handleAction = async (userId: string, action: "approve" | "reject") => {
+  const handleAction = async (userId: string, action: "approve" | "reject", reason?: string) => {
     setProcessingId(userId)
     try {
       const res = await fetch("/api/admin/reader-applications", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, action })
+        body: JSON.stringify({ userId, action, rejection_reason: reason })
       })
 
       if (res.ok) {
         const data = await res.json()
         setApplications(prev => prev.map(a => a.id === userId ? { ...a, approval_status: data.status } : a))
+        setRejectionDialogOpen(false)
+        setRejectionReason("")
+        setRejectingUserId(null)
       } else {
         alert(t.admin.errorProcessingApplication)
       }
@@ -118,13 +124,23 @@ export default function ReaderApplicationsPage() {
     }
   }
 
+  const openRejectDialog = (userId: string) => {
+    setRejectingUserId(userId)
+    setRejectionReason("")
+    setRejectionDialogOpen(true)
+  }
+
+  const confirmReject = () => {
+    if (rejectingUserId) {
+      handleAction(rejectingUserId, "reject", rejectionReason)
+    }
+  }
+
   const handleDelete = async (userId: string) => {
     setProcessingId(userId)
     try {
-      const res = await fetch("/api/admin/reader-applications", {
+      const res = await fetch(`/api/admin/reader-applications?userId=${userId}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId })
       })
       if (res.ok) {
         setApplications(prev => prev.filter(a => a.id !== userId))
@@ -314,12 +330,12 @@ export default function ReaderApplicationsPage() {
                         {selectedApp.approval_status === "pending_approval" ? (
                           <>
                             <Button
-                              onClick={() => handleAction(selectedApp.id, "reject")}
+                              onClick={() => openRejectDialog(selectedApp.id)}
                               disabled={!!processingId}
                               variant="outline"
                               className="rounded-2xl h-14 px-8 border-destructive/20 text-destructive font-black text-xs uppercase tracking-widest hover:bg-destructive/10 transition-all"
                             >
-                              {processingId === selectedApp.id ? <Loader2 className="w-5 h-5 animate-spin" /> : isAr ? "رفض الطلب" : "Reject"}
+                              {isAr ? "رفض الطلب" : "Reject"}
                             </Button>
                             <Button
                               onClick={() => handleAction(selectedApp.id, "approve")}
@@ -523,6 +539,44 @@ export default function ReaderApplicationsPage() {
           )}
         </div>
       </div>
+
+      <Dialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
+        <DialogContent className="rounded-[32px] border-none shadow-2xl p-8 bg-card max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-destructive flex items-center gap-3">
+              <XCircle className="w-6 h-6" />
+              {isAr ? "رفض طلب المقرئ" : "Reject Reader Application"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <p className="text-muted-foreground text-sm">
+              {isAr ? "يرجى إدخال سبب الرفض (اختياري). سيتم إرسال هذا السبب للمتقدم عبر البريد الإلكتروني." : "Please enter a rejection reason (optional). This will be sent to the applicant via email."}
+            </p>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder={isAr ? "سبب الرفض..." : "Rejection reason..."}
+              className="w-full h-32 p-4 bg-muted/50 border border-border rounded-2xl text-sm resize-none focus:ring-2 focus:ring-destructive/20 outline-none"
+            />
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setRejectionDialogOpen(false)}
+                className="flex-1 h-12 rounded-xl font-bold"
+              >
+                {isAr ? "إلغاء" : "Cancel"}
+              </Button>
+              <Button
+                onClick={confirmReject}
+                disabled={!!processingId}
+                className="flex-1 h-12 rounded-xl font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {processingId ? <Loader2 className="w-5 h-5 animate-spin" /> : (isAr ? "تأكيد الرفض" : "Confirm Reject")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

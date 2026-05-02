@@ -82,6 +82,7 @@ export function ModeSwitcher({ currentMode, userRole, academyRole, hasQuranAcces
   if (modes.length <= 1) return null
 
   const currentModeData = modes.find(m => m.id === currentMode) || modes[0]
+  if (!currentModeData) return null
 
   function getAcademyHref(role: string, academyRole?: string | null): string {
     if (role === 'teacher') return '/academy/teacher'

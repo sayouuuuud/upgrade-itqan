@@ -91,7 +91,98 @@ export default function AcademyCalendarPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* Mobile list view — visible only on small screens */}
+      <div className="block md:hidden space-y-4">
+        <Card className="border border-border/50 shadow-sm rounded-3xl overflow-hidden bg-card">
+          <div className="p-5 border-b border-border/50 flex justify-between items-center bg-muted/20">
+            <h2 className="text-lg font-bold text-foreground">
+              {monthName} {currentDate.getFullYear()}
+            </h2>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={handlePrevMonth} className="rounded-xl bg-card border-border h-9 w-9">
+                {isAr ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+              </Button>
+              <Button variant="outline" size="icon" onClick={handleNextMonth} className="rounded-xl bg-card border-border h-9 w-9">
+                {isAr ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </Button>
+            </div>
+          </div>
+
+          <CardContent className="p-0">
+            {(() => {
+              const monthEvents = mockEvents
+                .filter((ev) => {
+                  const d = new Date(ev.date)
+                  return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear()
+                })
+                .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+
+              if (monthEvents.length === 0) {
+                return (
+                  <div className="p-10 text-center text-muted-foreground flex flex-col items-center">
+                    <CalendarIcon className="w-10 h-10 mb-3 opacity-20" />
+                    <p className="font-medium text-sm">{isAr ? "لا توجد أحداث هذا الشهر" : "No events this month"}</p>
+                  </div>
+                )
+              }
+
+              return (
+                <div className="divide-y divide-border/50">
+                  {monthEvents.map((ev) => {
+                    const evDate = new Date(ev.date)
+                    const isToday = ev.date === new Date().toISOString().split('T')[0]
+                    return (
+                      <button
+                        key={ev.id}
+                        onClick={() => setSelectedDate(ev.date)}
+                        className="w-full text-start p-4 transition-colors hover:bg-muted/30"
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Date badge */}
+                          <div className={`shrink-0 w-14 h-14 rounded-2xl flex flex-col items-center justify-center border ${
+                            isToday ? 'bg-primary/10 border-primary/40 text-primary' : 'bg-muted/40 border-border text-foreground'
+                          }`}>
+                            <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">
+                              {evDate.toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { month: 'short' })}
+                            </span>
+                            <span className="text-xl font-black leading-none">
+                              {evDate.getDate()}
+                            </span>
+                          </div>
+
+                          {/* Event info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start gap-2">
+                              <div className={`mt-0.5 p-1.5 rounded-lg shrink-0 ${
+                                ev.type === 'live_session' ? 'bg-blue-500/10 text-blue-500' :
+                                ev.type === 'review' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                              }`}>
+                                {ev.type === 'live_session' && <Video className="w-3.5 h-3.5" />}
+                                {ev.type === 'assignment_deadline' && <FileText className="w-3.5 h-3.5" />}
+                                {ev.type === 'review' && <CheckCircle className="w-3.5 h-3.5" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-bold text-foreground text-sm leading-tight truncate">{ev.title}</h4>
+                                <p className="text-xs text-muted-foreground truncate mt-0.5">{ev.course}</p>
+                                <div className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground mt-1.5">
+                                  <Clock className="w-3 h-3" />
+                                  <span dir="ltr">{ev.time}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )
+            })()}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="hidden md:grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Calendar Column */}
         <div className="lg:col-span-8">
           <Card className="border border-border/50 shadow-sm rounded-3xl overflow-hidden bg-card">

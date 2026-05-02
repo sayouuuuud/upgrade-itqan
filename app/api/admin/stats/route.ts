@@ -5,7 +5,7 @@ import { queryOne, query } from "@/lib/db"
 export async function GET() {
   try {
     const session = await getSession()
-    const allowedRoles: ("admin" | "student_supervisor" | "reciter_supervisor")[] = ["admin", "student_supervisor", "reciter_supervisor"]
+    const allowedRoles: ("admin" | "student_supervisor" | "reciter_supervisor" | "academy_admin")[] = ["admin", "student_supervisor", "reciter_supervisor", "academy_admin"]
     if (!requireRole(session, allowedRoles)) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
     }

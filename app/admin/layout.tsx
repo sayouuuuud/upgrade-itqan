@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession()
   
-  const allowedRoles = ['admin', 'student_supervisor', 'reciter_supervisor']
+  const allowedRoles = ['admin', 'academy_admin', 'student_supervisor', 'reciter_supervisor']
   
   if (!session || !allowedRoles.includes(session.role)) {
     return (

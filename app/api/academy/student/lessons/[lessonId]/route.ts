@@ -19,7 +19,7 @@ export async function GET(
       SELECT l.*, c.title as course_title, c.id as course_id
       FROM lessons l
       JOIN courses c ON l.course_id = c.id
-      WHERE l.id = $1
+      WHERE l.id = $1 AND l.status = 'published'
     `
     const lessons = await query<any>(lessonQuery, [lessonId])
     if (lessons.length === 0) {

@@ -4,28 +4,23 @@ import { useState, useEffect } from 'react'
 import { Award, Plus, Trash2, Edit2, X, Loader2, Star } from 'lucide-react'
 
 interface Badge {
-  id: string
   badge_type: string
-  badge_name: string
-  badge_description: string
-  badge_icon: string
-  points_required: number
+  name: string
+  description: string
+  category: string
+  icon: string
+  criteria_type: string
+  criteria_value: number
+  points_reward: number
+  display_order: number
   is_active: boolean
   created_at: string
 }
 
-const TYPES = [
-  { value: 'achievement', label: 'إنجاز' },
-  { value: 'completion', label: 'إتمام' },
-  { value: 'streak', label: 'استمرارية' },
-  { value: 'excellence', label: 'تميز' },
-  { value: 'participation', label: 'مشاركة' },
-  { value: 'special', label: 'خاصة' },
-]
-
 const ICONS = ['🏆', '⭐', '🌟', '🎖️', '🥇', '🏅', '📜', '💎', '🎯', '🚀', '🌙', '📖']
+const CATEGORIES = ['عام', 'القرآن', 'المهام', 'الاستمرارية', 'أخرى']
 
-const emptyForm = { badge_type: 'achievement', badge_name: '', badge_description: '', badge_icon: '🏆', points_required: 0 }
+const emptyForm = { badge_type: '', name: '', description: '', icon: '🏆', points_reward: 0, category: 'عام' }
 
 export default function AdminBadgesPage() {
   const [badges, setBadges] = useState<Badge[]>([])
@@ -60,38 +55,48 @@ export default function AdminBadgesPage() {
 
   const openEdit = (b: Badge) => {
     setEditItem(b)
-    setForm({ badge_type: b.badge_type, badge_name: b.badge_name, badge_description: b.badge_description || '', badge_icon: b.badge_icon || '🏆', points_required: b.points_required || 0 })
+    setForm({ 
+      badge_type: b.badge_type, 
+      name: b.name, 
+      description: b.description || '', 
+      icon: b.icon || '🏆', 
+      points_reward: b.points_reward || 0,
+      category: b.category || 'عام'
+    })
     setShowModal(true)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.badge_name) return
+    if (!form.name || !form.badge_type) return
     setSaving(true)
     try {
-      const url = editItem ? `/api/academy/admin/badges/${editItem.id}` : '/api/academy/admin/badges'
+      const url = editItem ? `/api/academy/admin/badges/${editItem.badge_type}` : '/api/academy/admin/badges'
       const method = editItem ? 'PATCH' : 'POST'
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       })
+      
+      const data = await res.json()
+      
       if (res.ok) {
         setShowModal(false)
         fetchBadges()
       } else {
-        alert('حدث خطأ في الحفظ')
+        alert(data.error || 'حدث خطأ في الحفظ')
       }
     } finally {
       setSaving(false)
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذه الشارة؟')) return
-    setDeletingId(id)
+  const handleDelete = async (badge_type: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذه الشارة؟ سيتم حذفها من جميع الطلاب الذين حصلوا عليها.')) return
+    setDeletingId(badge_type)
     try {
-      const res = await fetch(`/api/academy/admin/badges/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/academy/admin/badges/${badge_type}`, { method: 'DELETE' })
       if (res.ok) fetchBadges()
       else alert('لا يمكن الحذف')
     } finally {
@@ -129,27 +134,32 @@ export default function AdminBadgesPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {badges.map((b) => (
-            <div key={b.id} className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-shadow text-center">
-              <div className="text-5xl mb-3">{b.badge_icon || '🏆'}</div>
-              <h3 className="font-bold mb-1">{b.badge_name}</h3>
-              <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{b.badge_description}</p>
-              <div className="flex items-center justify-center gap-2 mb-3">
+            <div key={b.badge_type} className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-shadow text-center relative group">
+              <div className="text-5xl mb-3">{b.icon || '🏆'}</div>
+              <h3 className="font-bold mb-1">{b.name}</h3>
+              <p className="text-xs text-muted-foreground mb-2 line-clamp-2 min-h-[32px]">{b.description}</p>
+              
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
                 <span className="text-xs px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full font-medium">
-                  {TYPES.find(t => t.value === b.badge_type)?.label || b.badge_type}
+                  {b.category || 'عام'}
                 </span>
-                {b.points_required > 0 && (
+                <span className="text-[10px] text-muted-foreground border px-2 rounded-md">
+                  {b.badge_type}
+                </span>
+                {b.points_reward > 0 && (
                   <span className="text-xs flex items-center gap-0.5 text-muted-foreground">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> {b.points_required}
+                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> {b.points_reward} نقطة
                   </span>
                 )}
               </div>
+
               <div className="flex gap-2">
                 <button onClick={() => openEdit(b)} className="flex-1 flex items-center justify-center gap-1 py-1.5 border border-border rounded-lg text-xs font-medium hover:bg-muted transition-colors">
                   <Edit2 className="w-3 h-3" /> تعديل
                 </button>
-                <button onClick={() => handleDelete(b.id)} disabled={deletingId === b.id}
+                <button onClick={() => handleDelete(b.badge_type)} disabled={deletingId === b.badge_type}
                   className="flex items-center justify-center py-1.5 px-2.5 border border-red-200 dark:border-red-800 rounded-lg text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                  {deletingId === b.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                  {deletingId === b.badge_type ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                 </button>
               </div>
             </div>
@@ -169,37 +179,51 @@ export default function AdminBadgesPage() {
                 <label className="text-sm font-bold block mb-1.5">الأيقونة</label>
                 <div className="flex flex-wrap gap-2">
                   {ICONS.map(icon => (
-                    <button key={icon} type="button" onClick={() => setForm({ ...form, badge_icon: icon })}
-                      className={`w-10 h-10 text-xl rounded-lg border-2 transition-colors ${form.badge_icon === icon ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'border-border hover:border-muted-foreground'}`}>
+                    <button key={icon} type="button" onClick={() => setForm({ ...form, icon })}
+                      className={`w-10 h-10 text-xl rounded-lg border-2 transition-colors ${form.icon === icon ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'border-border hover:border-muted-foreground'}`}>
                       {icon}
                     </button>
                   ))}
                 </div>
               </div>
+              
+              {!editItem && (
+                <div>
+                  <label className="text-sm font-bold block mb-1.5 text-blue-600">المُعرف البرمجي (باللغة الإنجليزية) <span className="text-red-500">*</span></label>
+                  <input required type="text" value={form.badge_type} onChange={e => setForm({ ...form, badge_type: e.target.value.toLowerCase().replace(/\s+/g, '_') })} placeholder="مثال: quran_master"
+                    className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-left" dir="ltr" />
+                  <p className="text-[10px] text-muted-foreground mt-1">يجب أن يكون فريداً وباللغة الإنجليزية وبدون مسافات (سيتم استبدال المسافات بـ _)</p>
+                </div>
+              )}
+
               <div>
-                <label className="text-sm font-bold block mb-1.5">اسم الشارة <span className="text-red-500">*</span></label>
-                <input required type="text" value={form.badge_name} onChange={e => setForm({ ...form, badge_name: e.target.value })} placeholder="مثال: حافظ الجزء الأول"
+                <label className="text-sm font-bold block mb-1.5">اسم الشارة (بالعربية) <span className="text-red-500">*</span></label>
+                <input required type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="مثال: حافظ الجزء الأول"
                   className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-yellow-500" />
               </div>
+
               <div>
                 <label className="text-sm font-bold block mb-1.5">الوصف</label>
-                <textarea rows={2} value={form.badge_description} onChange={e => setForm({ ...form, badge_description: e.target.value })} placeholder="وصف الشارة وشروط الحصول عليها..."
+                <textarea rows={2} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="وصف الشارة وشروط الحصول عليها..."
                   className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-yellow-500 resize-none" />
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-bold block mb-1.5">النوع</label>
-                  <select value={form.badge_type} onChange={e => setForm({ ...form, badge_type: e.target.value })}
+                  <label className="text-sm font-bold block mb-1.5">التصنيف</label>
+                  <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
                     className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                    {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-bold block mb-1.5">النقاط المطلوبة</label>
-                  <input type="number" min={0} value={form.points_required} onChange={e => setForm({ ...form, points_required: Number(e.target.value) })}
+                  <label className="text-sm font-bold block mb-1.5">النقاط المكتسبة</label>
+                  <input type="number" min={0} value={form.points_reward} onChange={e => setForm({ ...form, points_reward: Number(e.target.value) })}
                     className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                  <p className="text-[10px] text-muted-foreground mt-1">عدد النقاط التي سيحصل عليها الطالب</p>
                 </div>
               </div>
+
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-border rounded-lg font-bold hover:bg-muted transition-colors">إلغاء</button>
                 <button type="submit" disabled={saving}

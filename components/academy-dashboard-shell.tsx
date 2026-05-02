@@ -37,6 +37,8 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/student/tasks', label: t.academy?.tasks || 'المهام', icon: ClipboardList },
             { href: '/academy/student/sessions', label: t.academy?.liveSessions || 'الجلسات الحية', icon: Video },
             { href: '/academy/student/path', label: t.academy?.learningPath || 'المسار التعليمي', icon: Route },
+            { href: '/academy/student/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
+            { href: '/academy/student/fiqh', label: t.academy?.fiqhQuestions || 'أسئلة فقهية', icon: HelpCircle },
           ]
         },
         {
@@ -45,6 +47,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/student/progress', label: t.academy?.progress || 'تقدمي', icon: Target },
             { href: '/academy/student/leaderboard', label: t.academy?.leaderboard || 'لوحة المتصدرين', icon: Trophy },
             { href: '/academy/student/badges', label: t.academy?.badges || 'الشارات', icon: Award },
+            { href: '/academy/student/certificates', label: t.academy?.certificates || 'الشهادات', icon: GraduationCap },
           ]
         },
         {
@@ -171,6 +174,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/supervisor/content', label: t.academy?.contentReview || 'إشراف المحتوى', icon: BookOpen },
             { href: '/academy/supervisor/forum', label: t.academy?.forumModeration || 'إشراف المنتدى', icon: MessageSquare },
             { href: '/academy/supervisor/fiqh', label: t.academy?.fiqhQuestions || 'الأسئلة الفقهية', icon: HelpCircle },
+            { href: '/academy/supervisor/teachers', label: t.academy?.teacherVerification || 'توثيق المدرسين', icon: UserCheck },
             { href: '/academy/supervisor/quality', label: t.academy?.qualityMonitor || 'مراقبة الجودة', icon: BarChart3 },
           ]
         },
@@ -417,8 +421,10 @@ export function AcademyDashboardShell({
             <LanguageSwitcher variant="outline" />
 
             <NotificationDropdown
+              // #27: Always route academy users to academy notifications pages
+              // so they don't get redirected to the Qur'an side.
               role={
-                role === 'academy_admin' ? 'admin' :
+                role === 'academy_admin' ? 'academy/admin' :
                 role === 'teacher' ? 'academy/teacher' :
                 role === 'parent' ? 'academy/parent' :
                 role === 'supervisor' ? 'academy/supervisor' :

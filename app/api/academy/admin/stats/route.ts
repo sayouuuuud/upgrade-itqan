@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const studentCount = await query<{ count: string }>(`
       SELECT COUNT(DISTINCT u.id)::text as count
       FROM users u
-      WHERE u.role = 'student' AND u.is_active = true
+      WHERE u.role = 'student' AND u.is_active = true AND u.has_academy_access = true
     `)
 
     // Get total teachers

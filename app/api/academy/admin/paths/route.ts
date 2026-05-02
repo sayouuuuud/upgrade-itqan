@@ -28,10 +28,10 @@ export async function POST(req: NextRequest) {
     if (!title) return NextResponse.json({ error: 'Title required' }, { status: 400 })
     
     const result = await query(`
-      INSERT INTO learning_paths (title, description, subject, level, estimated_hours, created_at)
-      VALUES ($1, $2, $3, $4, $5, NOW())
+      INSERT INTO learning_paths (title, description, subject, level, estimated_hours, created_by, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW())
       RETURNING *
-    `, [title, description || null, subject || 'quran', level || 'beginner', estimated_hours || 0])
+    `, [title, description || null, subject || 'quran', level || 'beginner', estimated_hours || 0, session.sub])
     
     return NextResponse.json({ data: result[0] }, { status: 201 })
   } catch (error) {

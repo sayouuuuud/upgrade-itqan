@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
                 const res = await fetch('/api/auth/me')
                 if (res.ok) {
                     const data = await res.json()
-                    const allowedRoles = ['admin', 'student_supervisor', 'reciter_supervisor']
+                    const allowedRoles = ['admin', 'student_supervisor', 'reciter_supervisor', 'academy_admin']
                     if (data.user && !allowedRoles.includes(data.user.role)) {
                         // Logged in but NOT an admin role 
                         setNotAdminError(true)
@@ -63,9 +63,11 @@ export default function AdminLoginPage() {
             // Use window.location.href (full page load) so the new auth cookie
             // is included in the very first request to /admin — prevents redirect loop
             const role = data.user?.role || 'admin'
-            const adminRoles = ['admin', 'student_supervisor', 'reciter_supervisor']
-            if (adminRoles.includes(role)) {
+            const generalAdminRoles = ['admin', 'student_supervisor', 'reciter_supervisor']
+            if (generalAdminRoles.includes(role)) {
                 window.location.href = '/admin'
+            } else if (role === 'academy_admin') {
+                window.location.href = '/academy/admin'
             } else {
                 const rolePath = ['student', 'teacher', 'parent'].includes(role) ? `/academy/${role}` : `/${role}`
                 window.location.href = rolePath

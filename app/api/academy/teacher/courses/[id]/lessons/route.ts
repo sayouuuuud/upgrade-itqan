@@ -51,7 +51,7 @@ export async function POST(
     const courseTitle = ownCheck[0]?.title || 'دورة'
 
     const body = await req.json()
-    const { title, description, video_url, duration_minutes, attachments } = body
+    const { title, description, video_url, duration_minutes, attachments, status } = body
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -62,14 +62,14 @@ export async function POST(
     const orderResult = await query<any>(orderQuery, [courseId])
     const orderIndex = orderResult[0]?.next_order || 1
 
-    // B-7: إدراج الدرس بحالة pending_review بدل published
+    const finalStatus = status === 'draft' ? 'draft' : 'pending_review'
     const insertQuery = `
       INSERT INTO lessons (course_id, title, description, video_url, order_index, lesson_order, duration_minutes, status, created_at)
-      VALUES ($1, $2, $3, $4, $5, $5, $6, 'pending_review', NOW())
+      VALUES ($1, $2, $3, $4, $5, $5, $6, $7, NOW())
       RETURNING *
     `
     const result = await query(insertQuery, [
-      courseId, title, description || null, video_url || null, orderIndex, duration_minutes || null
+      courseId, title, description || null, video_url || null, orderIndex, duration_minutes || null, finalStatus
     ])
     const newLesson = result[0] as any;
 

@@ -55,12 +55,24 @@ export async function POST(req: NextRequest) {
         const token = await signToken({
             sub: user.id,
             email: user.email,
-            role: user.role as "student" | "reader" | "admin",
+            role: user.role as any,
             name: user.name,
+            has_academy_access: (user as any).has_academy_access,
+            has_quran_access: (user as any).has_quran_access,
         })
 
         const response = NextResponse.json(
-            { message: "تم تفعيل الحساب بنجاح", user: { id: user.id, name: user.name, email: user.email, role: user.role } },
+            { 
+                message: "تم تفعيل الحساب بنجاح", 
+                user: { 
+                    id: user.id, 
+                    name: user.name, 
+                    email: user.email, 
+                    role: user.role,
+                    has_academy_access: (user as any).has_academy_access,
+                    has_quran_access: (user as any).has_quran_access
+                } 
+            },
             { status: 200 }
         )
 

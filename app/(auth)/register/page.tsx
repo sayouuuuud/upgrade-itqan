@@ -26,7 +26,21 @@ export default function RegisterPage() {
         if (res.ok) {
           const data = await res.json()
           if (data.user) {
-            router.push(`/${data.user.role}`)
+            // #2: Honor platform access flags when redirecting an already-logged-in user.
+            const u = data.user
+            const role = u.role
+            if (role === 'admin') router.push('/admin')
+            else if (role === 'academy_admin') router.push('/academy/admin')
+            else if (role === 'reader') router.push('/reader')
+            else if (role === 'teacher') router.push('/academy/teacher')
+            else if (role === 'parent') router.push('/academy/parent')
+            else {
+              const hasAcademy = u.has_academy_access !== false
+              const hasQuran = u.has_quran_access !== false
+              if (hasAcademy && !hasQuran) router.push('/academy/student')
+              else if (!hasAcademy && hasQuran) router.push('/student')
+              else router.push('/academy/student')
+            }
           }
         }
       } catch (err) {
@@ -83,20 +97,18 @@ export default function RegisterPage() {
           `/verify?email=${encodeURIComponent(email)}&platform=${effectivePlatform}&role=${role}`
         )
       } else {
-        // A-2: Route correctly based on what was actually saved server-side.
-        // Parents are forced to `academy` regardless of the local `platform`
-        // state, and `data.user.role` is the source of truth for routing.
+        // #2: Honor the chosen platform.
+        // - parent → /academy/parent
+        // - academy → /academy/student
+        // - quran → /student
+        // - both → land on /academy/student (primary); user can switch via ModeSwitcher
         const savedRole = data.user?.role || role
-        const effectivePlatform = savedRole === 'parent' ? 'academy' : platform
-
         if (savedRole === 'parent') {
           router.push('/academy/parent')
-        } else if (effectivePlatform === 'academy') {
-          router.push('/academy/student')
-        } else {
-          // 'both' or 'quran' → land on the Qur'an side; the Mode Switcher
-          // in the dashboard handles moving to /academy/student for 'both'.
+        } else if (platform === 'quran') {
           router.push('/student')
+        } else {
+          router.push('/academy/student')
         }
       }
     } catch {

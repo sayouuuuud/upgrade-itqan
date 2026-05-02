@@ -10,20 +10,27 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params
   try {
     const body = await req.json()
-    const { name, gender, is_active } = body
+    const { name, email, gender, is_active } = body
 
     const result = await query(`
       UPDATE users SET 
         name = COALESCE($1, name),
-        gender = COALESCE($2, gender),
-        is_active = COALESCE($3, is_active),
+        email = COALESCE($2, email),
+        gender = COALESCE($3, gender),
+        is_active = CASE WHEN $4::boolean IS NOT NULL THEN $4 ELSE is_active END,
         updated_at = NOW()
-      WHERE id = $4 AND role = 'teacher'
-      RETURNING *
-    `, [name || null, gender || null, is_active !== undefined ? is_active : null, id])
+      WHERE id = $5 AND role = 'teacher'
+      RETURNING id, name, email, role, gender, is_active, created_at
+    `, [
+      name || null, 
+      email ? email.toLowerCase().trim() : null, 
+      gender || null, 
+      is_active !== undefined ? is_active : null, 
+      id
+    ])
 
     if (result.length === 0) {
-      return NextResponse.json({ error: 'Teacher not found' }, { status: 404 })
+      return NextResponse.json({ error: 'المدرس غير موجود' }, { status: 404 })
     }
     return NextResponse.json({ data: result[0] })
   } catch (error) {

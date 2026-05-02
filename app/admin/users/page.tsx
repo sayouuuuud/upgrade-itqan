@@ -36,7 +36,15 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<any>(null)
 
   // Form state
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "student", gender: "" })
+  const [formData, setFormData] = useState({ 
+    name: "", 
+    email: "", 
+    password: "", 
+    role: "student", 
+    gender: "",
+    has_academy_access: true,
+    has_quran_access: true
+  })
   const [submitting, setSubmitting] = useState(false)
   const [currentUserRole, setCurrentUserRole] = useState<string>("")
 
@@ -127,7 +135,15 @@ export default function AdminUsersPage() {
     } finally {
       setSubmitting(false)
       const defaultRole = currentUserRole === 'reciter_supervisor' ? 'reader' : 'student'
-      setFormData({ name: "", email: "", password: "", role: defaultRole, gender: "" })
+      setFormData({ 
+        name: "", 
+        email: "", 
+        password: "", 
+        role: defaultRole, 
+        gender: "",
+        has_academy_access: true,
+        has_quran_access: true
+      })
     }
   }
 
@@ -135,13 +151,15 @@ export default function AdminUsersPage() {
     if (!selectedUser) return
     setSubmitting(true)
     try {
-      const { name, email, password, role, gender } = formData
+      const { name, email, password, role, gender, has_academy_access, has_quran_access } = formData
       const body: any = { userId: selectedUser.id }
       if (name) body.name = name
       if (email) body.email = email
       if (password) body.password = password
       if (role) body.role = role
       if (gender) body.gender = gender
+      if (typeof has_academy_access === 'boolean') body.has_academy_access = has_academy_access
+      if (typeof has_quran_access === 'boolean') body.has_quran_access = has_quran_access
 
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
@@ -164,7 +182,15 @@ export default function AdminUsersPage() {
 
   const openEditModal = (user: any) => {
     setSelectedUser(user)
-    setFormData({ name: user.name, email: user.email, password: "", role: user.role, gender: user.gender || "" })
+    setFormData({ 
+      name: user.name, 
+      email: user.email, 
+      password: "", 
+      role: user.role, 
+      gender: user.gender || "",
+      has_academy_access: user.has_academy_access !== false,
+      has_quran_access: user.has_quran_access !== false
+    })
     setIsEditUserOpen(true)
   }
 
@@ -192,7 +218,15 @@ export default function AdminUsersPage() {
           className="w-full sm:w-auto rounded-2xl font-black bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 h-12 px-6 gap-2"
           onClick={() => {
             const defaultRole = currentUserRole === 'reciter_supervisor' ? 'reader' : 'student'
-            setFormData({ name: "", email: "", password: "", role: defaultRole, gender: "" })
+            setFormData({ 
+              name: "", 
+              email: "", 
+              password: "", 
+              role: defaultRole, 
+              gender: "",
+              has_academy_access: true,
+              has_quran_access: true
+            })
             setIsAddUserOpen(true)
           }}
         >
@@ -329,6 +363,18 @@ export default function AdminUsersPage() {
                             {t.auth.reciterSupervisor}
                           </Badge>
                         )}
+                        <div className="flex gap-1 mt-1">
+                          {user.has_quran_access !== false && (
+                            <Badge variant="outline" className="text-[8px] px-1 py-0 border-emerald-500/30 text-emerald-500 bg-emerald-500/5">
+                              {isAr ? "قرآن" : "Quran"}
+                            </Badge>
+                          )}
+                          {user.has_academy_access !== false && (
+                            <Badge variant="outline" className="text-[8px] px-1 py-0 border-blue-500/30 text-blue-500 bg-blue-500/5">
+                              {isAr ? "أكاديمية" : "Academy"}
+                            </Badge>
+                          )}
+                        </div>
                       </td>
                       {activeTab === 'readers' && (
                         <td className="px-6 py-4 text-xs font-black text-muted-foreground">
@@ -527,6 +573,36 @@ export default function AdminUsersPage() {
                 <option value="female">{t.auth.female}</option>
               </select>
             </div>
+            
+            <div className="md:col-span-2 p-4 bg-muted/20 rounded-2xl border border-border/50 space-y-3">
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                {isAr ? "صلاحيات الوصول للمنصات" : "Platform Access Permissions"}
+              </Label>
+              <div className="flex flex-wrap gap-6">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={formData.has_quran_access}
+                    onChange={e => setFormData({ ...formData, has_quran_access: e.target.checked })}
+                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
+                  />
+                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
+                    {isAr ? "منصة القرآن" : "Quran Platform"}
+                  </span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={formData.has_academy_access}
+                    onChange={e => setFormData({ ...formData, has_academy_access: e.target.checked })}
+                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
+                  />
+                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
+                    {isAr ? "الأكاديمية" : "Academy"}
+                  </span>
+                </label>
+              </div>
+            </div>
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsAddUserOpen(false)} className="rounded-2xl font-black">{t.cancel}</Button>
@@ -606,6 +682,36 @@ export default function AdminUsersPage() {
                 <option value="male">{t.auth.male}</option>
                 <option value="female">{t.auth.female}</option>
               </select>
+            </div>
+
+            <div className="md:col-span-2 p-4 bg-muted/20 rounded-2xl border border-border/50 space-y-3">
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                {isAr ? "صلاحيات الوصول للمنصات" : "Platform Access Permissions"}
+              </Label>
+              <div className="flex flex-wrap gap-6">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={formData.has_quran_access}
+                    onChange={e => setFormData({ ...formData, has_quran_access: e.target.checked })}
+                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
+                  />
+                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
+                    {isAr ? "منصة القرآن" : "Quran Platform"}
+                  </span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={formData.has_academy_access}
+                    onChange={e => setFormData({ ...formData, has_academy_access: e.target.checked })}
+                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
+                  />
+                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
+                    {isAr ? "الأكاديمية" : "Academy"}
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
           <DialogFooter className="gap-2">

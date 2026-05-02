@@ -95,10 +95,9 @@ export async function POST(req: NextRequest) {
                 )
             }
         } else {
-            // Create user with pending_approval status
             const users = await query<{ id: string }>(
-                `INSERT INTO users (name, email, password_hash, role, gender, approval_status)
-           VALUES ($1, $2, $3, 'teacher', $4, 'pending_approval')
+                `INSERT INTO users (name, email, password_hash, role, gender, approval_status, has_academy_access, has_quran_access, platform_choice, platform_preference)
+           VALUES ($1, $2, $3, 'teacher', $4, 'pending_approval', true, false, 'academy', 'academy')
            RETURNING id`,
                 [full_name_triple, email.toLowerCase(), passwordHash, gender]
             )

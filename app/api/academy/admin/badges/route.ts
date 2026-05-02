@@ -23,17 +23,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
-    const { badge_type, badge_name, badge_description, badge_icon, points_required } = await req.json()
-    if (!badge_name) return NextResponse.json({ error: 'Badge name required' }, { status: 400 })
+    const { badge_type, name, description, category, icon, criteria_type, criteria_value, points_reward, display_order } = await req.json()
+    if (!name || !badge_type) return NextResponse.json({ error: 'Badge name and type required' }, { status: 400 })
     
+    // تأكد من عدم تكرار الـ badge_type لأنه المفتاح الأساسي
+    const check = await query(`SELECT badge_type FROM badge_definitions WHERE badge_type = $1`, [badge_type])
+    if (check.length > 0) {
+      return NextResponse.json({ error: 'Badge type already exists' }, { status: 400 })
+    }
+
     const result = await query(`
-      INSERT INTO badge_definitions (badge_type, badge_name, badge_description, badge_icon, points_required, is_active, created_at)
-      VALUES ($1, $2, $3, $4, $5, true, NOW())
+      INSERT INTO badge_definitions (badge_type, name, description, category, icon, criteria_type, criteria_value, points_reward, display_order, is_active, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true, NOW())
       RETURNING *
-    `, [badge_type || 'achievement', badge_name, badge_description || null, badge_icon || '🏆', points_required || 0])
+    `, [
+      badge_type, 
+      name, 
+      description || null, 
+      category || 'عام', 
+      icon || '🏆', 
+      criteria_type || 'manual', 
+      criteria_value || 0, 
+      points_reward || 0, 
+      display_order || 0
+    ])
     
     return NextResponse.json({ data: result[0] }, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Error creating badge:", error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
