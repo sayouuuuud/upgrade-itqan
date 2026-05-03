@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, Trash2, Clock, Calendar as CalendarIcon, CheckCircle, Loader2, CalendarRange, Info } from "lucide-react"
+import { Plus, Trash2, Clock, Calendar as CalendarIcon, CheckCircle, Loader2, CalendarRange, Info, ToggleLeft, ToggleRight } from "lucide-react"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter, DialogTrigger
@@ -177,6 +177,27 @@ export default function ScheduleManagementPage() {
 
       if (res.ok) {
         setSlots(slots.filter(s => s.id !== id))
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleToggleAvailability = async (slotId: string, currentAvailable: boolean) => {
+    try {
+      const res = await fetch("/api/reader/schedule", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: slotId,
+          isAvailable: !currentAvailable
+        })
+      })
+
+      if (res.ok) {
+        setSlots(slots.map(s => 
+          s.id === slotId ? { ...s, is_available: !currentAvailable } : s
+        ))
       }
     } catch (err) {
       console.error(err)
