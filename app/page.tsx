@@ -174,15 +174,13 @@ function MarqueeRow({
 }) {
   // Duplicate items so -50% translation lands exactly on the second copy → seamless loop.
   const doubled = [...items, ...items]
-  const animationName = direction === "right" ? "itqan-marquee-right" : "itqan-marquee-left"
   return (
     <div className="overflow-hidden" dir="ltr">
       <div
-        className="marquee-track flex w-max"
-        style={{
-          animation: `${animationName} ${duration}s linear infinite`,
-          willChange: "transform",
-        }}
+        className={`marquee-track flex w-max ${
+          direction === "right" ? "itqan-marquee-right" : "itqan-marquee-left"
+        }`}
+        style={{ ["--itqan-marquee-duration" as string]: `${duration}s` }}
       >
         {doubled.map((t, i) => (
           <TestimonialCard key={i} {...t} />
@@ -209,7 +207,7 @@ function TestimonialsMarquee() {
   ]
   const rowBottom: Testimonial[] = [
     { q: "تجربةٌ مُختلفةٌ تمامًا، شعرتُ أنني في حَلْقةٍ حقيقيَّةٍ في أحدِ المساجدِ العَتيقة.", n: "هدى الشريف", r: "طالبةُ علم" },
-    { q: "كنتُ أبحثُ عن مَقْرأةٍ مُنضَبطةٍ منذُ زمن، فوجدتُ هنا ما يَفوقُ ما تَ��نَّيت.", n: "إبراهيم الرفاعي", r: "طالبٌ في الإجازة" },
+    { q: "كنتُ أبحثُ عن مَقْرأةٍ مُنضَ��طةٍ منذُ زمن، فوجدتُ هنا ما يَفوقُ ما تَ��نَّيت.", n: "إبراهيم الرفاعي", r: "طالبٌ في الإجازة" },
     { q: "الواجباتُ مُحَكَّمة، والمُتابعةُ يوميَّة، والنتائجُ مُبشِّرةٌ بفضلِ الله.", n: "نوال البصري", r: "طالبةُ تحفيظ" },
     { q: "ما رأيتُ أَشمَلَ من هذه المنصَّةِ في الجَمعِ بين العلمِ النظريِّ والتطبيقيِّ.", n: "د. صالح الشمري", r: "أستاذٌ مُحاضِر" },
     { q: "ابني تَغيَّرت علاقتُه بالقرآنِ بعد التحاقِه، صار يَنتظرُ الجلسةَ بشَغف.", n: "أم محمد", r: "وَلِيَّةُ أمر" },
