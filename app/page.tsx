@@ -293,22 +293,20 @@ export default function Home() {
       {/* ============ HERO ============ */}
       <section ref={heroRef} className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          {/* Ottoman carpet pattern — woven texture, clearly visible */}
+          {/* Ottoman carpet pattern — medium visibility */}
           <div
-            className="absolute inset-0 bg-repeat opacity-[0.55] dark:opacity-[0.45]"
+            className="absolute inset-0 bg-repeat opacity-[0.32] dark:opacity-[0.28]"
             style={{
               backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
               backgroundSize: "520px",
             }}
           />
-          {/* Burgundy + gold tint layer to richen the pattern's traditional palette */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#5C1A1A]/15 via-transparent to-[#B08D57]/15 dark:from-[#3A0F0F]/40 dark:via-transparent dark:to-[#C9A962]/15 mix-blend-multiply dark:mix-blend-overlay" />
-          {/* Light wash — keeps text readable but lets the pattern breathe */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#F7F2E9]/55 via-[#F7F2E9]/40 to-[#F7F2E9] dark:from-[#0B1217]/65 dark:via-[#0B1217]/55 dark:to-[#0B1217]" />
+          {/* Warm parchment / dark wash — keeps text readable */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F7F2E9]/65 via-[#F7F2E9]/55 to-[#F7F2E9] dark:from-[#0B1217]/72 dark:via-[#0B1217]/62 dark:to-[#0B1217]" />
           {/* Soft halo right behind the headline so the type punches out */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[60vh] rounded-[50%] blur-[120px] bg-[#F7F2E9]/65 dark:bg-[#0B1217]/55" />
-          {/* Warm gold accent */}
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[50vw] h-[50vw] rounded-full blur-[140px] bg-[#B08D57]/20 dark:bg-[#C9A962]/12" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[60vh] rounded-[50%] blur-[120px] bg-[#F7F2E9]/60 dark:bg-[#0B1217]/55" />
+          {/* Warm gold accent glow */}
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[50vw] h-[50vw] rounded-full blur-[140px] bg-[#B08D57]/18 dark:bg-[#C9A962]/12" />
 
           <motion.div
             animate={{ rotate: 360 }}
@@ -768,19 +766,17 @@ export default function Home() {
       </section>
 
       {/* ============ FOOTER ============ */}
-      <footer className="relative bg-[#3A0F12] text-[#F7F2E9]/85 pt-20 pb-10 overflow-hidden">
-        {/* Ottoman carpet — woven texture clearly visible */}
+      <footer className="relative bg-[#0a1f33] text-[#F7F2E9]/85 pt-20 pb-10 overflow-hidden">
+        {/* Ottoman carpet — medium visibility woven texture */}
         <div
-          className="absolute inset-0 bg-repeat opacity-[0.65] pointer-events-none"
+          className="absolute inset-0 bg-repeat opacity-[0.35] pointer-events-none"
           style={{
             backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
             backgroundSize: "520px",
           }}
         />
-        {/* Burgundy + gold richening tint */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#5C1A1A]/30 via-transparent to-[#B08D57]/25 mix-blend-multiply pointer-events-none" />
-        {/* Subtle dark wash — preserves contrast for the text content */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1A0508]/55 via-[#1A0508]/45 to-[#1A0508]/70 pointer-events-none" />
+        {/* Dark navy wash — preserves contrast for the text content */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1f33]/70 via-[#0a1f33]/60 to-[#0a1f33]/80 pointer-events-none" />
         {/* Top + bottom gold seams */}
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/60 to-transparent" />
         <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/30 to-transparent" />
