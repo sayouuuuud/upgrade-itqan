@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Calendar as CalendarIcon, ChevronRight, ChevronLeft, MapPin, Clock, Video, FileText, CheckCircle } from 'lucide-react'
+import { Calendar as CalendarIcon, ChevronRight, ChevronLeft, MapPin, Clock, Video, FileText, CheckCircle, BookOpen, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/lib/i18n/context'
 
@@ -11,38 +11,11 @@ interface CalendarEvent {
   title: string
   date: string // YYYY-MM-DD format
   time: string
-  type: 'live_session' | 'assignment_deadline' | 'review'
+  type: 'live_session' | 'assignment_deadline' | 'review' | 'lesson'
   course: string
+  course_id?: string
   link?: string
 }
-
-const mockEvents: CalendarEvent[] = [
-  {
-    id: 'e1',
-    title: 'جلسة حية: الفقه الميسر',
-    date: new Date().toISOString().split('T')[0],
-    time: '20:00',
-    type: 'live_session',
-    course: 'الفقه الميسر - المستوى الأول',
-    link: '#'
-  },
-  {
-    id: 'e2',
-    title: 'تسليم الواجب الثاني',
-    date: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-    time: '23:59',
-    type: 'assignment_deadline',
-    course: 'تلاوة وتجويد'
-  },
-  {
-    id: 'e3',
-    title: 'موعد مراجعة الحفظ',
-    date: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0],
-    time: '16:30',
-    type: 'review',
-    course: 'تلاوة وتجويد'
-  }
-]
 
 export default function AcademyCalendarPage() {
   const { t, locale } = useI18n()
@@ -50,6 +23,29 @@ export default function AcademyCalendarPage() {
   
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(new Date().toISOString().split('T')[0])
+  const [events, setEvents] = useState<CalendarEvent[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch events when month changes
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true)
+      try {
+        const month = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
+        const res = await fetch(`/api/academy/student/calendar/events?month=${month}`)
+        if (res.ok) {
+          const data = await res.json()
+          setEvents(data.events || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch calendar events:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchEvents()
+  }, [currentDate.getFullYear(), currentDate.getMonth()])
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
@@ -73,7 +69,7 @@ export default function AcademyCalendarPage() {
   const monthName = isAr ? monthNamesAr[currentDate.getMonth()] : monthNamesEn[currentDate.getMonth()]
   const dayNames = isAr ? dayNamesAr : dayNamesEn
 
-  const getEventsForDate = (dateStr: string) => mockEvents.filter(e => e.date === dateStr)
+  const getEventsForDate = (dateStr: string) => events.filter(e => e.date === dateStr)
 
   const selectedEvents = selectedDate ? getEventsForDate(selectedDate) : []
 
@@ -109,8 +105,13 @@ export default function AcademyCalendarPage() {
           </div>
 
           <CardContent className="p-0">
-            {(() => {
-              const monthEvents = mockEvents
+            {loading ? (
+              <div className="p-10 text-center flex flex-col items-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
+                <p className="text-sm text-muted-foreground">{isAr ? "جاري التحميل..." : "Loading..."}</p>
+              </div>
+            ) : (() => {
+              const monthEvents = events
                 .filter((ev) => {
                   const d = new Date(ev.date)
                   return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear()
@@ -155,11 +156,13 @@ export default function AcademyCalendarPage() {
                             <div className="flex items-start gap-2">
                               <div className={`mt-0.5 p-1.5 rounded-lg shrink-0 ${
                                 ev.type === 'live_session' ? 'bg-blue-500/10 text-blue-500' :
-                                ev.type === 'review' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                                ev.type === 'review' ? 'bg-emerald-500/10 text-emerald-500' :
+                                ev.type === 'lesson' ? 'bg-purple-500/10 text-purple-500' : 'bg-red-500/10 text-red-500'
                               }`}>
                                 {ev.type === 'live_session' && <Video className="w-3.5 h-3.5" />}
                                 {ev.type === 'assignment_deadline' && <FileText className="w-3.5 h-3.5" />}
                                 {ev.type === 'review' && <CheckCircle className="w-3.5 h-3.5" />}
+                                {ev.type === 'lesson' && <BookOpen className="w-3.5 h-3.5" />}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-bold text-foreground text-sm leading-tight truncate">{ev.title}</h4>
@@ -245,7 +248,8 @@ export default function AcademyCalendarPage() {
                               key={ev.id} 
                               className={`w-2 h-2 rounded-full ${
                                 ev.type === 'live_session' ? 'bg-blue-500' :
-                                ev.type === 'review' ? 'bg-emerald-500' : 'bg-red-500'
+                                ev.type === 'review' ? 'bg-emerald-500' :
+                                ev.type === 'lesson' ? 'bg-purple-500' : 'bg-red-500'
                               }`} 
                             />
                           ))}
@@ -289,11 +293,13 @@ export default function AcademyCalendarPage() {
                         <div className="flex items-start gap-4">
                           <div className={`mt-1 p-2 rounded-xl shrink-0 ${
                             ev.type === 'live_session' ? 'bg-blue-500/10 text-blue-500' :
-                            ev.type === 'review' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                            ev.type === 'review' ? 'bg-emerald-500/10 text-emerald-500' :
+                            ev.type === 'lesson' ? 'bg-purple-500/10 text-purple-500' : 'bg-red-500/10 text-red-500'
                           }`}>
                             {ev.type === 'live_session' && <Video className="w-5 h-5" />}
                             {ev.type === 'assignment_deadline' && <FileText className="w-5 h-5" />}
                             {ev.type === 'review' && <CheckCircle className="w-5 h-5" />}
+                            {ev.type === 'lesson' && <BookOpen className="w-5 h-5" />}
                           </div>
                           <div className="space-y-1.5 flex-1">
                             <h4 className="font-bold text-foreground text-lg leading-tight">{ev.title}</h4>
