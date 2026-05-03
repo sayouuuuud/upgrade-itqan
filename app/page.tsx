@@ -453,11 +453,11 @@ export default function Home() {
             <Reveal delay={0.1}>
               <Link href="/academy/student" className="group block relative">
                 <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#C9A962]/30 pointer-events-none" />
-                <article className="relative h-full bg-gradient-to-br from-[#1E4A7A] via-[#163A60] to-[#0B2440] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/25 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/55 group-hover:-translate-y-2 shadow-2xl shadow-[#0a1f33]/40">
-                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C9A962]/15 rounded-full blur-3xl group-hover:bg-[#C9A962]/25 transition-all duration-700" />
-                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#3B6BA5]/20 rounded-full blur-3xl" />
-                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#C9A962]/25" />
-                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#C9A962]/25 rotate-180" />
+                <article className="relative h-full bg-gradient-to-br from-[#221C13] via-[#161109] to-[#0B0805] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/30 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/60 group-hover:-translate-y-2 shadow-2xl shadow-black/40">
+                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C9A962]/18 rounded-full blur-3xl group-hover:bg-[#C9A962]/28 transition-all duration-700" />
+                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/15 rounded-full blur-3xl" />
+                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#C9A962]/30" />
+                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#C9A962]/30 rotate-180" />
 
                   <div className="relative">
                     <div className="text-7xl font-bold text-[#C9A962]/30 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
@@ -494,7 +494,7 @@ export default function Home() {
 
                     <div className="flex items-center justify-between pt-6 border-t border-[#C9A962]/25">
                       <span className="text-[#C9A962] font-medium">دخول الأكاديميَّة</span>
-                      <div className="w-12 h-12 rounded-full bg-[#C9A962] text-[#0F2A44] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
+                      <div className="w-12 h-12 rounded-full bg-[#C9A962] text-[#1A130A] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
                         <ArrowLeft className="w-5 h-5" />
                       </div>
                     </div>
@@ -507,11 +507,11 @@ export default function Home() {
             <Reveal delay={0.25}>
               <Link href="/student" className="group block relative">
                 <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#C9A962]/30 pointer-events-none" />
-                <article className="relative h-full bg-gradient-to-br from-[#2A5A45] via-[#1F4736] to-[#0E2A1E] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/25 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/55 group-hover:-translate-y-2 shadow-2xl shadow-[#0a1f33]/40">
-                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C9A962]/15 rounded-full blur-3xl group-hover:bg-[#C9A962]/25 transition-all duration-700" />
-                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#3D7A5A]/25 rounded-full blur-3xl" />
-                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#C9A962]/25" />
-                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#C9A962]/25 rotate-180" />
+                <article className="relative h-full bg-gradient-to-br from-[#2E2418] via-[#1B140C] to-[#0A0604] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/30 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/60 group-hover:-translate-y-2 shadow-2xl shadow-black/40">
+                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C9A962]/18 rounded-full blur-3xl group-hover:bg-[#C9A962]/28 transition-all duration-700" />
+                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/18 rounded-full blur-3xl" />
+                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#C9A962]/30" />
+                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#C9A962]/30 rotate-180" />
 
                   <div className="relative">
                     <div className="text-7xl font-bold text-[#C9A962]/30 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
@@ -548,7 +548,7 @@ export default function Home() {
 
                     <div className="flex items-center justify-between pt-6 border-t border-[#C9A962]/25">
                       <span className="text-[#C9A962] font-medium">دخول المَقْرأة</span>
-                      <div className="w-12 h-12 rounded-full bg-[#C9A962] text-[#1B4332] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
+                      <div className="w-12 h-12 rounded-full bg-[#C9A962] text-[#1A130A] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
                         <ArrowLeft className="w-5 h-5" />
                       </div>
                     </div>
