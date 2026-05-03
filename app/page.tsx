@@ -293,12 +293,13 @@ export default function Home() {
       {/* ============ HERO ============ */}
       <section ref={heroRef} className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          {/* Ottoman carpet pattern — subtle, woven texture */}
+          {/* Ottoman carpet pattern — desaturated to remove red, sepia warm tone */}
           <div
-            className="absolute inset-0 bg-repeat opacity-[0.10] dark:opacity-[0.18]"
+            className="absolute inset-0 bg-repeat opacity-[0.18] dark:opacity-[0.26]"
             style={{
               backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
               backgroundSize: "440px",
+              filter: "grayscale(1) sepia(0.45) brightness(1.05) contrast(0.95)",
             }}
           />
           {/* Soft parchment / dark wash so text stays readable */}
@@ -452,13 +453,14 @@ export default function Home() {
             <Reveal delay={0.1}>
               <Link href="/academy/student" className="group block relative">
                 <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#C9A962]/30 pointer-events-none" />
-                <article className="relative h-full bg-gradient-to-br from-[#13325a] to-[#0a1f33] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/15 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/40 group-hover:-translate-y-2">
-                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C9A962]/10 rounded-full blur-3xl group-hover:bg-[#C9A962]/20 transition-all duration-700" />
-                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#C9A962]/15" />
-                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#C9A962]/15 rotate-180" />
+                <article className="relative h-full bg-gradient-to-br from-[#1E4A7A] via-[#163A60] to-[#0B2440] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/25 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/55 group-hover:-translate-y-2 shadow-2xl shadow-[#0a1f33]/40">
+                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C9A962]/15 rounded-full blur-3xl group-hover:bg-[#C9A962]/25 transition-all duration-700" />
+                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#3B6BA5]/20 rounded-full blur-3xl" />
+                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#C9A962]/25" />
+                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#C9A962]/25 rotate-180" />
 
                   <div className="relative">
-                    <div className="text-7xl font-bold text-[#C9A962]/20 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
+                    <div className="text-7xl font-bold text-[#C9A962]/30 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
                       ٠١
                     </div>
                     <div className="flex items-center gap-3 mb-2 -mt-8">
@@ -479,18 +481,18 @@ export default function Home() {
                         { i: Users, t: "إشرافٌ مباشر", d: "أساتذةٌ مُجازون" },
                       ].map((f, i) => (
                         <div key={i} className="flex items-start gap-4 group/item">
-                          <div className="w-10 h-10 rounded-full border border-[#C9A962]/30 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#C9A962]/10 transition-colors">
+                          <div className="w-10 h-10 rounded-full border border-[#C9A962]/40 bg-[#C9A962]/5 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#C9A962]/15 group-hover/item:border-[#C9A962]/60 transition-colors">
                             <f.i className="w-4 h-4 text-[#C9A962]" />
                           </div>
                           <div>
                             <div className="font-semibold text-base mb-0.5" style={{ fontFamily: "var(--font-quran)" }}>{f.t}</div>
-                            <div className="text-sm text-[#F7F2E9]/55">{f.d}</div>
+                            <div className="text-sm text-[#F7F2E9]/65">{f.d}</div>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between pt-6 border-t border-[#C9A962]/15">
+                    <div className="flex items-center justify-between pt-6 border-t border-[#C9A962]/25">
                       <span className="text-[#C9A962] font-medium">دخول الأكاديميَّة</span>
                       <div className="w-12 h-12 rounded-full bg-[#C9A962] text-[#0F2A44] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
                         <ArrowLeft className="w-5 h-5" />
@@ -505,13 +507,14 @@ export default function Home() {
             <Reveal delay={0.25}>
               <Link href="/student" className="group block relative">
                 <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#C9A962]/30 pointer-events-none" />
-                <article className="relative h-full bg-gradient-to-br from-[#1B4332] to-[#0d2418] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/15 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/40 group-hover:-translate-y-2">
-                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C9A962]/10 rounded-full blur-3xl group-hover:bg-[#C9A962]/20 transition-all duration-700" />
-                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#C9A962]/15" />
-                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#C9A962]/15 rotate-180" />
+                <article className="relative h-full bg-gradient-to-br from-[#2A5A45] via-[#1F4736] to-[#0E2A1E] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/25 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/55 group-hover:-translate-y-2 shadow-2xl shadow-[#0a1f33]/40">
+                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C9A962]/15 rounded-full blur-3xl group-hover:bg-[#C9A962]/25 transition-all duration-700" />
+                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#3D7A5A]/25 rounded-full blur-3xl" />
+                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#C9A962]/25" />
+                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#C9A962]/25 rotate-180" />
 
                   <div className="relative">
-                    <div className="text-7xl font-bold text-[#C9A962]/20 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
+                    <div className="text-7xl font-bold text-[#C9A962]/30 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
                       ٠٢
                     </div>
                     <div className="flex items-center gap-3 mb-2 -mt-8">
@@ -532,18 +535,18 @@ export default function Home() {
                         { i: BookOpen, t: "مُتابعةُ الحفظ", d: "تقدُّمٌ مُسجَّلٌ كلَّ جلسة" },
                       ].map((f, i) => (
                         <div key={i} className="flex items-start gap-4 group/item">
-                          <div className="w-10 h-10 rounded-full border border-[#C9A962]/30 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#C9A962]/10 transition-colors">
+                          <div className="w-10 h-10 rounded-full border border-[#C9A962]/40 bg-[#C9A962]/5 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#C9A962]/15 group-hover/item:border-[#C9A962]/60 transition-colors">
                             <f.i className="w-4 h-4 text-[#C9A962]" />
                           </div>
                           <div>
                             <div className="font-semibold text-base mb-0.5" style={{ fontFamily: "var(--font-quran)" }}>{f.t}</div>
-                            <div className="text-sm text-[#F7F2E9]/55">{f.d}</div>
+                            <div className="text-sm text-[#F7F2E9]/65">{f.d}</div>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between pt-6 border-t border-[#C9A962]/15">
+                    <div className="flex items-center justify-between pt-6 border-t border-[#C9A962]/25">
                       <span className="text-[#C9A962] font-medium">دخول المَقْرأة</span>
                       <div className="w-12 h-12 rounded-full bg-[#C9A962] text-[#1B4332] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
                         <ArrowLeft className="w-5 h-5" />
@@ -715,7 +718,21 @@ export default function Home() {
 
       {/* ============ CTA ============ */}
       <section className="relative py-32 md:py-40 bg-[#0F2A44] text-[#F7F2E9] overflow-hidden">
-        <TessellatedBg className="absolute inset-0 w-full h-full" color="#C9A962" opacity={0.05} />
+        {/* Ottoman carpet pattern — desaturated, gold-toned woven texture */}
+        <div
+          className="absolute inset-0 bg-repeat opacity-[0.22] pointer-events-none"
+          style={{
+            backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
+            backgroundSize: "440px",
+            filter: "grayscale(1) sepia(0.55) brightness(0.95) contrast(1)",
+          }}
+        />
+        {/* Navy wash to keep text readable on top of the pattern */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0F2A44]/85 via-[#0F2A44]/75 to-[#0F2A44]/90 pointer-events-none" />
+        {/* Gold seams */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/40 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/30 to-transparent" />
+
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
