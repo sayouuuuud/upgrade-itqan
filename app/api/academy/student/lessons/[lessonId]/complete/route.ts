@@ -56,7 +56,7 @@ export async function POST(
     )
 
     // 4) Update enrollment progress percentage based on completed lessons
-    await query(
+    const progressResult = await query<{ pct: number }>(
       `UPDATE enrollments e
        SET progress_percentage = sub.pct,
            last_accessed_at = NOW(),
@@ -75,11 +75,50 @@ export async function POST(
            ON lp.lesson_id = l.id AND lp.enrollment_id = $1
          WHERE l.course_id = $2
        ) sub
-       WHERE e.id = $1`,
+       WHERE e.id = $1
+       RETURNING sub.pct`,
       [enrollmentId, courseId],
     )
 
-    return NextResponse.json({ success: true, message: "تم تحديد الدرس كمكتمل" })
+    // 5) Auto-issue certificate when course is 100% complete
+    const newProgress = progressResult[0]?.pct || 0
+    if (newProgress >= 100) {
+      // Check if certificate already exists
+      const existingCert = await query<{ id: string }>(
+        `SELECT id FROM academy_certificates WHERE student_id = $1 AND course_id = $2`,
+        [session.sub, courseId]
+      )
+
+      if (existingCert.length === 0) {
+        // Issue new certificate
+        await query(
+          `INSERT INTO academy_certificates (student_id, course_id, issued_at, certificate_number)
+           VALUES ($1, $2, NOW(), $3)
+           ON CONFLICT DO NOTHING`,
+          [session.sub, courseId, `CERT-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`]
+        )
+
+        // Create notification for the student
+        await query(
+          `INSERT INTO notifications (user_id, title, message, type, link, created_at)
+           VALUES ($1, $2, $3, $4, $5, NOW())`,
+          [
+            session.sub,
+            'تهانينا! حصلت على شهادة جديدة',
+            'لقد أكملت الدورة بنجاح وحصلت على شهادة إتمام. يمكنك تنزيلها من صفحة الشهادات.',
+            'certificate',
+            '/academy/student/certificates'
+          ]
+        ).catch(() => {}) // Ignore if notifications table doesn't exist
+      }
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      message: "تم تحديد الدرس كمكتمل",
+      courseCompleted: newProgress >= 100,
+      progress: newProgress
+    })
   } catch (error) {
     console.error("[API] Error completing lesson:", error)
     return NextResponse.json(

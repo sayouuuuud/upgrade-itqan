@@ -45,6 +45,9 @@
   --gold-light: #E8D9A8;
   --emerald-deep: #0D5A3C;
   --emerald-light: #E8F5EE;
+  --academy-primary: #1E3A5F;
+  --academy-primary-light: #2A4A73;
+  --academy-primary-dark: #152C4A;
 }
 
 .dark {
@@ -88,6 +91,9 @@
   --gold-light: #E8D9A8;
   --emerald-deep: #0D5A3C;
   --emerald-light: #1A3D2E;
+  --academy-primary: #3B6BA5;
+  --academy-primary-light: #4A7AB8;
+  --academy-primary-dark: #2C5A8F;
 }
 
 @theme inline {
@@ -420,6 +426,42 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* === Academy Theme (For Academy/Akadimiat Pages) === */
+.theme-academy {
+  --primary: #1E3A5F;
+  --primary-foreground: #FFFFFF;
+  --ring: #1E3A5F;
+  --sidebar-primary: #1E3A5F;
+  --sidebar-accent: #E8EEF4;
+  --sidebar-accent-foreground: #1E3A5F;
+  --sidebar-ring: #1E3A5F;
+}
+
+.dark .theme-academy,
+.theme-academy.dark,
+.theme-academy .dark {
+  --primary: #3B6BA5;
+  --primary-foreground: #FFFFFF;
+  --ring: #3B6BA5;
+  --sidebar-primary: #3B6BA5;
+  --sidebar-accent: #1A2D42;
+  --sidebar-accent-foreground: #3B6BA5;
+  --sidebar-ring: #3B6BA5;
+}
+
+/* Academy color utilities */
+.text-academy {
+  color: var(--academy-primary);
+}
+
+.bg-academy {
+  background-color: var(--academy-primary);
+}
+
+.border-academy {
+  border-color: var(--academy-primary);
 }
 
 /* === Islamic Royale Theme (For Admin, Student, Reader Dashboards) === */
