@@ -293,37 +293,35 @@ export default function Home() {
       {/* ============ HERO ============ */}
       <section ref={heroRef} className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          {/* Ottoman carpet pattern — medium visibility */}
+          {/* Ottoman carpet pattern — subtle, woven texture */}
           <div
-            className="absolute inset-0 bg-repeat opacity-[0.32] dark:opacity-[0.28]"
+            className="absolute inset-0 bg-repeat opacity-[0.10] dark:opacity-[0.18]"
             style={{
               backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
-              backgroundSize: "520px",
+              backgroundSize: "440px",
             }}
           />
-          {/* Warm parchment / dark wash — keeps text readable */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#F7F2E9]/65 via-[#F7F2E9]/55 to-[#F7F2E9] dark:from-[#0B1217]/72 dark:via-[#0B1217]/62 dark:to-[#0B1217]" />
-          {/* Soft halo right behind the headline so the type punches out */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[60vh] rounded-[50%] blur-[120px] bg-[#F7F2E9]/60 dark:bg-[#0B1217]/55" />
-          {/* Warm gold accent glow */}
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[50vw] h-[50vw] rounded-full blur-[140px] bg-[#B08D57]/18 dark:bg-[#C9A962]/12" />
+          {/* Soft parchment / dark wash so text stays readable */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F7F2E9]/85 via-[#F7F2E9]/70 to-[#F7F2E9] dark:from-[#0B1217]/85 dark:via-[#0B1217]/75 dark:to-[#0B1217]" />
+          {/* Warm radial glow behind the headline */}
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60vw] h-[60vw] rounded-full blur-[140px] bg-[#B08D57]/15 dark:bg-[#C9A962]/10" />
 
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
-            className="absolute top-32 -right-20 text-[#0F2A44]/15 dark:text-[#C9A962]/20"
+            className="absolute top-32 -right-20 text-[#0F2A44]/10 dark:text-[#C9A962]/15"
           >
             <EightStar size={400} strokeWidth={0.4} />
           </motion.div>
           <motion.div
             animate={{ rotate: -360 }}
             transition={{ duration: 110, repeat: Infinity, ease: "linear" }}
-            className="absolute bottom-20 -left-20 text-[#1B4332]/15 dark:text-[#C9A962]/15"
+            className="absolute bottom-20 -left-20 text-[#1B4332]/10 dark:text-[#C9A962]/10"
           >
             <EightStar size={340} strokeWidth={0.4} />
           </motion.div>
-          <ArabesqueCorner size={180} className="absolute top-24 right-0 text-[#B08D57]/40 dark:text-[#C9A962]/40" />
-          <ArabesqueCorner size={180} className="absolute bottom-10 left-0 text-[#B08D57]/40 dark:text-[#C9A962]/40 rotate-180" />
+          <ArabesqueCorner size={180} className="absolute top-24 right-0 text-[#B08D57]/30 dark:text-[#C9A962]/30" />
+          <ArabesqueCorner size={180} className="absolute bottom-10 left-0 text-[#B08D57]/30 dark:text-[#C9A962]/30 rotate-180" />
         </div>
 
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-6 relative z-10">
@@ -767,19 +765,17 @@ export default function Home() {
 
       {/* ============ FOOTER ============ */}
       <footer className="relative bg-[#0a1f33] text-[#F7F2E9]/85 pt-20 pb-10 overflow-hidden">
-        {/* Ottoman carpet — medium visibility woven texture */}
+        {/* Ottoman carpet — woven texture beneath the dark wash */}
         <div
-          className="absolute inset-0 bg-repeat opacity-[0.35] pointer-events-none"
+          className="absolute inset-0 bg-repeat opacity-[0.18] mix-blend-overlay pointer-events-none"
           style={{
             backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
-            backgroundSize: "520px",
+            backgroundSize: "440px",
           }}
         />
-        {/* Dark navy wash — preserves contrast for the text content */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1f33]/70 via-[#0a1f33]/60 to-[#0a1f33]/80 pointer-events-none" />
-        {/* Top + bottom gold seams */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/60 to-transparent" />
-        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1f33] via-[#0a1f33]/92 to-[#0a1f33] pointer-events-none" />
+        {/* Top thin gold seam */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/40 to-transparent" />
 
         <div className="container mx-auto px-6 relative">
           <div className="grid lg:grid-cols-12 gap-10 pb-12 border-b border-[#F7F2E9]/10">
