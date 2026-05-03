@@ -375,26 +375,16 @@ html {
 }
 
 /* Marquee — seamless infinite horizontal loop.
-   The container should hold a doubled list ([...items, ...items]),
-   so animating from 0 → -50% lands exactly on the second copy. */
-@keyframes marquee-left {
+   The container holds a doubled list ([...items, ...items]),
+   so animating 0% → -50% lands exactly on the second copy. */
+@keyframes itqan-marquee-left {
   from { transform: translate3d(0, 0, 0); }
   to   { transform: translate3d(-50%, 0, 0); }
 }
 
-@keyframes marquee-right {
+@keyframes itqan-marquee-right {
   from { transform: translate3d(-50%, 0, 0); }
   to   { transform: translate3d(0, 0, 0); }
-}
-
-.animate-marquee-left {
-  animation: marquee-left var(--marquee-duration, 60s) linear infinite;
-  will-change: transform;
-}
-
-.animate-marquee-right {
-  animation: marquee-right var(--marquee-duration, 60s) linear infinite;
-  will-change: transform;
 }
 
 /* Pause on hover for accessibility */
