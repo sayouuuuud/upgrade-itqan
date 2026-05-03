@@ -174,13 +174,17 @@ function MarqueeRow({
 }) {
   // Duplicate items so -50% translation lands exactly on the second copy → seamless loop.
   const doubled = [...items, ...items]
+  const keyframes = direction === "right" ? "itqan-marquee-right" : "itqan-marquee-left"
   return (
     <div className="overflow-hidden" dir="ltr">
       <div
-        className={`marquee-track flex w-max ${
-          direction === "right" ? "itqan-marquee-right" : "itqan-marquee-left"
-        }`}
-        style={{ ["--itqan-marquee-duration" as string]: `${duration}s` }}
+        className="marquee-track flex w-max"
+        style={{
+          animationName: keyframes,
+          animationDuration: `${duration}s`,
+          animationTimingFunction: "linear",
+          animationIterationCount: "infinite",
+        }}
       >
         {doubled.map((t, i) => (
           <TestimonialCard key={i} {...t} />

@@ -376,7 +376,9 @@ html {
 
 /* Marquee — seamless infinite horizontal loop.
    The container holds a doubled list ([...items, ...items]),
-   so animating 0% → -50% lands exactly on the second copy. */
+   so animating 0% → -50% lands exactly on the second copy.
+   The actual animation is applied via React inline style on the element,
+   so we only need to declare the @keyframes here. */
 @keyframes itqan-marquee-left {
   0%   { transform: translate3d(0, 0, 0); }
   100% { transform: translate3d(-50%, 0, 0); }
@@ -387,19 +389,7 @@ html {
   100% { transform: translate3d(0, 0, 0); }
 }
 
-.itqan-marquee-left {
-  animation-name: itqan-marquee-left;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-duration: var(--itqan-marquee-duration, 60s);
-  will-change: transform;
-}
-
-.itqan-marquee-right {
-  animation-name: itqan-marquee-right;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-duration: var(--itqan-marquee-duration, 60s);
+.marquee-track {
   will-change: transform;
 }
 
