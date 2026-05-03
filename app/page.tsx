@@ -89,25 +89,31 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-primary-foreground" />
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#1E3A5F] to-primary flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-white" />
               </div>
               <div>
                 <span className="text-xl font-bold text-foreground">إتقان</span>
-                <span className="block text-[10px] text-muted-foreground -mt-1">حلقة القرآن</span>
+                <span className="block text-[10px] text-muted-foreground -mt-1">الأكاديمية والمقرأة</span>
               </div>
             </Link>
 
             <nav className="hidden md:flex items-center gap-8">
-              {["المميزات", "الأقسام", "آراء الطلاب"].map((label) => (
-                <Link
-                  key={label}
-                  href={`#${label}`}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {label}
-                </Link>
-              ))}
+              <Link href="#sections" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                الأقسام
+              </Link>
+              <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                المميزات
+              </Link>
+              <Link href="#testimonials" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                آراء الطلاب
+              </Link>
+              <Link href="/academy/student" className="text-sm text-[#1E3A5F] font-medium hover:text-[#1E3A5F]/80 transition-colors">
+                الأكاديمية
+              </Link>
+              <Link href="/student" className="text-sm text-primary font-medium hover:text-primary/80 transition-colors">
+                المقرأة
+              </Link>
             </nav>
 
             <div className="flex items-center gap-3">
@@ -144,21 +150,24 @@ export default function HomePage() {
             className="md:hidden bg-background border-t border-border"
           >
             <div className="container mx-auto px-4 py-4 space-y-2">
-              {["المميزات", "الأقسام", "آراء الطلاب"].map((label) => (
-                <Link
-                  key={label}
-                  href={`#${label}`}
-                  className="block py-2 text-muted-foreground hover:text-foreground"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {label}
+              <Link href="#sections" className="block py-2 text-muted-foreground hover:text-foreground" onClick={() => setIsMenuOpen(false)}>
+                الأقسام
+              </Link>
+              <Link href="#features" className="block py-2 text-muted-foreground hover:text-foreground" onClick={() => setIsMenuOpen(false)}>
+                المميزات
+              </Link>
+              <Link href="#testimonials" className="block py-2 text-muted-foreground hover:text-foreground" onClick={() => setIsMenuOpen(false)}>
+                آراء الطلاب
+              </Link>
+              <div className="border-t border-border pt-3 mt-3 space-y-2">
+                <Link href="/academy/student" className="block py-2 text-[#1E3A5F] font-medium" onClick={() => setIsMenuOpen(false)}>
+                  دخول الأكاديمية
                 </Link>
-              ))}
-              <Link
-                href="/login"
-                className="block py-2 text-primary font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
+                <Link href="/student" className="block py-2 text-primary font-medium" onClick={() => setIsMenuOpen(false)}>
+                  دخول المقرأة
+                </Link>
+              </div>
+              <Link href="/login" className="block py-2 text-muted-foreground hover:text-foreground" onClick={() => setIsMenuOpen(false)}>
                 تسجيل الدخول
               </Link>
             </div>
@@ -191,31 +200,47 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto text-center">
             {/* Badge */}
             <FadeIn delay={0}>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
-                <Star className="w-4 h-4 text-accent fill-accent" />
-                <span className="text-sm text-primary font-medium">منصة قرآنية متكاملة</span>
+              <div className="inline-flex items-center gap-4 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#1E3A5F]/10 to-primary/10 border border-[#1E3A5F]/20 mb-8">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4 text-[#1E3A5F]" />
+                  <span className="text-sm text-[#1E3A5F] font-medium">الأكاديمية</span>
+                </div>
+                <div className="w-px h-4 bg-border" />
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-primary font-medium">المقرأة</span>
+                </div>
               </div>
             </FadeIn>
 
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
               <BlurText
-                text="رحلتك نحو إتقان"
+                text="منصة إتقان"
                 className="text-foreground"
                 delay={80}
               />
-              <BlurText
-                text="القرآن الكريم"
-                className="text-primary mt-2"
-                delay={80}
-                direction="bottom"
-              />
+              <div className="flex items-center justify-center gap-3 mt-2">
+                <BlurText
+                  text="الأكاديمية"
+                  className="text-[#1E3A5F]"
+                  delay={80}
+                  direction="bottom"
+                />
+                <span className="text-muted-foreground text-3xl sm:text-4xl md:text-5xl">و</span>
+                <BlurText
+                  text="المقرأة"
+                  className="text-primary"
+                  delay={80}
+                  direction="bottom"
+                />
+              </div>
             </h1>
 
             {/* Description */}
             <FadeIn delay={0.4}>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-                منصة تعليمية شاملة تجمع بين الأكاديمية القرآنية المتخصصة وحلقة القرآن الصوتية، لنرافقك في رحلة الحفظ والتلاوة والتجويد
+                منصة تعليمية متكاملة تجمع بين <span className="text-[#1E3A5F] font-medium">الأكاديمية القرآنية</span> للدورات والشهادات و<span className="text-primary font-medium">المقرأة الإلكترونية</span> للحفظ والتسميع
               </p>
             </FadeIn>
 
@@ -224,19 +249,29 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Magnet padding={40} magnetStrength={3}>
                   <Link
-                    href="/register"
-                    className="group flex items-center gap-2 h-14 px-8 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25"
+                    href="/academy/student"
+                    className="group flex items-center gap-2 h-14 px-8 bg-[#1E3A5F] text-white rounded-xl font-medium hover:bg-[#1E3A5F]/90 transition-all shadow-lg shadow-[#1E3A5F]/25"
                   >
-                    <span>ابدأ رحلتك مجاناً</span>
+                    <GraduationCap className="w-5 h-5" />
+                    <span>دخول الأكاديمية</span>
                     <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                   </Link>
                 </Magnet>
                 <Link
-                  href="#sections"
-                  className="flex items-center gap-2 h-14 px-8 bg-secondary text-secondary-foreground rounded-xl font-medium hover:bg-secondary/80 transition-colors"
+                  href="/student"
+                  className="group flex items-center gap-2 h-14 px-8 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25"
                 >
-                  <Play className="w-5 h-5" />
-                  <span>استكشف المنصة</span>
+                  <BookOpen className="w-5 h-5" />
+                  <span>دخول المقرأة</span>
+                  <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                </Link>
+              </div>
+              <div className="mt-4">
+                <Link
+                  href="/register"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+                >
+                  ليس لديك حساب؟ سجل الآن مجاناً
                 </Link>
               </div>
             </FadeIn>
@@ -274,15 +309,19 @@ export default function HomePage() {
       </motion.section>
 
       {/* Main Sections */}
-      <section id="sections" className="py-24 md:py-32 bg-secondary/30">
+      <section id="sections" className="py-24 md:py-32 bg-gradient-to-b from-background to-secondary/30">
         <div className="container mx-auto px-4">
           <FadeIn>
             <div className="text-center max-w-2xl mx-auto mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted border border-border mb-6">
+                <Sparkles className="w-4 h-4 text-accent" />
+                <span className="text-sm font-medium">منصتان في مكان واحد</span>
+              </div>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                اختر وجهتك
+                اختر وجهتك التعليمية
               </h2>
               <p className="text-muted-foreground text-lg">
-                منصة واحدة بوجهتين، اختر ما يناسب احتياجاتك
+                الأكاديمية للدورات والشهادات، والمقرأة للحفظ والتسميع مع المقرئين
               </p>
             </div>
           </FadeIn>
@@ -290,12 +329,15 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             {/* Academy Card */}
             <FadeIn delay={0.1} direction="right">
-              <Spotlight className="h-full rounded-2xl" spotlightColor="rgba(13, 90, 60, 0.1)">
+              <Spotlight className="h-full rounded-2xl" spotlightColor="rgba(30, 58, 95, 0.15)">
                 <Link href="/academy/student" className="block h-full">
-                  <div className="relative h-full min-h-[400px] p-8 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden group">
+                  <div className="relative h-full min-h-[420px] p-8 rounded-2xl bg-gradient-to-br from-[#1E3A5F] to-[#2A4A73] text-white overflow-hidden group">
                     {/* Decorative */}
                     <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-br-[80px]" />
                     <div className="absolute bottom-0 right-0 w-48 h-48 bg-black/10 rounded-tl-[100px]" />
+                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/20 text-xs font-medium">
+                      الأكاديمية
+                    </div>
 
                     <div className="relative z-10">
                       <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -303,21 +345,21 @@ export default function HomePage() {
                       </div>
 
                       <h3 className="text-2xl md:text-3xl font-bold mb-3">الأكاديمية القرآنية</h3>
-                      <p className="text-primary-foreground/80 mb-6 leading-relaxed">
-                        تعلم القرآن الكريم مع معلمين متخصصين، احفظ وأتقن التجويد واحصل على إجازات معتمدة
+                      <p className="text-white/80 mb-6 leading-relaxed">
+                        دورات متخصصة في علوم القرآن والتجويد والفقه مع شهادات معتمدة ومتابعة من الأساتذة
                       </p>
 
                       <ul className="space-y-3 mb-8">
-                        {["حلقات حفظ تفاعلية", "متابعة يومية مكثفة", "مسارات تعليمية متدرجة", "شهادات وإجازات"].map((item, i) => (
-                          <li key={i} className="flex items-center gap-3 text-primary-foreground/90">
-                            <div className="w-2 h-2 rounded-full bg-accent" />
+                        {["دورات في التجويد والقراءات", "شهادات وإجازات معتمدة", "فصول دراسية افتراضية", "متابعة مستمرة من الأساتذة"].map((item, i) => (
+                          <li key={i} className="flex items-center gap-3 text-white/90">
+                            <CheckCircle2 className="w-4 h-4 text-accent" />
                             <span>{item}</span>
                           </li>
                         ))}
                       </ul>
 
-                      <div className="flex items-center gap-2 text-primary-foreground/90 group-hover:gap-4 transition-all">
-                        <span className="font-medium">انضم للأكاديمية</span>
+                      <div className="flex items-center gap-2 text-white/90 group-hover:gap-4 transition-all">
+                        <span className="font-medium">دخول الأكاديمية</span>
                         <ArrowLeft className="w-5 h-5" />
                       </div>
                     </div>
@@ -326,36 +368,39 @@ export default function HomePage() {
               </Spotlight>
             </FadeIn>
 
-            {/* Halqa Card */}
+            {/* Maqra'a Card */}
             <FadeIn delay={0.2} direction="left">
-              <Spotlight className="h-full rounded-2xl" spotlightColor="rgba(201, 169, 98, 0.1)">
+              <Spotlight className="h-full rounded-2xl" spotlightColor="rgba(13, 90, 60, 0.15)">
                 <Link href="/student" className="block h-full">
-                  <div className="relative h-full min-h-[400px] p-8 rounded-2xl bg-gradient-to-br from-accent to-accent/80 text-accent-foreground overflow-hidden group">
+                  <div className="relative h-full min-h-[420px] p-8 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden group">
                     {/* Decorative */}
                     <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-br-[80px]" />
                     <div className="absolute bottom-0 right-0 w-48 h-48 bg-black/10 rounded-tl-[100px]" />
+                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/20 text-xs font-medium">
+                      المقرأة
+                    </div>
 
                     <div className="relative z-10">
                       <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <Headphones className="w-8 h-8" />
+                        <BookOpen className="w-8 h-8" />
                       </div>
 
-                      <h3 className="text-2xl md:text-3xl font-bold mb-3">حلقة القرآن</h3>
-                      <p className="text-accent-foreground/80 mb-6 leading-relaxed">
-                        استمع إلى أجمل التلاوات القرآنية من كبار القراء حول العالم بجودة صوت استثنائية
+                      <h3 className="text-2xl md:text-3xl font-bold mb-3">المقرأة الإلكترونية</h3>
+                      <p className="text-primary-foreground/80 mb-6 leading-relaxed">
+                        حلقات تسميع مباشرة مع مقرئين معتمدين، سجل تلاوتك واحصل على تقييم فوري
                       </p>
 
                       <ul className="space-y-3 mb-8">
-                        {["تلاوات بجودة عالية", "قراء من حول العالم", "قوائم تشغيل مخصصة", "استماع بدون انترنت"].map((item, i) => (
-                          <li key={i} className="flex items-center gap-3 text-accent-foreground/90">
-                            <div className="w-2 h-2 rounded-full bg-primary" />
+                        {["حلقات تسميع مباشرة", "مقرئون معتمدون", "تقييم وتصحيح فوري", "متابعة تقدم الحفظ"].map((item, i) => (
+                          <li key={i} className="flex items-center gap-3 text-primary-foreground/90">
+                            <CheckCircle2 className="w-4 h-4 text-accent" />
                             <span>{item}</span>
                           </li>
                         ))}
                       </ul>
 
-                      <div className="flex items-center gap-2 text-accent-foreground/90 group-hover:gap-4 transition-all">
-                        <span className="font-medium">استكشف التلاوات</span>
+                      <div className="flex items-center gap-2 text-primary-foreground/90 group-hover:gap-4 transition-all">
+                        <span className="font-medium">دخول المقرأة</span>
                         <ArrowLeft className="w-5 h-5" />
                       </div>
                     </div>
@@ -760,7 +805,7 @@ export default function HomePage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 md:py-32">
+      <section id="faq" className="py-24 md:py-32">
         <div className="container mx-auto px-4">
           <FadeIn>
             <div className="text-center max-w-2xl mx-auto mb-16">
@@ -775,10 +820,10 @@ export default function HomePage() {
 
           <div className="max-w-3xl mx-auto space-y-4">
             {[
-              { q: "هل المنصة مجانية؟", a: "نعم، التسجيل والاستماع للتلاوات مجاني. الأكاديمية لها اشتراك شهري بسيط يشمل الحلقات التفاعلية والمتابعة الشخصية." },
-              { q: "من هم المعلمون في إتقان؟", a: "جميع معلمينا حاصلون على إجازات في القرآن الكريم بالسند المتصل، ولديهم خبرة لا تقل عن 5 سنوات في التدريس." },
-              { q: "كيف تتم الحلقات التعليمية؟", a: "تتم الحلقات عبر الفيديو المباشر في مجموعات صغيرة (3-5 طلاب) أو بشكل فردي حسب اختيارك." },
-              { q: "هل يمكنني الحصول على إجازة؟", a: "نعم، عند إتمام حفظ القرآن الكريم وإتقان التجويد، يمكنك الحصول على إجازة بالسند المتصل من معلمينا المجازين." },
+              { q: "ما الفرق بين الأكاديمية والمقرأة؟", a: "الأكاديمية تقدم دورات منظمة في علوم القرآن والتجويد والفقه مع شهادات معتمدة. المقرأة للحفظ والتسميع المباشر مع مقرئين معتمدين." },
+              { q: "هل المنصة مجانية؟", a: "نعم، التسجيل مجاني. الأكاديمية لها اشتراك شهري يشمل الدورات والمتابعة، والمقرأة لها باقات حسب عدد الجلسات." },
+              { q: "من هم المعلمون والمقرئون؟", a: "جميع معلمينا ومقرئينا حاصلون على إجازات في القرآن الكريم بالسند المتصل، ولديهم خبرة لا تقل عن 5 سنوات." },
+              { q: "هل يمكنني الحصول على إجازة؟", a: "نعم، عند إتمام حفظ القرآن الكريم وإتقان التجويد في المقرأة أو إكمال مسار الإجازة في الأكاديمية." },
             ].map((faq, i) => (
               <FadeIn key={i} delay={i * 0.1}>
                 <motion.div
@@ -804,16 +849,16 @@ export default function HomePage() {
             {/* Brand Column */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-primary-foreground" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1E3A5F] to-primary flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <span className="text-2xl font-bold text-foreground">إتقان</span>
-                  <span className="block text-xs text-muted-foreground">حلقة القرآن والأكاديمية</span>
+                  <span className="block text-xs text-muted-foreground">الأكاديمية والمقرأة</span>
                 </div>
               </div>
               <p className="text-muted-foreground leading-relaxed mb-6 max-w-sm">
-                منصة قرآنية متكاملة تجمع بين حلقة القرآن للاستماع والأكاديمية للتعلم والحفظ مع أفضل المعلمين حول العالم.
+                منصة تعليمية متكاملة تجمع بين الأكاديمية القرآنية للدورات والشهادات والمقرأة الإلكترونية للحفظ والتسميع.
               </p>
               {/* Social Links */}
               <div className="flex gap-3">
@@ -834,34 +879,37 @@ export default function HomePage() {
             {[
               {
                 title: "الأكاديمية",
+                color: "text-[#1E3A5F]",
                 links: [
+                  { label: "لوحة التحكم", href: "/academy/student" },
                   { label: "الدورات", href: "/academy/student/courses" },
-                  { label: "المعلمون", href: "/academy/admin/teachers" },
-                  { label: "المسارات التعليمية", href: "/academy/student/path" },
-                  { label: "الشهادات", href: "#" },
+                  { label: "المسار التعليمي", href: "/academy/student/path" },
+                  { label: "الشهادات", href: "/academy/student/certificates" },
                 ]
               },
               {
-                title: "حلقة القرآن",
+                title: "المقرأة",
+                color: "text-primary",
                 links: [
-                  { label: "التلاوات", href: "/student" },
-                  { label: "القراء", href: "/student" },
-                  { label: "القوائم", href: "/student" },
-                  { label: "المفضلة", href: "/student" },
+                  { label: "لوحة التحكم", href: "/student" },
+                  { label: "التسميعات", href: "/student/recitations" },
+                  { label: "حجز موعد", href: "/student/booking" },
+                  { label: "التقدم", href: "/student/progress" },
                 ]
               },
               {
                 title: "الدعم",
+                color: "text-foreground",
                 links: [
                   { label: "مركز المساعدة", href: "/contact" },
                   { label: "تواصل معنا", href: "/contact" },
-                  { label: "الأسئلة الشائعة", href: "#" },
+                  { label: "الأسئلة الشائعة", href: "#faq" },
                   { label: "سياسة الخصوصية", href: "/privacy" },
                 ]
               },
             ].map((section, i) => (
               <div key={i}>
-                <h4 className="font-semibold text-foreground mb-4">{section.title}</h4>
+                <h4 className={`font-semibold mb-4 ${section.color}`}>{section.title}</h4>
                 <ul className="space-y-3">
                   {section.links.map((link, j) => (
                     <li key={j}>
