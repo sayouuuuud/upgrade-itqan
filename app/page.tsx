@@ -1,75 +1,341 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { motion, useScroll, useTransform } from "framer-motion"
 import {
-  BookOpen, GraduationCap, Users, Play, Mic2, Award,
-  Moon, Sun, Star, Trophy, Heart, ArrowLeft, Menu, X, Headphones, Video,
-  CheckCircle2, Sparkles, Clock, Globe, Shield, Zap, MessageCircle
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+  useInView,
+} from "framer-motion"
+import {
+  BookOpen,
+  GraduationCap,
+  Users,
+  Mic2,
+  Award,
+  Moon,
+  Sun,
+  Star,
+  Trophy,
+  Heart,
+  ArrowLeft,
+  Menu,
+  X,
+  Headphones,
+  CheckCircle2,
+  Sparkles,
+  Globe,
+  Shield,
+  Zap,
+  MessageCircle,
+  ChevronDown,
+  Volume2,
+  FileBadge,
+  Target,
+  Compass,
+  ArrowRight,
+  Quote,
+  Play,
 } from "lucide-react"
-import { IslamicPattern } from "@/components/ui/islamic-pattern"
-import { BlurText } from "@/components/ui/blur-text"
-import { FadeIn } from "@/components/ui/fade-in"
-import { AnimatedCounter } from "@/components/ui/animated-counter"
-import { Spotlight } from "@/components/ui/spotlight"
-import { Magnet } from "@/components/ui/magnet"
 
-// Stats data
+/* ============================================================
+ * ALIASES — Use Tailwind's primary (#0D5A3C maqra'a) and
+ * the academy navy (#1E3A5F) consistently across the page.
+ * ============================================================ */
+const ACADEMY = "#1E3A5F"
+const ACADEMY_LIGHT = "#2A4A73"
+const MAQRA = "#0D5A3C"
+const GOLD = "#C9A962"
+
+/* ============================================================
+ * Custom hook: tracks mouse position for cursor-follow effects
+ * ============================================================ */
+function useMousePosition() {
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const smoothX = useSpring(x, { stiffness: 100, damping: 20 })
+  const smoothY = useSpring(y, { stiffness: 100, damping: 20 })
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      x.set(e.clientX)
+      y.set(e.clientY)
+    }
+    window.addEventListener("mousemove", handler)
+    return () => window.removeEventListener("mousemove", handler)
+  }, [x, y])
+
+  return { x: smoothX, y: smoothY }
+}
+
+/* ============================================================
+ * Animated counter — counts from 0 to target while in view
+ * ============================================================ */
+function CountUp({ to, suffix = "", duration = 2 }: { to: number; suffix?: string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const inView = useInView(ref, { once: true, margin: "-50px" })
+  const [val, setVal] = useState(0)
+
+  useEffect(() => {
+    if (!inView) return
+    const start = performance.now()
+    let raf = 0
+    const step = (t: number) => {
+      const p = Math.min((t - start) / (duration * 1000), 1)
+      const eased = 1 - Math.pow(1 - p, 3)
+      setVal(Math.floor(eased * to))
+      if (p < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [inView, to, duration])
+
+  return (
+    <span ref={ref}>
+      {val.toLocaleString("ar-EG")}
+      {suffix}
+    </span>
+  )
+}
+
+/* ============================================================
+ * Tilt card — 3D tilt effect on hover
+ * ============================================================ */
+function TiltCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const rotX = useTransform(y, [-0.5, 0.5], [8, -8])
+  const rotY = useTransform(x, [-0.5, 0.5], [-8, 8])
+  const sRotX = useSpring(rotX, { stiffness: 200, damping: 25 })
+  const sRotY = useSpring(rotY, { stiffness: 200, damping: 25 })
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={(e) => {
+        const rect = ref.current?.getBoundingClientRect()
+        if (!rect) return
+        x.set((e.clientX - rect.left) / rect.width - 0.5)
+        y.set((e.clientY - rect.top) / rect.height - 0.5)
+      }}
+      onMouseLeave={() => {
+        x.set(0)
+        y.set(0)
+      }}
+      style={{
+        rotateX: sRotX,
+        rotateY: sRotY,
+        transformStyle: "preserve-3d",
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+/* ============================================================
+ * Decorative — Floating 8-pointed Islamic star SVG
+ * ============================================================ */
+function IslamicStar({
+  size = 80,
+  className = "",
+  duration = 20,
+  delay = 0,
+}: {
+  size?: number
+  className?: string
+  duration?: number
+  delay?: number
+}) {
+  return (
+    <motion.svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      className={className}
+      animate={{ rotate: 360 }}
+      transition={{ duration, repeat: Infinity, ease: "linear", delay }}
+    >
+      <polygon
+        points="50,5 60,30 85,30 65,50 75,75 50,60 25,75 35,50 15,30 40,30"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="0.8"
+      />
+      <polygon
+        points="50,15 58,32 76,32 60,45 67,65 50,55 33,65 40,45 24,32 42,32"
+        fill="currentColor"
+        opacity="0.1"
+      />
+    </motion.svg>
+  )
+}
+
+/* ============================================================
+ * Decorative — Animated mesh gradient backdrop
+ * ============================================================ */
+function MeshBackdrop() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Academy blob */}
+      <motion.div
+        className="absolute top-[10%] right-[15%] w-[480px] h-[480px] rounded-full blur-[120px]"
+        style={{ background: `radial-gradient(circle, ${ACADEMY}40 0%, transparent 70%)` }}
+        animate={{
+          x: [0, 60, -40, 0],
+          y: [0, -30, 40, 0],
+          scale: [1, 1.15, 0.95, 1],
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      />
+      {/* Maqra blob */}
+      <motion.div
+        className="absolute bottom-[15%] left-[10%] w-[420px] h-[420px] rounded-full blur-[120px]"
+        style={{ background: `radial-gradient(circle, ${MAQRA}40 0%, transparent 70%)` }}
+        animate={{
+          x: [0, -40, 50, 0],
+          y: [0, 30, -20, 0],
+          scale: [1, 0.9, 1.1, 1],
+        }}
+        transition={{ duration: 16, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      />
+      {/* Gold accent blob */}
+      <motion.div
+        className="absolute top-1/2 left-1/2 w-[300px] h-[300px] rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2"
+        style={{ background: `radial-gradient(circle, ${GOLD}30 0%, transparent 70%)` }}
+        animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+      />
+      {/* Dot grid */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.04]">
+        <defs>
+          <pattern id="dotgrid" width="32" height="32" patternUnits="userSpaceOnUse">
+            <circle cx="16" cy="16" r="1" fill="currentColor" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#dotgrid)" />
+      </svg>
+    </div>
+  )
+}
+
+/* ============================================================
+ * Cursor glow — follows pointer (desktop only)
+ * ============================================================ */
+function CursorGlow() {
+  const { x, y } = useMousePosition()
+  return (
+    <motion.div
+      className="fixed top-0 left-0 w-[500px] h-[500px] rounded-full pointer-events-none z-0 hidden lg:block"
+      style={{
+        background: `radial-gradient(circle, ${MAQRA}15 0%, transparent 60%)`,
+        x: useTransform(x, (v) => v - 250),
+        y: useTransform(y, (v) => v - 250),
+      }}
+    />
+  )
+}
+
+/* ============================================================
+ * Marquee — infinite scrolling row
+ * ============================================================ */
+function Marquee({ children, reverse = false, speed = 40 }: { children: React.ReactNode; reverse?: boolean; speed?: number }) {
+  return (
+    <div className="overflow-hidden py-2 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+      <motion.div
+        className="flex gap-6 w-max"
+        animate={{ x: reverse ? ["-50%", "0%"] : ["0%", "-50%"] }}
+        transition={{ duration: speed, repeat: Infinity, ease: "linear" }}
+      >
+        {children}
+        {children}
+      </motion.div>
+    </div>
+  )
+}
+
+/* ============================================================
+ * DATA
+ * ============================================================ */
 const stats = [
-  { value: 15000, label: "طالب نشط", suffix: "+" },
-  { value: 500, label: "معلم متخصص", suffix: "+" },
-  { value: 1200, label: "ساعة تعليمية", suffix: "+" },
-  { value: 98, label: "نسبة الرضا", suffix: "%" },
+  { value: 15000, label: "طالب نشط", suffix: "+", icon: Users },
+  { value: 500, label: "معلم ومقرئ", suffix: "+", icon: GraduationCap },
+  { value: 1200, label: "ساعة تعليمية", suffix: "+", icon: Volume2 },
+  { value: 98, label: "نسبة الرضا", suffix: "%", icon: Heart },
 ]
 
-// Features data - expanded
 const features = [
-  { icon: BookOpen, title: "حفظ القرآن الكريم", description: "منهجية متدرجة لحفظ القرآن مع متابعة يومية من معلمين متخصصين", highlight: true },
-  { icon: Mic2, title: "تلاوات متميزة", description: "استمع لأجمل التلاوات من كبار القراء بجودة صوت عالية" },
-  { icon: Users, title: "حلقات تفاعلية", description: "انضم إلى حلقات مباشرة مع معلمين وطلاب من حول العالم" },
-  { icon: Award, title: "شهادات معتمدة", description: "احصل على إجازات وشهادات معتمدة في القرآن والقراءات", highlight: true },
-  { icon: Trophy, title: "مسابقات قرآنية", description: "شارك في تحديات ومسابقات لتحفيز رحلتك" },
-  { icon: Heart, title: "مجتمع داعم", description: "كن جزءاً من مجتمع قرآني داعم ومحفز" },
+  {
+    icon: BookOpen,
+    title: "حلقات الحفظ",
+    description: "حلقات منظمة لحفظ القرآن مع متابعة يومية وتسميع مستمر",
+    accent: MAQRA,
+    span: "lg:col-span-2",
+  },
+  {
+    icon: GraduationCap,
+    title: "دورات الأكاديمية",
+    description: "دورات في التجويد والقراءات والفقه",
+    accent: ACADEMY,
+    span: "",
+  },
+  {
+    icon: Award,
+    title: "إجازات معتمدة",
+    description: "احصل على الإجازة بالسند المتصل",
+    accent: GOLD,
+    span: "",
+  },
+  {
+    icon: Mic2,
+    title: "تسميع مباشر",
+    description: "جلسات تسميع لايف مع مقرئين معتمدين، مع تسجيل وتقييم فوري",
+    accent: MAQRA,
+    span: "lg:col-span-2",
+  },
 ]
 
-// Learning path steps
-const learningPath = [
-  { step: 1, title: "التسجيل", description: "أنشئ حسابك مجاناً في دقائق" },
-  { step: 2, title: "اختيار المسار", description: "حدد مستواك وأهدافك التعليمية" },
-  { step: 3, title: "التعلم", description: "ابدأ رحلتك مع معلم متخصص" },
-  { step: 4, title: "الإتقان", description: "احصل على الإجازة والشهادة" },
+const journey = [
+  { icon: Compass, title: "اختر مسارك", desc: "أكاديمية للدورات أو مقرأة للتسميع" },
+  { icon: Target, title: "حدد هدفك", desc: "تجويد، حفظ، إجازة، أو دورة متخصصة" },
+  { icon: Volume2, title: "ابدأ التعلم", desc: "حلقات مباشرة وتسجيلات وتقييم فوري" },
+  { icon: FileBadge, title: "احصد الشهادة", desc: "إجازات وشهادات معتمدة من أساتذة مجازين" },
 ]
 
-// Academy stats
-const academyStats = [
-  { label: "حافظ للقرآن", value: "2,500+" },
-  { label: "إجازة ممنوحة", value: "850+" },
-  { label: "دولة", value: "45+" },
-  { label: "ساعة تعليمية", value: "50,000+" },
-]
-
-// Testimonials data
 const testimonials = [
-  { quote: "منصة إتقان غيرت حياتي بالكامل، أصبحت أقرأ القرآن بطلاقة وأحفظ بسهولة", author: "أحمد محمد", role: "طالب" },
-  { quote: "التعليم هنا مختلف تماماً، المعلمون متميزون والمنهجية فعالة جداً", author: "فاطمة علي", role: "معلمة" },
-  { quote: "أفضل منصة قرآنية جربتها، أنصح كل الآباء بتسجيل أبنائهم فيها", author: "محمد الأحمد", role: "ولي أمر" },
+  { quote: "منصة إتقان غيرت رحلتي مع القرآن، أتممت حفظ خمسة أجزاء في 6 أشهر فقط", author: "أحمد محمد", role: "طالب — المقرأة" },
+  { quote: "أفضل أكاديمية قرآنية درست فيها، الأساتذة متمكنون والمنهج محكم", author: "فاطمة علي", role: "طالبة — الأكاديمية" },
+  { quote: "حصلت على إجازة برواية حفص بفضل الله ثم بفضل أساتذة المنصة", author: "محمد الأحمد", role: "خريج" },
+  { quote: "نظام التسميع المباشر فيه إتقان شيء عجيب، تجربة فريدة", author: "نور حسن", role: "طالبة — المقرأة" },
+  { quote: "ابني سجل في الأكاديمية وأرى تطوراً ملحوظاً كل أسبوع", author: "سارة الحربي", role: "ولية أمر" },
+  { quote: "المرونة في المواعيد ساعدتني كثيراً مع عملي ودراستي", author: "عبدالله سعد", role: "طالب" },
 ]
 
+/* ============================================================
+ * MAIN PAGE
+ * ============================================================ */
 export default function HomePage() {
   const [isDark, setIsDark] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const { scrollYProgress } = useScroll()
+  const heroRef = useRef<HTMLElement>(null)
 
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
-  const heroY = useTransform(scrollYProgress, [0, 0.2], [0, -50])
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] })
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 200])
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95])
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"))
-    const handleScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    const onScroll = () => setScrolled(window.scrollY > 30)
+    window.addEventListener("scroll", onScroll)
+    return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
   const toggleDark = () => {
@@ -78,62 +344,111 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground" dir="rtl">
-      {/* Header */}
-      <header
-        className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${scrolled
-          ? "bg-background/90 backdrop-blur-lg border-b border-border shadow-sm"
-          : "bg-transparent"
-          }`}
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden" dir="rtl">
+      <CursorGlow />
+
+      {/* ============================================================ */}
+      {/* HEADER                                                         */}
+      {/* ============================================================ */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className={`fixed top-0 right-0 left-0 z-50 transition-all duration-500 ${
+          scrolled
+            ? "bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm"
+            : "bg-transparent"
+        }`}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#1E3A5F] to-primary flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-3 group">
+              <motion.div
+                whileHover={{ rotate: [0, -8, 8, 0] }}
+                transition={{ duration: 0.5 }}
+                className="relative w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center"
+                style={{
+                  background: `linear-gradient(135deg, ${ACADEMY} 0%, ${MAQRA} 100%)`,
+                }}
+              >
+                <BookOpen className="w-5 h-5 text-white relative z-10" />
+                <motion.div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100"
+                  style={{
+                    background: `linear-gradient(135deg, ${MAQRA} 0%, ${ACADEMY} 100%)`,
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.div>
               <div>
-                <span className="text-xl font-bold text-foreground">إتقان</span>
-                <span className="block text-[10px] text-muted-foreground -mt-1">الأكاديمية والمقرأة</span>
+                <span className="text-xl font-bold text-foreground tracking-tight">إتقان</span>
+                <span className="block text-[10px] text-muted-foreground -mt-0.5">
+                  الأكاديمية والمقرأة
+                </span>
               </div>
             </Link>
 
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="#sections" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                الأقسام
-              </Link>
-              <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                المميزات
-              </Link>
-              <Link href="#testimonials" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                آراء الطلاب
-              </Link>
-              <Link href="/academy/student" className="text-sm text-[#1E3A5F] font-medium hover:text-[#1E3A5F]/80 transition-colors">
-                الأكاديمية
-              </Link>
-              <Link href="/student" className="text-sm text-primary font-medium hover:text-primary/80 transition-colors">
-                المقرأة
-              </Link>
+            {/* Nav */}
+            <nav className="hidden lg:flex items-center gap-1">
+              {[
+                { href: "#sections", label: "الأقسام" },
+                { href: "#features", label: "المميزات" },
+                { href: "#journey", label: "رحلتك" },
+                { href: "#testimonials", label: "آراء الطلاب" },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="relative px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+                >
+                  {item.label}
+                  <span className="absolute bottom-1 right-1/2 translate-x-1/2 w-0 group-hover:w-6 h-px bg-foreground transition-all duration-300" />
+                </Link>
+              ))}
             </nav>
 
-            <div className="flex items-center gap-3">
+            {/* Right side */}
+            <div className="flex items-center gap-2">
               <button
                 onClick={toggleDark}
-                className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
+                aria-label="تبديل المظهر"
+                className="w-10 h-10 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center justify-center transition-colors"
               >
-                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={isDark ? "sun" : "moon"}
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  </motion.div>
+                </AnimatePresence>
               </button>
 
               <Link
                 href="/login"
-                className="hidden sm:flex h-10 px-5 bg-primary text-primary-foreground rounded-lg items-center justify-center text-sm font-medium hover:bg-primary/90 transition-colors"
+                className="hidden sm:inline-flex h-10 px-5 rounded-lg items-center justify-center text-sm font-medium border border-border hover:bg-secondary/60 transition-colors"
               >
-                تسجيل الدخول
+                دخول
+              </Link>
+
+              <Link
+                href="/register"
+                className="hidden sm:inline-flex h-10 px-5 rounded-lg items-center justify-center text-sm font-medium text-white shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
+                style={{
+                  background: `linear-gradient(135deg, ${ACADEMY} 0%, ${MAQRA} 100%)`,
+                }}
+              >
+                ابدأ مجاناً
               </Link>
 
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden w-10 h-10 rounded-lg bg-secondary flex items-center justify-center"
+                aria-label="القائمة"
+                className="lg:hidden w-10 h-10 rounded-lg bg-secondary/60 flex items-center justify-center"
               >
                 {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -141,812 +456,905 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-background border-t border-border"
-          >
-            <div className="container mx-auto px-4 py-4 space-y-2">
-              <Link href="#sections" className="block py-2 text-muted-foreground hover:text-foreground" onClick={() => setIsMenuOpen(false)}>
-                الأقسام
-              </Link>
-              <Link href="#features" className="block py-2 text-muted-foreground hover:text-foreground" onClick={() => setIsMenuOpen(false)}>
-                المميزات
-              </Link>
-              <Link href="#testimonials" className="block py-2 text-muted-foreground hover:text-foreground" onClick={() => setIsMenuOpen(false)}>
-                آراء الطلاب
-              </Link>
-              <div className="border-t border-border pt-3 mt-3 space-y-2">
-                <Link href="/academy/student" className="block py-2 text-[#1E3A5F] font-medium" onClick={() => setIsMenuOpen(false)}>
-                  دخول الأكاديمية
-                </Link>
-                <Link href="/student" className="block py-2 text-primary font-medium" onClick={() => setIsMenuOpen(false)}>
-                  دخول المقرأة
-                </Link>
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden bg-background/95 backdrop-blur-xl border-t border-border overflow-hidden"
+            >
+              <div className="container mx-auto px-4 py-6 space-y-1">
+                {[
+                  { href: "#sections", label: "الأقسام" },
+                  { href: "#features", label: "المميزات" },
+                  { href: "#journey", label: "رحلتك" },
+                  { href: "#testimonials", label: "آراء الطلاب" },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block py-3 px-3 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <div className="grid grid-cols-2 gap-2 pt-4 mt-4 border-t border-border">
+                  <Link
+                    href="/academy/student"
+                    className="text-center py-3 rounded-lg text-white font-medium"
+                    style={{ background: ACADEMY }}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    الأكاديمية
+                  </Link>
+                  <Link
+                    href="/student"
+                    className="text-center py-3 rounded-lg text-white font-medium bg-primary"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    المقرأة
+                  </Link>
+                </div>
               </div>
-              <Link href="/login" className="block py-2 text-muted-foreground hover:text-foreground" onClick={() => setIsMenuOpen(false)}>
-                تسجيل الدخول
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </header>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
 
-      {/* Hero Section */}
+      {/* ============================================================ */}
+      {/* HERO                                                            */}
+      {/* ============================================================ */}
       <motion.section
-        style={{ opacity: heroOpacity, y: heroY }}
-        className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden"
+        ref={heroRef}
+        style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+        className="relative min-h-screen flex items-center justify-center pt-24 pb-16 overflow-hidden"
       >
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-[0.03]">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <circle cx="30" cy="30" r="1" fill="currentColor" className="text-foreground" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
+        <MeshBackdrop />
 
-        {/* Gradient Orbs */}
-        <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-accent/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: "1s" }} />
+        {/* Floating decorative stars */}
+        <IslamicStar
+          size={140}
+          duration={40}
+          className="absolute top-[15%] right-[8%] text-primary/20 hidden md:block"
+        />
+        <IslamicStar
+          size={100}
+          duration={30}
+          delay={2}
+          className="absolute bottom-[20%] left-[8%] hidden md:block"
+        />
+        <IslamicStar
+          size={70}
+          duration={25}
+          delay={1}
+          className="absolute top-[40%] left-[12%] text-foreground/20 hidden lg:block"
+        />
+
+        {/* Bismillah floating ornament */}
+        <motion.div
+          className="absolute top-[8%] left-1/2 -translate-x-1/2 text-7xl md:text-9xl text-foreground/[0.04] select-none pointer-events-none"
+          animate={{ y: [0, -10, 0], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        >
+          ﷽
+        </motion.div>
 
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
-            <FadeIn delay={0}>
-              <div className="inline-flex items-center gap-4 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#1E3A5F]/10 to-primary/10 border border-[#1E3A5F]/20 mb-8">
-                <div className="flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-[#1E3A5F]" />
-                  <span className="text-sm text-[#1E3A5F] font-medium">الأكاديمية</span>
-                </div>
-                <div className="w-px h-4 bg-border" />
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-primary font-medium">المقرأة</span>
-                </div>
-              </div>
-            </FadeIn>
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="inline-flex items-center gap-3 px-5 py-2 rounded-full border border-border/50 bg-background/40 backdrop-blur-sm mb-8 shadow-sm"
+            >
+              <span className="relative flex h-2 w-2">
+                <span
+                  className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                  style={{ backgroundColor: MAQRA }}
+                />
+                <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: MAQRA }} />
+              </span>
+              <span className="text-sm text-muted-foreground">منصة قرآنية متكاملة</span>
+              <span className="w-px h-3 bg-border" />
+              <span className="text-sm font-medium" style={{ color: ACADEMY }}>
+                الأكاديمية
+              </span>
+              <span className="text-xs text-muted-foreground">+</span>
+              <span className="text-sm font-medium text-primary">المقرأة</span>
+            </motion.div>
 
-            {/* Main Heading */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              <BlurText
-                text="منصة إتقان"
-                className="text-foreground"
-                delay={80}
-              />
-              <div className="flex items-center justify-center gap-3 mt-2">
-                <BlurText
-                  text="الأكاديمية"
-                  className="text-[#1E3A5F]"
-                  delay={80}
-                  direction="bottom"
-                />
-                <span className="text-muted-foreground text-3xl sm:text-4xl md:text-5xl">و</span>
-                <BlurText
-                  text="المقرأة"
-                  className="text-primary"
-                  delay={80}
-                  direction="bottom"
-                />
-              </div>
+            {/* Main heading */}
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.95] tracking-tight mb-8">
+              <motion.span
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className="block text-foreground"
+              >
+                رحلتك مع القرآن
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="relative inline-block mt-2 md:mt-4"
+              >
+                <span
+                  className="bg-clip-text text-transparent"
+                  style={{
+                    backgroundImage: `linear-gradient(135deg, ${ACADEMY} 0%, ${MAQRA} 50%, ${GOLD} 100%)`,
+                  }}
+                >
+                  تبدأ من هنا
+                </span>
+                {/* Underline ornament */}
+                <motion.svg
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 1.2, delay: 0.9, ease: "easeOut" }}
+                  viewBox="0 0 300 20"
+                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[80%] h-3"
+                >
+                  <motion.path
+                    d="M5 12 Q 75 2, 150 10 T 295 8"
+                    fill="none"
+                    stroke={GOLD}
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.2, delay: 0.9 }}
+                  />
+                </motion.svg>
+              </motion.span>
             </h1>
 
             {/* Description */}
-            <FadeIn delay={0.4}>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-                منصة تعليمية متكاملة تجمع بين <span className="text-[#1E3A5F] font-medium">الأكاديمية القرآنية</span> للدورات والشهادات و<span className="text-primary font-medium">المقرأة الإلكترونية</span> للحفظ والتسميع
-              </p>
-            </FadeIn>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+              className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed text-pretty"
+            >
+              منصة واحدة تجمع{" "}
+              <span className="font-semibold" style={{ color: ACADEMY }}>
+                الأكاديمية القرآنية
+              </span>{" "}
+              للدورات والشهادات و
+              <span className="font-semibold text-primary">المقرأة الإلكترونية</span> للحفظ والتسميع المباشر
+              مع المقرئين والأساتذة المعتمدين.
+            </motion.p>
 
-            {/* CTA Buttons */}
-            <FadeIn delay={0.5}>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Magnet padding={40} magnetStrength={3}>
-                  <Link
-                    href="/academy/student"
-                    className="group flex items-center gap-2 h-14 px-8 bg-[#1E3A5F] text-white rounded-xl font-medium hover:bg-[#1E3A5F]/90 transition-all shadow-lg shadow-[#1E3A5F]/25"
-                  >
-                    <GraduationCap className="w-5 h-5" />
-                    <span>دخول الأكاديمية</span>
-                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                  </Link>
-                </Magnet>
-                <Link
-                  href="/student"
-                  className="group flex items-center gap-2 h-14 px-8 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25"
-                >
-                  <BookOpen className="w-5 h-5" />
-                  <span>دخول المقرأة</span>
-                  <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                </Link>
-              </div>
-              <div className="mt-4">
-                <Link
-                  href="/register"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
-                >
-                  ليس لديك حساب؟ سجل الآن مجاناً
-                </Link>
-              </div>
-            </FadeIn>
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.55 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16"
+            >
+              <Link
+                href="/academy/student"
+                className="group relative w-full sm:w-auto h-14 px-7 rounded-xl text-white font-medium overflow-hidden flex items-center justify-center gap-2.5 shadow-lg transition-all hover:scale-[1.02]"
+                style={{
+                  background: ACADEMY,
+                  boxShadow: `0 10px 30px -10px ${ACADEMY}80`,
+                }}
+              >
+                <span
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{
+                    background: `linear-gradient(135deg, ${ACADEMY_LIGHT} 0%, ${ACADEMY} 100%)`,
+                  }}
+                />
+                <GraduationCap className="w-5 h-5 relative z-10" />
+                <span className="relative z-10">دخول الأكاديمية</span>
+                <ArrowLeft className="w-4 h-4 relative z-10 group-hover:-translate-x-1 transition-transform" />
+              </Link>
 
-            {/* Stats */}
-            <FadeIn delay={0.6}>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 pt-16 border-t border-border/50">
-                {stats.map((stat, i) => (
-                  <div key={i} className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold text-foreground mb-1">
-                      <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+              <Link
+                href="/student"
+                className="group relative w-full sm:w-auto h-14 px-7 rounded-xl bg-primary text-primary-foreground font-medium overflow-hidden flex items-center justify-center gap-2.5 shadow-lg transition-all hover:scale-[1.02]"
+                style={{ boxShadow: `0 10px 30px -10px ${MAQRA}80` }}
+              >
+                <BookOpen className="w-5 h-5" />
+                <span>دخول المقرأة</span>
+                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              </Link>
+            </motion.div>
+
+            {/* Quick stats */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.8 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-3xl mx-auto"
+            >
+              {stats.map((s, i) => (
+                <motion.div
+                  key={s.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 + i * 0.1, duration: 0.5 }}
+                  className="relative group"
+                >
+                  <div className="rounded-2xl border border-border/50 bg-background/40 backdrop-blur-sm p-4 md:p-5 text-center transition-all hover:border-foreground/20 hover:-translate-y-1">
+                    <s.icon className="w-5 h-5 mx-auto mb-2 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    <div className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+                      <CountUp to={s.value} suffix={s.suffix} />
                     </div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground mt-1">{s.label}</div>
                   </div>
-                ))}
-              </div>
-            </FadeIn>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         </div>
 
-        {/* Scroll Indicator */}
+        {/* Scroll indicator */}
         <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 1 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
         >
-          <div className="w-6 h-10 rounded-full border-2 border-border flex items-start justify-center p-1">
-            <motion.div
-              className="w-1.5 h-1.5 rounded-full bg-primary"
-              animate={{ y: [0, 16, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          </div>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="flex flex-col items-center gap-2 text-muted-foreground"
+          >
+            <span className="text-xs">اكتشف المزيد</span>
+            <ChevronDown className="w-4 h-4" />
+          </motion.div>
         </motion.div>
       </motion.section>
 
-      {/* Main Sections */}
-      <section id="sections" className="py-24 md:py-32 bg-gradient-to-b from-background to-secondary/30">
-        <div className="container mx-auto px-4">
-          <FadeIn>
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted border border-border mb-6">
-                <Sparkles className="w-4 h-4 text-accent" />
-                <span className="text-sm font-medium">منصتان في مكان واحد</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                اختر وجهتك التعليمية
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                الأكاديمية للدورات والشهادات، والمقرأة للحفظ والتسميع مع المقرئين
-              </p>
-            </div>
-          </FadeIn>
+      {/* ============================================================ */}
+      {/* DUAL PLATFORM SHOWCASE                                          */}
+      {/* ============================================================ */}
+      <section id="sections" className="relative py-24 md:py-32 overflow-hidden">
+        {/* Section heading */}
+        <div className="container mx-auto px-4 mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center max-w-2xl mx-auto"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-secondary/40 text-sm text-muted-foreground mb-6">
+              <Sparkles className="w-3.5 h-3.5" />
+              منصتان في مكان واحد
+            </span>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-5 text-balance">
+              اختر وجهتك التعليمية
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed text-pretty">
+              لكل طالب رحلته الخاصة. اختر المنصة الأنسب لاحتياجك.
+            </p>
+          </motion.div>
+        </div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {/* Academy Card */}
-            <FadeIn delay={0.1} direction="right">
-              <Spotlight className="h-full rounded-2xl" spotlightColor="rgba(30, 58, 95, 0.15)">
+        {/* Cards */}
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-6 max-w-6xl mx-auto perspective-[1500px]">
+            {/* === ACADEMY CARD === */}
+            <motion.div
+              initial={{ opacity: 0, x: 60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <TiltCard className="h-full">
                 <Link href="/academy/student" className="block h-full">
-                  <div className="relative h-full min-h-[420px] p-8 rounded-2xl bg-gradient-to-br from-[#1E3A5F] to-[#2A4A73] text-white overflow-hidden group">
-                    {/* Decorative */}
-                    <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-br-[80px]" />
-                    <div className="absolute bottom-0 right-0 w-48 h-48 bg-black/10 rounded-tl-[100px]" />
-                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/20 text-xs font-medium">
-                      الأكاديمية
-                    </div>
-
-                    <div className="relative z-10">
-                      <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <GraduationCap className="w-8 h-8" />
-                      </div>
-
-                      <h3 className="text-2xl md:text-3xl font-bold mb-3">الأكاديمية القرآنية</h3>
-                      <p className="text-white/80 mb-6 leading-relaxed">
-                        دورات متخصصة في علوم القرآن والتجويد والفقه مع شهادات معتمدة ومتابعة من الأساتذة
-                      </p>
-
-                      <ul className="space-y-3 mb-8">
-                        {["دورات في التجويد والقراءات", "شهادات وإجازات معتمدة", "فصول دراسية افتراضية", "متابعة مستمرة من الأساتذة"].map((item, i) => (
-                          <li key={i} className="flex items-center gap-3 text-white/90">
-                            <CheckCircle2 className="w-4 h-4 text-accent" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <div className="flex items-center gap-2 text-white/90 group-hover:gap-4 transition-all">
-                        <span className="font-medium">دخول الأكاديمية</span>
-                        <ArrowLeft className="w-5 h-5" />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </Spotlight>
-            </FadeIn>
-
-            {/* Maqra'a Card */}
-            <FadeIn delay={0.2} direction="left">
-              <Spotlight className="h-full rounded-2xl" spotlightColor="rgba(13, 90, 60, 0.15)">
-                <Link href="/student" className="block h-full">
-                  <div className="relative h-full min-h-[420px] p-8 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden group">
-                    {/* Decorative */}
-                    <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-br-[80px]" />
-                    <div className="absolute bottom-0 right-0 w-48 h-48 bg-black/10 rounded-tl-[100px]" />
-                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/20 text-xs font-medium">
-                      المقرأة
-                    </div>
-
-                    <div className="relative z-10">
-                      <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <BookOpen className="w-8 h-8" />
-                      </div>
-
-                      <h3 className="text-2xl md:text-3xl font-bold mb-3">المقرأة الإلكترونية</h3>
-                      <p className="text-primary-foreground/80 mb-6 leading-relaxed">
-                        حلقات تسميع مباشرة مع مقرئين معتمدين، سجل تلاوتك واحصل على تقييم فوري
-                      </p>
-
-                      <ul className="space-y-3 mb-8">
-                        {["حلقات تسميع مباشرة", "مقرئون معتمدون", "تقييم وتصحيح فوري", "متابعة تقدم الحفظ"].map((item, i) => (
-                          <li key={i} className="flex items-center gap-3 text-primary-foreground/90">
-                            <CheckCircle2 className="w-4 h-4 text-accent" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <div className="flex items-center gap-2 text-primary-foreground/90 group-hover:gap-4 transition-all">
-                        <span className="font-medium">دخول المقرأة</span>
-                        <ArrowLeft className="w-5 h-5" />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </Spotlight>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section - Redesigned */}
-      <section id="features" className="py-24 md:py-32 relative overflow-hidden">
-        <IslamicPattern />
-
-        <div className="container mx-auto px-4 relative z-10">
-          <FadeIn>
-            <div className="text-center max-w-3xl mx-auto mb-20">
-              <motion.div
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6"
-              >
-                <Sparkles className="w-10 h-10 text-primary" />
-              </motion.div>
-              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-                لماذا <span className="text-primary">إتقان</span>؟
-              </h2>
-              <p className="text-muted-foreground text-lg md:text-xl leading-relaxed">
-                لأننا نؤمن أن تعلم القرآن يستحق أفضل الأدوات والمعلمين. نقدم لك تجربة تعليمية فريدة تجمع بين الأصالة والتقنية الحديثة.
-              </p>
-            </div>
-          </FadeIn>
-
-          {/* Features Grid - Bento Style */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
-            {/* Large Feature Card */}
-            <FadeIn delay={0.1} className="md:col-span-2 lg:col-span-2">
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="relative h-full min-h-[280px] p-8 rounded-3xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden"
-              >
-                <div className="absolute top-0 left-0 w-full h-full opacity-10">
-                  <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <pattern id="grid-pattern" width="10" height="10" patternUnits="userSpaceOnUse">
-                      <circle cx="5" cy="5" r="1" fill="currentColor" />
-                    </pattern>
-                    <rect width="100" height="100" fill="url(#grid-pattern)" />
-                  </svg>
-                </div>
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                      <BookOpen className="w-6 h-6" />
-                    </div>
-                    <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">الأكثر طلباً</span>
-                  </div>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-3">حفظ القرآن الكريم كاملاً</h3>
-                  <p className="text-primary-foreground/80 text-lg mb-6 max-w-lg">
-                    برنامج متكامل لحفظ القرآن الكريم مع متابعة يومية مكثفة من معلمين حاصلين على إجازات عالية
-                  </p>
-                  <div className="flex flex-wrap gap-3">
-                    {["متابعة يومية", "معلم خاص", "تقييم مستمر", "إجازة معتمدة"].map((tag, i) => (
-                      <span key={i} className="text-sm bg-white/10 px-4 py-2 rounded-full flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4" />
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </FadeIn>
-
-            {/* Side Features */}
-            <FadeIn delay={0.2}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="h-full min-h-[280px] p-6 rounded-3xl bg-card border border-border hover:border-accent/50 transition-colors"
-              >
-                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
-                  <Mic2 className="w-6 h-6 text-accent" />
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">تلاوات بجودة استثنائية</h3>
-                <p className="text-muted-foreground mb-4">آلاف التلاوات من أشهر القراء حول العالم بجودة صوت HD</p>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Headphones className="w-4 h-4" />
-                  <span>+5000 تلاوة</span>
-                </div>
-              </motion.div>
-            </FadeIn>
-
-            {/* Stats Card */}
-            <FadeIn delay={0.3}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="h-full min-h-[200px] p-6 rounded-3xl bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20"
-              >
-                <h3 className="text-lg font-bold text-foreground mb-4">أرقام نفخر بها</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {academyStats.map((stat, i) => (
-                    <div key={i} className="text-center">
-                      <div className="text-2xl font-bold text-primary">{stat.value}</div>
-                      <div className="text-xs text-muted-foreground">{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            </FadeIn>
-
-            {/* Medium Cards Row */}
-            <FadeIn delay={0.4}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="p-6 rounded-3xl bg-card border border-border hover:border-primary/30 transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Users className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground mb-1">حلقات تفاعلية مباشرة</h3>
-                    <p className="text-sm text-muted-foreground">تعلم في مجموعات صغيرة مع طلاب من حول العالم</p>
-                  </div>
-                </div>
-              </motion.div>
-            </FadeIn>
-
-            <FadeIn delay={0.5}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="p-6 rounded-3xl bg-card border border-border hover:border-primary/30 transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Award className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground mb-1">شهادات وإجازات معتمدة</h3>
-                    <p className="text-sm text-muted-foreground">احصل على إجازة بالسند المتصل إلى رسول الله</p>
-                  </div>
-                </div>
-              </motion.div>
-            </FadeIn>
-
-            <FadeIn delay={0.6}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="p-6 rounded-3xl bg-card border border-border hover:border-primary/30 transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Trophy className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground mb-1">مسابقات ومكافآت</h3>
-                    <p className="text-sm text-muted-foreground">شارك في تحديات أسبوعية واربح نقاط وجوائز</p>
-                  </div>
-                </div>
-              </motion.div>
-            </FadeIn>
-          </div>
-
-          {/* Additional Info Row */}
-          <div className="grid md:grid-cols-4 gap-4 mt-4 max-w-6xl mx-auto">
-            {[
-              { icon: Clock, text: "متاح 24/7" },
-              { icon: Globe, text: "من أي مكان" },
-              { icon: Shield, text: "آمن وموثوق" },
-              { icon: Zap, text: "تجربة سلسة" },
-            ].map((item, i) => (
-              <FadeIn key={i} delay={0.7 + i * 0.1}>
-                <div className="flex items-center justify-center gap-3 p-4 rounded-2xl bg-secondary/50">
-                  <item.icon className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-medium text-foreground">{item.text}</span>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="py-24 md:py-32 bg-secondary/30 relative overflow-hidden">
-        <div className="container mx-auto px-4 relative z-10">
-          <FadeIn>
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                كيف تبدأ رحلتك؟
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                أربع خطوات بسيطة لتبدأ رحلتك مع القرآن الكريم
-              </p>
-            </div>
-          </FadeIn>
-
-          <div className="max-w-4xl mx-auto">
-            <div className="relative">
-              {/* Connection Line */}
-              <div className="absolute top-8 right-8 left-8 h-0.5 bg-border hidden md:block" />
-
-              <div className="grid md:grid-cols-4 gap-8">
-                {learningPath.map((item, i) => (
-                  <FadeIn key={i} delay={i * 0.15}>
-                    <motion.div
-                      whileHover={{ y: -10 }}
-                      className="relative text-center"
-                    >
-                      <div className="relative z-10 w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold mx-auto mb-4 shadow-lg shadow-primary/25">
-                        {item.step}
-                      </div>
-                      <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
-                      <p className="text-sm text-muted-foreground">{item.description}</p>
-                    </motion.div>
-                  </FadeIn>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section - Enhanced */}
-      <section id="testimonials" className="py-24 md:py-32 relative overflow-hidden">
-        <IslamicPattern animate={false} />
-
-        <div className="container mx-auto px-4 relative z-10">
-          <FadeIn>
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-6">
-                <MessageCircle className="w-4 h-4 text-accent" />
-                <span className="text-sm text-accent font-medium">قصص نجاح</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                ماذا يقول <span className="text-primary">طلابنا</span>
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                تجارب حقيقية من طلاب أتموا رحلتهم معنا
-              </p>
-            </div>
-          </FadeIn>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {[
-              {
-                quote: "بفضل الله ثم منصة إتقان، أتممت حفظ القرآن الكريم كاملاً في سنتين. المعلمون متميزون والمنهجية فعالة جداً",
-                author: "أحمد محمد سالم",
-                role: "حافظ للقرآن الكريم",
-                country: "السعودية",
-                achievement: "أتم الحفظ"
-              },
-              {
-                quote: "كمعلمة، أجد في إتقان بيئة مثالية لتدريس القرآن. الأدوات التقنية تسهل المتابعة والتواصل مع الطالبات",
-                author: "فاطمة علي الزهراء",
-                role: "معلمة قرآن",
-                country: "مصر",
-                achievement: "معلمة متميزة"
-              },
-              {
-                quote: "ابني يحب جلسات إتقان كثيراً. المعلم صبور ومتفهم، والتقدم ملحوظ ماشاء الله. أنصح كل الآباء بهذه المنصة",
-                author: "خالد عبدالرحمن",
-                role: "ولي أمر",
-                country: "الإمارات",
-                achievement: "ولي أمر راضٍ"
-              },
-            ].map((testimonial, i) => (
-              <FadeIn key={i} delay={i * 0.15}>
-                <motion.div
-                  whileHover={{ y: -5 }}
-                  className="relative p-6 rounded-3xl bg-card border border-border hover:border-primary/20 transition-all h-full"
-                >
-                  {/* Quote mark */}
-                  <div className="absolute top-4 left-4 text-6xl text-primary/10 font-serif leading-none">"</div>
-
-                  {/* Achievement badge */}
-                  <div className="flex justify-end mb-4">
-                    <span className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full">
-                      {testimonial.achievement}
-                    </span>
-                  </div>
-
-                  <p className="text-foreground/80 mb-6 leading-relaxed relative z-10">{testimonial.quote}</p>
-
-                  <div className="flex items-center gap-4 pt-4 border-t border-border">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-bold text-lg">
-                      {testimonial.author.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-foreground">{testimonial.author}</div>
-                      <div className="text-sm text-muted-foreground flex items-center gap-2">
-                        <span>{testimonial.role}</span>
-                        <span className="w-1 h-1 rounded-full bg-muted-foreground" />
-                        <span>{testimonial.country}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stars */}
-                  <div className="flex gap-1 mt-4">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="w-4 h-4 text-accent fill-accent" />
-                    ))}
-                  </div>
-                </motion.div>
-              </FadeIn>
-            ))}
-          </div>
-
-          {/* Trust indicators */}
-          <FadeIn delay={0.5}>
-            <div className="mt-16 text-center">
-              <p className="text-muted-foreground mb-6">موثوق من آلاف الطلاب حول العالم</p>
-              <div className="flex flex-wrap items-center justify-center gap-8">
-                {["4.9/5 تقييم", "15,000+ طالب", "45+ دولة", "98% رضا"].map((stat, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-5 h-5 text-primary" />
-                    <span className="text-foreground font-medium">{stat}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* CTA Section - Enhanced */}
-      <section className="py-24 md:py-32 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <FadeIn>
-            <div className="relative max-w-5xl mx-auto overflow-hidden rounded-[2.5rem]">
-              {/* Background with pattern */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
-              <IslamicPattern className="opacity-10" animate={false} />
-
-              <div className="relative z-10 p-8 md:p-16 lg:p-20 text-center text-primary-foreground">
-                {/* Decorative elements */}
-                <motion.div
-                  className="absolute top-10 right-10 w-20 h-20 border border-white/20 rounded-full"
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                />
-                <motion.div
-                  className="absolute bottom-10 left-10 w-16 h-16 border border-white/20 rotate-45"
-                  animate={{ rotate: [45, 90, 45], opacity: [0.2, 0.4, 0.2] }}
-                  transition={{ duration: 6, repeat: Infinity }}
-                />
-
-                <motion.div
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  viewport={{ once: true }}
-                  className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-8"
-                >
-                  <BookOpen className="w-10 h-10" />
-                </motion.div>
-
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-                  رحلة الألف ميل تبدأ بخطوة
-                  <br />
-                  <span className="text-accent">ابدأ اليوم</span>
-                </h2>
-                <p className="text-primary-foreground/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-                  انضم إلى مجتمع إتقان وابدأ رحلتك مع القرآن الكريم. التسجيل مجاني وسريع.
-                </p>
-
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-                  <Magnet padding={50} magnetStrength={2}>
-                    <Link
-                      href="/register"
-                      className="group flex items-center gap-3 h-14 px-10 bg-white text-primary rounded-2xl font-semibold hover:bg-white/90 transition-all shadow-xl"
-                    >
-                      <span>ابدأ رحلتك مجاناً</span>
-                      <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                    </Link>
-                  </Magnet>
-                  <Link
-                    href="/about"
-                    className="flex items-center gap-2 h-14 px-10 bg-white/10 text-primary-foreground rounded-2xl font-medium hover:bg-white/20 transition-colors border border-white/20"
+                  <div
+                    className="relative h-full min-h-[520px] rounded-3xl p-8 md:p-10 overflow-hidden text-white group"
+                    style={{
+                      background: `linear-gradient(135deg, ${ACADEMY} 0%, ${ACADEMY_LIGHT} 100%)`,
+                    }}
                   >
-                    <Play className="w-5 h-5" />
-                    <span>شاهد الفيديو التعريفي</span>
-                  </Link>
-                </div>
-
-                {/* Trust badges */}
-                <div className="flex flex-wrap items-center justify-center gap-6 pt-8 border-t border-white/20">
-                  {[
-                    { icon: Shield, text: "تسجيل آمن" },
-                    { icon: Clock, text: "دقيقتين للتسجيل" },
-                    { icon: Heart, text: "بدون التزام" },
-                  ].map((badge, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-primary-foreground/80">
-                      <badge.icon className="w-4 h-4" />
-                      <span>{badge.text}</span>
+                    {/* Animated decorative shapes */}
+                    <div className="absolute inset-0 opacity-20 pointer-events-none">
+                      <svg className="w-full h-full" viewBox="0 0 400 400">
+                        <defs>
+                          <pattern id="academy-pat" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <path
+                              d="M20 0 L40 20 L20 40 L0 20 Z"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="0.5"
+                            />
+                          </pattern>
+                        </defs>
+                        <rect width="400" height="400" fill="url(#academy-pat)" />
+                      </svg>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </FadeIn>
+
+                    {/* Gold corner glow */}
+                    <motion.div
+                      className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl"
+                      style={{ background: `${GOLD}40` }}
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.6, 0.4] }}
+                      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                    />
+
+                    {/* Floating star */}
+                    <IslamicStar
+                      size={120}
+                      duration={45}
+                      className="absolute bottom-4 left-4 text-white/10"
+                    />
+
+                    <div className="relative z-10 flex flex-col h-full">
+                      <div className="flex items-start justify-between mb-8">
+                        <motion.div
+                          whileHover={{ rotate: -8, scale: 1.1 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                          className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center"
+                        >
+                          <GraduationCap className="w-8 h-8" />
+                        </motion.div>
+                        <span className="text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-white/10 border border-white/20">
+                          الأكاديمية
+                        </span>
+                      </div>
+
+                      <h3 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                        أكاديمية إتقان القرآنية
+                      </h3>
+                      <p className="text-white/80 mb-7 leading-relaxed text-pretty">
+                        دورات منظمة في علوم القرآن والتجويد والقراءات والفقه. شهادات وإجازات معتمدة بالسند
+                        المتصل.
+                      </p>
+
+                      <ul className="space-y-3 mb-8 flex-1">
+                        {[
+                          "دورات التجويد والقراءات العشر",
+                          "إجازات معتمدة بالسند المتصل",
+                          "فصول دراسية تفاعلية",
+                          "متابعة شخصية من الأساتذة",
+                        ].map((item, i) => (
+                          <motion.li
+                            key={item}
+                            initial={{ opacity: 0, x: 20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 * i }}
+                            className="flex items-center gap-3 text-white/95"
+                          >
+                            <div
+                              className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                              style={{ background: GOLD }}
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#1E3A5F]" />
+                            </div>
+                            <span className="text-sm">{item}</span>
+                          </motion.li>
+                        ))}
+                      </ul>
+
+                      <div className="flex items-center justify-between pt-6 border-t border-white/15">
+                        <span className="text-sm text-white/70">ابدأ رحلتك الأكاديمية</span>
+                        <div className="w-12 h-12 rounded-full bg-white/15 flex items-center justify-center group-hover:bg-white group-hover:text-[#1E3A5F] transition-all duration-300">
+                          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </TiltCard>
+            </motion.div>
+
+            {/* === MAQRA'A CARD === */}
+            <motion.div
+              initial={{ opacity: 0, x: -60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <TiltCard className="h-full">
+                <Link href="/student" className="block h-full">
+                  <div
+                    className="relative h-full min-h-[520px] rounded-3xl p-8 md:p-10 overflow-hidden text-primary-foreground group"
+                    style={{
+                      background: `linear-gradient(135deg, ${MAQRA} 0%, #0F6B47 100%)`,
+                    }}
+                  >
+                    {/* Decorative pattern */}
+                    <div className="absolute inset-0 opacity-20 pointer-events-none">
+                      <svg className="w-full h-full" viewBox="0 0 400 400">
+                        <defs>
+                          <pattern id="maqra-pat" width="60" height="60" patternUnits="userSpaceOnUse">
+                            <circle cx="30" cy="30" r="20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                            <circle cx="30" cy="30" r="10" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                          </pattern>
+                        </defs>
+                        <rect width="400" height="400" fill="url(#maqra-pat)" />
+                      </svg>
+                    </div>
+
+                    <motion.div
+                      className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl"
+                      style={{ background: `${GOLD}50` }}
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
+                      transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                    />
+
+                    <IslamicStar size={140} duration={50} className="absolute bottom-4 left-4 text-white/10" />
+
+                    <div className="relative z-10 flex flex-col h-full">
+                      <div className="flex items-start justify-between mb-8">
+                        <motion.div
+                          whileHover={{ rotate: 8, scale: 1.1 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                          className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center"
+                        >
+                          <BookOpen className="w-8 h-8" />
+                        </motion.div>
+                        <span className="text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-white/10 border border-white/20">
+                          المقرأة
+                        </span>
+                      </div>
+
+                      <h3 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                        المقرأة الإلكترونية
+                      </h3>
+                      <p className="text-white/80 mb-7 leading-relaxed text-pretty">
+                        حلقات تسميع مباشرة مع مقرئين معتمدين. سجّل تلاوتك واحصل على تقييم فوري وتوجيه شخصي.
+                      </p>
+
+                      <ul className="space-y-3 mb-8 flex-1">
+                        {[
+                          "حلقات تسميع مباشرة",
+                          "مقرئون مجازون",
+                          "تقييم وتصحيح فوري",
+                          "متابعة تقدم الحفظ",
+                        ].map((item, i) => (
+                          <motion.li
+                            key={item}
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 * i }}
+                            className="flex items-center gap-3 text-white/95"
+                          >
+                            <div
+                              className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                              style={{ background: GOLD }}
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" style={{ color: MAQRA }} />
+                            </div>
+                            <span className="text-sm">{item}</span>
+                          </motion.li>
+                        ))}
+                      </ul>
+
+                      <div className="flex items-center justify-between pt-6 border-t border-white/15">
+                        <span className="text-sm text-white/70">ابدأ تسميعك الآن</span>
+                        <div
+                          className="w-12 h-12 rounded-full bg-white/15 flex items-center justify-center group-hover:bg-white transition-all duration-300"
+                          style={{ color: "transparent" }}
+                        >
+                          <ArrowLeft
+                            className="w-5 h-5 text-white group-hover:text-primary group-hover:-translate-x-0.5 transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </TiltCard>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="py-24 md:py-32">
-        <div className="container mx-auto px-4">
-          <FadeIn>
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                أسئلة شائعة
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                إجابات لأكثر الأسئلة التي تصلنا
-              </p>
-            </div>
-          </FadeIn>
+      {/* ============================================================ */}
+      {/* FEATURES BENTO                                                  */}
+      {/* ============================================================ */}
+      <section id="features" className="relative py-24 md:py-32 bg-secondary/30">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <IslamicStar size={200} duration={60} className="absolute -top-20 -right-20 text-foreground/[0.03]" />
+          <IslamicStar size={150} duration={50} delay={3} className="absolute -bottom-10 -left-10 text-foreground/[0.03]" />
+        </div>
 
-          <div className="max-w-3xl mx-auto space-y-4">
-            {[
-              { q: "ما الفرق بين الأكاديمية والمقرأة؟", a: "الأكاديمية تقدم دورات منظمة في علوم القرآن والتجويد والفقه مع شهادات معتمدة. المقرأة للحفظ والتسميع المباشر مع مقرئين معتمدين." },
-              { q: "هل المنصة مجانية؟", a: "نعم، التسجيل مجاني. الأكاديمية لها اشتراك شهري يشمل الدورات والمتابعة، والمقرأة لها باقات حسب عدد الجلسات." },
-              { q: "من هم المعلمون والمقرئون؟", a: "جميع معلمينا ومقرئينا حاصلون على إجازات في القرآن الكريم بالسند المتصل، ولديهم خبرة لا تقل عن 5 سنوات." },
-              { q: "هل يمكنني الحصول على إجازة؟", a: "نعم، عند إتمام حفظ القرآن الكريم وإتقان التجويد في المقرأة أو إكمال مسار الإجازة في الأكاديمية." },
-            ].map((faq, i) => (
-              <FadeIn key={i} delay={i * 0.1}>
-                <motion.div
-                  whileHover={{ scale: 1.01 }}
-                  className="p-6 rounded-2xl bg-card border border-border hover:border-primary/20 transition-all"
+        <div className="container mx-auto px-4 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="text-center max-w-2xl mx-auto mb-16"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-background/60 text-sm text-muted-foreground mb-6">
+              <Zap className="w-3.5 h-3.5" />
+              ما نقدمه
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5 text-balance">
+              كل ما تحتاجه لرحلتك القرآنية
+            </h2>
+            <p className="text-lg text-muted-foreground text-pretty">
+              تجربة تعليمية متكاملة تجمع بين أصالة المنهج وحداثة الأدوات
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+            {features.map((feature, i) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className={`group relative rounded-2xl border border-border bg-background p-7 overflow-hidden hover:border-foreground/20 transition-all hover:-translate-y-1 ${feature.span}`}
+              >
+                {/* Hover glow */}
+                <div
+                  className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                  style={{
+                    background: `radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${feature.accent}15, transparent 40%)`,
+                  }}
+                />
+
+                {/* Icon */}
+                <div
+                  className="relative w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110 group-hover:-rotate-6"
+                  style={{ background: `${feature.accent}15`, color: feature.accent }}
                 >
-                  <h3 className="text-lg font-semibold text-foreground mb-2 flex items-start gap-3">
-                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm shrink-0 mt-0.5">؟</span>
-                    {faq.q}
-                  </h3>
-                  <p className="text-muted-foreground pr-9">{faq.a}</p>
-                </motion.div>
-              </FadeIn>
+                  <feature.icon className="w-6 h-6" />
+                </div>
+
+                <h3 className="text-xl font-bold mb-2.5 text-foreground">{feature.title}</h3>
+                <p className="text-muted-foreground leading-relaxed text-sm">{feature.description}</p>
+
+                {/* Decorative number */}
+                <span className="absolute top-4 left-4 text-5xl font-bold text-foreground/[0.04] tabular-nums">
+                  0{i + 1}
+                </span>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer - Enhanced */}
-      <footer className="py-16 bg-card border-t border-border">
+      {/* ============================================================ */}
+      {/* JOURNEY                                                         */}
+      {/* ============================================================ */}
+      <section id="journey" className="relative py-24 md:py-32 overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
-            {/* Brand Column */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1E3A5F] to-primary flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="text-center max-w-2xl mx-auto mb-20"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-secondary/40 text-sm text-muted-foreground mb-6">
+              <Compass className="w-3.5 h-3.5" />
+              رحلتك معنا
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5 text-balance">
+              4 خطوات لإتقان القرآن
+            </h2>
+            <p className="text-lg text-muted-foreground text-pretty">
+              رحلة منظمة تأخذك من البداية إلى الإجازة
+            </p>
+          </motion.div>
+
+          <div className="relative max-w-5xl mx-auto">
+            {/* Connecting line */}
+            <div className="absolute top-8 right-0 left-0 h-px bg-gradient-to-l from-transparent via-border to-transparent hidden md:block" />
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-4">
+              {journey.map((step, i) => (
+                <motion.div
+                  key={step.title}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.6, delay: i * 0.15 }}
+                  className="relative text-center group"
+                >
+                  {/* Step circle */}
+                  <div className="relative inline-flex mx-auto mb-6">
+                    <motion.div
+                      className="absolute inset-0 rounded-full"
+                      style={{
+                        background: `linear-gradient(135deg, ${ACADEMY}, ${MAQRA})`,
+                      }}
+                      animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.1, 0.3] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
+                    />
+                    <div
+                      className="relative w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-500"
+                      style={{
+                        background: `linear-gradient(135deg, ${ACADEMY} 0%, ${MAQRA} 100%)`,
+                      }}
+                    >
+                      <step.icon className="w-7 h-7" />
+                    </div>
+                    {/* Step number */}
+                    <div className="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-background border-2 border-border flex items-center justify-center text-xs font-bold">
+                      {i + 1}
+                    </div>
+                  </div>
+
+                  <h3 className="text-lg font-bold mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* TESTIMONIALS MARQUEE                                            */}
+      {/* ============================================================ */}
+      <section
+        id="testimonials"
+        className="relative py-24 md:py-32 bg-secondary/30 overflow-hidden"
+      >
+        <div className="container mx-auto px-4 mb-14">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="text-center max-w-2xl mx-auto"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-background/60 text-sm text-muted-foreground mb-6">
+              <Quote className="w-3.5 h-3.5" />
+              آراء طلابنا
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5 text-balance">
+              قصص نجاح حقيقية
+            </h2>
+            <p className="text-lg text-muted-foreground text-pretty">
+              آلاف الطلاب يثقون في إتقان لرحلتهم القرآنية
+            </p>
+          </motion.div>
+        </div>
+
+        <div className="space-y-4">
+          <Marquee speed={50}>
+            {testimonials.slice(0, 3).map((t, i) => (
+              <TestimonialCard key={`a-${i}`} {...t} />
+            ))}
+          </Marquee>
+          <Marquee reverse speed={60}>
+            {testimonials.slice(3).map((t, i) => (
+              <TestimonialCard key={`b-${i}`} {...t} />
+            ))}
+          </Marquee>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* CTA                                                             */}
+      {/* ============================================================ */}
+      <section className="relative py-24 md:py-32 overflow-hidden">
+        <div className="absolute inset-0">
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-3xl"
+            style={{
+              background: `conic-gradient(from 0deg, ${ACADEMY}40, ${MAQRA}40, ${GOLD}40, ${ACADEMY}40)`,
+            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="relative max-w-4xl mx-auto rounded-3xl overflow-hidden p-10 md:p-16 text-center text-white"
+            style={{
+              background: `linear-gradient(135deg, ${ACADEMY} 0%, ${MAQRA} 100%)`,
+            }}
+          >
+            {/* Decorative */}
+            <IslamicStar size={200} duration={60} className="absolute -top-10 -right-10 text-white/10" />
+            <IslamicStar size={150} duration={50} delay={2} className="absolute -bottom-10 -left-10 text-white/10" />
+
+            <motion.div
+              className="absolute -top-20 -left-20 w-80 h-80 rounded-full blur-3xl"
+              style={{ background: `${GOLD}30` }}
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 6, repeat: Infinity }}
+            />
+
+            <div className="relative z-10">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-balance">
+                ابدأ رحلتك مع
+                <br />
+                <span style={{ color: GOLD }}>القرآن الكريم</span> اليوم
+              </h2>
+              <p className="text-lg md:text-xl text-white/85 max-w-2xl mx-auto mb-10 leading-relaxed text-pretty">
+                انضم لآلاف الطلاب من حول العالم واستمتع بتجربة تعليمية متكاملة
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link
+                  href="/register"
+                  className="group h-14 px-8 rounded-xl bg-white text-foreground font-medium flex items-center justify-center gap-2 hover:bg-white/95 transition-all hover:scale-[1.02]"
+                  style={{ color: ACADEMY }}
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>سجّل الآن مجاناً</span>
+                  <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                </Link>
+
+                <Link
+                  href="/login"
+                  className="group h-14 px-8 rounded-xl border border-white/30 text-white font-medium flex items-center justify-center gap-2 hover:bg-white/10 transition-colors"
+                >
+                  <span>لدي حساب</span>
+                  <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                </Link>
+              </div>
+
+              {/* Trust badges */}
+              <div className="flex flex-wrap items-center justify-center gap-6 mt-10 pt-10 border-t border-white/15">
+                {[
+                  { icon: Shield, label: "آمن ومعتمد" },
+                  { icon: Globe, label: "أكثر من 45 دولة" },
+                  { icon: Award, label: "إجازات بالسند" },
+                ].map((b) => (
+                  <div key={b.label} className="flex items-center gap-2 text-sm text-white/80">
+                    <b.icon className="w-4 h-4" />
+                    <span>{b.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* FOOTER                                                          */}
+      {/* ============================================================ */}
+      <footer className="relative border-t border-border bg-background pt-20 pb-8">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-12">
+            {/* Brand */}
+            <div className="col-span-2">
+              <Link href="/" className="flex items-center gap-3 mb-5">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  style={{ background: `linear-gradient(135deg, ${ACADEMY} 0%, ${MAQRA} 100%)` }}
+                >
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <span className="text-2xl font-bold text-foreground">إتقان</span>
+                  <span className="text-2xl font-bold">إتقان</span>
                   <span className="block text-xs text-muted-foreground">الأكاديمية والمقرأة</span>
                 </div>
-              </div>
-              <p className="text-muted-foreground leading-relaxed mb-6 max-w-sm">
-                منصة تعليمية متكاملة تجمع بين الأكاديمية القرآنية للدورات والشهادات والمقرأة الإلكترونية للحفظ والتسميع.
+              </Link>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mb-6">
+                منصة تعليمية متكاملة تجمع بين الأكاديمية القرآنية للدورات والشهادات والمقرأة الإلكترونية
+                للحفظ والتسميع.
               </p>
-              {/* Social Links */}
-              <div className="flex gap-3">
-                {["twitter", "youtube", "telegram"].map((social) => (
-                  <Link
-                    key={social}
+              <div className="flex gap-2">
+                {[Heart, MessageCircle, Globe].map((Icon, i) => (
+                  <a
+                    key={i}
                     href="#"
-                    className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                    className="w-9 h-9 rounded-lg border border-border bg-secondary/40 hover:bg-secondary flex items-center justify-center transition-colors"
                   >
-                    <span className="sr-only">{social}</span>
-                    <div className="w-5 h-5 bg-current rounded opacity-50" />
-                  </Link>
+                    <Icon className="w-4 h-4 text-muted-foreground" />
+                  </a>
                 ))}
               </div>
             </div>
 
-            {/* Links Columns */}
-            {[
-              {
-                title: "الأكاديمية",
-                color: "text-[#1E3A5F]",
-                links: [
+            {/* Academy */}
+            <div>
+              <h4 className="font-bold mb-4 text-sm" style={{ color: ACADEMY }}>
+                الأكاديمية
+              </h4>
+              <ul className="space-y-2.5 text-sm">
+                {[
                   { label: "لوحة التحكم", href: "/academy/student" },
                   { label: "الدورات", href: "/academy/student/courses" },
                   { label: "المسار التعليمي", href: "/academy/student/path" },
                   { label: "الشهادات", href: "/academy/student/certificates" },
-                ]
-              },
-              {
-                title: "المقرأة",
-                color: "text-primary",
-                links: [
+                ].map((l) => (
+                  <li key={l.label}>
+                    <Link href={l.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Maqra */}
+            <div>
+              <h4 className="font-bold mb-4 text-sm text-primary">المقرأة</h4>
+              <ul className="space-y-2.5 text-sm">
+                {[
                   { label: "لوحة التحكم", href: "/student" },
                   { label: "التسميعات", href: "/student/recitations" },
                   { label: "حجز موعد", href: "/student/booking" },
                   { label: "التقدم", href: "/student/progress" },
-                ]
-              },
-              {
-                title: "الدعم",
-                color: "text-foreground",
-                links: [
-                  { label: "مركز المساعدة", href: "/contact" },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <Link href={l.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h4 className="font-bold mb-4 text-sm">الدعم</h4>
+              <ul className="space-y-2.5 text-sm">
+                {[
                   { label: "تواصل معنا", href: "/contact" },
-                  { label: "الأسئلة الشائعة", href: "#faq" },
+                  { label: "من نحن", href: "/about" },
                   { label: "سياسة الخصوصية", href: "/privacy" },
-                ]
-              },
-            ].map((section, i) => (
-              <div key={i}>
-                <h4 className={`font-semibold mb-4 ${section.color}`}>{section.title}</h4>
-                <ul className="space-y-3">
-                  {section.links.map((link, j) => (
-                    <li key={j}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+                  { label: "الشروط", href: "/terms" },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <Link href={l.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
-          {/* Bottom Bar */}
-          <div className="pt-8 border-t border-border">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                جميع الحقوق محفوظة © {new Date().getFullYear()} منصة إتقان
-              </p>
-              <div className="flex items-center gap-6">
-                <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  سياسة الخصوصية
-                </Link>
-                <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  الشروط والأحكام
-                </Link>
-                <span className="text-sm text-muted-foreground">
-                  صنع بـ ❤️ لخدمة القرآن
-                </span>
-              </div>
-            </div>
+          <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">
+              &copy; {new Date().getFullYear()} إتقان. جميع الحقوق محفوظة.
+            </p>
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              صُنع بـ <Heart className="w-3.5 h-3.5 fill-current text-red-500" /> لخدمة كتاب الله
+            </p>
           </div>
         </div>
       </footer>
+    </div>
+  )
+}
+
+/* ============================================================
+ * Testimonial card (used in marquee)
+ * ============================================================ */
+function TestimonialCard({ quote, author, role }: { quote: string; author: string; role: string }) {
+  return (
+    <div className="w-[340px] md:w-[420px] shrink-0 rounded-2xl border border-border bg-background p-6 hover:border-foreground/20 hover:shadow-lg transition-all">
+      <div className="flex items-center gap-1 mb-3 text-amber-400">
+        {[...Array(5)].map((_, i) => (
+          <Star key={i} className="w-4 h-4 fill-current" />
+        ))}
+      </div>
+      <p className="text-sm md:text-base leading-relaxed mb-5 text-foreground/90 text-pretty">
+        &ldquo;{quote}&rdquo;
+      </p>
+      <div className="flex items-center gap-3 pt-4 border-t border-border">
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+          style={{ background: `linear-gradient(135deg, ${ACADEMY}, ${MAQRA})` }}
+        >
+          {author.charAt(0)}
+        </div>
+        <div>
+          <div className="font-semibold text-sm">{author}</div>
+          <div className="text-xs text-muted-foreground">{role}</div>
+        </div>
+      </div>
     </div>
   )
 }
