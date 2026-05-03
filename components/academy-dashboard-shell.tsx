@@ -264,7 +264,7 @@ export function AcademyDashboardShell({
   }
 
   return (
-    <div className={`h-screen flex overflow-hidden bg-background transition-colors duration-500 ${user?.gender?.toLowerCase() === 'female' ? 'theme-female' : ''}`}>
+    <div className={`theme-academy h-screen flex overflow-hidden bg-background transition-colors duration-500 ${user?.gender?.toLowerCase() === 'female' ? 'theme-female' : ''}`}>
       {/* Overlay */}
       {sidebarOpen && (
         <div
