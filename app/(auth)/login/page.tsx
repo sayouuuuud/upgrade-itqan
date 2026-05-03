@@ -70,7 +70,10 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || t.auth.errorOccurred)
+        // In dev, the API returns a `debug` field with the underlying exception
+        // so we can immediately see why login is failing without digging into logs.
+        const message = data.debug ? `${data.error || t.auth.errorOccurred}: ${data.debug}` : (data.error || t.auth.errorOccurred)
+        setError(message)
         setLoading(false)
         return
       }
