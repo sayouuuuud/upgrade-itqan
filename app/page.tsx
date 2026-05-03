@@ -427,23 +427,9 @@ export default function Home() {
       </section>
 
       {/* ============ TWO PILLARS ============ */}
-      <section
-        id="sections"
-        className="relative pt-56 pb-56 md:pt-64 md:pb-64 bg-[#0F2A44] text-[#F7F2E9] overflow-hidden"
-      >
-        {/* Tessellated ornament — subtle gold lattice */}
-        <TessellatedBg className="absolute inset-0 w-full h-full" color="#C9A962" opacity={0.05} />
-
-        {/*
-          Long, soft gradient seams that blend the navy panel into the cream
-          (light mode) or dark (dark mode) sections above and below — no abrupt cut.
-        */}
-        <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-[#F7F2E9] via-[#F7F2E9]/60 to-transparent dark:from-[#0B1217] dark:via-[#0B1217]/60 dark:to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-[#F7F2E9] via-[#F7F2E9]/60 to-transparent dark:from-[#0B1217] dark:via-[#0B1217]/60 dark:to-transparent pointer-events-none" />
-
-        {/* Warm gold halos so the navy doesn't read flat */}
-        <div className="absolute top-1/3 -left-32 w-[500px] h-[500px] rounded-full bg-[#C9A962]/8 blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-1/4 -right-32 w-[500px] h-[500px] rounded-full bg-[#B08D57]/10 blur-[140px] pointer-events-none" />
+      <section id="sections" className="relative py-32 md:py-40 bg-[#0F2A44] text-[#F7F2E9] overflow-hidden">
+        <TessellatedBg className="absolute inset-0 w-full h-full" color="#C9A962" opacity={0.04} />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0F2A44] via-[#0F2A44] to-[#0a1f33]" />
 
         <div className="container mx-auto px-6 relative">
           <Reveal>
