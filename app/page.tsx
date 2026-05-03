@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import { useTheme } from "next-themes"
 import { motion, useScroll, useTransform, AnimatePresence, useInView } from "framer-motion"
 import {
   BookOpen,
@@ -18,6 +19,8 @@ import {
   Sparkles,
   Quote,
   ChevronDown,
+  Sun,
+  Moon,
 } from "lucide-react"
 
 /* ============================================================
@@ -130,19 +133,25 @@ function CountUp({ value, suffix = "", duration = 2 }: { value: number; suffix?:
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const { resolvedTheme, setTheme } = useTheme()
   const heroRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] })
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 200])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
 
   useEffect(() => {
+    setMounted(true)
     const handler = () => setScrolled(window.scrollY > 30)
     window.addEventListener("scroll", handler)
     return () => window.removeEventListener("scroll", handler)
   }, [])
 
+  const isDark = mounted && resolvedTheme === "dark"
+  const toggleTheme = () => setTheme(isDark ? "light" : "dark")
+
   return (
-    <div className="min-h-screen bg-[#F7F2E9] text-[#1A1A1A] overflow-x-hidden font-sans" dir="rtl">
+    <div className="min-h-screen bg-[#F7F2E9] text-[#1A1A1A] dark:bg-[#0B1217] dark:text-[#F2EBDD] overflow-x-hidden font-sans transition-colors duration-500" dir="rtl">
       {/* ============ HEADER ============ */}
       <motion.header
         initial={{ y: -100 }}
@@ -150,7 +159,7 @@ export default function Home() {
         transition={{ duration: 0.7 }}
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-[#F7F2E9]/85 backdrop-blur-xl border-b border-[#1A1A1A]/10 py-3"
+            ? "bg-[#F7F2E9]/85 dark:bg-[#0B1217]/85 backdrop-blur-xl border-b border-[#1A1A1A]/10 dark:border-[#F2EBDD]/10 py-3"
             : "bg-transparent py-5"
         }`}
       >
@@ -163,10 +172,10 @@ export default function Home() {
               </svg>
             </div>
             <div className="leading-tight">
-              <div className="text-xl font-bold tracking-tight text-[#0F2A44]" style={{ fontFamily: "var(--font-quran)" }}>
+              <div className="text-xl font-bold tracking-tight text-[#0F2A44] dark:text-[#C9A962]" style={{ fontFamily: "var(--font-quran)" }}>
                 إتْقان
               </div>
-              <div className="text-[10px] tracking-[0.2em] text-[#1A1A1A]/55 uppercase">
+              <div className="text-[10px] tracking-[0.2em] text-[#1A1A1A]/55 dark:text-[#F2EBDD]/55 uppercase">
                 Itqan Platform
               </div>
             </div>
@@ -182,7 +191,7 @@ export default function Home() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm text-[#1A1A1A]/70 hover:text-[#0F2A44] transition-colors relative group"
+                className="text-sm text-[#1A1A1A]/70 dark:text-[#F2EBDD]/70 hover:text-[#0F2A44] dark:hover:text-[#C9A962] transition-colors relative group"
               >
                 {item.label}
                 <span className="absolute -bottom-1.5 right-0 h-px w-0 bg-[#B08D57] transition-all duration-500 group-hover:w-full" />
@@ -191,27 +200,56 @@ export default function Home() {
           </nav>
 
           <div className="hidden lg:flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              aria-label="تبديل المظهر"
+              className="relative w-10 h-10 rounded-full border border-[#1A1A1A]/15 dark:border-[#F2EBDD]/20 flex items-center justify-center text-[#0F2A44] dark:text-[#C9A962] hover:border-[#B08D57] dark:hover:border-[#C9A962] transition-all duration-500 hover:scale-105 overflow-hidden"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {mounted && (
+                  <motion.span
+                    key={isDark ? "sun" : "moon"}
+                    initial={{ rotate: -90, opacity: 0, scale: 0.6 }}
+                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                    exit={{ rotate: 90, opacity: 0, scale: 0.6 }}
+                    transition={{ duration: 0.4 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
             <Link
               href="/login"
-              className="text-sm text-[#1A1A1A]/70 hover:text-[#0F2A44] px-4 py-2 transition-colors"
+              className="text-sm text-[#1A1A1A]/70 dark:text-[#F2EBDD]/70 hover:text-[#0F2A44] dark:hover:text-[#C9A962] px-4 py-2 transition-colors"
             >
               دخول
             </Link>
             <Link
               href="/register"
-              className="text-sm font-medium px-5 py-2.5 rounded-full bg-[#0F2A44] text-[#F7F2E9] hover:bg-[#1B4332] transition-all duration-500 shadow-sm hover:shadow-lg"
+              className="text-sm font-medium px-5 py-2.5 rounded-full bg-[#0F2A44] text-[#F7F2E9] dark:bg-[#C9A962] dark:text-[#0B1217] hover:bg-[#1B4332] dark:hover:bg-[#D4B27A] transition-all duration-500 shadow-sm hover:shadow-lg"
             >
               التسجيل
             </Link>
           </div>
 
-          <button
-            className="lg:hidden p-2 text-[#0F2A44]"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="القائمة"
-          >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="lg:hidden flex items-center gap-1">
+            <button
+              onClick={toggleTheme}
+              aria-label="تبديل المظهر"
+              className="p-2 text-[#0F2A44] dark:text-[#C9A962]"
+            >
+              {mounted && (isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />)}
+            </button>
+            <button
+              className="p-2 text-[#0F2A44] dark:text-[#C9A962]"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="القائمة"
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         <AnimatePresence>
@@ -220,7 +258,7 @@ export default function Home() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-[#F7F2E9] border-t border-[#1A1A1A]/10 overflow-hidden"
+              className="lg:hidden bg-[#F7F2E9] dark:bg-[#0B1217] border-t border-[#1A1A1A]/10 dark:border-[#F2EBDD]/10 overflow-hidden"
             >
               <div className="container mx-auto px-6 py-6 space-y-3">
                 {[
@@ -233,16 +271,16 @@ export default function Home() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="block py-2 text-[#1A1A1A]/75 hover:text-[#0F2A44]"
+                    className="block py-2 text-[#1A1A1A]/75 dark:text-[#F2EBDD]/75 hover:text-[#0F2A44] dark:hover:text-[#C9A962]"
                   >
                     {item.label}
                   </Link>
                 ))}
-                <div className="pt-4 border-t border-[#1A1A1A]/10 flex gap-3">
-                  <Link href="/login" className="flex-1 py-3 text-center border border-[#0F2A44]/20 rounded-full">
+                <div className="pt-4 border-t border-[#1A1A1A]/10 dark:border-[#F2EBDD]/10 flex gap-3">
+                  <Link href="/login" className="flex-1 py-3 text-center border border-[#0F2A44]/20 dark:border-[#C9A962]/30 dark:text-[#C9A962] rounded-full">
                     دخول
                   </Link>
-                  <Link href="/register" className="flex-1 py-3 text-center bg-[#0F2A44] text-[#F7F2E9] rounded-full">
+                  <Link href="/register" className="flex-1 py-3 text-center bg-[#0F2A44] text-[#F7F2E9] dark:bg-[#C9A962] dark:text-[#0B1217] rounded-full">
                     تسجيل
                   </Link>
                 </div>
@@ -255,24 +293,35 @@ export default function Home() {
       {/* ============ HERO ============ */}
       <section ref={heroRef} className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <TessellatedBg className="absolute inset-0 w-full h-full" color="#0F2A44" opacity={0.025} />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#F7F2E9]/0 via-transparent to-[#F7F2E9]" />
+          {/* Ottoman carpet pattern — subtle, woven texture */}
+          <div
+            className="absolute inset-0 bg-repeat opacity-[0.10] dark:opacity-[0.18]"
+            style={{
+              backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
+              backgroundSize: "440px",
+            }}
+          />
+          {/* Soft parchment / dark wash so text stays readable */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F7F2E9]/85 via-[#F7F2E9]/70 to-[#F7F2E9] dark:from-[#0B1217]/85 dark:via-[#0B1217]/75 dark:to-[#0B1217]" />
+          {/* Warm radial glow behind the headline */}
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60vw] h-[60vw] rounded-full blur-[140px] bg-[#B08D57]/15 dark:bg-[#C9A962]/10" />
+
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
-            className="absolute top-32 -right-20 text-[#0F2A44]/10"
+            className="absolute top-32 -right-20 text-[#0F2A44]/10 dark:text-[#C9A962]/15"
           >
             <EightStar size={400} strokeWidth={0.4} />
           </motion.div>
           <motion.div
             animate={{ rotate: -360 }}
             transition={{ duration: 110, repeat: Infinity, ease: "linear" }}
-            className="absolute bottom-20 -left-20 text-[#1B4332]/10"
+            className="absolute bottom-20 -left-20 text-[#1B4332]/10 dark:text-[#C9A962]/10"
           >
             <EightStar size={340} strokeWidth={0.4} />
           </motion.div>
-          <ArabesqueCorner size={180} className="absolute top-24 right-0 text-[#B08D57]/30" />
-          <ArabesqueCorner size={180} className="absolute bottom-10 left-0 text-[#B08D57]/30 rotate-180" />
+          <ArabesqueCorner size={180} className="absolute top-24 right-0 text-[#B08D57]/30 dark:text-[#C9A962]/30" />
+          <ArabesqueCorner size={180} className="absolute bottom-10 left-0 text-[#B08D57]/30 dark:text-[#C9A962]/30 rotate-180" />
         </div>
 
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-6 relative z-10">
@@ -289,46 +338,55 @@ export default function Home() {
 
             <Reveal delay={0.15}>
               <h1
-                className="text-[14vw] sm:text-[10vw] md:text-8xl lg:text-9xl font-bold leading-[0.95] tracking-tight text-[#0F2A44] mb-2"
+                className="text-[14vw] sm:text-[10vw] md:text-8xl lg:text-9xl font-bold leading-[0.95] tracking-tight text-[#0F2A44] dark:text-[#F2EBDD] mb-10 md:mb-14"
                 style={{ fontFamily: "var(--font-quran)" }}
               >
                 إتقانُ التِلاوة
               </h1>
             </Reveal>
-            <Reveal delay={0.3}>
+
+            <Reveal delay={0.28}>
+              <div className="flex items-center justify-center gap-5 mb-10 md:mb-12" aria-hidden>
+                <div className="h-px w-14 md:w-20 bg-[#B08D57]/50 dark:bg-[#C9A962]/40" />
+                <span className="text-xs tracking-[0.5em] text-[#B08D57] dark:text-[#C9A962]">٭</span>
+                <div className="h-px w-14 md:w-20 bg-[#B08D57]/50 dark:bg-[#C9A962]/40" />
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.38}>
               <h2
-                className="text-[10vw] sm:text-[7vw] md:text-6xl lg:text-7xl font-light italic text-[#B08D57] mb-10"
+                className="text-[10vw] sm:text-[7vw] md:text-6xl lg:text-7xl font-light italic text-[#B08D57] dark:text-[#C9A962] mb-12 md:mb-14"
                 style={{ fontFamily: "var(--font-quran)" }}
               >
                 ورحلةُ التَعَلُّم
               </h2>
             </Reveal>
 
-            <Reveal delay={0.45}>
-              <OrnamentDivider className="w-72 h-10 mx-auto mb-10 text-[#B08D57]" />
+            <Reveal delay={0.5}>
+              <OrnamentDivider className="w-72 h-10 mx-auto mb-10 text-[#B08D57] dark:text-[#C9A962]" />
             </Reveal>
 
-            <Reveal delay={0.55}>
-              <p className="text-base md:text-lg text-[#1A1A1A]/70 leading-loose max-w-2xl mx-auto mb-14 px-4">
-                مِنبرٌ علميٌّ يجمع بين <span className="text-[#0F2A44] font-semibold">أكاديميَّةٍ</span> راسخةٍ للدُّروسِ والشَّهادات،
-                و<span className="text-[#1B4332] font-semibold">مَقْرأةٍ</span> روحانيَّةٍ للحفظِ والتَّسميعِ بإشرافِ المقرِئينَ المُجازين.
+            <Reveal delay={0.6}>
+              <p className="text-base md:text-lg text-[#1A1A1A]/70 dark:text-[#F2EBDD]/70 leading-loose max-w-2xl mx-auto mb-14 px-4">
+                مِنبرٌ علميٌّ يجمع بين <span className="text-[#0F2A44] dark:text-[#C9A962] font-semibold">أكاديميَّةٍ</span> راسخةٍ للدُّروسِ والشَّهادات،
+                و<span className="text-[#1B4332] dark:text-[#C9A962] font-semibold">مَقْرأةٍ</span> روحانيَّةٍ للحفظِ والتَّسميعِ بإشرافِ المقرِئينَ المُجازين.
               </p>
             </Reveal>
 
-            <Reveal delay={0.7}>
+            <Reveal delay={0.75}>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
                 <Link
                   href="/academy/student"
-                  className="group relative h-14 px-8 inline-flex items-center gap-3 bg-[#0F2A44] text-[#F7F2E9] rounded-full overflow-hidden transition-all duration-500 hover:gap-5 shadow-lg shadow-[#0F2A44]/20 hover:shadow-2xl hover:shadow-[#0F2A44]/30"
+                  className="group relative h-14 px-8 inline-flex items-center gap-3 bg-[#0F2A44] text-[#F7F2E9] dark:bg-[#C9A962] dark:text-[#0B1217] rounded-full overflow-hidden transition-all duration-500 hover:gap-5 shadow-lg shadow-[#0F2A44]/20 dark:shadow-[#C9A962]/20 hover:shadow-2xl"
                 >
-                  <span className="absolute inset-0 bg-[#1B4332] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                  <span className="absolute inset-0 bg-[#1B4332] dark:bg-[#D4B27A] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                   <GraduationCap className="w-5 h-5 relative z-10" />
                   <span className="relative z-10 font-medium">الأكاديميَّة</span>
                   <ArrowLeft className="w-4 h-4 relative z-10" />
                 </Link>
                 <Link
                   href="/student"
-                  className="group relative h-14 px-8 inline-flex items-center gap-3 border border-[#0F2A44]/25 text-[#0F2A44] rounded-full hover:gap-5 transition-all duration-500 hover:border-[#1B4332] hover:bg-[#1B4332] hover:text-[#F7F2E9]"
+                  className="group relative h-14 px-8 inline-flex items-center gap-3 border border-[#0F2A44]/25 dark:border-[#C9A962]/35 text-[#0F2A44] dark:text-[#C9A962] rounded-full hover:gap-5 transition-all duration-500 hover:border-[#1B4332] hover:bg-[#1B4332] hover:text-[#F7F2E9] dark:hover:border-[#C9A962] dark:hover:bg-[#C9A962] dark:hover:text-[#0B1217]"
                 >
                   <BookOpen className="w-5 h-5" />
                   <span className="font-medium">المَقْرأة</span>
@@ -337,8 +395,8 @@ export default function Home() {
               </div>
             </Reveal>
 
-            <Reveal delay={0.85}>
-              <div className="grid grid-cols-2 md:grid-cols-4 max-w-4xl mx-auto border-y border-[#1A1A1A]/10 divide-x divide-[#1A1A1A]/10 divide-x-reverse">
+            <Reveal delay={0.9}>
+              <div className="grid grid-cols-2 md:grid-cols-4 max-w-4xl mx-auto border-y border-[#1A1A1A]/10 dark:border-[#F2EBDD]/10 divide-x divide-[#1A1A1A]/10 dark:divide-[#F2EBDD]/10 divide-x-reverse">
                 {[
                   { v: 12500, s: "+", l: "طالب وطالبة" },
                   { v: 320, s: "+", l: "معلِّم ومُقرئ" },
@@ -346,10 +404,10 @@ export default function Home() {
                   { v: 24, s: "/7", l: "متابعة دائمة" },
                 ].map((s, i) => (
                   <div key={i} className="py-8 px-2 text-center">
-                    <div className="text-3xl md:text-4xl font-bold text-[#0F2A44]" style={{ fontFamily: "var(--font-quran)" }}>
+                    <div className="text-3xl md:text-4xl font-bold text-[#0F2A44] dark:text-[#C9A962]" style={{ fontFamily: "var(--font-quran)" }}>
                       <CountUp value={s.v} suffix={s.s} />
                     </div>
-                    <div className="text-xs md:text-sm text-[#1A1A1A]/60 mt-2 tracking-wide">{s.l}</div>
+                    <div className="text-xs md:text-sm text-[#1A1A1A]/60 dark:text-[#F2EBDD]/60 mt-2 tracking-wide">{s.l}</div>
                   </div>
                 ))}
               </div>
@@ -358,7 +416,7 @@ export default function Home() {
             <motion.div
               animate={{ y: [0, 12, 0] }}
               transition={{ duration: 2.5, repeat: Infinity }}
-              className="mt-16 text-[#1A1A1A]/40 inline-flex flex-col items-center gap-2"
+              className="mt-16 text-[#1A1A1A]/40 dark:text-[#F2EBDD]/40 inline-flex flex-col items-center gap-2"
             >
               <span className="text-xs tracking-[0.3em]">تَصَفَّح</span>
               <ChevronDown className="w-4 h-4" />
@@ -580,7 +638,7 @@ export default function Home() {
 
           <div className="max-w-4xl mx-auto">
             {[
-              { n: "١", t: "سَجِّل في المنصَّة", d: "أنشئ حسابَكَ في دقائق، اختر منصَّتَك (الأكاديميَّة أو المَقْرأة أو كلتيهما)، وأَكمِل ملفَّكَ التعريفيَّ." },
+              { n: "١", t: "سَجِّل في المنصَّة", d: "أنشئ حسابَكَ في دقائق، اختر منصَّتَك (��لأكاديميَّة أو المَقْرأة أو كلتيهما)، وأَكمِل ملفَّكَ التعريفيَّ." },
               { n: "٢", t: "اخْتَر مُعلِّمَك", d: "تصفَّح قائمةَ الأساتذةِ والمُقرئين، اقرأْ سيرَهم وتقييماتِ طلَّابِهم، ثم اخترِ الأنسبَ لك." },
               { n: "٣", t: "احْجِزْ موعدَك", d: "اختر اليومَ والساعةَ من تقويمِ المُعلِّم، فيَصلُكَ تَنبيهٌ قبلَ الجلسةِ بوقتٍ كافٍ." },
               { n: "٤", t: "ابْدأْ في الإتقان", d: "احْضُرْ الجلساتِ، أَنجِزْ الواجبات، وَتابعْ تقدُّمَك حتى تَبلُغَ غايتَك بإذن الله." },
@@ -707,7 +765,17 @@ export default function Home() {
 
       {/* ============ FOOTER ============ */}
       <footer className="relative bg-[#0a1f33] text-[#F7F2E9]/85 pt-20 pb-10 overflow-hidden">
-        <TessellatedBg className="absolute inset-0 w-full h-full" color="#C9A962" opacity={0.025} />
+        {/* Ottoman carpet — woven texture beneath the dark wash */}
+        <div
+          className="absolute inset-0 bg-repeat opacity-[0.18] mix-blend-overlay pointer-events-none"
+          style={{
+            backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
+            backgroundSize: "440px",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1f33] via-[#0a1f33]/92 to-[#0a1f33] pointer-events-none" />
+        {/* Top thin gold seam */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/40 to-transparent" />
 
         <div className="container mx-auto px-6 relative">
           <div className="grid lg:grid-cols-12 gap-10 pb-12 border-b border-[#F7F2E9]/10">
