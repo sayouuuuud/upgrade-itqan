@@ -127,6 +127,112 @@ function CountUp({ value, suffix = "", duration = 2 }: { value: number; suffix?:
 }
 
 /* ============================================================
+   TESTIMONIALS MARQUEE
+   ============================================================ */
+
+type Testimonial = { q: string; n: string; r: string }
+
+function TestimonialCard({ q, n, r }: Testimonial) {
+  return (
+    <article className="ml-6 flex-shrink-0 w-[320px] md:w-[420px] relative p-8 md:p-10 bg-[#FAF6EE] dark:bg-[#101A22] border border-[#0F2A44]/10 dark:border-[#C9A962]/15 rounded-2xl">
+      <Quote className="absolute top-6 left-6 w-8 h-8 text-[#B08D57]/20 dark:text-[#C9A962]/30 rotate-180" />
+      <ArabesqueCorner size={70} className="absolute top-0 right-0 text-[#B08D57]/15 dark:text-[#C9A962]/25" />
+      <div className="relative pt-4">
+        <p
+          className="text-base md:text-lg text-[#1A1A1A]/85 dark:text-[#F2EBDD]/85 leading-loose mb-6 line-clamp-4"
+          style={{ fontFamily: "var(--font-quran)" }}
+        >
+          {q}
+        </p>
+        <div className="pt-4 border-t border-[#0F2A44]/10 dark:border-[#C9A962]/15">
+          <div className="font-bold text-[#0F2A44] dark:text-[#F2EBDD]" style={{ fontFamily: "var(--font-quran)" }}>
+            {n}
+          </div>
+          <div className="text-sm text-[#1A1A1A]/55 dark:text-[#F2EBDD]/55 mt-1">{r}</div>
+        </div>
+        <div className="flex gap-1 mt-3">
+          {[...Array(5)].map((_, k) => (
+            <Star key={k} className="w-3.5 h-3.5 fill-[#B08D57] dark:fill-[#C9A962] text-[#B08D57] dark:text-[#C9A962]" />
+          ))}
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function MarqueeRow({
+  items,
+  direction,
+  duration,
+}: {
+  items: Testimonial[]
+  direction: "right" | "left"
+  duration: number
+}) {
+  // Duplicate items so -50% translation lands exactly on the second copy → seamless loop.
+  const doubled = [...items, ...items]
+  return (
+    <div className="overflow-hidden">
+      <motion.div
+        className="flex w-max"
+        animate={{ x: direction === "right" ? ["-50%", "0%"] : ["0%", "-50%"] }}
+        transition={{ duration, repeat: Infinity, ease: "linear" }}
+      >
+        {doubled.map((t, i) => (
+          <TestimonialCard key={i} {...t} />
+        ))}
+      </motion.div>
+    </div>
+  )
+}
+
+function TestimonialsMarquee() {
+  const rowTop: Testimonial[] = [
+    { q: "تجربةٌ أعادتْ لي شَغفي بالقرآن، فالأستاذُ يُتابعُ تِلاوتي حرفًا حرفًا، وأنا في بيتي.", n: "أحمد المصري", r: "طالبٌ في مسارِ الإجازة" },
+    { q: "حفظتُ ربعَ القرآن في ستَّةِ أشهرٍ بفضلِ المتابعةِ المُنظَّمةِ والمُقرئةِ المُتميِّزة.", n: "فاطمة الزهراء", r: "طالبةُ تحفيظ" },
+    { q: "الجَودةُ، التَّنظيمُ، الاحترامُ في التعامل، كلُّ شيءٍ يَدلُّ على أنَّ القائمين أهلُ علمٍ وصِدق.", n: "د. خالد الأنصاري", r: "وَلِيُّ أمر" },
+    { q: "ما مرَّ يومٌ بعد التحاقي بالمَقْرأة إلا وذُقتُ حلاوةَ القرآنِ من جديد.", n: "محمد العبسي", r: "طالبُ تجويد" },
+    { q: "المنصَّةُ راقيةٌ، والأساتذةُ مُجازون، والإدارةُ تَسمعُ لكلِّ مُلاحظةٍ بِصَدرٍ رَحب.", n: "أم عبد الله", r: "وَلِيَّةُ أمر" },
+    { q: "أَخذتُ إجازتي في رواية حفصٍ هنا، بعد سنواتٍ من التشتُّتِ بين منصَّاتٍ أخرى.", n: "يوسف الإدريسي", r: "حاصلٌ على إجازة" },
+  ]
+  const rowBottom: Testimonial[] = [
+    { q: "تجربةٌ مُختلفةٌ تمامًا، شعرتُ أنني في حَلْقةٍ حقيقيَّةٍ في أحدِ المساجدِ العَتيقة.", n: "هدى الشريف", r: "طالبةُ علم" },
+    { q: "كنتُ أبحثُ عن مَقْرأةٍ مُنضَبطةٍ منذُ زمن، فوجدتُ هنا ما يَفوقُ ما تَمنَّيت.", n: "إبراهيم الرفاعي", r: "طالبٌ في الإجازة" },
+    { q: "الواجباتُ مُحَكَّمة، والمُتابعةُ يوميَّة، والنتائجُ مُبشِّرةٌ بفضلِ الله.", n: "نوال البصري", r: "طالبةُ تحفيظ" },
+    { q: "ما رأيتُ أَشمَلَ من هذه المنصَّةِ في الجَمعِ بين العلمِ النظريِّ والتطبيقيِّ.", n: "د. صالح الشمري", r: "أستاذٌ مُحاضِر" },
+    { q: "ابني تَغيَّرت علاقتُه بالقرآنِ بعد التحاقِه، صار يَنتظرُ الجلسةَ بشَغف.", n: "أم محمد", r: "وَلِيَّةُ أمر" },
+    { q: "خِدمةٌ مُتقَنةٌ من البدايةِ إلى النهاية، شُكرًا لكلِّ القائمين على هذا المشروع.", n: "عبد الرحمن الحارثي", r: "خرِّيج" },
+  ]
+
+  return (
+    <section id="voices" className="relative py-32 md:py-40 bg-[#F7F2E9] dark:bg-[#0B1217] overflow-hidden transition-colors duration-500">
+      <div className="container mx-auto px-6">
+        <Reveal>
+          <div className="text-center mb-16 md:mb-20">
+            <span className="text-xs tracking-[0.35em] text-[#B08D57] dark:text-[#C9A962] uppercase mb-4 block">آراؤهم</span>
+            <h2
+              className="text-5xl md:text-6xl font-bold text-[#0F2A44] dark:text-[#F2EBDD] leading-tight"
+              style={{ fontFamily: "var(--font-quran)" }}
+            >
+              كَلِماتٌ مِن طُلَّابِنا
+            </h2>
+          </div>
+        </Reveal>
+      </div>
+
+      {/* Two-row marquee with edge fades */}
+      <div className="relative space-y-6">
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-48 bg-gradient-to-l from-[#F7F2E9] dark:from-[#0B1217] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-48 bg-gradient-to-r from-[#F7F2E9] dark:from-[#0B1217] to-transparent" />
+
+        <MarqueeRow items={rowTop} direction="right" duration={50} />
+        <MarqueeRow items={rowBottom} direction="left" duration={55} />
+      </div>
+    </section>
+  )
+}
+
+/* ============================================================
    PAGE
    ============================================================ */
 
@@ -293,12 +399,21 @@ export default function Home() {
       {/* ============ HERO ============ */}
       <section ref={heroRef} className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          {/* Ottoman carpet pattern — slow living drift, like fabric breathing */}
+          {/* Ottoman carpet pattern — STATIC, breathing only by opacity (no lateral drift) */}
           <motion.div
-            initial={{ backgroundPosition: "0px 0px" }}
-            animate={{ backgroundPosition: ["0px 0px", "440px 220px"] }}
-            transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0 bg-repeat opacity-[0.18] dark:opacity-[0.26]"
+            animate={{ opacity: [0.16, 0.22, 0.16] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 bg-repeat dark:hidden"
+            style={{
+              backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
+              backgroundSize: "440px",
+              filter: "grayscale(1) sepia(0.45) brightness(1.05) contrast(0.95)",
+            }}
+          />
+          <motion.div
+            animate={{ opacity: [0.22, 0.3, 0.22] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 bg-repeat hidden dark:block"
             style={{
               backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
               backgroundSize: "440px",
@@ -308,70 +423,64 @@ export default function Home() {
           {/* Soft parchment / dark wash so text stays readable */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#F7F2E9]/85 via-[#F7F2E9]/70 to-[#F7F2E9] dark:from-[#0B1217]/85 dark:via-[#0B1217]/75 dark:to-[#0B1217]" />
 
-          {/* Breathing warm radial glow behind the headline */}
+          {/* Breathing warm radial glow behind the headline (in place, no drift) */}
           <motion.div
-            animate={{ scale: [1, 1.12, 1], opacity: [0.85, 1, 0.85] }}
+            animate={{ scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }}
             transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
             className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60vw] h-[60vw] rounded-full blur-[140px] bg-[#B08D57]/15 dark:bg-[#C9A962]/10"
           />
 
-          {/* Large rotating eight-stars with gentle breathing scale */}
+          {/* Large rotating eight-stars — pure in-place rotation around their own center */}
           <motion.div
-            animate={{ rotate: 360, scale: [1, 1.05, 1] }}
-            transition={{
-              rotate: { duration: 90, repeat: Infinity, ease: "linear" },
-              scale: { duration: 11, repeat: Infinity, ease: "easeInOut" },
-            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
             className="absolute top-32 -right-20 text-[#0F2A44]/10 dark:text-[#C9A962]/15"
           >
             <EightStar size={400} strokeWidth={0.4} />
           </motion.div>
           <motion.div
-            animate={{ rotate: -360, scale: [1, 1.06, 1] }}
-            transition={{
-              rotate: { duration: 110, repeat: Infinity, ease: "linear" },
-              scale: { duration: 13, repeat: Infinity, ease: "easeInOut" },
-            }}
+            animate={{ rotate: -360 }}
+            transition={{ duration: 110, repeat: Infinity, ease: "linear" }}
             className="absolute bottom-20 -left-20 text-[#1B4332]/10 dark:text-[#C9A962]/10"
           >
             <EightStar size={340} strokeWidth={0.4} />
           </motion.div>
 
-          {/* Arabesque corners — soft floating/breathing */}
+          {/* Arabesque corners — pulse opacity ONLY, no Y drift */}
           <motion.div
-            animate={{ y: [0, -8, 0], opacity: [0.8, 1, 0.8] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             className="absolute top-24 right-0"
           >
             <ArabesqueCorner size={180} className="text-[#B08D57]/30 dark:text-[#C9A962]/30" />
           </motion.div>
           <motion.div
-            animate={{ y: [0, 8, 0], opacity: [0.8, 1, 0.8] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
             className="absolute bottom-10 left-0"
           >
             <ArabesqueCorner size={180} className="text-[#B08D57]/30 dark:text-[#C9A962]/30 rotate-180" />
           </motion.div>
 
-          {/* Tiny floating gold motes — like dust in afternoon light */}
+          {/* Gold sparks — twinkle in place (scale + opacity), no drift */}
           {[
-            { top: "18%", left: "12%", d: 14, delay: 0 },
-            { top: "28%", left: "82%", d: 18, delay: 2 },
-            { top: "62%", left: "8%", d: 10, delay: 4 },
-            { top: "72%", left: "88%", d: 16, delay: 1 },
-            { top: "44%", left: "20%", d: 9, delay: 3 },
-            { top: "55%", left: "78%", d: 11, delay: 5 },
+            { top: "18%", left: "12%", d: 12, delay: 0, dur: 5 },
+            { top: "28%", left: "82%", d: 16, delay: 1.4, dur: 6 },
+            { top: "62%", left: "8%", d: 9, delay: 2.8, dur: 4.5 },
+            { top: "72%", left: "88%", d: 14, delay: 0.6, dur: 5.5 },
+            { top: "44%", left: "20%", d: 8, delay: 3.2, dur: 4 },
+            { top: "55%", left: "78%", d: 10, delay: 2, dur: 5 },
           ].map((m, i) => (
             <motion.div
               key={i}
-              className="absolute rounded-full bg-[#B08D57]/40 dark:bg-[#C9A962]/35 blur-[2px]"
+              className="absolute rounded-full bg-[#B08D57]/50 dark:bg-[#C9A962]/45 blur-[2px]"
               style={{ top: m.top, left: m.left, width: m.d, height: m.d }}
               animate={{
-                y: [0, -22, 0],
-                opacity: [0.25, 0.7, 0.25],
+                scale: [0.6, 1.3, 0.6],
+                opacity: [0.2, 0.85, 0.2],
               }}
               transition={{
-                duration: 6 + (i % 3),
+                duration: m.dur,
                 repeat: Infinity,
                 ease: "easeInOut",
                 delay: m.delay,
@@ -379,7 +488,7 @@ export default function Home() {
             />
           ))}
 
-          {/* Slow shimmering eight-point sparkle accents */}
+          {/* Eight-point sparkles — rotate around their own center + breathe */}
           {[
             { top: "22%", left: "30%", size: 22, delay: 0 },
             { top: "70%", left: "65%", size: 18, delay: 2.5 },
@@ -391,8 +500,8 @@ export default function Home() {
               style={{ top: s.top, left: s.left }}
               animate={{
                 rotate: 360,
-                scale: [0.85, 1.15, 0.85],
-                opacity: [0.3, 0.85, 0.3],
+                scale: [0.85, 1.2, 0.85],
+                opacity: [0.3, 0.9, 0.3],
               }}
               transition={{
                 rotate: { duration: 20 + i * 4, repeat: Infinity, ease: "linear" },
@@ -753,48 +862,7 @@ export default function Home() {
       </section>
 
       {/* ============ TESTIMONIALS ============ */}
-      <section id="voices" className="relative py-32 md:py-40 bg-[#F7F2E9] dark:bg-[#0B1217] overflow-hidden transition-colors duration-500">
-        <div className="container mx-auto px-6">
-          <Reveal>
-            <div className="text-center mb-20">
-              <span className="text-xs tracking-[0.35em] text-[#B08D57] dark:text-[#C9A962] uppercase mb-4 block">آراؤهم</span>
-              <h2 className="text-5xl md:text-6xl font-bold text-[#0F2A44] dark:text-[#F2EBDD] leading-tight" style={{ fontFamily: "var(--font-quran)" }}>
-                كَلِماتٌ مِن طُلَّابِنا
-              </h2>
-            </div>
-          </Reveal>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {[
-              { q: "تجربةٌ أعادتْ لي شَغفي بالقرآن، فالأستاذُ يُتابعُ تِلاوتي حرفًا حرفًا، وأنا في بيتي.", n: "أحمد المصري", r: "طالبٌ في مسارِ الإجازة" },
-              { q: "حفظتُ ربعَ القرآن في ستَّةِ أشهرٍ بفضلِ المتابعةِ المُنظَّمةِ والمُقرئةِ المُتميِّزةِ في المنصَّة.", n: "فاطمة الزهراء", r: "طالبةُ تحفيظ" },
-              { q: "الجَودةُ، التَّنظيم، الاحترامُ في التعامل، كلُّ شيءٍ يَدلُّ على أنَّ القائمين أهلُ علمٍ وصِدق.", n: "د. خالد الأنصاري", r: "وَلِيُّ أمر" },
-            ].map((t, i) => (
-              <Reveal key={i} delay={i * 0.15}>
-                <article className="group h-full relative p-10 bg-[#FAF6EE] dark:bg-[#101A22] border border-[#0F2A44]/10 dark:border-[#C9A962]/15 rounded-2xl hover:border-[#B08D57]/40 dark:hover:border-[#C9A962]/45 transition-all duration-500">
-                  <Quote className="absolute top-6 left-6 w-10 h-10 text-[#B08D57]/20 dark:text-[#C9A962]/30 rotate-180" />
-                  <ArabesqueCorner size={80} className="absolute top-0 right-0 text-[#B08D57]/15 dark:text-[#C9A962]/25" />
-
-                  <div className="relative pt-6">
-                    <p className="text-lg text-[#1A1A1A]/85 dark:text-[#F2EBDD]/85 leading-loose mb-8" style={{ fontFamily: "var(--font-quran)" }}>
-                      {t.q}
-                    </p>
-                    <div className="pt-6 border-t border-[#0F2A44]/10 dark:border-[#C9A962]/15">
-                      <div className="font-bold text-[#0F2A44] dark:text-[#F2EBDD]" style={{ fontFamily: "var(--font-quran)" }}>{t.n}</div>
-                      <div className="text-sm text-[#1A1A1A]/55 dark:text-[#F2EBDD]/55 mt-1">{t.r}</div>
-                    </div>
-                    <div className="flex gap-1 mt-4">
-                      {[...Array(5)].map((_, k) => (
-                        <Star key={k} className="w-3.5 h-3.5 fill-[#B08D57] dark:fill-[#C9A962] text-[#B08D57] dark:text-[#C9A962]" />
-                      ))}
-                    </div>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TestimonialsMarquee />
 
       {/* ============ CTA ============ */}
       <section className="relative py-32 md:py-40 bg-[#0F2A44] text-[#F7F2E9] overflow-hidden">
