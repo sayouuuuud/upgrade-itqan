@@ -629,7 +629,7 @@ export default function SubmitTaskPage() {
               ) : (
                 <>
                   <Upload className="w-4 h-4" />
-                  {submission ? "إعادة ال��سليم" : "تسليم المهمة"}
+                  {submission ? "إعادة التسليم" : "تسليم المهمة"}
                 </>
               )}
             </button>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Cairo, Amiri, Noto_Naskh_Arabic } from 'next/font/google'
+import { Cairo, Amiri } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { AnalyticsTracker } from '@/components/analytics-tracker'
 import { LanguageProvider } from '@/lib/i18n/context'
@@ -16,15 +16,6 @@ const amiri = Amiri({
   subsets: ['arabic'],
   weight: ['400', '700'],
   variable: '--font-amiri',
-})
-
-// Comprehensive Arabic naskh with full tashkeel coverage — used as a fallback
-// inside `--font-quran` so any glyph Amiri lacks (rare shadda/fatha combos,
-// Quranic small marks, etc.) is rendered cleanly instead of as tofu (��).
-const notoNaskh = Noto_Naskh_Arabic({
-  subsets: ['arabic'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-naskh',
 })
 
 import { getSetting } from '@/lib/settings'
@@ -62,7 +53,7 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={`${cairo.variable} ${amiri.variable} ${notoNaskh.variable}`}
+      className={`${cairo.variable} ${amiri.variable}`}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased overflow-x-hidden" suppressHydrationWarning>

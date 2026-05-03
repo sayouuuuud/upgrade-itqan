@@ -99,10 +99,7 @@
 @theme inline {
   --font-sans: var(--font-cairo), sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
-  /* Amiri stays the primary serif look. Noto Naskh Arabic is added as a
-     fallback so any glyph Amiri lacks (rare shadda/tashkeel combinations,
-     extended Arabic letters) is rendered cleanly instead of as tofu (��). */
-  --font-quran: var(--font-amiri), var(--font-naskh), 'Amiri', 'Noto Naskh Arabic', serif;
+  --font-quran: var(--font-amiri), 'Amiri', serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
