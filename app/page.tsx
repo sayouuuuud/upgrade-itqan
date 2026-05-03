@@ -293,8 +293,11 @@ export default function Home() {
       {/* ============ HERO ============ */}
       <section ref={heroRef} className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          {/* Ottoman carpet pattern — desaturated to remove red, sepia warm tone */}
-          <div
+          {/* Ottoman carpet pattern — slow living drift, like fabric breathing */}
+          <motion.div
+            initial={{ backgroundPosition: "0px 0px" }}
+            animate={{ backgroundPosition: ["0px 0px", "440px 220px"] }}
+            transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
             className="absolute inset-0 bg-repeat opacity-[0.18] dark:opacity-[0.26]"
             style={{
               backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
@@ -304,25 +307,102 @@ export default function Home() {
           />
           {/* Soft parchment / dark wash so text stays readable */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#F7F2E9]/85 via-[#F7F2E9]/70 to-[#F7F2E9] dark:from-[#0B1217]/85 dark:via-[#0B1217]/75 dark:to-[#0B1217]" />
-          {/* Warm radial glow behind the headline */}
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60vw] h-[60vw] rounded-full blur-[140px] bg-[#B08D57]/15 dark:bg-[#C9A962]/10" />
 
+          {/* Breathing warm radial glow behind the headline */}
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
+            animate={{ scale: [1, 1.12, 1], opacity: [0.85, 1, 0.85] }}
+            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60vw] h-[60vw] rounded-full blur-[140px] bg-[#B08D57]/15 dark:bg-[#C9A962]/10"
+          />
+
+          {/* Large rotating eight-stars with gentle breathing scale */}
+          <motion.div
+            animate={{ rotate: 360, scale: [1, 1.05, 1] }}
+            transition={{
+              rotate: { duration: 90, repeat: Infinity, ease: "linear" },
+              scale: { duration: 11, repeat: Infinity, ease: "easeInOut" },
+            }}
             className="absolute top-32 -right-20 text-[#0F2A44]/10 dark:text-[#C9A962]/15"
           >
             <EightStar size={400} strokeWidth={0.4} />
           </motion.div>
           <motion.div
-            animate={{ rotate: -360 }}
-            transition={{ duration: 110, repeat: Infinity, ease: "linear" }}
+            animate={{ rotate: -360, scale: [1, 1.06, 1] }}
+            transition={{
+              rotate: { duration: 110, repeat: Infinity, ease: "linear" },
+              scale: { duration: 13, repeat: Infinity, ease: "easeInOut" },
+            }}
             className="absolute bottom-20 -left-20 text-[#1B4332]/10 dark:text-[#C9A962]/10"
           >
             <EightStar size={340} strokeWidth={0.4} />
           </motion.div>
-          <ArabesqueCorner size={180} className="absolute top-24 right-0 text-[#B08D57]/30 dark:text-[#C9A962]/30" />
-          <ArabesqueCorner size={180} className="absolute bottom-10 left-0 text-[#B08D57]/30 dark:text-[#C9A962]/30 rotate-180" />
+
+          {/* Arabesque corners — soft floating/breathing */}
+          <motion.div
+            animate={{ y: [0, -8, 0], opacity: [0.8, 1, 0.8] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-24 right-0"
+          >
+            <ArabesqueCorner size={180} className="text-[#B08D57]/30 dark:text-[#C9A962]/30" />
+          </motion.div>
+          <motion.div
+            animate={{ y: [0, 8, 0], opacity: [0.8, 1, 0.8] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+            className="absolute bottom-10 left-0"
+          >
+            <ArabesqueCorner size={180} className="text-[#B08D57]/30 dark:text-[#C9A962]/30 rotate-180" />
+          </motion.div>
+
+          {/* Tiny floating gold motes — like dust in afternoon light */}
+          {[
+            { top: "18%", left: "12%", d: 14, delay: 0 },
+            { top: "28%", left: "82%", d: 18, delay: 2 },
+            { top: "62%", left: "8%", d: 10, delay: 4 },
+            { top: "72%", left: "88%", d: 16, delay: 1 },
+            { top: "44%", left: "20%", d: 9, delay: 3 },
+            { top: "55%", left: "78%", d: 11, delay: 5 },
+          ].map((m, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-[#B08D57]/40 dark:bg-[#C9A962]/35 blur-[2px]"
+              style={{ top: m.top, left: m.left, width: m.d, height: m.d }}
+              animate={{
+                y: [0, -22, 0],
+                opacity: [0.25, 0.7, 0.25],
+              }}
+              transition={{
+                duration: 6 + (i % 3),
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: m.delay,
+              }}
+            />
+          ))}
+
+          {/* Slow shimmering eight-point sparkle accents */}
+          {[
+            { top: "22%", left: "30%", size: 22, delay: 0 },
+            { top: "70%", left: "65%", size: 18, delay: 2.5 },
+            { top: "38%", left: "75%", size: 14, delay: 1.2 },
+          ].map((s, i) => (
+            <motion.div
+              key={`sparkle-${i}`}
+              className="absolute text-[#B08D57]/35 dark:text-[#C9A962]/40"
+              style={{ top: s.top, left: s.left }}
+              animate={{
+                rotate: 360,
+                scale: [0.85, 1.15, 0.85],
+                opacity: [0.3, 0.85, 0.3],
+              }}
+              transition={{
+                rotate: { duration: 20 + i * 4, repeat: Infinity, ease: "linear" },
+                scale: { duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: s.delay },
+                opacity: { duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: s.delay },
+              }}
+            >
+              <EightStar size={s.size} strokeWidth={0.8} />
+            </motion.div>
+          ))}
         </div>
 
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-6 relative z-10">
