@@ -429,35 +429,34 @@ export default function Home() {
       {/* ============ TWO PILLARS ============ */}
       <section
         id="sections"
-        className="relative py-32 md:py-40 bg-[#F7F2E9] text-[#1A1A1A] dark:bg-[#0F2A44] dark:text-[#F7F2E9] overflow-hidden transition-colors duration-500"
+        className="relative pt-56 pb-56 md:pt-64 md:pb-64 bg-[#0F2A44] text-[#F7F2E9] overflow-hidden"
       >
-        {/* Subtle ornamental layer that fits both modes */}
-        <TessellatedBg
-          className="absolute inset-0 w-full h-full hidden dark:block"
-          color="#C9A962"
-          opacity={0.04}
-        />
-        <TessellatedBg
-          className="absolute inset-0 w-full h-full dark:hidden"
-          color="#0F2A44"
-          opacity={0.025}
-        />
-        {/* Soft gradient seam — blends with the cream hero above and the cream features below */}
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#F7F2E9] to-transparent dark:from-[#0B1217] dark:to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#F7F2E9] to-transparent dark:from-[#0a1f33] dark:to-transparent pointer-events-none" />
+        {/* Tessellated ornament — subtle gold lattice */}
+        <TessellatedBg className="absolute inset-0 w-full h-full" color="#C9A962" opacity={0.05} />
+
+        {/*
+          Long, soft gradient seams that blend the navy panel into the cream
+          (light mode) or dark (dark mode) sections above and below — no abrupt cut.
+        */}
+        <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-[#F7F2E9] via-[#F7F2E9]/60 to-transparent dark:from-[#0B1217] dark:via-[#0B1217]/60 dark:to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-[#F7F2E9] via-[#F7F2E9]/60 to-transparent dark:from-[#0B1217] dark:via-[#0B1217]/60 dark:to-transparent pointer-events-none" />
+
+        {/* Warm gold halos so the navy doesn't read flat */}
+        <div className="absolute top-1/3 -left-32 w-[500px] h-[500px] rounded-full bg-[#C9A962]/8 blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-1/4 -right-32 w-[500px] h-[500px] rounded-full bg-[#B08D57]/10 blur-[140px] pointer-events-none" />
 
         <div className="container mx-auto px-6 relative">
           <Reveal>
             <div className="text-center mb-20 max-w-2xl mx-auto">
               <div className="inline-flex items-center gap-3 mb-6">
-                <div className="h-px w-12 bg-[#B08D57] dark:bg-[#C9A962]" />
-                <span className="text-xs tracking-[0.35em] text-[#B08D57] dark:text-[#C9A962] uppercase">المنصَّتان</span>
-                <div className="h-px w-12 bg-[#B08D57] dark:bg-[#C9A962]" />
+                <div className="h-px w-12 bg-[#C9A962]" />
+                <span className="text-xs tracking-[0.35em] text-[#C9A962] uppercase">المنصَّتان</span>
+                <div className="h-px w-12 bg-[#C9A962]" />
               </div>
-              <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-[#0F2A44] dark:text-[#F7F2E9]" style={{ fontFamily: "var(--font-quran)" }}>
+              <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight" style={{ fontFamily: "var(--font-quran)" }}>
                 طريقانِ نحوَ الإتقان
               </h2>
-              <p className="text-[#1A1A1A]/65 dark:text-[#F7F2E9]/65 text-lg leading-relaxed">
+              <p className="text-[#F7F2E9]/70 text-lg leading-relaxed">
                 اخترْ مسارَك الذي يُلائمُ هِمَّتَكَ ووقتَك
               </p>
             </div>
@@ -467,24 +466,24 @@ export default function Home() {
             {/* ACADEMY */}
             <Reveal delay={0.1}>
               <Link href="/academy/student" className="group block relative">
-                <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#B08D57]/35 dark:text-[#C9A962]/30 pointer-events-none" />
-                <article className="relative h-full bg-gradient-to-br from-[#FFFCF5] via-[#FAF4E5] to-[#F2E8CF] dark:from-[#163A60] dark:via-[#0F2A44] dark:to-[#0a1f33] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#B08D57]/30 dark:border-[#C9A962]/30 overflow-hidden transition-all duration-700 group-hover:border-[#B08D57]/60 dark:group-hover:border-[#C9A962]/60 group-hover:-translate-y-2 shadow-xl shadow-[#0F2A44]/10 dark:shadow-2xl dark:shadow-black/40">
-                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#B08D57]/15 dark:bg-[#C9A962]/18 rounded-full blur-3xl group-hover:bg-[#B08D57]/25 dark:group-hover:bg-[#C9A962]/28 transition-all duration-700" />
-                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/10 dark:bg-[#B08D57]/15 rounded-full blur-3xl" />
-                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#B08D57]/30 dark:text-[#C9A962]/30" />
-                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#B08D57]/30 dark:text-[#C9A962]/30 rotate-180" />
+                <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#C9A962]/45 pointer-events-none" />
+                <article className="relative h-full bg-gradient-to-br from-[#FFFCF5] via-[#FAF4E5] to-[#F2E8CF] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/50 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/80 group-hover:-translate-y-2 shadow-2xl shadow-black/40">
+                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#B08D57]/15 rounded-full blur-3xl group-hover:bg-[#B08D57]/25 transition-all duration-700" />
+                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/10 rounded-full blur-3xl" />
+                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#B08D57]/35" />
+                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#B08D57]/35 rotate-180" />
 
                   <div className="relative">
-                    <div className="text-7xl font-bold text-[#B08D57]/35 dark:text-[#C9A962]/30 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
+                    <div className="text-7xl font-bold text-[#B08D57]/35 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
                       ٠١
                     </div>
                     <div className="flex items-center gap-3 mb-2 -mt-8">
-                      <span className="text-xs tracking-[0.3em] text-[#B08D57] dark:text-[#C9A962] uppercase">القسم الأول</span>
+                      <span className="text-xs tracking-[0.3em] text-[#B08D57] uppercase">القسم الأول</span>
                     </div>
-                    <h3 className="text-4xl md:text-5xl font-bold mb-4 text-[#0F2A44] dark:text-[#F7F2E9]" style={{ fontFamily: "var(--font-quran)" }}>
+                    <h3 className="text-4xl md:text-5xl font-bold mb-4 text-[#0F2A44]" style={{ fontFamily: "var(--font-quran)" }}>
                       الأكاديميَّة
                     </h3>
-                    <p className="text-[#1A1A1A]/70 dark:text-[#F7F2E9]/70 leading-loose mb-10 text-base md:text-lg">
+                    <p className="text-[#1A1A1A]/75 leading-loose mb-10 text-base md:text-lg">
                       مَدْرسةٌ افتراضيَّةٌ منظَّمة، بدوراتٍ مُتدرِّجةٍ في علوم القرآن والتجويد والفقه،
                       تُتوَّجُ بشهاداتٍ وإجازاتٍ معتمدة.
                     </p>
@@ -496,20 +495,20 @@ export default function Home() {
                         { i: Users, t: "إشرافٌ مباشر", d: "أساتذةٌ مُجازون" },
                       ].map((f, i) => (
                         <div key={i} className="flex items-start gap-4 group/item">
-                          <div className="w-10 h-10 rounded-full border border-[#B08D57]/40 dark:border-[#C9A962]/40 bg-[#B08D57]/8 dark:bg-[#C9A962]/5 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#B08D57]/15 dark:group-hover/item:bg-[#C9A962]/15 group-hover/item:border-[#B08D57]/65 dark:group-hover/item:border-[#C9A962]/60 transition-colors">
-                            <f.i className="w-4 h-4 text-[#B08D57] dark:text-[#C9A962]" />
+                          <div className="w-10 h-10 rounded-full border border-[#B08D57]/45 bg-[#B08D57]/10 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#B08D57]/20 group-hover/item:border-[#B08D57]/70 transition-colors">
+                            <f.i className="w-4 h-4 text-[#B08D57]" />
                           </div>
                           <div>
-                            <div className="font-semibold text-base mb-0.5 text-[#0F2A44] dark:text-[#F7F2E9]" style={{ fontFamily: "var(--font-quran)" }}>{f.t}</div>
-                            <div className="text-sm text-[#1A1A1A]/65 dark:text-[#F7F2E9]/65">{f.d}</div>
+                            <div className="font-semibold text-base mb-0.5 text-[#0F2A44]" style={{ fontFamily: "var(--font-quran)" }}>{f.t}</div>
+                            <div className="text-sm text-[#1A1A1A]/65">{f.d}</div>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between pt-6 border-t border-[#B08D57]/30 dark:border-[#C9A962]/25">
-                      <span className="text-[#B08D57] dark:text-[#C9A962] font-medium">دخول الأكاديميَّة</span>
-                      <div className="w-12 h-12 rounded-full bg-[#B08D57] dark:bg-[#C9A962] text-[#FAF6EE] dark:text-[#0F2A44] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
+                    <div className="flex items-center justify-between pt-6 border-t border-[#B08D57]/30">
+                      <span className="text-[#B08D57] font-medium">دخول الأكاديميَّة</span>
+                      <div className="w-12 h-12 rounded-full bg-[#0F2A44] text-[#C9A962] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
                         <ArrowLeft className="w-5 h-5" />
                       </div>
                     </div>
@@ -521,24 +520,24 @@ export default function Home() {
             {/* MAQRA'A */}
             <Reveal delay={0.25}>
               <Link href="/student" className="group block relative">
-                <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#B08D57]/35 dark:text-[#C9A962]/30 pointer-events-none" />
-                <article className="relative h-full bg-gradient-to-br from-[#FBF7EB] via-[#F5EDDA] to-[#EBDFC0] dark:from-[#1F4736] dark:via-[#163A2A] dark:to-[#0d2418] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#B08D57]/30 dark:border-[#C9A962]/30 overflow-hidden transition-all duration-700 group-hover:border-[#B08D57]/60 dark:group-hover:border-[#C9A962]/60 group-hover:-translate-y-2 shadow-xl shadow-[#0F2A44]/10 dark:shadow-2xl dark:shadow-black/40">
-                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#B08D57]/15 dark:bg-[#C9A962]/18 rounded-full blur-3xl group-hover:bg-[#B08D57]/25 dark:group-hover:bg-[#C9A962]/28 transition-all duration-700" />
-                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/12 dark:bg-[#B08D57]/18 rounded-full blur-3xl" />
-                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#B08D57]/30 dark:text-[#C9A962]/30" />
-                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#B08D57]/30 dark:text-[#C9A962]/30 rotate-180" />
+                <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#C9A962]/45 pointer-events-none" />
+                <article className="relative h-full bg-gradient-to-br from-[#FBF7EB] via-[#F5EDDA] to-[#EBDFC0] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/50 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/80 group-hover:-translate-y-2 shadow-2xl shadow-black/40">
+                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#B08D57]/18 rounded-full blur-3xl group-hover:bg-[#B08D57]/28 transition-all duration-700" />
+                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/12 rounded-full blur-3xl" />
+                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#B08D57]/35" />
+                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#B08D57]/35 rotate-180" />
 
                   <div className="relative">
-                    <div className="text-7xl font-bold text-[#B08D57]/35 dark:text-[#C9A962]/30 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
+                    <div className="text-7xl font-bold text-[#B08D57]/35 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
                       ٠٢
                     </div>
                     <div className="flex items-center gap-3 mb-2 -mt-8">
-                      <span className="text-xs tracking-[0.3em] text-[#B08D57] dark:text-[#C9A962] uppercase">القسم الثاني</span>
+                      <span className="text-xs tracking-[0.3em] text-[#B08D57] uppercase">القسم الثاني</span>
                     </div>
-                    <h3 className="text-4xl md:text-5xl font-bold mb-4 text-[#1B4332] dark:text-[#F7F2E9]" style={{ fontFamily: "var(--font-quran)" }}>
+                    <h3 className="text-4xl md:text-5xl font-bold mb-4 text-[#1B4332]" style={{ fontFamily: "var(--font-quran)" }}>
                       المَقْرأة
                     </h3>
-                    <p className="text-[#1A1A1A]/70 dark:text-[#F7F2E9]/70 leading-loose mb-10 text-base md:text-lg">
+                    <p className="text-[#1A1A1A]/75 leading-loose mb-10 text-base md:text-lg">
                       مجلسٌ روحانيٌّ مُباشَر، تَعْرضُ تِلاوتَكَ على المُقرئِ المُجاز،
                       فيُصحِّحُ ويُتابعُ ويُجيز.
                     </p>
@@ -550,20 +549,20 @@ export default function Home() {
                         { i: BookOpen, t: "مُتابعةُ الحفظ", d: "تقدُّمٌ مُسجَّلٌ كلَّ جلسة" },
                       ].map((f, i) => (
                         <div key={i} className="flex items-start gap-4 group/item">
-                          <div className="w-10 h-10 rounded-full border border-[#B08D57]/40 dark:border-[#C9A962]/40 bg-[#B08D57]/8 dark:bg-[#C9A962]/5 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#B08D57]/15 dark:group-hover/item:bg-[#C9A962]/15 group-hover/item:border-[#B08D57]/65 dark:group-hover/item:border-[#C9A962]/60 transition-colors">
-                            <f.i className="w-4 h-4 text-[#B08D57] dark:text-[#C9A962]" />
+                          <div className="w-10 h-10 rounded-full border border-[#B08D57]/45 bg-[#B08D57]/10 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#B08D57]/20 group-hover/item:border-[#B08D57]/70 transition-colors">
+                            <f.i className="w-4 h-4 text-[#B08D57]" />
                           </div>
                           <div>
-                            <div className="font-semibold text-base mb-0.5 text-[#1B4332] dark:text-[#F7F2E9]" style={{ fontFamily: "var(--font-quran)" }}>{f.t}</div>
-                            <div className="text-sm text-[#1A1A1A]/65 dark:text-[#F7F2E9]/65">{f.d}</div>
+                            <div className="font-semibold text-base mb-0.5 text-[#1B4332]" style={{ fontFamily: "var(--font-quran)" }}>{f.t}</div>
+                            <div className="text-sm text-[#1A1A1A]/65">{f.d}</div>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between pt-6 border-t border-[#B08D57]/30 dark:border-[#C9A962]/25">
-                      <span className="text-[#B08D57] dark:text-[#C9A962] font-medium">دخول المَقْرأة</span>
-                      <div className="w-12 h-12 rounded-full bg-[#B08D57] dark:bg-[#C9A962] text-[#FAF6EE] dark:text-[#1B4332] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
+                    <div className="flex items-center justify-between pt-6 border-t border-[#B08D57]/30">
+                      <span className="text-[#B08D57] font-medium">دخول المَقْرأة</span>
+                      <div className="w-12 h-12 rounded-full bg-[#1B4332] text-[#C9A962] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
                         <ArrowLeft className="w-5 h-5" />
                       </div>
                     </div>
@@ -658,7 +657,7 @@ export default function Home() {
             {[
               { n: "١", t: "سَجِّل في المنصَّة", d: "أنشئ حسابَكَ في دقائق، اختر منصَّتَك (الأكاديميَّة أو المَقْرأة أو كلتيهما)، وأَكمِل ملفَّكَ التعريفيَّ." },
               { n: "٢", t: "اخْتَر مُعلِّمَك", d: "تصفَّح قائمةَ الأساتذةِ والمُقرئين، اقرأْ سيرَهم وتقييماتِ طلَّابِهم، ثم اخترِ الأنسبَ لك." },
-              { n: "٣", t: "احْجِزْ موعدَك", d: "اختر اليومَ والساعةَ من تقويمِ المُعلِّم، فيَصلُكَ تَنبيهٌ قبلَ الجلسةِ بوقتٍ كافٍ." },
+              { n: "٣", t: "احْجِزْ ��وعدَك", d: "اختر اليومَ والساعةَ من تقويمِ المُعلِّم، فيَصلُكَ تَنبيهٌ قبلَ الجلسةِ بوقتٍ كافٍ." },
               { n: "٤", t: "ابْدأْ في الإتقان", d: "احْضُرْ الجلساتِ، أَنجِزْ الواجبات، وَتابعْ تقدُّمَك حتى تَبلُغَ غايتَك بإذن الله." },
             ].map((step, i) => (
               <Reveal key={i} delay={i * 0.12}>
