@@ -704,7 +704,7 @@ export default function Home() {
             <Reveal delay={0.25}>
               <Link href="/student" className="group block relative">
                 <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#C9A962]/45 pointer-events-none" />
-                <article className="relative h-full bg-gradient-to-br from-[#FBF7EB] via-[#F5EDDA] to-[#EBDFC0] dark:from-[#0F1F18] dark:via-[#102820] dark:to-[#13362A] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/50 dark:border-[#C9A962]/30 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/80 dark:group-hover:border-[#C9A962]/60 group-hover:-translate-y-2 shadow-2xl shadow-black/40 dark:shadow-black/60">
+                <article className="relative h-full bg-gradient-to-br from-[#FBF7EB] via-[#F5EDDA] to-[#EBDFC0] dark:from-[#0E3328] dark:via-[#124A38] dark:to-[#1B5E47] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/50 dark:border-[#C9A962]/30 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/80 dark:group-hover:border-[#C9A962]/60 group-hover:-translate-y-2 shadow-2xl shadow-black/40 dark:shadow-black/60">
                   <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#B08D57]/18 dark:bg-[#C9A962]/12 rounded-full blur-3xl group-hover:bg-[#B08D57]/28 dark:group-hover:bg-[#C9A962]/22 transition-all duration-700" />
                   <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/12 dark:bg-[#C9A962]/10 rounded-full blur-3xl" />
                   <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#B08D57]/35 dark:text-[#C9A962]/30" />
