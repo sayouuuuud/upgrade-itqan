@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, Trash2, Clock, Calendar as CalendarIcon, CheckCircle, Loader2, CalendarRange, Info } from "lucide-react"
+import { Plus, Trash2, Clock, Calendar as CalendarIcon, CheckCircle, Loader2, CalendarRange, Info, ToggleLeft, ToggleRight } from "lucide-react"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter, DialogTrigger
@@ -177,6 +177,27 @@ export default function ScheduleManagementPage() {
 
       if (res.ok) {
         setSlots(slots.filter(s => s.id !== id))
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleToggleAvailability = async (slotId: string, currentAvailable: boolean) => {
+    try {
+      const res = await fetch("/api/reader/schedule", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: slotId,
+          isAvailable: !currentAvailable
+        })
+      })
+
+      if (res.ok) {
+        setSlots(slots.map(s => 
+          s.id === slotId ? { ...s, is_available: !currentAvailable } : s
+        ))
       }
     } catch (err) {
       console.error(err)
@@ -392,14 +413,25 @@ export default function ScheduleManagementPage() {
                             </span>
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg group-hover:opacity-100 opacity-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleDeleteSlot(slot.id, isRec)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-8 w-8 rounded-lg group-hover:opacity-100 opacity-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ${slot.is_available ? 'text-emerald-600 hover:bg-emerald-50' : 'text-gray-400 hover:bg-gray-50'}`}
+                            onClick={() => handleToggleAvailability(slot.id, slot.is_available)}
+                            title={slot.is_available ? "غير متاح" : "متاح"}
+                          >
+                            {slot.is_available ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg group-hover:opacity-100 opacity-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleDeleteSlot(slot.id, isRec)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     )
                   })}

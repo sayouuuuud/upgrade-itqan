@@ -3,9 +3,20 @@
 import { useState, useEffect } from 'react'
 import { useI18n } from '@/lib/i18n/context'
 import { Card, CardContent } from '@/components/ui/card'
-import { Users, BookOpen, Target, UserMinus, Plus, Loader2 } from 'lucide-react'
+import { Users, BookOpen, Target, UserMinus, Plus, Loader2, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface LinkedChild {
   id: string
@@ -23,6 +34,8 @@ export default function ParentChildrenPage() {
   const isAr = locale === 'ar'
   const [children, setChildren] = useState<LinkedChild[]>([])
   const [loading, setLoading] = useState(true)
+  const [unlinkingChild, setUnlinkingChild] = useState<LinkedChild | null>(null)
+  const [unlinkLoading, setUnlinkLoading] = useState(false)
 
   useEffect(() => {
     fetchChildren()
@@ -46,6 +59,33 @@ export default function ParentChildrenPage() {
     if (rel === 'father') return isAr ? 'أب' : 'Father'
     if (rel === 'mother') return isAr ? 'أم' : 'Mother'
     return isAr ? 'ولي أمر' : 'Guardian'
+  }
+
+  const handleUnlink = async () => {
+    if (!unlinkingChild) return
+    
+    setUnlinkLoading(true)
+    try {
+      const res = await fetch('/api/academy/parent/children', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ child_id: unlinkingChild.child_id }),
+      })
+      
+      const data = await res.json()
+      
+      if (res.ok) {
+        toast.success(data.message || (isAr ? 'تم إلغاء الربط بنجاح' : 'Successfully unlinked'))
+        setChildren(prev => prev.filter(c => c.child_id !== unlinkingChild.child_id))
+      } else {
+        toast.error(data.error || (isAr ? 'حدث خطأ' : 'Error occurred'))
+      }
+    } catch (error) {
+      toast.error(isAr ? 'حدث خطأ في الاتصال' : 'Connection error')
+    } finally {
+      setUnlinkLoading(false)
+      setUnlinkingChild(null)
+    }
   }
 
   if (loading) {
@@ -137,12 +177,54 @@ export default function ParentChildrenPage() {
                       {isAr ? "عرض التقارير الكاملة" : "View Full Reports"}
                     </Link>
                   </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="h-12 w-12 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => setUnlinkingChild(child)}
+                    title={isAr ? "إلغاء الربط" : "Unlink"}
+                  >
+                    <UserMinus className="w-5 h-5" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Unlink Confirmation Dialog */}
+      <AlertDialog open={!!unlinkingChild} onOpenChange={() => setUnlinkingChild(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              {isAr ? 'تأكيد إلغاء الربط' : 'Confirm Unlink'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isAr 
+                ? `هل أنت متأكد من إلغاء ربط ${unlinkingChild?.child_name}؟ لن تتمكن من متابعة تقدمه الدراسي بعد ذلك.`
+                : `Are you sure you want to unlink ${unlinkingChild?.child_name}? You will no longer be able to track their progress.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={unlinkLoading}>
+              {isAr ? 'إلغاء' : 'Cancel'}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleUnlink}
+              disabled={unlinkLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {unlinkLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                isAr ? 'إلغاء الربط' : 'Unlink'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

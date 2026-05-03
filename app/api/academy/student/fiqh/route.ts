@@ -19,8 +19,8 @@ export async function POST(req: NextRequest) {
 
     const result = await queryOne<{ id: string }>(
       `
-        INSERT INTO fiqh_questions (student_id, question, category, is_published)
-        VALUES ($1, $2, $3, FALSE)
+        INSERT INTO fiqh_questions (asked_by, question, category, is_published, asked_at)
+        VALUES ($1, $2, $3, FALSE, NOW())
         RETURNING id
       `,
       [session.sub, question, category]
@@ -61,10 +61,13 @@ export async function GET(req: NextRequest) {
 
     const questions = await query<any>(
       `
-        SELECT id, question, category, answer, answered_by, is_published, created_at
-        FROM fiqh_questions
-        WHERE student_id = $1
-        ORDER BY created_at DESC
+        SELECT fq.id, fq.question, fq.category, fq.answer, fq.answered_by, 
+               fq.is_published, fq.asked_at as created_at, fq.answered_at,
+               u.name as answered_by_name
+        FROM fiqh_questions fq
+        LEFT JOIN users u ON u.id = fq.answered_by
+        WHERE fq.asked_by = $1
+        ORDER BY fq.asked_at DESC
       `,
       [session.sub]
     )

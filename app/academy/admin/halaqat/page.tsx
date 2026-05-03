@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, Plus, Trash2, Edit2, X, Loader2, Video, Link } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Users, Plus, Trash2, Edit2, X, Loader2, Video, Eye, UserPlus } from 'lucide-react'
 
 interface Halaqa {
   id: string
@@ -23,6 +24,7 @@ interface Teacher {
 const emptyForm = { name: '', description: '', teacher_id: '', gender: 'both', max_students: 20, meeting_link: '' }
 
 export default function AdminHalaqatPage() {
+  const router = useRouter()
   const [halaqat, setHalaqat] = useState<Halaqa[]>([])
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [loading, setLoading] = useState(true)
@@ -152,8 +154,14 @@ export default function AdminHalaqatPage() {
                 </a>
               )}
               <div className="flex gap-2">
-                <button onClick={() => openEdit(h)} className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
-                  <Edit2 className="w-3.5 h-3.5" /> تعديل
+                <button 
+                  onClick={() => router.push(`/academy/admin/halaqat/${h.id}`)} 
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  <UserPlus className="w-3.5 h-3.5" /> إدارة الطلاب
+                </button>
+                <button onClick={() => openEdit(h)} className="flex items-center justify-center py-2 px-3 border border-border rounded-lg text-sm hover:bg-muted transition-colors">
+                  <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button onClick={() => handleDelete(h.id)} disabled={deletingId === h.id}
                   className="flex items-center justify-center py-2 px-3 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
