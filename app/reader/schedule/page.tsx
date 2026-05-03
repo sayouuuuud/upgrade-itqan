@@ -413,14 +413,25 @@ export default function ScheduleManagementPage() {
                             </span>
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg group-hover:opacity-100 opacity-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleDeleteSlot(slot.id, isRec)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-8 w-8 rounded-lg group-hover:opacity-100 opacity-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ${slot.is_available ? 'text-emerald-600 hover:bg-emerald-50' : 'text-gray-400 hover:bg-gray-50'}`}
+                            onClick={() => handleToggleAvailability(slot.id, slot.is_available)}
+                            title={slot.is_available ? "غير متاح" : "متاح"}
+                          >
+                            {slot.is_available ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg group-hover:opacity-100 opacity-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleDeleteSlot(slot.id, isRec)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     )
                   })}
