@@ -704,23 +704,23 @@ export default function Home() {
             <Reveal delay={0.25}>
               <Link href="/student" className="group block relative">
                 <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#C9A962]/45 pointer-events-none" />
-                <article className="relative h-full bg-gradient-to-br from-[#FBF7EB] via-[#F5EDDA] to-[#EBDFC0] dark:from-[#241A0A] dark:via-[#3A2A12] dark:to-[#52401E] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/50 dark:border-[#C9A962]/45 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/80 dark:group-hover:border-[#C9A962]/75 group-hover:-translate-y-2 shadow-2xl shadow-black/40 dark:shadow-black/60">
-                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#B08D57]/18 dark:bg-[#C9A962]/12 rounded-full blur-3xl group-hover:bg-[#B08D57]/28 dark:group-hover:bg-[#C9A962]/22 transition-all duration-700" />
-                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/12 dark:bg-[#C9A962]/10 rounded-full blur-3xl" />
-                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#B08D57]/35 dark:text-[#C9A962]/30" />
-                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#B08D57]/35 dark:text-[#C9A962]/30 rotate-180" />
+                <article className="relative h-full bg-gradient-to-br from-[#FBF7EB] via-[#F5EDDA] to-[#EBDFC0] dark:from-[#C9A962] dark:via-[#D4B27A] dark:to-[#C9A962] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/50 dark:border-[#0B1217]/30 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/80 dark:group-hover:border-[#0B1217]/50 group-hover:-translate-y-2 shadow-2xl shadow-black/40 dark:shadow-black/60">
+                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#B08D57]/18 dark:bg-[#0B1217]/10 rounded-full blur-3xl group-hover:bg-[#B08D57]/28 dark:group-hover:bg-[#0B1217]/15 transition-all duration-700" />
+                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/12 dark:bg-[#0B1217]/8 rounded-full blur-3xl" />
+                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#B08D57]/35 dark:text-[#0B1217]/25" />
+                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#B08D57]/35 dark:text-[#0B1217]/25 rotate-180" />
 
                   <div className="relative">
-                    <div className="text-7xl font-bold text-[#B08D57]/35 dark:text-[#C9A962]/30 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
+                    <div className="text-7xl font-bold text-[#B08D57]/35 dark:text-[#0B1217]/30 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
                       ٠٢
                     </div>
                     <div className="flex items-center gap-3 mb-2 -mt-8">
-                      <span className="text-xs tracking-[0.3em] text-[#B08D57] dark:text-[#C9A962] uppercase">القسم الثاني</span>
+                      <span className="text-xs tracking-[0.3em] text-[#B08D57] dark:text-[#0B1217]/80 uppercase">القسم الثاني</span>
                     </div>
-                    <h3 className="text-4xl md:text-5xl font-bold mb-4 text-[#1B4332] dark:text-[#F2EBDD]" style={{ fontFamily: "var(--font-quran)" }}>
+                    <h3 className="text-4xl md:text-5xl font-bold mb-4 text-[#1B4332] dark:text-[#0B1217]" style={{ fontFamily: "var(--font-quran)" }}>
                       المَقْرأة
                     </h3>
-                    <p className="text-[#1A1A1A]/75 dark:text-[#F2EBDD]/75 leading-loose mb-10 text-base md:text-lg">
+                    <p className="text-[#1A1A1A]/75 dark:text-[#0B1217]/85 leading-loose mb-10 text-base md:text-lg">
                       مجلسٌ روحانيٌّ مُباشَر، تَعْرضُ تِلاوتَكَ على المُقرئِ المُجاز،
                       فيُصحِّحُ ويُتابعُ ويُجيز.
                     </p>
@@ -732,20 +732,20 @@ export default function Home() {
                         { i: BookOpen, t: "مُتابعةُ الحفظ", d: "تقدُّمٌ مُسجَّلٌ كلَّ جلسة" },
                       ].map((f, i) => (
                         <div key={i} className="flex items-start gap-4 group/item">
-                          <div className="w-10 h-10 rounded-full border border-[#B08D57]/45 dark:border-[#C9A962]/40 bg-[#B08D57]/10 dark:bg-[#C9A962]/10 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#B08D57]/20 dark:group-hover/item:bg-[#C9A962]/20 group-hover/item:border-[#B08D57]/70 dark:group-hover/item:border-[#C9A962]/65 transition-colors">
-                            <f.i className="w-4 h-4 text-[#B08D57] dark:text-[#C9A962]" />
+                          <div className="w-10 h-10 rounded-full border border-[#B08D57]/45 dark:border-[#0B1217]/40 bg-[#B08D57]/10 dark:bg-[#0B1217]/10 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#B08D57]/20 dark:group-hover/item:bg-[#0B1217]/20 group-hover/item:border-[#B08D57]/70 dark:group-hover/item:border-[#0B1217]/60 transition-colors">
+                            <f.i className="w-4 h-4 text-[#B08D57] dark:text-[#0B1217]" />
                           </div>
                           <div>
-                            <div className="font-semibold text-base mb-0.5 text-[#1B4332] dark:text-[#F2EBDD]" style={{ fontFamily: "var(--font-quran)" }}>{f.t}</div>
-                            <div className="text-sm text-[#1A1A1A]/65 dark:text-[#F2EBDD]/60">{f.d}</div>
+                            <div className="font-semibold text-base mb-0.5 text-[#1B4332] dark:text-[#0B1217]" style={{ fontFamily: "var(--font-quran)" }}>{f.t}</div>
+                            <div className="text-sm text-[#1A1A1A]/65 dark:text-[#0B1217]/75">{f.d}</div>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between pt-6 border-t border-[#B08D57]/30 dark:border-[#C9A962]/25">
-                      <span className="text-[#B08D57] dark:text-[#C9A962] font-medium">دخول المَقْرأة</span>
-                      <div className="w-12 h-12 rounded-full bg-[#1B4332] dark:bg-[#C9A962] text-[#C9A962] dark:text-[#0B1217] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
+                    <div className="flex items-center justify-between pt-6 border-t border-[#B08D57]/30 dark:border-[#0B1217]/25">
+                      <span className="text-[#B08D57] dark:text-[#0B1217] font-medium">دخول المَقْرأة</span>
+                      <div className="w-12 h-12 rounded-full bg-[#1B4332] dark:bg-[#0B1217] text-[#C9A962] dark:text-[#C9A962] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
                         <ArrowLeft className="w-5 h-5" />
                       </div>
                     </div>
