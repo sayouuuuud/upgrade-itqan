@@ -217,28 +217,26 @@ function TestimonialsMarquee() {
   ]
 
   return (
-    <section id="voices" className="relative py-32 md:py-40 bg-[#F7F2E9] dark:bg-[#0B1217] overflow-hidden transition-colors duration-500">
+    <section id="voices" className="relative py-20 md:py-24 bg-[#F7F2E9] dark:bg-[#0B1217] overflow-hidden transition-colors duration-500">
       <div className="container mx-auto px-6">
-        <Reveal>
-          <div className="text-center mb-16 md:mb-20">
-            <span className="text-xs tracking-[0.35em] text-[#B08D57] dark:text-[#C9A962] uppercase mb-4 block">آراؤهم</span>
-            <h2
-              className="text-5xl md:text-6xl font-bold text-[#0F2A44] dark:text-[#F2EBDD] leading-tight"
-              style={{ fontFamily: "var(--font-quran)" }}
-            >
-              كَلِماتٌ مِن طُلَّابِنا
-            </h2>
-          </div>
-        </Reveal>
+        <div className="text-center mb-10 md:mb-12">
+          <span className="text-xs tracking-[0.35em] text-[#B08D57] dark:text-[#C9A962] uppercase mb-4 block">آراؤهم</span>
+          <h2
+            className="text-5xl md:text-6xl font-bold text-[#0F2A44] dark:text-[#F2EBDD] leading-tight"
+            style={{ fontFamily: "var(--font-quran)" }}
+          >
+            كَلِماتٌ مِن طُلَّابِنا
+          </h2>
+        </div>
       </div>
 
       {/* Two-row marquee with edge fades */}
-      <div className="relative space-y-6">
+      <div className="relative space-y-5">
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-48 bg-gradient-to-l from-[#F7F2E9] dark:from-[#0B1217] to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-48 bg-gradient-to-r from-[#F7F2E9] dark:from-[#0B1217] to-transparent" />
 
-        <MarqueeRow items={rowTop} direction="right" duration={50} />
-        <MarqueeRow items={rowBottom} direction="left" duration={55} />
+        <MarqueeRow items={rowTop} direction="right" duration={60} />
+        <MarqueeRow items={rowBottom} direction="left" duration={65} />
       </div>
     </section>
   )
