@@ -134,7 +134,10 @@ type Testimonial = { q: string; n: string; r: string }
 
 function TestimonialCard({ q, n, r }: Testimonial) {
   return (
-    <article className="ml-6 flex-shrink-0 w-[320px] md:w-[420px] relative p-8 md:p-10 bg-[#FAF6EE] dark:bg-[#101A22] border border-[#0F2A44]/10 dark:border-[#C9A962]/15 rounded-2xl">
+    <article
+      dir="rtl"
+      className="ml-6 flex-shrink-0 w-[320px] md:w-[420px] relative p-8 md:p-10 bg-[#FAF6EE] dark:bg-[#101A22] border border-[#0F2A44]/10 dark:border-[#C9A962]/15 rounded-2xl"
+    >
       <Quote className="absolute top-6 left-6 w-8 h-8 text-[#B08D57]/20 dark:text-[#C9A962]/30 rotate-180" />
       <ArabesqueCorner size={70} className="absolute top-0 right-0 text-[#B08D57]/15 dark:text-[#C9A962]/25" />
       <div className="relative pt-4">
@@ -172,16 +175,17 @@ function MarqueeRow({
   // Duplicate items so -50% translation lands exactly on the second copy → seamless loop.
   const doubled = [...items, ...items]
   return (
-    <div className="overflow-hidden">
-      <motion.div
-        className="flex w-max"
-        animate={{ x: direction === "right" ? ["-50%", "0%"] : ["0%", "-50%"] }}
-        transition={{ duration, repeat: Infinity, ease: "linear" }}
+    <div className="overflow-hidden" dir="ltr">
+      <div
+        className={`marquee-track flex w-max ${
+          direction === "right" ? "animate-marquee-right" : "animate-marquee-left"
+        }`}
+        style={{ ["--marquee-duration" as string]: `${duration}s` }}
       >
         {doubled.map((t, i) => (
           <TestimonialCard key={i} {...t} />
         ))}
-      </motion.div>
+      </div>
     </div>
   )
 }
