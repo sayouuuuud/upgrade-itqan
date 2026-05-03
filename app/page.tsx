@@ -207,7 +207,7 @@ function TestimonialsMarquee() {
   ]
   const rowBottom: Testimonial[] = [
     { q: "تجربةٌ مُختلفةٌ تمامًا، شعرتُ أنني في حَلْقةٍ حقيقيَّةٍ في أحدِ المساجدِ العَتيقة.", n: "هدى الشريف", r: "طالبةُ علم" },
-    { q: "كنتُ أبحثُ عن مَقْرأةٍ مُنضَ��طةٍ منذُ زمن، فوجدتُ هنا ما يَفوقُ ما تَ��نَّيت.", n: "إبراهيم الرفاعي", r: "طالبٌ في الإجازة" },
+    { q: "كنتُ أبحثُ عن مَقْرأةٍ مُنضَ��طةٍ منذُ زمن، فوجدتُ هنا ما يَ��وقُ ما تَ��نَّيت.", n: "إبراهيم الرفاعي", r: "طالبٌ في الإجازة" },
     { q: "الواجباتُ مُحَكَّمة، والمُتابعةُ يوميَّة، والنتائجُ مُبشِّرةٌ بفضلِ الله.", n: "نوال البصري", r: "طالبةُ تحفيظ" },
     { q: "ما رأيتُ أَشمَلَ من هذه المنصَّةِ في الجَمعِ بين العلمِ النظريِّ والتطبيقيِّ.", n: "د. صالح الشمري", r: "أستاذٌ مُحاضِر" },
     { q: "ابني تَغيَّرت علاقتُه بالقرآنِ بعد التحاقِه، صار يَنتظرُ الجلسةَ بشَغف.", n: "أم محمد", r: "وَلِيَّةُ أمر" },
@@ -413,21 +413,11 @@ export default function Home() {
       {/* ============ HERO ============ */}
       <section ref={heroRef} className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          {/* Ottoman carpet pattern — STATIC, breathing only by opacity (no lateral drift) */}
-          <motion.div
-            animate={{ opacity: [0.16, 0.22, 0.16] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-0 bg-repeat dark:hidden"
-            style={{
-              backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
-              backgroundSize: "440px",
-              filter: "grayscale(1) sepia(0.45) brightness(1.05) contrast(0.95)",
-            }}
-          />
-          <motion.div
-            animate={{ opacity: [0.22, 0.3, 0.22] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-0 bg-repeat hidden dark:block"
+          {/* Ottoman carpet pattern — pure CSS, static opacity. SSR renders the
+              same opacity the browser will keep, so refresh never flashes the
+              pattern at full intensity. No framer-motion, no hydration delay. */}
+          <div
+            className="absolute inset-0 bg-repeat opacity-[0.18] dark:opacity-[0.26]"
             style={{
               backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
               backgroundSize: "440px",
