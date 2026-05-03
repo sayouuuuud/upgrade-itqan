@@ -134,25 +134,25 @@ type Testimonial = { q: string; n: string; r: string }
 
 function TestimonialCard({ q, n, r }: Testimonial) {
   return (
-    <article className="mx-3 flex-shrink-0 w-[280px] relative p-6 bg-[#FAF6EE] dark:bg-[#101A22] border border-[#0F2A44]/10 dark:border-[#C9A962]/15 rounded-2xl">
-      <Quote className="absolute top-5 left-5 w-6 h-6 text-[#B08D57]/20 dark:text-[#C9A962]/30 rotate-180" />
-      <ArabesqueCorner size={55} className="absolute top-0 right-0 text-[#B08D57]/15 dark:text-[#C9A962]/25" />
-      <div className="relative pt-3">
+    <article className="ml-6 flex-shrink-0 w-[320px] md:w-[420px] relative p-8 md:p-10 bg-[#FAF6EE] dark:bg-[#101A22] border border-[#0F2A44]/10 dark:border-[#C9A962]/15 rounded-2xl">
+      <Quote className="absolute top-6 left-6 w-8 h-8 text-[#B08D57]/20 dark:text-[#C9A962]/30 rotate-180" />
+      <ArabesqueCorner size={70} className="absolute top-0 right-0 text-[#B08D57]/15 dark:text-[#C9A962]/25" />
+      <div className="relative pt-4">
         <p
-          className="text-sm text-[#1A1A1A]/85 dark:text-[#F2EBDD]/85 leading-loose mb-5 line-clamp-3"
+          className="text-base md:text-lg text-[#1A1A1A]/85 dark:text-[#F2EBDD]/85 leading-loose mb-6 line-clamp-4"
           style={{ fontFamily: "var(--font-quran)" }}
         >
           {q}
         </p>
-        <div className="pt-3 border-t border-[#0F2A44]/10 dark:border-[#C9A962]/15">
-          <div className="font-bold text-sm text-[#0F2A44] dark:text-[#F2EBDD]" style={{ fontFamily: "var(--font-quran)" }}>
+        <div className="pt-4 border-t border-[#0F2A44]/10 dark:border-[#C9A962]/15">
+          <div className="font-bold text-[#0F2A44] dark:text-[#F2EBDD]" style={{ fontFamily: "var(--font-quran)" }}>
             {n}
           </div>
-          <div className="text-xs text-[#1A1A1A]/55 dark:text-[#F2EBDD]/55 mt-0.5">{r}</div>
+          <div className="text-sm text-[#1A1A1A]/55 dark:text-[#F2EBDD]/55 mt-1">{r}</div>
         </div>
-        <div className="flex gap-0.5 mt-2">
+        <div className="flex gap-1 mt-3">
           {[...Array(5)].map((_, k) => (
-            <Star key={k} className="w-3 h-3 fill-[#B08D57] dark:fill-[#C9A962] text-[#B08D57] dark:text-[#C9A962]" />
+            <Star key={k} className="w-3.5 h-3.5 fill-[#B08D57] dark:fill-[#C9A962] text-[#B08D57] dark:text-[#C9A962]" />
           ))}
         </div>
       </div>
@@ -169,16 +169,16 @@ function MarqueeRow({
   direction: "right" | "left"
   duration: number
 }) {
-  // Triple items for very wide screens — -33.33% shift per copy keeps the seam invisible
-  const tripled = [...items, ...items, ...items]
+  // Duplicate items so -50% translation lands exactly on the second copy
+  const doubled = [...items, ...items]
   return (
     <div className="overflow-hidden">
       <motion.div
         className="flex w-max"
-        animate={{ x: direction === "right" ? ["-33.333%", "0%"] : ["0%", "-33.333%"] }}
+        animate={{ x: direction === "right" ? ["-50%", "0%"] : ["0%", "-50%"] }}
         transition={{ duration, repeat: Infinity, ease: "linear" }}
       >
-        {tripled.map((t, i) => (
+        {doubled.map((t, i) => (
           <TestimonialCard key={i} {...t} />
         ))}
       </motion.div>
@@ -198,6 +198,30 @@ function TestimonialsMarquee() {
     { q: "أَشعرُ أنَّ الأستاذَ يُكلِّمُني مباشرةً كأنَّنا في حَلْقةٍ واحدة.", n: "طارق الزيات", r: "طالبٌ مبتدئ" },
     { q: "في أقلَّ من ثلاثةِ أشهرٍ صحَّح لي المُقرئُ أخطاءً حملتُها سنين.", n: "رانيا عبد الحميد", r: "طالبةُ تحفيظ" },
     { q: "أجودُ ما قضيتُه من وقتٍ في هذا العام هو جلساتي في المَقْرأة.", n: "عمر سيد أحمد", r: "طالبٌ في الإجازة" },
+    { q: "بعد سنواتٍ من البحثِ عن مُقرئٍ مُجاز، وجدتُ ضالَّتي هنا.", n: "عائشة الحربي", r: "طالبةُ إجازة" },
+    { q: "أبنائي الثلاثةُ مُلتحقون بالأكاديميَّة ومُستواهم في تحسُّنٍ مُستمرّ.", n: "أبو يوسف", r: "وَلِيُّ أمر" },
+    { q: "المنهجُ مُتدرِّجٌ والشُّروحاتُ واضحةٌ والدَّعمُ الفنيُّ ممتاز.", n: "سلمى العتيبي", r: "طالبةُ تحفيظ" },
+    { q: "لأولِ مرةٍ أَشعرُ بالثِّقةِ في تلاوتي أمام الآخرين.", n: "خالد الجهني", r: "طالبٌ متقدِّم" },
+    { q: "المُقرئةُ صبورةٌ ولَطيفةٌ وتُحفِّزُني دائمًا على الاستمرار.", n: "نورة السعيد", r: "طالبةُ تحفيظ" },
+    { q: "أنصحُ كلَّ مَن يُريدُ إتقانَ التلاوةِ بالالتحاقِ بهذه المنصَّة.", n: "فيصل الدوسري", r: "خرِّيج" },
+  ]
+  const rowBottom: Testimonial[] = [
+    { q: "تجربةٌ مُختلفةٌ تمامًا شعرتُ أنني في حَلْقةٍ حقيقيَّة في مسجدٍ عَتيق.", n: "هدى الشريف", r: "طالبةُ علم" },
+    { q: "كنتُ أبحثُ عن مَقْرأةٍ مُنضَبطة فوجدتُ هنا ما يَفوقُ ما تَمنَّيت.", n: "إبراهيم الرفاعي", r: "طالبٌ في الإجازة" },
+    { q: "الواجباتُ مُحَكَّمة والمُتابعةُ يوميَّة والنتائجُ مُبشِّرة بفضل الله.", n: "نوال البصري", r: "طالبةُ تحفيظ" },
+    { q: "ما رأيتُ أَشمَلَ من هذه المنصَّة في الجَمعِ بين العلمِ النظريِّ والتطبيقيِّ.", n: "د. صالح الشمري", r: "أستاذٌ مُحاضِر" },
+    { q: "ابني صار يَنتظرُ جلسةَ القرآن كأنَّها موعدٌ مع أَحَبِّ الناسِ إليه.", n: "أم محمد", r: "وَلِيَّةُ أمر" },
+    { q: "خِدمةٌ مُتقَنةٌ من البدايةِ إلى النهاية شُكرًا للقائمين على هذا المشروع.", n: "عبد الرحمن الحارثي", r: "خرِّيج" },
+    { q: "الانتظامُ في الجلساتِ جعلَ حفظي أمتنَ وتلاوتي أصفى من أيِّ وقتٍ مضى.", n: "منى القرشي", r: "طالبةُ تحفيظ" },
+    { q: "المُقرئُ يَشرحُ المَخارجَ بأسلوبٍ واضحٍ لم أَجدْه في مكانٍ آخر.", n: "بلال حسين", r: "طالبُ تجويد" },
+    { q: "من أفضلِ قراراتي الانضمامُ للأكاديميَّة، والنتائجُ تَتكلَّم عن نفسها.", n: "لينا الحمداني", r: "طالبةٌ في مسارِ الإجازة" },
+    { q: "كلُّ جلسةٍ فيها علمٌ وأدبٌ وبركةٌ، اللهُ يُجزي القائمين خيرًا.", n: "حسام الدين عوض", r: "طالبٌ متقدِّم" },
+    { q: "تَعلَّمتُ أحكامَ التجويدِ بطريقةٍ سَلِسةٍ لم أتوقَّعها.", n: "مريم الأحمد", r: "طالبةُ تجويد" },
+    { q: "المنصَّةُ سَهَّلت عليَّ الجَمعَ بين العملِ والدراسةِ القرآنيَّة.", n: "ماجد العنزي", r: "طالبٌ عامل" },
+    { q: "أَختي نصحتني بالمنصَّة وما نَدِمتُ يومًا على الانضمام.", n: "شيماء الكعبي", r: "طالبةُ تحفيظ" },
+    { q: "الإدارةُ تَستجيبُ لأيِّ استفسارٍ بسرعةٍ واحترافيَّة.", n: "ياسر القحطاني", r: "طالبٌ في الإجازة" },
+    { q: "وجدتُ هنا بيئةً إيمانيَّةً تُشجِّعُ على المُثابَرة.", n: "أسماء بنت خالد", r: "طالبةُ علم" },
+    { q: "المنصَّةُ غيَّرت حياتي، وباركَ اللهُ في القائمين عليها.", n: "عبد الله الفهد", r: "خرِّيج" },
   ]
   const rowBottom: Testimonial[] = [
     { q: "تجربةٌ مُختلفةٌ تمامًا شعرتُ أنني في حَلْقةٍ حقيقيَّة في مسجدٍ عَتيق.", n: "هدى الشريف", r: "طالبةُ علم" },
