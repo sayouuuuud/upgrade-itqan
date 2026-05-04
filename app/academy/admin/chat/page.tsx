@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -36,6 +37,9 @@ interface Message {
 export default function AdminChatPage() {
   const { locale } = useI18n()
   const isAr = locale === 'ar'
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const startWithUserId = searchParams.get('startWith')
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConv, setActiveConv] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -54,6 +58,69 @@ export default function AdminChatPage() {
   useEffect(() => {
     fetchConversations()
   }, [])
+
+  // Auto-start a conversation when arriving from a user profile via ?startWith=USER_ID
+  useEffect(() => {
+    if (!startWithUserId || loadingConv) return
+
+    // If a conversation with this user already exists, just open it.
+    const existing = conversations.find(c => c.other_user_id === startWithUserId)
+    if (existing) {
+      setActiveConv(existing)
+      router.replace('/academy/admin/chat')
+      return
+    }
+
+    // Otherwise create one immediately by calling the API directly so we don't
+    // depend on the new-conversation modal being open.
+    let cancelled = false
+    const auto = async () => {
+      setCreatingConv(true)
+      try {
+        const res = await fetch('/api/academy/conversations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otherUserId: startWithUserId }),
+        })
+        const data = await res.json()
+        if (!res.ok || !data.conversationId || cancelled) return
+
+        // Fetch the target user's display info so the header isn't empty.
+        let targetName = ''
+        let targetRole: string | undefined
+        try {
+          const u = await fetch(`/api/admin/users/${startWithUserId}`)
+          if (u.ok) {
+            const j = await u.json()
+            targetName = j.user?.name || ''
+            targetRole = j.user?.role
+          }
+        } catch {
+          // ignore
+        }
+
+        await fetchConversations()
+        if (cancelled) return
+        setActiveConv({
+          id: data.conversationId,
+          other_user_id: startWithUserId,
+          other_user_name: targetName,
+          other_user_avatar: null,
+          other_user_role: targetRole,
+          last_message: null,
+          last_message_at: null,
+          unread_count: 0,
+        })
+        router.replace('/academy/admin/chat')
+      } finally {
+        if (!cancelled) setCreatingConv(false)
+      }
+    }
+    auto()
+    return () => {
+      cancelled = true
+    }
+  }, [startWithUserId, loadingConv])
 
   const fetchConversations = async () => {
     try {
@@ -374,7 +441,7 @@ export default function AdminChatPage() {
                 </div>
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center p-8 text-muted-foreground text-sm">
-                  {isAr ? "لا توجد نتائج" : "No results found"}
+                  {isAr ? "لا ت��جد نتائج" : "No results found"}
                 </div>
               ) : (
                 filteredUsers.map(user => (
