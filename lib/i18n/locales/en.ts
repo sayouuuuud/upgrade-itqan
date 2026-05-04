@@ -159,6 +159,8 @@ export const en = {
     role: 'Account Type',
     student: 'Student',
     reader: 'Reader',
+    teacher: 'Teacher',
+    parent: 'Parent',
     studentDesc: 'I want to improve my recitation and get evaluation',
     readerDesc: 'I want to review recitations and evaluate students',
     readerNote: 'Your application will be reviewed by admin before activation',
