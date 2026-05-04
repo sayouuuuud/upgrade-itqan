@@ -6,7 +6,7 @@ import { createNotification } from '@/lib/notifications'
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession()
-    if (!session || session.role !== 'student') {
+    if (!session || !['student', 'reader'].includes(session.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -42,20 +42,27 @@ export async function POST(req: NextRequest) {
         }).catch(() => {})
       }
     } catch (notifErr) {
-      console.error('[Student Fiqh] Notification failed:', notifErr)
+      console.error('[Student Fiqh] Notification failed (non-fatal):', notifErr)
     }
 
     return NextResponse.json(result, { status: 201 })
   } catch (err) {
-    console.error('[Student Fiqh POST]', err)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    console.error('[Student Fiqh POST] Error:', err)
+    const isDev = process.env.NODE_ENV !== 'production'
+    return NextResponse.json(
+      {
+        error: 'Internal error',
+        ...(isDev && err instanceof Error ? { debug: err.message } : {}),
+      },
+      { status: 500 },
+    )
   }
 }
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession()
-    if (!session || session.role !== 'student') {
+    if (!session || !['student', 'reader'].includes(session.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -74,7 +81,14 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(questions)
   } catch (err) {
-    console.error('[Student Fiqh GET]', err)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    console.error('[Student Fiqh GET] Error:', err)
+    const isDev = process.env.NODE_ENV !== 'production'
+    return NextResponse.json(
+      {
+        error: 'Internal error',
+        ...(isDev && err instanceof Error ? { debug: err.message } : {}),
+      },
+      { status: 500 },
+    )
   }
 }
