@@ -4,13 +4,15 @@ import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Send, User, Loader2, ArrowRight, UserPlus, X } from 'lucide-react'
+import { Search, Send, User, Loader2, ArrowRight, UserPlus, X, Users } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
+import { Badge } from '@/components/ui/badge'
 
-interface Student {
+interface UserOption {
   id: string
   name: string
   email: string
+  role: string
 }
 
 interface Conversation {
@@ -18,6 +20,7 @@ interface Conversation {
   other_user_id: string
   other_user_name: string
   other_user_avatar: string | null
+  other_user_role?: string
   last_message: string | null
   last_message_at: string | null
   unread_count: number
@@ -30,7 +33,7 @@ interface Message {
   created_at: string
 }
 
-export default function TeacherChatPage() {
+export default function AdminChatPage() {
   const { locale } = useI18n()
   const isAr = locale === 'ar'
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -41,14 +44,13 @@ export default function TeacherChatPage() {
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const [sending, setSending] = useState(false)
   const [showNewConv, setShowNewConv] = useState(false)
-  const [students, setStudents] = useState<Student[]>([])
-  const [loadingStudents, setLoadingStudents] = useState(false)
-  const [studentSearch, setStudentSearch] = useState('')
+  const [users, setUsers] = useState<UserOption[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(false)
+  const [userSearch, setUserSearch] = useState('')
   const [creatingConv, setCreatingConv] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Fetch conversations
   useEffect(() => {
     fetchConversations()
   }, [])
@@ -67,35 +69,44 @@ export default function TeacherChatPage() {
     }
   }
 
-  const fetchStudents = async () => {
-    setLoadingStudents(true)
+  const fetchUsers = async () => {
+    setLoadingUsers(true)
     try {
-      const res = await fetch('/api/academy/teacher/students')
+      // Admin can message anyone - fetch all users
+      const res = await fetch('/api/admin/users?limit=100')
       const data = await res.json()
       if (res.ok) {
-        setStudents(data.data || [])
+        setUsers(data.users || [])
       }
     } catch {
       // ignore
     } finally {
-      setLoadingStudents(false)
+      setLoadingUsers(false)
     }
   }
 
-  const startConversation = async (studentId: string) => {
+  const startConversation = async (userId: string) => {
     setCreatingConv(true)
     try {
       const res = await fetch('/api/academy/conversations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ otherUserId: studentId })
+        body: JSON.stringify({ otherUserId: userId })
       })
       const data = await res.json()
       if (res.ok && data.conversationId) {
-        // Refresh conversations and select the new one
         await fetchConversations()
-        const newConv = conversations.find(c => c.id === data.conversationId) ||
-          { id: data.conversationId, other_user_id: studentId, other_user_name: students.find(s => s.id === studentId)?.name || '', other_user_avatar: null, last_message: null, last_message_at: null, unread_count: 0 }
+        const selectedUser = users.find(u => u.id === userId)
+        const newConv = {
+          id: data.conversationId,
+          other_user_id: userId,
+          other_user_name: selectedUser?.name || '',
+          other_user_avatar: null,
+          other_user_role: selectedUser?.role,
+          last_message: null,
+          last_message_at: null,
+          unread_count: 0
+        }
         setActiveConv(newConv)
         setShowNewConv(false)
       }
@@ -106,19 +117,17 @@ export default function TeacherChatPage() {
     }
   }
 
-  // When opening new conversation modal, fetch students
   useEffect(() => {
-    if (showNewConv && students.length === 0) {
-      fetchStudents()
+    if (showNewConv && users.length === 0) {
+      fetchUsers()
     }
   }, [showNewConv])
 
-  const filteredStudents = students.filter(s =>
-    s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
-    s.email.toLowerCase().includes(studentSearch.toLowerCase())
+  const filteredUsers = users.filter(u =>
+    u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+    u.email.toLowerCase().includes(userSearch.toLowerCase())
   )
 
-  // Fetch messages for active conversation
   useEffect(() => {
     if (!activeConv) return
     const fetchMsgs = async () => {
@@ -128,8 +137,6 @@ export default function TeacherChatPage() {
         const data = await res.json()
         if (res.ok) {
           setMessages(data.messages || [])
-
-          // Clear unread count locally
           setConversations(prev => prev.map(c =>
             c.id === activeConv.id ? { ...c, unread_count: 0 } : c
           ))
@@ -142,13 +149,10 @@ export default function TeacherChatPage() {
     }
 
     fetchMsgs()
-
-    // Polling setup (every 5 seconds)
     const interval = setInterval(fetchMsgs, 5000)
     return () => clearInterval(interval)
   }, [activeConv])
 
-  // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -170,8 +174,6 @@ export default function TeacherChatPage() {
       const data = await res.json()
       if (res.ok && data.message) {
         setMessages(prev => [...prev, data.message])
-
-        // Update conversation preview
         setConversations(prev => prev.map(c =>
           c.id === activeConv.id
             ? { ...c, last_message: messageContent, last_message_at: new Date().toISOString() }
@@ -191,44 +193,53 @@ export default function TeacherChatPage() {
     return d.toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
   }
 
+  const getRoleBadge = (role?: string) => {
+    const roles: Record<string, { label: string, class: string }> = {
+      student: { label: isAr ? 'طالب' : 'Student', class: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+      teacher: { label: isAr ? 'مدرس' : 'Teacher', class: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
+      reader: { label: isAr ? 'قارئ' : 'Reader', class: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
+      admin: { label: isAr ? 'مدير' : 'Admin', class: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
+      parent: { label: isAr ? 'ولي أمر' : 'Parent', class: 'bg-rose-500/10 text-rose-500 border-rose-500/20' },
+    }
+    const r = roles[role || 'student'] || roles.student
+    return <Badge variant="outline" className={`text-[10px] font-bold ${r.class}`}>{r.label}</Badge>
+  }
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-12 h-[calc(100vh-100px)] flex flex-col" dir={isAr ? "rtl" : "ltr"}>
       <div className="space-y-1 shrink-0">
         <h1 className="text-3xl font-black tracking-tight text-foreground">
-          {isAr ? "تواصل مع الطلاب" : "Student Messages"}
+          {isAr ? "الرسائل" : "Messages"}
         </h1>
         <p className="text-muted-foreground font-medium">
-          {isAr ? "أجب على استفسارات طلابك." : "Reply to your students' questions."}
+          {isAr ? "تواصل مع المستخدمين" : "Communicate with users"}
         </p>
       </div>
 
       <div className="flex bg-card rounded-3xl border border-border shadow-sm flex-1 overflow-hidden min-h-0">
 
-        {/* Sidebar (Conversations) */}
+        {/* Sidebar */}
         <div className={`w-full md:w-80 border-${isAr ? 'l' : 'r'} border-border/50 flex flex-col min-h-0 ${activeConv ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-4 border-b border-border/50 space-y-3">
             <div className="relative">
               <Search className={`absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
               <Input
-                placeholder={isAr ? "ابحث عن طالب..." : "Search student..."}
-                className={`pl-9 pr-9 h-10 rounded-xl bg-muted/30 border-border/50 focus:bg-card`}
+                placeholder={isAr ? "ابحث..." : "Search..."}
+                className={`${isAr ? 'pr-9' : 'pl-9'} h-10 rounded-xl bg-muted/30 border-border/50 focus:bg-card`}
               />
             </div>
-            <Button
-              onClick={() => setShowNewConv(true)}
-              className="w-full rounded-xl h-10 gap-2 font-bold"
-            >
+            <Button onClick={() => setShowNewConv(true)} className="w-full rounded-xl h-10 gap-2 font-bold">
               <UserPlus className="w-4 h-4" />
               {isAr ? "محادثة جديدة" : "New Conversation"}
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2 space-y-1 overflow-x-hidden custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
             {loadingConv ? (
               <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
             ) : conversations.length === 0 ? (
               <div className="text-center p-8 text-muted-foreground text-sm font-medium">
-                {isAr ? "لا توجد أي محادثات حالياً" : "No conversations yet"}
+                {isAr ? "لا توجد محادثات" : "No conversations yet"}
               </div>
             ) : (
               conversations.map(conv => (
@@ -247,14 +258,13 @@ export default function TeacherChatPage() {
                       </span>
                     )}
                   </div>
-
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-0.5">
                       <h4 className="font-bold text-sm text-foreground truncate">{conv.other_user_name}</h4>
                       <span className="text-[10px] text-muted-foreground font-medium shrink-0">{formatTime(conv.last_message_at)}</span>
                     </div>
                     <p className={`text-xs truncate ${conv.unread_count > 0 ? 'text-foreground font-bold' : 'text-muted-foreground font-medium'}`}>
-                      {conv.last_message || (isAr ? 'بدء محادثة جديدة' : 'Start a new conversation')}
+                      {conv.last_message || (isAr ? 'بدء محادثة' : 'Start conversation')}
                     </p>
                   </div>
                 </button>
@@ -263,20 +273,20 @@ export default function TeacherChatPage() {
           </div>
         </div>
 
-        {/* Main Content (Messages) */}
+        {/* Messages Area */}
         <div className={`flex-1 flex flex-col min-h-0 ${!activeConv ? 'hidden md:flex' : 'flex'}`}>
           {!activeConv ? (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8">
               <div className="w-20 h-20 rounded-full bg-muted/20 flex items-center justify-center mb-4">
                 <Send className="w-8 h-8 opacity-20" />
               </div>
-              <p className="font-bold text-lg">{isAr ? "اختر محادثة للبدء" : "Select a conversation to start"}</p>
+              <p className="font-bold text-lg">{isAr ? "اختر محادثة للبدء" : "Select a conversation"}</p>
             </div>
           ) : (
             <>
-              {/* Chat Header */}
-              <div className="px-6 py-4 border-b border-border/50 flex items-center gap-4 shrink-0 bg-card z-10 shadow-sm relative">
-                <Button variant="ghost" size="icon" className="md:hidden shrink-0 mr-[-8px] ml-1" onClick={() => setActiveConv(null)}>
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-border/50 flex items-center gap-4 shrink-0 bg-card z-10 shadow-sm">
+                <Button variant="ghost" size="icon" className="md:hidden shrink-0" onClick={() => setActiveConv(null)}>
                   <ArrowRight className={`w-5 h-5 ${isAr ? '' : 'rotate-180'}`} />
                 </Button>
                 <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20">
@@ -284,20 +294,17 @@ export default function TeacherChatPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground">{activeConv.other_user_name}</h3>
-                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 rounded-full hidden sm:inline-block">
-                    {isAr ? "طالب بالأكاديمية" : "Academy Student"}
-                  </span>
+                  {getRoleBadge(activeConv.other_user_role)}
                 </div>
               </div>
 
-              {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[url('/chat-bg.png')] bg-repeat bg-opacity-5">
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
                 {loadingMsgs ? (
                   <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
                 ) : (
                   messages.map(msg => {
                     const isMe = msg.sender_id !== activeConv.other_user_id
-
                     return (
                       <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${isMe
@@ -316,11 +323,11 @@ export default function TeacherChatPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Chat Input */}
+              {/* Input */}
               <div className="p-4 border-t border-border/50 shrink-0 bg-card">
                 <form onSubmit={handleSend} className="flex gap-2">
                   <Input
-                    placeholder={isAr ? "اكتب رسالتك هنا..." : "Type your message..."}
+                    placeholder={isAr ? "اكتب رسالتك..." : "Type your message..."}
                     value={reply}
                     onChange={(e) => setReply(e.target.value)}
                     className="flex-1 rounded-2xl h-12 bg-muted/30 border-border/50 focus:bg-card"
@@ -328,7 +335,7 @@ export default function TeacherChatPage() {
                   <Button
                     type="submit"
                     disabled={!reply.trim() || sending}
-                    className={`w-12 h-12 rounded-2xl shrink-0 ${reply.trim() ? 'bg-primary text-primary-foreground shadow-md hover:shadow-lg' : 'bg-muted text-muted-foreground'}`}
+                    className={`w-12 h-12 rounded-2xl shrink-0 ${reply.trim() ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                   >
                     {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className={`w-5 h-5 ${isAr ? 'rotate-180' : ''}`} />}
                   </Button>
@@ -337,7 +344,6 @@ export default function TeacherChatPage() {
             </>
           )}
         </div>
-
       </div>
 
       {/* New Conversation Modal */}
@@ -354,30 +360,27 @@ export default function TeacherChatPage() {
               <div className="relative">
                 <Search className={`absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
                 <Input
-                  placeholder={isAr ? "ابحث عن طالب..." : "Search student..."}
-                  value={studentSearch}
-                  onChange={(e) => setStudentSearch(e.target.value)}
+                  placeholder={isAr ? "ابحث عن مستخدم..." : "Search user..."}
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
                   className={`${isAr ? 'pr-9' : 'pl-9'} h-10 rounded-xl`}
                 />
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
-              {loadingStudents ? (
+              {loadingUsers ? (
                 <div className="flex justify-center p-8">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 </div>
-              ) : filteredStudents.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <div className="text-center p-8 text-muted-foreground text-sm">
-                  {students.length === 0
-                    ? (isAr ? "لا يوجد طلاب مسجلين لديك" : "No students enrolled")
-                    : (isAr ? "لا توجد نتائج" : "No results found")
-                  }
+                  {isAr ? "لا توجد نتائج" : "No results found"}
                 </div>
               ) : (
-                filteredStudents.map(student => (
+                filteredUsers.map(user => (
                   <button
-                    key={student.id}
-                    onClick={() => startConversation(student.id)}
+                    key={user.id}
+                    onClick={() => startConversation(user.id)}
                     disabled={creatingConv}
                     className="w-full text-start p-3 rounded-xl flex items-center gap-3 hover:bg-muted/50 transition-colors disabled:opacity-50"
                   >
@@ -385,8 +388,11 @@ export default function TeacherChatPage() {
                       <User className="w-5 h-5 text-blue-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate">{student.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{student.email}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-sm truncate">{user.name}</p>
+                        {getRoleBadge(user.role)}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                     </div>
                     {creatingConv && <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />}
                   </button>
