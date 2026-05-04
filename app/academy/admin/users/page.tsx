@@ -549,14 +549,13 @@ export default function AdminUsersPage() {
                 {(currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
                   <option value="student">{t.auth.student}</option>
                 )}
-                {(currentUserRole === 'admin' || currentUserRole === 'reciter_supervisor') && (
-                  <option value="reader">{t.auth.reader}</option>
+                {(currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
+                  <option value="teacher">{t.auth.teacher}</option>
                 )}
                 {currentUserRole === 'admin' && (
                   <>
                     <option value="admin">{t.auth.admin}</option>
                     <option value="student_supervisor">{t.auth.studentSupervisor}</option>
-                    <option value="reciter_supervisor">{t.auth.reciterSupervisor}</option>
                   </>
                 )}
               </select>
@@ -659,14 +658,13 @@ export default function AdminUsersPage() {
                 {(currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
                   <option value="student">{t.auth.student}</option>
                 )}
-                {(currentUserRole === 'admin' || currentUserRole === 'reciter_supervisor') && (
-                  <option value="reader">{t.auth.reader}</option>
+                {(currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
+                  <option value="teacher">{t.auth.teacher}</option>
                 )}
                 {currentUserRole === 'admin' && (
                   <>
                     <option value="admin">{t.auth.admin}</option>
                     <option value="student_supervisor">{t.auth.studentSupervisor}</option>
-                    <option value="reciter_supervisor">{t.auth.reciterSupervisor}</option>
                   </>
                 )}
               </select>
