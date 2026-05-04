@@ -4,8 +4,14 @@ import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Send, User, Loader2, ArrowRight } from 'lucide-react'
+import { Search, Send, User, Loader2, ArrowRight, UserPlus, X } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
+
+interface Student {
+  id: string
+  name: string
+  email: string
+}
 
 interface Conversation {
   id: string
@@ -34,6 +40,11 @@ export default function TeacherChatPage() {
   const [loadingConv, setLoadingConv] = useState(true)
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const [sending, setSending] = useState(false)
+  const [showNewConv, setShowNewConv] = useState(false)
+  const [students, setStudents] = useState<Student[]>([])
+  const [loadingStudents, setLoadingStudents] = useState(false)
+  const [studentSearch, setStudentSearch] = useState('')
+  const [creatingConv, setCreatingConv] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -55,6 +66,57 @@ export default function TeacherChatPage() {
       setLoadingConv(false)
     }
   }
+
+  const fetchStudents = async () => {
+    setLoadingStudents(true)
+    try {
+      const res = await fetch('/api/academy/teacher/students')
+      const data = await res.json()
+      if (res.ok) {
+        setStudents(data.data || [])
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingStudents(false)
+    }
+  }
+
+  const startConversation = async (studentId: string) => {
+    setCreatingConv(true)
+    try {
+      const res = await fetch('/api/academy/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otherUserId: studentId })
+      })
+      const data = await res.json()
+      if (res.ok && data.conversationId) {
+        // Refresh conversations and select the new one
+        await fetchConversations()
+        const newConv = conversations.find(c => c.id === data.conversationId) ||
+          { id: data.conversationId, other_user_id: studentId, other_user_name: students.find(s => s.id === studentId)?.name || '', other_user_avatar: null, last_message: null, last_message_at: null, unread_count: 0 }
+        setActiveConv(newConv)
+        setShowNewConv(false)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setCreatingConv(false)
+    }
+  }
+
+  // When opening new conversation modal, fetch students
+  useEffect(() => {
+    if (showNewConv && students.length === 0) {
+      fetchStudents()
+    }
+  }, [showNewConv])
+
+  const filteredStudents = students.filter(s =>
+    s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
+    s.email.toLowerCase().includes(studentSearch.toLowerCase())
+  )
 
   // Fetch messages for active conversation
   useEffect(() => {
