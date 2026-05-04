@@ -53,6 +53,7 @@ export default function StudentFiqhPage() {
   const [questions, setQuestions] = useState<FiqhQuestion[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'pending' | 'answered'>('all')
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [newQuestion, setNewQuestion] = useState('')
@@ -66,15 +67,21 @@ export default function StudentFiqhPage() {
 
   const fetchQuestions = async () => {
     setLoading(true)
+    setLoadError(null)
     try {
       const res = await fetch('/api/academy/student/fiqh')
-      if (res.ok) {
-        const data = await res.json()
-        // The API returns the questions array directly
-        setQuestions(Array.isArray(data) ? data : data.questions || [])
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || `HTTP ${res.status}`)
       }
+      const data = await res.json()
+      // The API returns the questions array directly
+      setQuestions(Array.isArray(data) ? data : data.questions || [])
     } catch (err) {
       console.error('[fiqh] fetch failed:', err)
+      const msg = err instanceof Error ? err.message : 'Failed to load questions'
+      setLoadError(msg)
+      setQuestions([])
     } finally {
       setLoading(false)
     }
@@ -203,6 +210,27 @@ export default function StudentFiqhPage() {
 
       {/* Questions List */}
       <div className="space-y-3">
+        {loadError && (
+          <Card className="border-red-500/50 bg-red-50/50 dark:bg-red-900/20">
+            <CardContent className="flex items-start gap-3 p-4">
+              <HelpCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-bold text-red-700 dark:text-red-400">
+                  {isAr ? 'تعذّر تحميل الأسئلة' : 'Failed to load questions'}
+                </p>
+                <p className="text-sm text-red-600 dark:text-red-300 mt-1">{loadError}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={fetchQuestions}
+                className="flex-shrink-0"
+              >
+                {isAr ? 'إعادة محاولة' : 'Retry'}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
         {loading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
