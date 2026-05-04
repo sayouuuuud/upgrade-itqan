@@ -656,10 +656,11 @@ export default function AdminUsersPage() {
                 onChange={e => setFormData({ ...formData, role: e.target.value })}
               >
                 {(currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
-                  <option value="student">{t.auth.student}</option>
-                )}
-                {(currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
-                  <option value="teacher">{t.auth.teacher}</option>
+                  <>
+                    <option value="student">{t.auth.student}</option>
+                    <option value="parent">{t.auth.parent}</option>
+                    <option value="teacher">{t.auth.teacher}</option>
+                  </>
                 )}
                 {currentUserRole === 'admin' && (
                   <>
