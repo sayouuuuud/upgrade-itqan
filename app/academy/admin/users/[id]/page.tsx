@@ -201,10 +201,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                     <h2 className="text-2xl font-black text-foreground">{user.name}</h2>
                                     <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize font-black px-4 py-1 rounded-full">
                                         {user.role === 'student' ? (t.student.studentLabel || t.auth.student) :
-                                            user.role === 'reader' ? (t.reader.readerLabel || t.auth.reader) :
-                                                user.role === 'student_supervisor' ? (t.auth.studentSupervisor || "Student Supervisor") :
-                                                    user.role === 'reciter_supervisor' ? (t.auth.reciterSupervisor || "Reciter Supervisor") :
-                                                        user.role === 'admin' ? t.auth.admin : user.role}
+                                            user.role === 'teacher' ? (t.auth.teacher || "Teacher") :
+                                                user.role === 'parent' ? (t.auth.parent || "Parent") :
+                                                    user.role === 'reader' ? (t.reader.readerLabel || t.auth.reader) :
+                                                        user.role === 'student_supervisor' ? (t.auth.studentSupervisor || "Student Supervisor") :
+                                                            user.role === 'reciter_supervisor' ? (t.auth.reciterSupervisor || "Reciter Supervisor") :
+                                                                user.role === 'admin' ? t.auth.admin : user.role}
                                     </Badge>
                                 </div>
                                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-muted-foreground text-sm font-bold">
@@ -273,10 +275,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                     <span className="text-muted-foreground font-bold">{t.auth.role}</span>
                                     <Badge variant="outline" className="bg-muted/50 text-foreground capitalize border-border/50 font-bold">
                                         {user.role === 'student' ? (t.student.studentLabel || t.auth.student) :
-                                            user.role === 'reader' ? (t.reader.readerLabel || t.auth.reader) :
-                                                user.role === 'student_supervisor' ? (t.auth.studentSupervisor || "Student Supervisor") :
-                                                    user.role === 'reciter_supervisor' ? (t.auth.reciterSupervisor || "Reciter Supervisor") :
-                                                        user.role === 'admin' ? t.auth.admin : user.role}
+                                            user.role === 'teacher' ? (t.auth.teacher || "Teacher") :
+                                                user.role === 'parent' ? (t.auth.parent || "Parent") :
+                                                    user.role === 'reader' ? (t.reader.readerLabel || t.auth.reader) :
+                                                        user.role === 'student_supervisor' ? (t.auth.studentSupervisor || "Student Supervisor") :
+                                                            user.role === 'reciter_supervisor' ? (t.auth.reciterSupervisor || "Reciter Supervisor") :
+                                                                user.role === 'admin' ? t.auth.admin : user.role}
                                     </Badge>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-border/30">

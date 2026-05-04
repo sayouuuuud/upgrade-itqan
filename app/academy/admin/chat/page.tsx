@@ -261,14 +261,20 @@ export default function AdminChatPage() {
   }
 
   const getRoleBadge = (role?: string) => {
+    if (!role) return null
     const roles: Record<string, { label: string, class: string }> = {
       student: { label: isAr ? 'طالب' : 'Student', class: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
-      teacher: { label: isAr ? 'مدرس' : 'Teacher', class: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-      reader: { label: isAr ? 'قارئ' : 'Reader', class: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
-      admin: { label: isAr ? 'مدير' : 'Admin', class: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
-      parent: { label: isAr ? 'ولي أمر' : 'Parent', class: 'bg-rose-500/10 text-rose-500 border-rose-500/20' },
+      teacher: { label: isAr ? 'معلم' : 'Teacher', class: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20' },
+      parent: { label: isAr ? 'ولي أمر' : 'Parent', class: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+      reader: { label: isAr ? 'مقرئ' : 'Reader', class: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
+      admin: { label: isAr ? 'مدير' : 'Admin', class: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
+      student_supervisor: { label: isAr ? 'مشرف الطلاب' : 'Student Supervisor', class: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
+      reciter_supervisor: { label: isAr ? 'مشرف المقرئين' : 'Reciter Supervisor', class: 'bg-rose-500/10 text-rose-500 border-rose-500/20' },
     }
-    const r = roles[role || 'student'] || roles.student
+    const r = roles[role]
+    if (!r) {
+      return <Badge variant="outline" className="text-[10px] font-bold bg-muted text-muted-foreground border-border">{role}</Badge>
+    }
     return <Badge variant="outline" className={`text-[10px] font-bold ${r.class}`}>{r.label}</Badge>
   }
 
