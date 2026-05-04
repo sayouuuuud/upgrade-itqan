@@ -24,7 +24,7 @@ export default function AdminUsersPage() {
   const isAr = locale === "ar"
 
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState<"students" | "readers" | "admins" | "supervisors">("students")
+  const [activeTab, setActiveTab] = useState<"students" | "teachers" | "parents" | "admins" | "supervisors">("students")
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState<any>(null)
@@ -77,7 +77,11 @@ export default function AdminUsersPage() {
   const fetchUsers = async (page: number = 1, search: string = "") => {
     setLoading(true)
     try {
-      const role = activeTab === "students" ? "student" : activeTab === "readers" ? "reader" : activeTab === "supervisors" ? "supervisors" : "admin"
+      const role =
+        activeTab === "students" ? "student" :
+        activeTab === "teachers" ? "teacher" :
+        activeTab === "parents" ? "parent" :
+        activeTab === "supervisors" ? "supervisors" : "admin"
       const searchParam = search ? `&search=${encodeURIComponent(search)}` : ""
       const res = await fetch(`/api/admin/users?role=${role}&page=${page}&limit=10${searchParam}`)
       if (res.ok) {
@@ -134,7 +138,7 @@ export default function AdminUsersPage() {
       alert(t.auth.errorOccurred)
     } finally {
       setSubmitting(false)
-      const defaultRole = currentUserRole === 'reciter_supervisor' ? 'reader' : 'student'
+      const defaultRole = 'student'
       setFormData({ 
         name: "", 
         email: "", 
@@ -211,18 +215,17 @@ export default function AdminUsersPage() {
             {t.admin.usersManagementTitle}
           </h1>
           <p className="text-muted-foreground font-bold tracking-wide">
-            {t.admin.usersManagementDesc}
+            {t.admin.academyUsersDesc || (isAr ? "عرض وإدارة جميع حسابات الطلاب والمعلمين وأولياء الأمور" : "View and manage all student, teacher, and parent accounts")}
           </p>
         </div>
         <Button
           className="w-full sm:w-auto rounded-2xl font-black bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 h-12 px-6 gap-2"
           onClick={() => {
-            const defaultRole = currentUserRole === 'reciter_supervisor' ? 'reader' : 'student'
-            setFormData({ 
-              name: "", 
-              email: "", 
-              password: "", 
-              role: defaultRole, 
+            setFormData({
+              name: "",
+              email: "",
+              password: "",
+              role: 'student',
               gender: "",
               has_academy_access: true,
               has_quran_access: true
@@ -240,7 +243,8 @@ export default function AdminUsersPage() {
         <div className="flex p-1 bg-muted/50 border border-border rounded-2xl w-full lg:w-auto flex-1 overflow-x-auto overflow-y-hidden hide-scrollbar gap-1">
           {[
             { id: "students", label: t.admin.students },
-            { id: "readers", label: t.admin.readers },
+            { id: "teachers", label: t.admin.teachers || (isAr ? "المعلمين" : "Teachers") },
+            { id: "parents", label: t.admin.parents || (isAr ? "أولياء الأمور" : "Parents") },
             { id: "admins", label: t.admin.admins },
             { id: "supervisors", label: t.admin.supervisors }
           ].map((tab) => (
@@ -282,9 +286,6 @@ export default function AdminUsersPage() {
                   <th className="px-6 py-5 font-black whitespace-nowrap">{t.auth.email}</th>
                   <th className="px-6 py-5 font-black whitespace-nowrap">{t.admin.joinDate}</th>
                   <th className="px-6 py-5 font-black whitespace-nowrap">{t.auth.role}</th>
-                  {activeTab === 'readers' && (
-                    <th className="px-6 py-5 font-black whitespace-nowrap">{t.readerRegister.nationality}</th>
-                  )}
                   <th className="px-6 py-5 font-black whitespace-nowrap">{t.reader.status}</th>
                   <th className="px-6 py-5 text-center font-black whitespace-nowrap">{t.admin.action}</th>
                 </tr>
@@ -388,11 +389,6 @@ export default function AdminUsersPage() {
                           )}
                         </div>
                       </td>
-                      {activeTab === 'readers' && (
-                        <td className="px-6 py-4 text-xs font-black text-muted-foreground">
-                          {user.nationality || '-'}
-                        </td>
-                      )}
                       <td className="px-6 py-4">
                         {user.is_active ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
