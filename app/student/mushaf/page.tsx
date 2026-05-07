@@ -719,6 +719,7 @@ export default function MushafPage() {
                 </div>
               </div>
             )}
+            </div>
           </div>
 
           {/* Navigation controls */}
