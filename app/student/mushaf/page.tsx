@@ -249,9 +249,9 @@ export default function MushafPage() {
         rel="stylesheet"
       />
 
-      <div className="min-h-screen bg-gradient-to-b from-[#f5efdf] via-[#f8f1e0] to-[#f3ecda] dark:from-background dark:via-background dark:to-background">
+      <div className="min-h-screen bg-gradient-to-b from-[#f0e6d2] via-[#ede4d0] to-[#e9dcc8] dark:from-background dark:via-background dark:to-background">
         {/* Top toolbar */}
-        <div className="bg-card/60 border-b border-border/50">
+        <div className="bg-[#ede4d0]/80 border-b border-amber-700/20 dark:border-border/50">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
             {/* Left: Surah/Juz info */}
             <div className="flex items-center gap-3 min-w-0">
