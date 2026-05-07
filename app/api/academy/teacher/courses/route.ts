@@ -47,12 +47,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Title and level are required' }, { status: 400 })
     }
 
+    // Fetch teacher's specializations — use the first one (primary)
+    const teacherSpecs = await query<{ specialization: string }>(
+      `SELECT specialization FROM user_specializations WHERE user_id = $1 ORDER BY created_at ASC LIMIT 1`,
+      [session.sub]
+    )
+    const courseSpecialization = teacherSpecs.length > 0 ? teacherSpecs[0].specialization : null
+
     const q = `
-      INSERT INTO courses (title, description, thumbnail_url, level, status, category_id, teacher_id, created_at)
-      VALUES ($1, $2, $3, $4, 'draft', $5, $6, NOW())
+      INSERT INTO courses (title, description, thumbnail_url, level, status, category_id, teacher_id, specialization, created_at)
+      VALUES ($1, $2, $3, $4, 'draft', $5, $6, $7, NOW())
       RETURNING *
     `
-    const params = [title, description || null, thumbnail_url || null, level, category_id || null, session.sub]
+    const params = [title, description || null, thumbnail_url || null, level, category_id || null, session.sub, courseSpecialization]
     const rows = await query<any>(q, params)
     
     return NextResponse.json({ data: rows[0] }, { status: 201 })

@@ -12,7 +12,7 @@ export async function GET() {
 
   const rows = await query<{ specialization: string; set_by: string }>(
     `SELECT specialization, set_by FROM user_specializations WHERE user_id = $1 ORDER BY created_at`,
-    [session.id]
+    [session.sub]
   )
 
   return NextResponse.json({ specializations: rows })
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     `INSERT INTO user_specializations (user_id, specialization, set_by)
      VALUES ($1, $2, 'self')
      ON CONFLICT (user_id, specialization) DO NOTHING`,
-    [session.id, specialization]
+    [session.sub, specialization]
   )
 
   return NextResponse.json({ success: true })
@@ -50,7 +50,7 @@ export async function DELETE(req: NextRequest) {
   // They cannot remove admin/parent-set specializations
   const rows = await query<{ set_by: string }>(
     `SELECT set_by FROM user_specializations WHERE user_id = $1 AND specialization = $2`,
-    [session.id, specialization]
+    [session.sub, specialization]
   )
 
   if (rows.length === 0) return NextResponse.json({ success: true })
@@ -64,7 +64,7 @@ export async function DELETE(req: NextRequest) {
 
   await query(
     `DELETE FROM user_specializations WHERE user_id = $1 AND specialization = $2`,
-    [session.id, specialization]
+    [session.sub, specialization]
   )
 
   return NextResponse.json({ success: true })
