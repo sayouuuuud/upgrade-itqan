@@ -251,7 +251,7 @@ export default function MushafPage() {
 
       <div className="min-h-screen bg-gradient-to-b from-[#f5efdf] via-[#f8f1e0] to-[#f3ecda] dark:from-background dark:via-background dark:to-background">
         {/* Top toolbar */}
-        <div className="sticky top-0 z-30 backdrop-blur-md bg-card/80 border-b border-border/50">
+        <div className="bg-card/60 border-b border-border/50">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
             {/* Left: Surah/Juz info */}
             <div className="flex items-center gap-3 min-w-0">
