@@ -43,6 +43,36 @@ function toArabicDigits(n: number | string): string {
 
 const BISMILLAH = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'
 
+// Remove all Arabic diacritics (tashkeel) so we can compare/match plain letters
+function stripTashkeel(text: string): string {
+  return text.replace(/[\u064B-\u0652\u0670\u0640\u06D6-\u06ED\u08D3-\u08FF]/g, '')
+}
+
+// Strip leading "سورة" / "سُورَةُ" prefix (with any tashkeel) from a surah name
+function stripSurahPrefix(name: string): string {
+  if (!name) return name
+  const plain = stripTashkeel(name).trim()
+  if (!plain.startsWith('سورة')) return name
+
+  // Find the actual end of the prefix in the original (with tashkeel) string
+  // by walking through both strings in parallel.
+  const prefixPlainLen = 'سورة'.length
+  let plainSeen = 0
+  let i = 0
+  while (i < name.length && plainSeen < prefixPlainLen) {
+    const ch = name[i]
+    if (!/[\u064B-\u0652\u0670\u0640\u06D6-\u06ED\u08D3-\u08FF]/.test(ch)) {
+      plainSeen++
+    }
+    i++
+  }
+  // Also consume any trailing tashkeel + whitespace after the prefix
+  while (i < name.length && /[\u064B-\u0652\u0670\u0640\u06D6-\u06ED\u08D3-\u08FF\s]/.test(name[i])) {
+    i++
+  }
+  return name.slice(i).trim() || name
+}
+
 // Strip leading bismillah from first ayah of any surah (except Al-Fatiha #1 and At-Tawbah #9 which has none)
 function stripLeadingBismillah(text: string, surahNumber: number, ayahNumber: number): string {
   if (ayahNumber !== 1) return text
@@ -232,7 +262,7 @@ export default function MushafPage() {
                 <div className="text-sm font-black text-foreground truncate">{t.student?.mushaf || 'مصحفي'}</div>
                 {headerInfo && (
                   <div className="text-xs text-muted-foreground font-bold truncate">
-                    {isAr ? headerInfo.surahName : headerInfo.surahEnglish}
+                    {isAr ? stripSurahPrefix(headerInfo.surahName) : headerInfo.surahEnglish}
                     {' · '}
                     {isAr ? `${t.student?.juz || 'الجزء'} ${toArabicDigits(headerInfo.juz)}` : `Juz ${headerInfo.juz}`}
                   </div>
@@ -339,7 +369,7 @@ export default function MushafPage() {
                               className="text-3xl sm:text-4xl text-amber-900 dark:text-foreground"
                               style={{ fontFamily: "'Amiri Quran', serif", fontWeight: 400 }}
                             >
-                              {g.surah.name.replace(/[\u064B-\u0652\u0670\u0640]/g, '').match(/^سورة/) ? g.surah.name : `سُورَةُ ${g.surah.name}`}
+                              سُورَةُ {stripSurahPrefix(g.surah.name)}
                             </div>
                             <div className="text-sm font-black text-amber-800 dark:text-primary/80">
                               {toArabicDigits(g.surah.number)}
