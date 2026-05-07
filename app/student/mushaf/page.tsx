@@ -471,12 +471,6 @@ export default function MushafPage() {
               <ChevronLeft className="w-4 h-4 ms-2" />
             </Button>
           </div>
-
-          <p className="mt-4 text-center text-xs text-muted-foreground font-bold">
-            {isAr
-              ? 'استخدم أسهم الكيبورد ◄ ► للتنقل بين الصفحات'
-              : 'Use ◄ ► arrow keys to navigate between pages'}
-          </p>
         </div>
       </div>
     </>
