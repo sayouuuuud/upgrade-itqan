@@ -37,6 +37,12 @@ interface Supervisor {
   avatar_url: string | null
 }
 
+const ROLE_LABELS: Record<string, { ar: string; en: string; cls: string }> = {
+  fiqh_supervisor:    { ar: 'مشرف أسئلة الفقه', en: 'Fiqh Q&A Supervisor', cls: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20' },
+  content_supervisor: { ar: 'مشرف المحتوى',     en: 'Content Supervisor',  cls: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20' },
+  supervisor:         { ar: 'مشرف عام',         en: 'General Supervisor',  cls: 'bg-muted text-foreground border-border' },
+}
+
 export default function AcademySupervisorsPage() {
   const { locale } = useI18n()
   const isAr = locale === 'ar'
@@ -44,18 +50,23 @@ export default function AcademySupervisorsPage() {
   const [supervisors, setSupervisors] = useState<Supervisor[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [tab, setTab] = useState<'all' | 'fiqh' | 'content'>('all')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string; email: string; password: string; gender: string; type: 'fiqh' | 'content'
+  }>({
     name: '',
     email: '',
     password: '',
-    gender: 'male'
+    gender: 'male',
+    type: 'fiqh',
   })
 
-  const fetchSupervisors = async () => {
+  const fetchSupervisors = async (filter: 'all' | 'fiqh' | 'content' = tab) => {
+    setLoading(true)
     try {
-      const res = await fetch('/api/academy/admin/supervisors')
+      const res = await fetch(`/api/academy/admin/supervisors?type=${filter}`)
       if (res.ok) {
         const data = await res.json()
         setSupervisors(data.supervisors || [])
@@ -68,8 +79,8 @@ export default function AcademySupervisorsPage() {
   }
 
   useEffect(() => {
-    fetchSupervisors()
-  }, [])
+    fetchSupervisors(tab)
+  }, [tab])
 
   const handleCreate = async () => {
     if (!formData.name || !formData.email || !formData.password) {
@@ -88,10 +99,10 @@ export default function AcademySupervisorsPage() {
       const data = await res.json()
 
       if (res.ok) {
-        toast.success(data.message || (isAr ? 'تم إنشاء المشرف بنجاح' : 'Supervisor created'))
+        toast.success(isAr ? 'تم إنشاء المشرف بنجاح' : 'Supervisor created')
         setIsCreateOpen(false)
-        setFormData({ name: '', email: '', password: '', gender: 'male' })
-        fetchSupervisors()
+        setFormData({ name: '', email: '', password: '', gender: 'male', type: formData.type })
+        fetchSupervisors(tab)
       } else {
         toast.error(data.error || (isAr ? 'حدث خطأ' : 'An error occurred'))
       }
@@ -112,7 +123,7 @@ export default function AcademySupervisorsPage() {
 
       if (res.ok) {
         toast.success(isAr ? 'تم إلغاء تفعيل المشرف' : 'Supervisor deactivated')
-        fetchSupervisors()
+        fetchSupervisors(tab)
       }
     } catch (error) {
       toast.error(isAr ? 'حدث خطأ' : 'An error occurred')
@@ -146,15 +157,37 @@ export default function AcademySupervisorsPage() {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder={isAr ? 'بحث...' : 'Search...'}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pr-10 rounded-xl"
-        />
+      {/* Tabs + Search */}
+      <div className="flex flex-col md:flex-row md:items-center gap-3">
+        <div className="flex gap-2 bg-muted/40 p-1 rounded-2xl w-fit">
+          {([
+            { key: 'all',     label: isAr ? 'الكل' : 'All' },
+            { key: 'fiqh',    label: isAr ? 'مشرفو أسئلة الفقه' : 'Fiqh Q&A' },
+            { key: 'content', label: isAr ? 'مشرفو المحتوى' : 'Content' },
+          ] as const).map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTab(key)}
+              className={`px-4 py-1.5 text-sm font-bold rounded-xl transition-colors ${
+                tab === key
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="relative md:max-w-xs flex-1">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder={isAr ? 'بحث...' : 'Search...'}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pr-10 rounded-xl"
+          />
+        </div>
       </div>
 
       {/* Supervisors Grid */}
@@ -217,15 +250,23 @@ export default function AcademySupervisorsPage() {
                   </DropdownMenu>
                 </div>
 
-                <div className="flex items-center gap-2 mt-4">
+                <div className="flex flex-wrap items-center gap-2 mt-4">
+                  <Badge
+                    variant="outline"
+                    className={ROLE_LABELS[supervisor.role]?.cls || 'bg-muted text-foreground border-border'}
+                  >
+                    {isAr
+                      ? ROLE_LABELS[supervisor.role]?.ar || supervisor.role
+                      : ROLE_LABELS[supervisor.role]?.en || supervisor.role}
+                  </Badge>
                   <Badge
                     variant={supervisor.is_active ? 'default' : 'secondary'}
-                    className={supervisor.is_active 
-                      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
+                    className={supervisor.is_active
+                      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                       : 'bg-red-500/10 text-red-600 border-red-500/20'}
                   >
-                    {supervisor.is_active 
-                      ? (isAr ? 'نشط' : 'Active') 
+                    {supervisor.is_active
+                      ? (isAr ? 'نشط' : 'Active')
                       : (isAr ? 'غير نشط' : 'Inactive')}
                   </Badge>
                 </div>
@@ -250,6 +291,29 @@ export default function AcademySupervisorsPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>{isAr ? 'نوع المشرف' : 'Supervisor Type'}</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { key: 'fiqh',    ar: 'أسئلة الفقه', en: 'Fiqh Q&A',  desc: isAr ? 'الإجابة على أسئلة الطلاب' : 'Answers student questions' },
+                  { key: 'content', ar: 'المحتوى',     en: 'Content',   desc: isAr ? 'مراجعة دروس المعلمين' : 'Reviews teacher lessons' },
+                ] as const).map(({ key, ar, en, desc }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, type: key })}
+                    className={`text-right p-3 rounded-xl border-2 transition-all ${
+                      formData.type === key
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/40'
+                    }`}
+                  >
+                    <p className="font-bold text-sm text-foreground">{isAr ? ar : en}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="space-y-2">
               <Label>{isAr ? 'الاسم الكامل' : 'Full Name'}</Label>
               <Input

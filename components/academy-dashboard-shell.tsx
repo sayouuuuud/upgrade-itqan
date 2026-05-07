@@ -21,7 +21,7 @@ import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 type NavItem = { href: string; label: string; icon: React.ElementType; badge?: number | string | null }
 type NavSection = { title?: string; items: NavItem[] }
 
-type AcademyRole = 'academy_student' | 'teacher' | 'academy_admin' | 'parent' | 'supervisor' | 'fiqh_questions_supervisor'
+type AcademyRole = 'academy_student' | 'teacher' | 'academy_admin' | 'parent' | 'supervisor' | 'fiqh_questions_supervisor' | 'content_supervisor'
 
 const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection[], label: string, name: string, sublabel: string } => {
   const configs: Record<AcademyRole, { sections: NavSection[], label: string, name: string, sublabel: string }> = {
@@ -213,6 +213,26 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
       label: 'لوحة مشرف أسئلة الفقه',
       name: 'مشرف أسئلة الفقه',
       sublabel: 'مشرف أسئلة الفقه'
+    },
+    content_supervisor: {
+      sections: [
+        {
+          items: [
+            { href: '/academy/content-supervisor', label: 'لوحة التحكم', icon: LayoutDashboard },
+            { href: '/academy/content-supervisor/lessons', label: 'الدروس', icon: BookOpen },
+            { href: '/academy/content-supervisor/messages', label: 'الرسائل', icon: MessageSquare },
+          ]
+        },
+        {
+          title: 'الحساب',
+          items: [
+            { href: '/academy/content-supervisor/profile', label: 'الملف الشخصي', icon: User },
+          ]
+        }
+      ],
+      label: 'لوحة مشرف المحتوى',
+      name: 'مشرف المحتوى',
+      sublabel: 'مشرف المحتوى'
     }
   }
 
@@ -290,6 +310,7 @@ export function AcademyDashboardShell({
       parent: '/academy/parent',
       supervisor: '/academy/supervisor',
       fiqh_questions_supervisor: '/academy/fiqh-supervisor',
+      content_supervisor: '/academy/content-supervisor',
     }
     const basePath = basePaths[role] || `/academy/${role}`
     return pathname === href || (href !== basePath && pathname.startsWith(href + '/'))

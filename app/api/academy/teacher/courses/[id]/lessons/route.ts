@@ -87,26 +87,37 @@ export async function POST(
     }
 
     // B-7: إشعار للمشرفين بدرس جديد ينتظر المراجعة
-    try {
-      const supervisors = await query<any>(
-        `SELECT DISTINCT u.id FROM users u
-         WHERE u.is_active = true
-           AND (u.role IN ('admin', 'academy_admin')
-             OR u.academy_roles && ARRAY['supervisor', 'content_supervisor', 'quality_supervisor']::varchar[])`,
-        []
-      )
-      for (const sup of supervisors) {
-        await createNotification({
-          userId: sup.id,
-          type: 'general',
-          title: '📚 درس جديد ينتظر المراجعة',
-          message: `رفع المدرس درساً جديداً «${title}» في دورة «${courseTitle}» وينتظر موافقتك قبل النشر.`,
-          category: 'course',
-          link: `/academy/supervisor/content`,
-        })
+    // Prefer content_supervisor; fall back to admins if no content supervisors exist.
+    if (finalStatus === 'pending_review') {
+      try {
+        const recipients = await query<{ id: string; role: string }>(
+          `SELECT id, role FROM users
+           WHERE is_active = true
+             AND (
+               role IN ('content_supervisor', 'supervisor', 'admin', 'academy_admin')
+               OR academy_roles && ARRAY['content_supervisor','supervisor']::varchar[]
+             )`,
+        )
+
+        const contentSupervisors = recipients.filter(r => r.role === 'content_supervisor')
+        const targets = contentSupervisors.length > 0 ? contentSupervisors : recipients
+
+        for (const target of targets) {
+          const link =
+            target.role === 'content_supervisor' ? '/academy/content-supervisor/lessons' :
+                                                   '/academy/supervisor/content'
+          await createNotification({
+            userId: target.id,
+            type: 'general',
+            title: 'درس جديد ينتظر المراجعة',
+            message: `رفع المدرس درساً جديداً "${title}" في دورة "${courseTitle}" وينتظر موافقتك قبل النشر.`,
+            category: 'course',
+            link,
+          }).catch(() => {})
+        }
+      } catch (notifErr) {
+        console.error('[B-7] Failed to notify supervisors:', notifErr)
       }
-    } catch (notifErr) {
-      console.error('[B-7] Failed to notify supervisors:', notifErr)
     }
 
     return NextResponse.json({ success: true, data: newLesson }, { status: 201 })

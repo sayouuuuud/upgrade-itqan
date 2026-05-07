@@ -3,18 +3,30 @@ import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 
+// Roles considered supervisors in this admin endpoint
+const SUPERVISOR_ROLES = ['supervisor', 'fiqh_supervisor', 'content_supervisor']
+const ADMIN_ROLES = ['admin', 'academy_admin']
+
 /**
- * GET /api/academy/admin/supervisors
- * List all supervisors in the academy
+ * GET /api/academy/admin/supervisors?type=fiqh|content|all
+ * List all supervisors in the academy, optionally filtered by type.
  */
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  if (!session || session.role !== 'admin') {
+  if (!session || !ADMIN_ROLES.includes(session.role)) {
     return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
   }
 
+  const url = new URL(req.url)
+  const type = url.searchParams.get('type') || 'all'
+
+  const roleFilter =
+    type === 'fiqh'    ? ['fiqh_supervisor'] :
+    type === 'content' ? ['content_supervisor'] :
+                         SUPERVISOR_ROLES
+
   const supervisors = await query<any>(
-    `SELECT 
+    `SELECT
       u.id,
       u.name,
       u.email,
@@ -24,8 +36,9 @@ export async function GET(req: NextRequest) {
       u.created_at,
       u.avatar_url
     FROM users u
-    WHERE u.role IN ('supervisor', 'fiqh_supervisor')
-    ORDER BY u.created_at DESC`
+    WHERE u.role = ANY($1::text[])
+    ORDER BY u.created_at DESC`,
+    [roleFilter]
   )
 
   return NextResponse.json({ supervisors })
@@ -33,20 +46,26 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/academy/admin/supervisors
- * Create a new supervisor account
+ * Create a new supervisor account.
+ * Body: { name, email, password, gender, type: 'fiqh' | 'content' }
  */
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!session || (session.role !== 'admin' && session.role !== 'academy_admin')) {
+  if (!session || !ADMIN_ROLES.includes(session.role)) {
     return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
   }
 
   const body = await req.json()
-  const { name, email, password, gender } = body
+  const { name, email, password, gender, type } = body
 
   if (!name || !email || !password) {
     return NextResponse.json({ error: 'الاسم والبريد وكلمة المرور مطلوبة' }, { status: 400 })
   }
+
+  const supervisorRole =
+    type === 'content' ? 'content_supervisor' :
+    type === 'fiqh'    ? 'fiqh_supervisor'    :
+                         'fiqh_supervisor' // default
 
   const existing = await query<{ id: string }>(
     `SELECT id FROM users WHERE email = $1`,
@@ -60,9 +79,9 @@ export async function POST(req: NextRequest) {
 
   const result = await query<any>(
     `INSERT INTO users (name, email, password_hash, role, gender, is_active, has_academy_access, has_quran_access, created_at)
-     VALUES ($1, $2, $3, 'fiqh_supervisor', $4, true, true, false, NOW())
+     VALUES ($1, $2, $3, $4, $5, true, true, false, NOW())
      RETURNING id, name, email, role, gender, is_active, created_at`,
-    [name, email.toLowerCase().trim(), hashedPassword, gender || 'male']
+    [name, email.toLowerCase().trim(), hashedPassword, supervisorRole, gender || 'male']
   )
 
   return NextResponse.json({ data: result[0] }, { status: 201 })
@@ -70,11 +89,11 @@ export async function POST(req: NextRequest) {
 
 /**
  * DELETE /api/academy/admin/supervisors
- * Remove a supervisor (deactivate account)
+ * Deactivate a supervisor account.
  */
 export async function DELETE(req: NextRequest) {
   const session = await getSession()
-  if (!session || (session.role !== 'admin' && session.role !== 'academy_admin')) {
+  if (!session || !ADMIN_ROLES.includes(session.role)) {
     return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
   }
 
@@ -86,8 +105,8 @@ export async function DELETE(req: NextRequest) {
   }
 
   await query(
-    `UPDATE users SET is_active = false WHERE id = $1 AND role IN ('fiqh_supervisor','supervisor')`,
-    [supervisorId]
+    `UPDATE users SET is_active = false WHERE id = $1 AND role = ANY($2::text[])`,
+    [supervisorId, SUPERVISOR_ROLES]
   )
 
   return NextResponse.json({ success: true })

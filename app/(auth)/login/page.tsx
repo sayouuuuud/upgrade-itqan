@@ -44,6 +44,7 @@ export default function LoginPage() {
     if (role === 'academy_admin') return '/academy/admin'
     if (role === 'student_supervisor' || role === 'reciter_supervisor') return `/${role}`
     if (role === 'fiqh_supervisor') return '/academy/fiqh-supervisor'
+    if (role === 'content_supervisor') return '/academy/content-supervisor'
     if (role === 'supervisor') return '/academy/supervisor'
     if (role === 'reader') return '/reader'
     if (role === 'teacher') return '/academy/teacher'
