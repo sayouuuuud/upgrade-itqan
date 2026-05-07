@@ -249,9 +249,24 @@ export default function MushafPage() {
         rel="stylesheet"
       />
 
-      <div className="min-h-screen bg-gradient-to-b from-[#f5efdf] via-[#f8f1e0] to-[#f3ecda] dark:from-background dark:via-background dark:to-background">
+      <div
+        className="min-h-screen relative dark:bg-background"
+        style={{
+          backgroundColor: '#d9c79a',
+          backgroundImage: `
+            radial-gradient(circle at 25% 25%, rgba(180, 140, 80, 0.18) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(160, 110, 60, 0.15) 0%, transparent 50%),
+            repeating-linear-gradient(45deg, transparent 0px, transparent 12px, rgba(120, 80, 40, 0.04) 12px, rgba(120, 80, 40, 0.04) 13px),
+            repeating-linear-gradient(-45deg, transparent 0px, transparent 12px, rgba(120, 80, 40, 0.04) 12px, rgba(120, 80, 40, 0.04) 13px)
+          `,
+        }}
+      >
+        <div className="dark:hidden absolute inset-0 pointer-events-none" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%238b6f3f' stroke-opacity='0.07' stroke-width='1'%3E%3Cpath d='M30 5 L35 25 L55 30 L35 35 L30 55 L25 35 L5 30 L25 25 Z'/%3E%3Ccircle cx='30' cy='30' r='3'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: '60px 60px',
+        }} />
         {/* Top toolbar */}
-        <div className="bg-card/60 border-b border-border/50">
+        <div className="relative z-10 bg-[#c9b585]/70 dark:bg-card/60 border-b-2 border-amber-800/30 dark:border-border/50 backdrop-blur-sm">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
             {/* Left: Surah/Juz info */}
             <div className="flex items-center gap-3 min-w-0">
@@ -334,8 +349,8 @@ export default function MushafPage() {
         </div>
 
         {/* Mushaf page */}
-        <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-          <div className="mushaf-page relative bg-[#fbf6e6] dark:bg-card rounded-3xl shadow-2xl shadow-amber-900/10 dark:shadow-black/30 border-[6px] border-double border-amber-700/30 dark:border-primary/30 p-6 sm:p-10 min-h-[70vh]">
+        <div className="relative z-10 max-w-3xl mx-auto px-4 py-6 sm:py-10">
+          <div className="mushaf-page relative bg-[#fbf6e6] dark:bg-card rounded-3xl shadow-2xl shadow-amber-950/30 dark:shadow-black/30 border-[6px] border-double border-amber-700/40 dark:border-primary/30 p-6 sm:p-10 min-h-[70vh]">
             {loading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -438,7 +453,7 @@ export default function MushafPage() {
               variant="outline"
               onClick={() => setPageNumber(p => Math.max(1, p - 1))}
               disabled={pageNumber <= 1}
-              className="rounded-2xl h-11 px-5 font-black w-full sm:w-auto"
+              className="rounded-2xl h-11 px-5 font-black w-full sm:w-auto bg-[#fbf6e6]/90 dark:bg-card border-amber-700/40 hover:bg-[#fbf6e6] dark:hover:bg-card/80"
             >
               <ChevronRight className="w-4 h-4 me-2" />
               {t.student?.prevPage || 'الصفحة السابقة'}
@@ -454,7 +469,7 @@ export default function MushafPage() {
                 onKeyDown={e => {
                   if (e.key === 'Enter') handleGoToPage()
                 }}
-                className="w-24 h-11 rounded-2xl text-center font-black"
+                className="w-24 h-11 rounded-2xl text-center font-black bg-[#fbf6e6]/90 dark:bg-card border-amber-700/40"
               />
               <Button onClick={handleGoToPage} className="rounded-2xl h-11 px-5 font-black">
                 {isAr ? 'انتقال' : 'Go'}
@@ -465,7 +480,7 @@ export default function MushafPage() {
               variant="outline"
               onClick={() => setPageNumber(p => Math.min(TOTAL_PAGES, p + 1))}
               disabled={pageNumber >= TOTAL_PAGES}
-              className="rounded-2xl h-11 px-5 font-black w-full sm:w-auto"
+              className="rounded-2xl h-11 px-5 font-black w-full sm:w-auto bg-[#fbf6e6]/90 dark:bg-card border-amber-700/40 hover:bg-[#fbf6e6] dark:hover:bg-card/80"
             >
               {t.student?.nextPage || 'الصفحة التالية'}
               <ChevronLeft className="w-4 h-4 ms-2" />
