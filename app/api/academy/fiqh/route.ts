@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       sql = `
         SELECT f.*, u.name as student_name
         FROM fiqh_questions f
-        JOIN users u ON u.id = f.asked_by
+        LEFT JOIN users u ON u.id = f.asked_by
         WHERE f.asked_by = $1
         ORDER BY f.asked_at DESC
       `
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
           CASE WHEN f.is_anonymous THEN 'مجهول الهوية' ELSE u.name END as student_name,
           ans.name as answered_by_name
         FROM fiqh_questions f
-        JOIN users u ON u.id = f.asked_by
+        LEFT JOIN users u ON u.id = f.asked_by
         LEFT JOIN users ans ON ans.id = f.answered_by
         ${where}
         ORDER BY f.asked_at DESC
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
         SELECT f.*,
           CASE WHEN f.is_anonymous THEN 'غير معروف' ELSE u.name END as student_name
         FROM fiqh_questions f
-        JOIN users u ON u.id = f.asked_by
+        LEFT JOIN users u ON u.id = f.asked_by
         WHERE f.is_published = TRUE AND f.answer IS NOT NULL
         ORDER BY f.answered_at DESC
       `
