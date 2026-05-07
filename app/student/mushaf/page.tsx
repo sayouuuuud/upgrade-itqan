@@ -546,9 +546,10 @@ export default function MushafPage() {
         </div>
 
         {/* Mushaf page */}
-        <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-          <div className="mushaf-page relative bg-[#fbf6e6] dark:bg-card rounded-3xl shadow-2xl shadow-amber-900/10 dark:shadow-black/30 border-[6px] border-double border-amber-700/30 dark:border-primary/30 p-6 sm:p-10 min-h-[70vh]">
-            {loading ? (
+        <div className="max-w-6xl mx-auto px-4 py-6 sm:py-10 flex gap-4">
+          {/* Main mushaf card — left/center */}
+          <div className="flex-1 min-w-0">
+            <div className="mushaf-page relative bg-[#fbf6e6] dark:bg-card rounded-3xl shadow-2xl shadow-amber-900/10 dark:shadow-black/30 border-[6px] border-double border-amber-700/30 dark:border-primary/30 p-6 sm:p-10 min-h-[70vh]">
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 <p className="text-sm font-bold text-muted-foreground">
@@ -759,6 +760,117 @@ export default function MushafPage() {
               <ChevronLeft className="w-4 h-4 ms-2" />
             </Button>
           </div>
+            </div>
+          </div>
+
+          {/* Sidebar — audio player (only shown when playing) */}
+          {playing && (
+            <div className="w-80 flex-shrink-0 hidden md:flex flex-col">
+              <div className="bg-card rounded-2xl border border-border shadow-lg p-4 space-y-4 h-fit sticky top-24">
+                {/* Now playing header */}
+                <div className="border-b border-border pb-3">
+                  <div className="text-xs font-bold text-muted-foreground mb-1">
+                    {isAr ? 'الآن يشغّل' : 'Now Playing'}
+                  </div>
+                  <div className="text-sm font-black text-foreground flex items-center gap-2 truncate" style={{ fontFamily: "'Amiri Quran', serif" }}>
+                    <span className="truncate">
+                      {(() => {
+                        const a = findAyah(playing.globalNumber)
+                        return a ? stripSurahPrefix(a.surah.name) : ''
+                      })()}
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-foreground">
+                    {isAr ? `الآية ${toArabicDigits(playing.ayah)}` : `Ayah ${playing.ayah}`}
+                  </div>
+                </div>
+
+                {/* Reciter info */}
+                <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg">
+                  <Mic2 className="w-4 h-4 text-primary flex-shrink-0" />
+                  <div className="text-xs font-bold text-foreground truncate">
+                    {isAr ? currentReciter.nameAr : currentReciter.nameEn}
+                  </div>
+                </div>
+
+                {/* Play/Pause indicator */}
+                <div className="flex items-center justify-center">
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    isPlaying ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+                  }`}>
+                    {isPlaying ? <Volume2 className="w-7 h-7 animate-pulse" /> : <Play className="w-7 h-7" />}
+                  </div>
+                </div>
+
+                {/* Controls */}
+                <div className="space-y-2">
+                  <Button
+                    onClick={togglePlayPause}
+                    className="w-full rounded-xl h-11 font-bold gap-2"
+                  >
+                    {isPlaying ? (
+                      <>
+                        <Pause className="w-4 h-4" />
+                        {isAr ? 'إيقاف مؤقت' : 'Pause'}
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        {isAr ? 'تشغيل' : 'Play'}
+                      </>
+                    )}
+                  </Button>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => playAdjacent(-1)}
+                      className="rounded-xl h-10 font-bold gap-1 text-xs"
+                      aria-label={isAr ? 'الآية السابقة' : 'Previous ayah'}
+                    >
+                      <SkipBack className="w-4 h-4" />
+                      {isAr ? 'السابقة' : 'Prev'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => playAdjacent(1)}
+                      className="rounded-xl h-10 font-bold gap-1 text-xs"
+                      aria-label={isAr ? 'الآية التالية' : 'Next ayah'}
+                    >
+                      {isAr ? 'التالية' : 'Next'}
+                      <SkipForward className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant={autoContinue ? 'default' : 'outline'}
+                    onClick={() => setAutoContinue(v => !v)}
+                    className="w-full rounded-xl h-10 font-bold gap-2"
+                    title={isAr ? 'تكرار/متابعة الآيات' : 'Auto-continue'}
+                  >
+                    <Repeat className="w-4 h-4" />
+                    {isAr ? 'متابعة تلقائية' : 'Auto-continue'}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={stopPlayback}
+                    className="w-full rounded-xl h-10 font-bold text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-2"
+                  >
+                    <Square className="w-4 h-4" />
+                    {isAr ? 'إيقاف' : 'Stop'}
+                  </Button>
+                </div>
+
+                {/* Audio error message */}
+                {audioError && (
+                  <div className="bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2 text-xs font-bold text-rose-700 dark:text-rose-300 text-center">
+                    {audioError}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Hidden audio element controlled by refs */}
@@ -792,97 +904,7 @@ export default function MushafPage() {
           }}
         />
 
-        {/* Sticky audio player at bottom — only visible when something is playing */}
-        {playing && (
-          <div className="fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border shadow-2xl">
-            <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
-              {/* Now playing info */}
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                  isPlaying ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
-                }`}>
-                  {isPlaying ? <Volume2 className="w-5 h-5 animate-pulse" /> : <Play className="w-5 h-5" />}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-black text-foreground truncate flex items-center gap-2">
-                    <span style={{ fontFamily: "'Amiri Quran', serif" }}>
-                      {(() => {
-                        const a = findAyah(playing.globalNumber)
-                        return a ? stripSurahPrefix(a.surah.name) : ''
-                      })()}
-                    </span>
-                    <span>·</span>
-                    <span>{isAr ? `الآية ${toArabicDigits(playing.ayah)}` : `Ayah ${playing.ayah}`}</span>
-                  </div>
-                  <div className="text-[11px] text-muted-foreground font-bold truncate flex items-center gap-1.5">
-                    <Mic2 className="w-3 h-3" />
-                    {isAr ? currentReciter.nameAr : currentReciter.nameEn}
-                  </div>
-                </div>
-              </div>
-
-              {/* Controls */}
-              <div className="flex items-center gap-1">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => playAdjacent(-1)}
-                  className="rounded-xl h-9 w-9"
-                  aria-label={isAr ? 'الآية السابقة' : 'Previous ayah'}
-                >
-                  <SkipBack className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  onClick={togglePlayPause}
-                  className="rounded-xl h-10 w-10"
-                  aria-label={isPlaying ? (isAr ? 'إيقاف مؤقت' : 'Pause') : (isAr ? 'تشغيل' : 'Play')}
-                >
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => playAdjacent(1)}
-                  className="rounded-xl h-9 w-9"
-                  aria-label={isAr ? 'الآية التالية' : 'Next ayah'}
-                >
-                  <SkipForward className="w-4 h-4" />
-                </Button>
-
-                {/* Auto-continue toggle */}
-                <Button
-                  size="icon"
-                  variant={autoContinue ? 'default' : 'ghost'}
-                  onClick={() => setAutoContinue(v => !v)}
-                  className="rounded-xl h-9 w-9 ms-1"
-                  title={isAr ? 'تكرار/متابعة الآيات' : 'Auto-continue'}
-                  aria-label={isAr ? 'تكرار/متابعة الآيات' : 'Auto-continue'}
-                >
-                  <Repeat className="w-4 h-4" />
-                </Button>
-
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={stopPlayback}
-                  className="rounded-xl h-9 w-9 text-rose-600 dark:text-rose-400 hover:text-rose-600 hover:bg-rose-500/10"
-                  aria-label={isAr ? 'إغلاق المشغل' : 'Close player'}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-            {audioError && (
-              <div className="bg-rose-500/10 border-t border-rose-500/30 px-4 py-2 text-xs font-bold text-rose-700 dark:text-rose-300 text-center">
-                {audioError}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Spacer so the sticky player doesn't cover the last navigation row */}
-        {playing && <div className="h-20" />}
+        {/* Hidden audio element - controlled by refs above */}
       </div>
     </>
   )
