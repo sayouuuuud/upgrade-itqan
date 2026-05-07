@@ -619,33 +619,38 @@ export default function MushafPage() {
                         return (
                           <span key={a.number}>
                             {idx > 0 ? ' ' : ''}
-                            <span
-                              className={
-                                isActive
-                                  ? 'rounded-md bg-primary/15 dark:bg-primary/25 px-1 transition-colors'
-                                  : 'transition-colors'
-                              }
-                            >
-                              {text}
-                            </span>
-                            {' '}
                             <Popover
                               open={openAyahPopover === a.number}
                               onOpenChange={(o) => setOpenAyahPopover(o ? a.number : null)}
                             >
                               <PopoverTrigger asChild>
-                                <button
-                                  type="button"
-                                  className={`ayah-marker inline-block align-middle text-base sm:text-lg font-black mx-1 cursor-pointer transition-all hover:scale-110 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-md ${
-                                    isActive
-                                      ? 'text-primary scale-110'
-                                      : 'text-amber-800 dark:text-primary'
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault()
+                                      setOpenAyahPopover(a.number)
+                                    }
+                                  }}
+                                  aria-label={isAr ? `الآية ${a.numberInSurah}` : `Ayah ${a.numberInSurah}`}
+                                  className={`cursor-pointer rounded-md px-1 -mx-1 transition-colors hover:bg-primary/10 dark:hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/40 ${
+                                    isActive ? 'bg-primary/15 dark:bg-primary/25' : ''
                                   }`}
-                                  style={{ fontFamily: 'system-ui, sans-serif' }}
-                                  aria-label={`Ayah ${a.numberInSurah}`}
                                 >
-                                  ﴿{toArabicDigits(a.numberInSurah)}﴾
-                                </button>
+                                  {text}
+                                  {' '}
+                                  <span
+                                    className={`ayah-marker inline-block align-middle text-base sm:text-lg font-black mx-1 transition-all ${
+                                      isActive
+                                        ? 'text-primary scale-110'
+                                        : 'text-amber-800 dark:text-primary'
+                                    }`}
+                                    style={{ fontFamily: 'system-ui, sans-serif' }}
+                                  >
+                                    ﴿{toArabicDigits(a.numberInSurah)}﴾
+                                  </span>
+                                </span>
                               </PopoverTrigger>
                               <PopoverContent
                                 className="w-64 p-2"
