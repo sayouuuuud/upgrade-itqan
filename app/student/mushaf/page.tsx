@@ -339,7 +339,7 @@ export default function MushafPage() {
                               className="text-3xl sm:text-4xl text-amber-900 dark:text-foreground"
                               style={{ fontFamily: "'Amiri Quran', serif", fontWeight: 400 }}
                             >
-                              سُورَةُ {g.surah.name.replace(/^سورة\s*/u, '')}
+                              {g.surah.name.replace(/[\u064B-\u0652\u0670\u0640]/g, '').match(/^سورة/) ? g.surah.name : `سُورَةُ ${g.surah.name}`}
                             </div>
                             <div className="text-sm font-black text-amber-800 dark:text-primary/80">
                               {toArabicDigits(g.surah.number)}
