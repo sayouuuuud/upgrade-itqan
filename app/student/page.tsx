@@ -31,12 +31,7 @@ type PrayerTimes = {
   nextPrayer: { name: string; time: string; remainingMinutes?: number } | null
 }
 
-const DEFAULT_WIRD = [
-  { id: "fajr-azkar", label: "أذكار الصباح" },
-  { id: "wird-quran", label: "ورد قرآني (نصف جزء)" },
-  { id: "isha-azkar", label: "أذكار المساء" },
-  { id: "witr", label: "صلاة الوتر" },
-]
+type WirdItem = { id: string; label: string; detail?: string }
 
 const PRAYER_META: Record<string, { label: string; icon: any }> = {
   fajr: { label: "الفجر", icon: Sunrise },
@@ -54,6 +49,8 @@ export default function StudentDashboard() {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null)
   const [loadingPrayer, setLoadingPrayer] = useState(true)
   const [userName, setUserName] = useState<string | null>(null)
+  const [wirdItems, setWirdItems] = useState<WirdItem[]>([])
+  const [loadingWird, setLoadingWird] = useState(true)
   const [wirdDone, setWirdDone] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
@@ -79,6 +76,22 @@ export default function StudentDashboard() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (!cancelled && d?.user?.name) setUserName(d.user.name) })
       .catch(() => { })
+
+    fetch("/api/student/wird-settings")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d?.wird_items) {
+          setWirdItems(d.wird_items)
+          // Restore today's check state from localStorage
+          const todayKey = `wird-done-${new Date().toISOString().split("T")[0]}`
+          try {
+            const stored = localStorage.getItem(todayKey)
+            if (stored) setWirdDone(JSON.parse(stored))
+          } catch { }
+        }
+      })
+      .catch(() => { })
+      .finally(() => { if (!cancelled) setLoadingWird(false) })
 
     return () => { cancelled = true }
   }, [])
@@ -128,7 +141,15 @@ export default function StudentDashboard() {
   }
 
   const completedWird = Object.values(wirdDone).filter(Boolean).length
-  const wirdProgress = Math.round((completedWird / DEFAULT_WIRD.length) * 100)
+  const wirdTotal = wirdItems.length || 1
+  const wirdProgress = Math.round((completedWird / wirdTotal) * 100)
+
+  const toggleWirdItem = (id: string) => {
+    const next = { ...wirdDone, [id]: !wirdDone[id] }
+    setWirdDone(next)
+    const todayKey = `wird-done-${new Date().toISOString().split("T")[0]}`
+    try { localStorage.setItem(todayKey, JSON.stringify(next)) } catch { }
+  }
 
   return (
     <div className="max-w-6xl mx-auto pb-12 space-y-6 md:space-y-8">
@@ -293,14 +314,16 @@ export default function StudentDashboard() {
               <div>
                 <h3 className="text-base md:text-lg font-bold text-foreground">الورد اليومي</h3>
                 <p className="text-xs text-muted-foreground">
-                  {completedWird}/{DEFAULT_WIRD.length} مكتمل
+                  {loadingWird ? "…" : `${completedWird}/${wirdItems.length} مكتمل`}
                 </p>
               </div>
             </div>
-            <Sparkles className="w-4 h-4 text-emerald-500" />
+            <Link href="/student/wird" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+              تعديل
+              <ChevronLeft className="w-3 h-3" />
+            </Link>
           </div>
 
-          {/* Wird progress bar with smooth animation */}
           <div className="bg-muted rounded-full h-2 overflow-hidden mb-4">
             <div
               className="h-full bg-gradient-to-l from-emerald-500 to-teal-500 transition-all duration-500 ease-in-out"
@@ -308,31 +331,50 @@ export default function StudentDashboard() {
             />
           </div>
 
-          <div className="space-y-2">
-            {DEFAULT_WIRD.map((item) => {
-              const checked = wirdDone[item.id] || false
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setWirdDone((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
-                  className={`w-full flex items-center justify-between gap-3 rounded-xl px-3 md:px-4 py-3 transition-all border ${checked
-                    ? "bg-emerald-500/5 border-emerald-500/30 text-foreground"
-                    : "bg-muted/30 border-transparent hover:bg-muted/60"
-                    }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${checked ? "bg-emerald-500 border-emerald-500" : "border-muted-foreground/40"
-                      }`}>
+          {loadingWird ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+            </div>
+          ) : wirdItems.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-sm text-muted-foreground mb-3">لم تحدد ورداً يومياً بعد</p>
+              <Link
+                href="/student/wird"
+                className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-4 py-2 rounded-xl font-bold text-xs hover:bg-emerald-500/20 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                إضافة ورد يومي
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {wirdItems.map((item) => {
+                const checked = wirdDone[item.id] || false
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => toggleWirdItem(item.id)}
+                    className={`w-full flex items-center gap-3 rounded-xl px-3 md:px-4 py-3 transition-all border text-right ${checked
+                      ? "bg-emerald-500/5 border-emerald-500/30"
+                      : "bg-muted/30 border-transparent hover:bg-muted/60"
+                      }`}
+                  >
+                    <div className={`w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all ${checked ? "bg-emerald-500 border-emerald-500" : "border-muted-foreground/40"}`}>
                       {checked && <CheckCircle className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
                     </div>
-                    <span className={`text-sm font-medium ${checked ? "line-through opacity-70" : ""}`}>
-                      {item.label}
-                    </span>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+                    <div className="flex-1 min-w-0 text-right">
+                      <span className={`text-sm font-medium ${checked ? "line-through opacity-60" : ""}`}>
+                        {item.label}
+                      </span>
+                      {item.detail && (
+                        <p className="text-[11px] text-muted-foreground truncate">{item.detail}</p>
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
 
           <p className="text-[11px] text-muted-foreground mt-4 text-center">
             يتم إعادة تعيين الورد كل يوم تلقائياً
