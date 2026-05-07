@@ -11,9 +11,11 @@ import { query } from '@/lib/db'
  *   - search: substring match against question/answer text
  *   - limit: max rows (default 200)
  */
+const ALLOWED_ROLES = ['academy_admin', 'admin', 'fiqh_supervisor', 'supervisor']
+
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  if (!session || !['academy_admin', 'admin'].includes(session.role)) {
+  if (!session || !ALLOWED_ROLES.includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -105,7 +107,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!session || !['academy_admin', 'admin'].includes(session.role)) {
+  if (!session || !ALLOWED_ROLES.includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {

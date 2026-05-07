@@ -3,12 +3,14 @@ import { getSession } from '@/lib/auth'
 import { query, queryOne } from '@/lib/db'
 import { createNotification } from '@/lib/notifications'
 
+const ALLOWED_ROLES = ['academy_admin', 'admin', 'fiqh_supervisor', 'supervisor']
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getSession()
-  if (!session || !['academy_admin', 'admin'].includes(session.role)) {
+  if (!session || !ALLOWED_ROLES.includes(session.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const { id } = await params

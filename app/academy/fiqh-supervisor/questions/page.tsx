@@ -7,42 +7,54 @@ import { HelpCircle, Clock, User, Filter, Eye, CheckCircle, Loader2, Search } fr
 interface FiqhQuestion {
   id: string
   question: string
-  student_name: string
+  asker_name: string | null
+  is_anonymous: boolean
   category: string
   answer: string | null
   is_published: boolean
   asked_at: string
+  answered_at: string | null
+  answerer_name: string | null
+}
+
+// map filter tabs to admin API status param
+const FILTER_MAP: Record<string, string> = {
+  unanswered: 'pending',
+  answered:   'answered',
+  all:        'all',
 }
 
 export default function FiqhSupervisorQuestionsPage() {
   const [questions, setQuestions] = useState<FiqhQuestion[]>([])
+  const [counts, setCounts] = useState({ all: 0, pending: 0, answered: 0, published: 0 })
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('unanswered')
   const [search, setSearch] = useState('')
+  const [searchDebounced, setSearchDebounced] = useState('')
 
-  useEffect(() => { fetchQuestions() }, [filter])
+  useEffect(() => {
+    const t = setTimeout(() => setSearchDebounced(search.trim()), 300)
+    return () => clearTimeout(t)
+  }, [search])
+
+  useEffect(() => { fetchQuestions() }, [filter, searchDebounced])
 
   async function fetchQuestions() {
     setLoading(true)
     try {
-      const res = await fetch(`/api/academy/fiqh?filter=${filter}`)
+      const params = new URLSearchParams({ status: FILTER_MAP[filter] || 'all' })
+      if (searchDebounced) params.set('search', searchDebounced)
+      const res = await fetch(`/api/academy/admin/fiqh?${params}`)
       if (res.ok) {
         const data = await res.json()
-        setQuestions(data.questions || [])
+        setQuestions(data.data || [])
+        if (data.counts) setCounts({ all: 0, pending: 0, answered: 0, published: 0, ...data.counts })
       }
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
   }
 
-  const filtered = search.trim()
-    ? questions.filter(q =>
-        q.question.includes(search) ||
-        q.student_name.includes(search) ||
-        q.category.includes(search)
-      )
-    : questions
-
-  const unansweredCount = questions.filter(q => q.answer === null).length
+  const unansweredCount = counts.pending
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -120,13 +132,19 @@ export default function FiqhSupervisorQuestionsPage() {
                 <div className="flex flex-wrap items-center gap-3 mt-2.5 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <User className="w-3 h-3" />
-                    {q.student_name}
+                    {q.is_anonymous ? 'مجهول الهوية' : (q.asker_name || 'غير معروف')}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {new Date(q.asked_at).toLocaleDateString('ar-EG')}
                   </span>
                   <span className="px-2 py-0.5 bg-muted rounded-full font-medium">{q.category}</span>
+                  {q.answerer_name && (
+                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                      <CheckCircle className="w-3 h-3" />
+                      {q.answerer_name}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2 shrink-0">

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query } from "@/lib/db"
+import { createNotification } from "@/lib/notifications"
 
 const SUPERVISOR_ROLES = ["fiqh_supervisor", "supervisor", "admin", "academy_admin"]
 
@@ -95,7 +96,36 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "السؤال غير موجود" }, { status: 404 })
     }
 
-    return NextResponse.json({ question: rows[0] })
+    const answered = rows[0]
+
+    // Notify the student that their question has been answered
+    await createNotification({
+      userId: answered.asked_by,
+      type: 'general',
+      title: 'تمت الإجابة على سؤالك الفقهي',
+      message: `تمت الإجابة على سؤالك في فئة ${answered.category}. يمكنك الاطلاع عليها الآن.`,
+      category: 'general',
+      link: '/academy/student/fiqh',
+    }).catch(() => {})
+
+    // Also notify admins if the answer is published (for visibility)
+    if (is_published) {
+      const admins = await query<{ id: string }>(
+        `SELECT id FROM users WHERE role IN ('admin','academy_admin') AND is_active = true`
+      )
+      for (const admin of admins) {
+        await createNotification({
+          userId: admin.id,
+          type: 'general',
+          title: 'إجابة فقهية منشورة',
+          message: `تمت إجابة سؤال ونشره في فئة ${answered.category}`,
+          category: 'general',
+          link: '/academy/admin/fiqh',
+        }).catch(() => {})
+      }
+    }
+
+    return NextResponse.json({ question: answered })
   } catch (error) {
     console.error("Fiqh PATCH error:", error)
     return NextResponse.json({ error: "حدث خطأ داخلي" }, { status: 500 })
