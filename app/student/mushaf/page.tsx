@@ -109,21 +109,52 @@ function stripSurahPrefix(name: string): string {
   return name.slice(i).trim() || name
 }
 
-// Strip leading bismillah from first ayah of any surah (except Al-Fatiha #1 and At-Tawbah #9 which has none)
+// Strip leading bismillah from first ayah of any surah.
+// Skip Al-Fatiha (#1) — there the Bismillah IS ayah 1 and must be kept.
+// Skip At-Tawbah (#9) — has no bismillah at all.
+//
+// Implementation: tashkeel (and the various alif forms) can vary between API responses,
+// so instead of relying on a tashkeel-sensitive regex we walk the text char by char,
+// normalizing each character and matching against the bare "بسماللهالرحمنالرحيم" signature.
+// Once matched, we also consume any trailing tashkeel + whitespace before returning the rest.
 function stripLeadingBismillah(text: string, surahNumber: number, ayahNumber: number): string {
   if (ayahNumber !== 1) return text
   if (surahNumber === 1 || surahNumber === 9) return text
-  // The text usually starts with "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ " — remove it
-  const variants = [
-    /^بِسۡمِ\s*ٱللَّهِ\s*ٱلرَّحۡمَٰنِ\s*ٱلرَّحِيمِ\s*/u,
-    /^بِسْمِ\s*ٱللَّهِ\s*ٱلرَّحْمَٰنِ\s*ٱلرَّحِيمِ\s*/u,
-    /^بِسۡمِ\s*ٱللَّهِ\s*ٱلرَّحۡمَٰنِ\s*ٱلرَّحِيمِ\s*/u,
-  ]
-  for (const re of variants) {
-    const stripped = text.replace(re, '').trim()
-    if (stripped !== text) return stripped
+  if (!text) return text
+
+  const PLAIN_TARGET = 'بسماللهالرحمنالرحيم'
+  const TASHKEEL_RE = /[\u064B-\u0652\u0670\u06D6-\u06ED\u08D3-\u08FF\u0640]/
+
+  const normalize = (ch: string): string => {
+    if (TASHKEEL_RE.test(ch)) return ''
+    if (ch === 'ٱ' || ch === 'أ' || ch === 'إ' || ch === 'آ') return 'ا'
+    if (/\s/.test(ch)) return ''
+    return ch
   }
-  return text
+
+  let normalized = ''
+  let i = 0
+  while (i < text.length && normalized.length < PLAIN_TARGET.length) {
+    const n = normalize(text[i])
+    if (n) {
+      if (n !== PLAIN_TARGET[normalized.length]) {
+        // Mismatch — text doesn't start with bismillah, leave as-is
+        return text
+      }
+      normalized += n
+    }
+    i++
+  }
+
+  if (normalized.length < PLAIN_TARGET.length) return text
+
+  // Consume any trailing tashkeel / whitespace right after the matched bismillah
+  while (i < text.length && (TASHKEEL_RE.test(text[i]) || /\s/.test(text[i]))) {
+    i++
+  }
+
+  const rest = text.slice(i).trim()
+  return rest || text
 }
 
 export default function MushafPage() {
