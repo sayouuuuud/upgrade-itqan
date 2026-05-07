@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       name: string
       email: string
       password_hash: string
-      role: "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor" | "parent" | "teacher" | "academy_admin"
+      role: "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor" | "parent" | "teacher" | "academy_admin" | "fiqh_supervisor" | "supervisor"
       is_active: boolean
       is_locked: boolean
       failed_login_count: number
@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
 
     if (loginType === "admin") {
       // Admin login page check
-      const allowedAdminRoles = ["admin", "academy_admin", "student_supervisor", "reciter_supervisor"];
+      const allowedAdminRoles = ["admin", "academy_admin", "student_supervisor", "reciter_supervisor", "fiqh_supervisor", "supervisor"];
       if (!allowedAdminRoles.includes(user.role)) {
         return NextResponse.json(
           { error: "غير مصرح لك بالدخول كمدير" },

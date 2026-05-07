@@ -116,6 +116,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/admin/paths', label: t.academy?.learningPaths || 'المسارات التعليمية', icon: Route },
             { href: '/academy/admin/invitations', label: t.academy?.invitations || 'الدعوات', icon: UserPlus },
             { href: '/academy/admin/users', label: t.admin?.users || 'المستخدمين', icon: Users },
+            { href: '/academy/admin/supervisors', label: 'مشرفو الفقه', icon: Shield },
           ]
         },
         {

@@ -40,9 +40,10 @@ export default function LoginPage() {
   }): string {
     const role = u.role
     // Admin / supervisor roles always go to their own panels
-    if (role === 'admin' || role === 'academy_admin' || role === 'student_supervisor' || role === 'reciter_supervisor') {
-      return `/${role === 'admin' ? 'admin' : role === 'academy_admin' ? 'academy/admin' : role}`
-    }
+    if (role === 'admin') return '/admin'
+    if (role === 'academy_admin') return '/academy/admin'
+    if (role === 'student_supervisor' || role === 'reciter_supervisor') return `/${role}`
+    if (role === 'fiqh_supervisor' || role === 'supervisor') return '/academy/supervisor/fiqh'
     if (role === 'reader') return '/reader'
     if (role === 'teacher') return '/academy/teacher'
     if (role === 'parent') return '/academy/parent'

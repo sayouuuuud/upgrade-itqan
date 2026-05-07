@@ -19,13 +19,12 @@ export async function GET(req: NextRequest) {
       u.name,
       u.email,
       u.role,
+      u.gender,
       u.is_active,
       u.created_at,
-      u.avatar_url,
-      (SELECT COUNT(*) FROM academy_courses WHERE supervisor_id = u.id) as courses_count,
-      (SELECT COUNT(*) FROM users WHERE role = 'teacher' AND supervised_by = u.id) as teachers_count
+      u.avatar_url
     FROM users u
-    WHERE u.role = 'supervisor' AND u.has_academy_access = true
+    WHERE u.role IN ('supervisor', 'fiqh_supervisor')
     ORDER BY u.created_at DESC`
   )
 
@@ -38,43 +37,35 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!session || session.role !== 'admin') {
+  if (!session || (session.role !== 'admin' && session.role !== 'academy_admin')) {
     return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
   }
 
   const body = await req.json()
-  const { name, email, password, phone } = body
+  const { name, email, password, gender } = body
 
   if (!name || !email || !password) {
-    return NextResponse.json({ error: 'جميع الحقول مطلوبة' }, { status: 400 })
+    return NextResponse.json({ error: 'الاسم والبريد وكلمة المرور مطلوبة' }, { status: 400 })
   }
 
-  // Check if email already exists
   const existing = await query<{ id: string }>(
     `SELECT id FROM users WHERE email = $1`,
-    [email]
+    [email.toLowerCase().trim()]
   )
-
   if (existing.length > 0) {
-    return NextResponse.json({ error: 'البريد الإلكتروني مستخدم بالفعل' }, { status: 400 })
+    return NextResponse.json({ error: 'البريد الإلكتروني مستخدم بالفعل' }, { status: 409 })
   }
 
-  // Hash password
   const hashedPassword = await bcrypt.hash(password, 10)
 
-  // Create supervisor
-  const result = await query<{ id: string }>(
-    `INSERT INTO users (name, email, password_hash, role, phone, is_active, has_academy_access, has_quran_access)
-     VALUES ($1, $2, $3, 'supervisor', $4, true, true, false)
-     RETURNING id`,
-    [name, email, hashedPassword, phone || null]
+  const result = await query<any>(
+    `INSERT INTO users (name, email, password_hash, role, gender, is_active, has_academy_access, has_quran_access, created_at)
+     VALUES ($1, $2, $3, 'fiqh_supervisor', $4, true, true, false, NOW())
+     RETURNING id, name, email, role, gender, is_active, created_at`,
+    [name, email.toLowerCase().trim(), hashedPassword, gender || 'male']
   )
 
-  return NextResponse.json({ 
-    success: true, 
-    message: 'تم إنشاء حساب المشرف بنجاح',
-    supervisorId: result[0].id
-  })
+  return NextResponse.json({ data: result[0] }, { status: 201 })
 }
 
 /**
@@ -83,7 +74,7 @@ export async function POST(req: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   const session = await getSession()
-  if (!session || session.role !== 'admin') {
+  if (!session || (session.role !== 'admin' && session.role !== 'academy_admin')) {
     return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
   }
 
@@ -94,11 +85,10 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'معرف المشرف مطلوب' }, { status: 400 })
   }
 
-  // Deactivate the supervisor account
   await query(
-    `UPDATE users SET is_active = false WHERE id = $1 AND role = 'supervisor'`,
+    `UPDATE users SET is_active = false WHERE id = $1 AND role IN ('fiqh_supervisor','supervisor')`,
     [supervisorId]
   )
 
-  return NextResponse.json({ success: true, message: 'تم إلغاء تفعيل حساب المشرف' })
+  return NextResponse.json({ success: true })
 }

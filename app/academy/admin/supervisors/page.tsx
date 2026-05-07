@@ -15,8 +15,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import {
-  Users, UserPlus, Shield, BookOpen, Loader2,
-  Search, MoreVertical, Mail, Phone, Trash2, CheckCircle
+  Users, UserPlus, Shield, Loader2,
+  Search, MoreVertical, Trash2, CheckCircle
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -30,12 +30,11 @@ interface Supervisor {
   id: string
   name: string
   email: string
+  gender: string
   role: string
   is_active: boolean
   created_at: string
   avatar_url: string | null
-  courses_count: number
-  teachers_count: number
 }
 
 export default function AcademySupervisorsPage() {
@@ -51,7 +50,7 @@ export default function AcademySupervisorsPage() {
     name: '',
     email: '',
     password: '',
-    phone: ''
+    gender: 'male'
   })
 
   const fetchSupervisors = async () => {
@@ -91,7 +90,7 @@ export default function AcademySupervisorsPage() {
       if (res.ok) {
         toast.success(data.message || (isAr ? 'تم إنشاء المشرف بنجاح' : 'Supervisor created'))
         setIsCreateOpen(false)
-        setFormData({ name: '', email: '', password: '', phone: '' })
+        setFormData({ name: '', email: '', password: '', gender: 'male' })
         fetchSupervisors()
       } else {
         toast.error(data.error || (isAr ? 'حدث خطأ' : 'An error occurred'))
@@ -231,25 +230,9 @@ export default function AcademySupervisorsPage() {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-border">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 text-2xl font-black text-foreground">
-                      <BookOpen className="w-5 h-5 text-primary" />
-                      {supervisor.courses_count}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {isAr ? 'دورات' : 'Courses'}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 text-2xl font-black text-foreground">
-                      <Users className="w-5 h-5 text-blue-500" />
-                      {supervisor.teachers_count}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {isAr ? 'معلمين' : 'Teachers'}
-                    </p>
-                  </div>
+                <div className="mt-4 pt-4 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
+                  <span>{supervisor.gender === 'female' ? 'أنثى' : 'ذكر'}</span>
+                  <span>{new Date(supervisor.created_at).toLocaleDateString('ar-EG')}</span>
                 </div>
               </CardContent>
             </Card>
@@ -298,15 +281,15 @@ export default function AcademySupervisorsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>{isAr ? 'رقم الهاتف (اختياري)' : 'Phone (optional)'}</Label>
-              <Input
-                type="tel"
-                placeholder={isAr ? 'أدخل رقم الهاتف' : 'Enter phone'}
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="rounded-xl"
-                dir="ltr"
-              />
+              <Label>{isAr ? 'الجنس' : 'Gender'}</Label>
+              <select
+                value={formData.gender}
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                className="w-full bg-background border border-input rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="male">{isAr ? 'ذكر' : 'Male'}</option>
+                <option value="female">{isAr ? 'أنثى' : 'Female'}</option>
+              </select>
             </div>
           </div>
           <DialogFooter>
