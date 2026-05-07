@@ -11,12 +11,18 @@ import { SURAHS } from "@/lib/data/surahs"
 // ─── Ayah text reference panel (shown only for Tilawa type) ──────────────────
 type AyahData = { numberInSurah: number; text: string; surahNumber: number }
 
-// page → list of { surahNumber, ayahFrom, ayahTo } segments
-// Using the alquran.cloud page endpoint: GET /page/{page}/quran-uthmani
 function AyahReferencePanel({
+  rangeMode,
+  surahNumber,
+  ayahFrom,
+  ayahTo,
   pageFrom,
   pageTo,
 }: {
+  rangeMode: "ayah" | "page"
+  surahNumber: number
+  ayahFrom: number
+  ayahTo: number
   pageFrom: number
   pageTo: number
 }) {
@@ -29,40 +35,64 @@ function AyahReferencePanel({
     String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[parseInt(d)])
 
   useEffect(() => {
-    if (!pageFrom || !pageTo || pageFrom > pageTo) return
     setLoading(true)
     setError(false)
     setAyahs([])
 
     const controller = new AbortController()
 
-    // Fetch all pages in range then flatten ayahs
-    const pages = Array.from({ length: pageTo - pageFrom + 1 }, (_, i) => pageFrom + i)
-    Promise.all(
-      pages.map((p) =>
-        fetch(`https://api.alquran.cloud/v1/page/${p}/quran-uthmani`, { signal: controller.signal })
-          .then((r) => r.json())
-      )
-    )
-      .then((results) => {
-        const all: AyahData[] = []
-        for (const data of results) {
+    if (rangeMode === "ayah") {
+      if (!surahNumber || !ayahFrom || !ayahTo || ayahFrom > ayahTo) {
+        setLoading(false)
+        return
+      }
+      fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/quran-uthmani`, { signal: controller.signal })
+        .then((r) => r.json())
+        .then((data) => {
           if (data?.data?.ayahs) {
-            for (const a of data.data.ayahs as Array<{ numberInSurah: number; text: string; surah: { number: number } }>) {
-              all.push({ numberInSurah: a.numberInSurah, text: a.text, surahNumber: a.surah.number })
+            const slice: AyahData[] = (data.data.ayahs as Array<{ numberInSurah: number; text: string }>)
+              .filter((a) => a.numberInSurah >= ayahFrom && a.numberInSurah <= ayahTo)
+              .map((a) => ({ numberInSurah: a.numberInSurah, text: a.text, surahNumber }))
+            setAyahs(slice)
+            if (slice.length === 0) setError(true)
+          } else { setError(true) }
+        })
+        .catch((e) => { if (e.name !== "AbortError") setError(true) })
+        .finally(() => setLoading(false))
+    } else {
+      if (!pageFrom || !pageTo || pageFrom > pageTo) {
+        setLoading(false)
+        return
+      }
+      const pages = Array.from({ length: pageTo - pageFrom + 1 }, (_, i) => pageFrom + i)
+      Promise.all(
+        pages.map((p) =>
+          fetch(`https://api.alquran.cloud/v1/page/${p}/quran-uthmani`, { signal: controller.signal })
+            .then((r) => r.json())
+        )
+      )
+        .then((results) => {
+          const all: AyahData[] = []
+          for (const data of results) {
+            if (data?.data?.ayahs) {
+              for (const a of data.data.ayahs as Array<{ numberInSurah: number; text: string; surah: { number: number } }>) {
+                all.push({ numberInSurah: a.numberInSurah, text: a.text, surahNumber: a.surah.number })
+              }
             }
           }
-        }
-        setAyahs(all)
-        if (all.length === 0) setError(true)
-      })
-      .catch((e) => { if (e.name !== "AbortError") setError(true) })
-      .finally(() => setLoading(false))
+          setAyahs(all)
+          if (all.length === 0) setError(true)
+        })
+        .catch((e) => { if (e.name !== "AbortError") setError(true) })
+        .finally(() => setLoading(false))
+    }
 
     return () => controller.abort()
-  }, [pageFrom, pageTo])
+  }, [rangeMode, surahNumber, ayahFrom, ayahTo, pageFrom, pageTo])
 
-  const pageCount = pageTo - pageFrom + 1
+  const badge = rangeMode === "page"
+    ? (pageFrom === pageTo ? `صفحة ${toAr(pageFrom)}` : `صفحة ${toAr(pageFrom)} – ${toAr(pageTo)}`)
+    : (ayahFrom === ayahTo ? `آية ${toAr(ayahFrom)}` : `الآيات ${toAr(ayahFrom)} – ${toAr(ayahTo)}`)
 
   return (
     <div className="bg-[#fbf6e6] dark:bg-card border border-amber-700/25 dark:border-border rounded-2xl overflow-hidden">
@@ -74,12 +104,10 @@ function AyahReferencePanel({
       >
         <div className="flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-amber-700 dark:text-amber-500 flex-shrink-0" />
-          <span className="text-sm font-bold text-amber-900 dark:text-amber-200">
-            نص الآيات كمرجع
-          </span>
+          <span className="text-sm font-bold text-amber-900 dark:text-amber-200">نص الآيات كمرجع</span>
           {!loading && ayahs.length > 0 && (
             <span className="text-[10px] font-bold bg-amber-700/10 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
-              {pageCount === 1 ? `صفحة ${toAr(pageFrom)}` : `صفحة ${toAr(pageFrom)} – ${toAr(pageTo)}`}
+              {badge}
             </span>
           )}
         </div>
@@ -89,7 +117,7 @@ function AyahReferencePanel({
         }
       </button>
 
-      {/* Body — capped at ~6 lines then scroll */}
+      {/* Body — max ~6 Quran text lines then scroll */}
       {!collapsed && (
         <div className="px-4 pb-4">
           {loading && (
@@ -98,17 +126,14 @@ function AyahReferencePanel({
               <span className="text-xs font-bold">جاري تحميل النص...</span>
             </div>
           )}
-
           {error && !loading && (
             <p className="text-xs text-center text-muted-foreground py-4">
               تعذّر تحميل نص الآيات. تحقق من اتصالك بالإنترنت.
             </p>
           )}
-
           {!loading && !error && ayahs.length > 0 && (
-            /* max-h = ~6 lines of Quran text (line-height ~2.5rem × 6 = 15rem) */
             <div
-              className="overflow-y-auto max-h-[15rem] pr-1 scrollbar-thin scrollbar-thumb-amber-700/20 scrollbar-track-transparent"
+              className="overflow-y-auto max-h-[15rem] pr-1"
               style={{ direction: "rtl" }}
             >
               <p
@@ -161,6 +186,7 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
   const [ayahTo, setAyahTo] = useState<number>(7)
   const [pageFrom, setPageFrom] = useState<number>(1)
   const [pageTo, setPageTo] = useState<number>(1)
+  const [rangeMode, setRangeMode] = useState<"ayah" | "page">("ayah")
   const [recitationType, setRecitationType] = useState<RecitationType>("tilawa")
   const [validationError, setValidationError] = useState<string | null>(null)
   const [holdTimer, setHoldTimer] = useState<NodeJS.Timeout | null>(null)
@@ -528,15 +554,45 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
             </select>
           </div>
 
-          {/* Ayah from / Page from */}
+          {/* Range mode toggle */}
+          <div className="md:col-span-2">
+            <div className="inline-flex rounded-xl border border-border overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setRangeMode("ayah")}
+                disabled={recordingState === "recording" || submitting}
+                className={`px-4 py-2 text-xs font-bold transition-colors disabled:opacity-50 ${
+                  rangeMode === "ayah"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                من آية لآية
+              </button>
+              <button
+                type="button"
+                onClick={() => setRangeMode("page")}
+                disabled={recordingState === "recording" || submitting}
+                className={`px-4 py-2 text-xs font-bold transition-colors disabled:opacity-50 ${
+                  rangeMode === "page"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                من صفحة لصفحة
+              </button>
+            </div>
+          </div>
+
+          {/* From input */}
           <div>
             <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
               <span className="inline-flex items-center gap-1">
                 <Hash className="w-3 h-3" />
-                {recitationType === "tilawa" ? "من الصفحة" : "من الآية"}
+                {rangeMode === "page" ? "من الصفحة" : "من الآية"}
               </span>
             </label>
-            {recitationType === "tilawa" ? (
+            {rangeMode === "page" ? (
               <input
                 type="number"
                 min={1}
@@ -563,15 +619,15 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
             )}
           </div>
 
-          {/* Ayah to / Page to */}
+          {/* To input */}
           <div>
             <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
               <span className="inline-flex items-center gap-1">
                 <Hash className="w-3 h-3" />
-                {recitationType === "tilawa" ? "إلى الصفحة" : "إلى الآية"}
+                {rangeMode === "page" ? "إلى الصفحة" : "إلى الآية"}
               </span>
             </label>
-            {recitationType === "tilawa" ? (
+            {rangeMode === "page" ? (
               <input
                 type="number"
                 min={pageFrom}
@@ -635,6 +691,10 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
       {/* Ayah text reference — only for Tilawa */}
       {recitationType === "tilawa" && (
         <AyahReferencePanel
+          rangeMode={rangeMode}
+          surahNumber={surahNumber}
+          ayahFrom={ayahFrom}
+          ayahTo={ayahTo}
           pageFrom={pageFrom}
           pageTo={pageTo}
         />
