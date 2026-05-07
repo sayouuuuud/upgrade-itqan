@@ -33,6 +33,9 @@ import {
     Award,
     Trash2,
     AlertTriangle,
+    BookMarked,
+    Plus,
+    X,
 } from "lucide-react"
 import {
     Bar,
@@ -60,7 +63,42 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     const [activeTab, setActiveTab] = useState("info")
     const [isDeleting, setIsDeleting] = useState(false)
     const [isUpdatingAccess, setIsUpdatingAccess] = useState(false)
+    const [userSpecs, setUserSpecs] = useState<{ specialization: string; set_by: string }[]>([])
+    const [specSaving, setSpecSaving] = useState<string | null>(null)
     const { id } = use(params)
+
+    const SPECIALIZATIONS = [
+      { key: 'sira',    label: 'السيرة النبوية' },
+      { key: 'fiqh',    label: 'الفقه' },
+      { key: 'aqeedah', label: 'العقيدة' },
+      { key: 'tajweed', label: 'التجويد' },
+      { key: 'tafseer', label: 'التفسير' },
+      { key: 'arabic',  label: 'اللغة العربية' },
+    ]
+
+    const toggleAdminSpec = async (key: string) => {
+      const existing = userSpecs.find(s => s.specialization === key)
+      setSpecSaving(key)
+      try {
+        if (existing) {
+          await fetch(`/api/admin/users/${id}/specializations`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ specialization: key }),
+          })
+          setUserSpecs(prev => prev.filter(s => s.specialization !== key))
+        } else {
+          await fetch(`/api/admin/users/${id}/specializations`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ specialization: key }),
+          })
+          setUserSpecs(prev => [...prev, { specialization: key, set_by: 'admin' }])
+        }
+      } finally {
+        setSpecSaving(null)
+      }
+    }
 
     const handleAccessUpdate = async (field: 'has_quran_access' | 'has_academy_access' | 'platform_preference', value: any) => {
         setIsUpdatingAccess(true)
@@ -117,6 +155,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             }
         }
         fetchData()
+        // Fetch specializations separately
+        fetch(`/api/admin/users/${id}/specializations`)
+          .then(r => r.ok ? r.json() : { specializations: [] })
+          .then(d => setUserSpecs(d.specializations || []))
     }, [id, t.admin.failedToLoadData])
 
     if (loading) {
@@ -444,6 +486,58 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                     <option value="academy">{isAr ? 'الأكاديمية' : 'Academy'}</option>
                                 </select>
                             </div>
+                        </CardContent>
+                    </Card>
+                    {/* Specializations Card */}
+                    <Card className="border-border/50 shadow-2xl shadow-black/5 rounded-3xl bg-card/60 backdrop-blur-xl border mt-6 overflow-hidden">
+                        <CardHeader className="border-b border-border/50 pb-4 mb-4 bg-muted/20 rounded-t-3xl">
+                            <CardTitle className="text-base font-black text-foreground flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                                    <BookMarked className="w-5 h-5" />
+                                </div>
+                                التخصصات الدراسية
+                            </CardTitle>
+                            <p className="text-xs text-muted-foreground mt-1 font-medium">
+                                التخصصات التي يحددها الأدمن ملزمة للمستخدم ولا يمكنه حذفها. التخصصات التي يضيفها المستخدم بنفسه تظهر بشكل مختلف.
+                            </p>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-wrap gap-3">
+                                {SPECIALIZATIONS.map(({ key, label }) => {
+                                    const active = userSpecs.find(s => s.specialization === key)
+                                    const saving = specSaving === key
+                                    return (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            disabled={saving}
+                                            onClick={() => toggleAdminSpec(key)}
+                                            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all ${
+                                                active
+                                                    ? active.set_by === 'admin'
+                                                        ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
+                                                        : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                                                    : 'bg-muted/40 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
+                                            }`}
+                                        >
+                                            {saving ? (
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : active ? (
+                                                <X className="w-3.5 h-3.5" />
+                                            ) : (
+                                                <Plus className="w-3.5 h-3.5" />
+                                            )}
+                                            {label}
+                                            {active && active.set_by !== 'admin' && (
+                                                <span className="text-[10px] opacity-60">(المستخدم)</span>
+                                            )}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                            {userSpecs.length === 0 && (
+                                <p className="text-xs text-muted-foreground mt-3">لا توجد تخصصات — المستخدم يرى جميع الدورات.</p>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>

@@ -34,10 +34,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
-    const { name, email, password, gender } = await req.json()
+    const { name, email, password, gender, specialization } = await req.json()
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Name, email and password are required' }, { status: 400 })
     }
+
+    const VALID_SPECS = ["sira", "fiqh", "aqeedah", "tajweed", "tafseer", "arabic"]
 
     // Hash password
     const salt = await bcrypt.genSalt(10)
@@ -50,8 +52,17 @@ export async function POST(req: NextRequest) {
       RETURNING id, name, email, role, gender, is_active, has_academy_access, created_at
     `, [name, email.toLowerCase().trim(), password_hash, gender || 'male'])
 
+    // Save specialization if provided
+    if (specialization && VALID_SPECS.includes(specialization)) {
+      await query(
+        `INSERT INTO user_specializations (user_id, specialization, set_by)
+         VALUES ($1, $2, 'self')
+         ON CONFLICT (user_id, specialization) DO NOTHING`,
+        [result[0].id, specialization]
+      )
+    }
 
-    return NextResponse.json({ data: result[0] }, { status: 201 })
+    return NextResponse.json({ data: { ...result[0], specialization: specialization || null } }, { status: 201 })
   } catch (error: any) {
     console.error('Error creating teacher:', error)
     if (error.code === '23505') {

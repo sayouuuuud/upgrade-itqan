@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AvatarUpload } from '@/components/avatar-upload'
-import { User, Lock, CheckCircle, Loader2 } from 'lucide-react'
+import { User, Lock, CheckCircle, Loader2, BookMarked, X, Plus } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
 
 interface UserProfile {
@@ -105,6 +105,52 @@ export default function ProfilePage() {
       }
     } finally {
       setPwSaving(false)
+    }
+  }
+
+  // Specializations state
+  const [specs, setSpecs] = useState<{ specialization: string; set_by: string }[]>([])
+  const [specsLoading, setSpecsLoading] = useState(true)
+  const [specSaving, setSpecSaving] = useState<string | null>(null)
+
+  const SPECIALIZATIONS = [
+    { key: 'sira',    label: 'السيرة النبوية' },
+    { key: 'fiqh',    label: 'الفقه' },
+    { key: 'aqeedah', label: 'العقيدة' },
+    { key: 'tajweed', label: 'التجويد' },
+    { key: 'tafseer', label: 'التفسير' },
+    { key: 'arabic',  label: 'اللغة العربية' },
+  ]
+
+  useEffect(() => {
+    fetch('/api/student/specializations')
+      .then(r => r.ok ? r.json() : { specializations: [] })
+      .then(d => setSpecs(d.specializations || []))
+      .finally(() => setSpecsLoading(false))
+  }, [])
+
+  const toggleSpec = async (key: string) => {
+    const existing = specs.find(s => s.specialization === key)
+    setSpecSaving(key)
+    try {
+      if (existing) {
+        if (existing.set_by !== 'self') return // locked by admin/parent
+        await fetch('/api/student/specializations', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ specialization: key }),
+        })
+        setSpecs(prev => prev.filter(s => s.specialization !== key))
+      } else {
+        await fetch('/api/student/specializations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ specialization: key }),
+        })
+        setSpecs(prev => [...prev, { specialization: key, set_by: 'self' }])
+      }
+    } finally {
+      setSpecSaving(null)
     }
   }
 
@@ -267,6 +313,67 @@ export default function ProfilePage() {
                     )}
                   </div>
                 </form>
+              </CardContent>
+            </Card>
+
+            {/* Specializations Card */}
+            <Card className="border-border shadow-2xl shadow-black/5 bg-card/70 backdrop-blur-xl rounded-3xl overflow-hidden border">
+              <CardHeader className="p-8 pb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                    <BookMarked className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg font-bold text-foreground">التخصصات الدراسية</CardTitle>
+                    <CardDescription className="text-muted-foreground font-medium text-sm">
+                      اختر التخصصات التي تريد أن تظهر لك الدورات المرتبطة بها. اتركها فارغة لعرض كل الدورات.
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-8 pt-0">
+                {specsLoading ? (
+                  <div className="flex justify-center py-6">
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-3">
+                    {SPECIALIZATIONS.map(({ key, label }) => {
+                      const active = specs.find(s => s.specialization === key)
+                      const locked = active && active.set_by !== 'self'
+                      const saving = specSaving === key
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          disabled={saving || !!locked}
+                          onClick={() => toggleSpec(key)}
+                          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all ${
+                            active
+                              ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
+                              : 'bg-muted/40 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
+                          } ${locked ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                          {saving ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : active ? (
+                            locked
+                              ? <span className="text-[10px] opacity-70">مقيّد</span>
+                              : <X className="w-3.5 h-3.5" />
+                          ) : (
+                            <Plus className="w-3.5 h-3.5" />
+                          )}
+                          {label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+                {specs.length === 0 && !specsLoading && (
+                  <p className="text-xs text-muted-foreground mt-4">
+                    لم تختر أي تخصص — ستظهر لك جميع الدورات المتاحة.
+                  </p>
+                )}
               </CardContent>
             </Card>
 
