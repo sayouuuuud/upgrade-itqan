@@ -1,15 +1,51 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useI18n } from '@/lib/i18n/context'
-import { ChevronLeft, ChevronRight, Loader2, BookOpen, Search, List, AlertCircle } from 'lucide-react'
+import {
+  ChevronLeft, ChevronRight, Loader2, BookOpen, Search, List, AlertCircle,
+  Play, Pause, Square, SkipForward, SkipBack, Repeat, X, Mic2, Volume2,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const TOTAL_PAGES = 604
 const STORAGE_KEY = 'mushaf:lastPage'
+const RECITER_STORAGE_KEY = 'mushaf:reciter'
+const AUTOPLAY_STORAGE_KEY = 'mushaf:autoContinue'
+
+// Reciters from EveryAyah CDN — folder slug + display names in AR/EN
+type Reciter = { id: string; nameAr: string; nameEn: string }
+
+const RECITERS: Reciter[] = [
+  { id: 'Alafasy_128kbps', nameAr: 'مشاري راشد العفاسي', nameEn: 'Mishary Rashid Alafasy' },
+  { id: 'Husary_128kbps', nameAr: 'محمود خليل الحصري', nameEn: 'Mahmoud Khalil Al-Husary' },
+  { id: 'Husary_Mujawwad_64kbps', nameAr: 'الحصري (مجوّد)', nameEn: 'Al-Husary (Mujawwad)' },
+  { id: 'Abdul_Basit_Murattal_64kbps', nameAr: 'عبد الباسط عبد الصمد', nameEn: 'Abdul Basit Abdul Samad' },
+  { id: 'Abdul_Basit_Mujawwad_128kbps', nameAr: 'عبد الباسط (مجوّد)', nameEn: 'Abdul Basit (Mujawwad)' },
+  { id: 'Minshawy_Murattal_128kbps', nameAr: 'محمد صديق المنشاوي', nameEn: 'Mohammad Al-Minshawy' },
+  { id: 'Minshawy_Mujawwad_64kbps', nameAr: 'المنشاوي (مجوّد)', nameEn: 'Al-Minshawy (Mujawwad)' },
+  { id: 'Abdurrahmaan_As-Sudais_192kbps', nameAr: 'عبد الرحمن السديس', nameEn: 'Abdul Rahman As-Sudais' },
+  { id: 'Saood_ash-Shuraym_128kbps', nameAr: 'سعود الشريم', nameEn: 'Saud Ash-Shuraym' },
+  { id: 'Maher_AlMuaiqly_64kbps', nameAr: 'ماهر المعيقلي', nameEn: 'Maher Al-Muaiqly' },
+  { id: 'Ghamadi_40kbps', nameAr: 'سعد الغامدي', nameEn: 'Saad Al-Ghamidi' },
+  { id: 'Hudhaify_128kbps', nameAr: 'علي الحذيفي', nameEn: 'Ali Al-Hudhaify' },
+  { id: 'Muhammad_Ayyoub_128kbps', nameAr: 'محمد أيوب', nameEn: 'Muhammad Ayyoub' },
+  { id: 'Abu_Bakr_Ash-Shaatree_128kbps', nameAr: 'أبو بكر الشاطري', nameEn: 'Abu Bakr Ash-Shaatree' },
+  { id: 'Hani_Rifai_192kbps', nameAr: 'هاني الرفاعي', nameEn: 'Hani Ar-Rifai' },
+]
+
+const DEFAULT_RECITER = 'Alafasy_128kbps'
+
+function ayahAudioUrl(reciterId: string, surahNumber: number, ayahNumber: number) {
+  const s = String(surahNumber).padStart(3, '0')
+  const a = String(ayahNumber).padStart(3, '0')
+  return `https://everyayah.com/data/${reciterId}/${s}${a}.mp3`
+}
 
 // Use alquran.cloud — returns text_uthmani (Unicode Arabic) per ayah on a page.
 type ApiAyah = {
@@ -102,6 +138,134 @@ export default function MushafPage() {
   const [pageInput, setPageInput] = useState('1')
   const [search, setSearch] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Audio playback state
+  const [reciterId, setReciterId] = useState<string>(DEFAULT_RECITER)
+  const [autoContinue, setAutoContinue] = useState<boolean>(true)
+  const [playing, setPlaying] = useState<{ surah: number; ayah: number; globalNumber: number } | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [audioError, setAudioError] = useState<string | null>(null)
+  const [openAyahPopover, setOpenAyahPopover] = useState<number | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const pageDataRef = useRef<PageData | null>(null)
+  pageDataRef.current = pageData
+
+  // Restore reciter & autoplay preference
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const r = localStorage.getItem(RECITER_STORAGE_KEY)
+    if (r && RECITERS.some(rec => rec.id === r)) setReciterId(r)
+    const ap = localStorage.getItem(AUTOPLAY_STORAGE_KEY)
+    if (ap !== null) setAutoContinue(ap === '1')
+  }, [])
+
+  // Persist reciter
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem(RECITER_STORAGE_KEY, reciterId)
+  }, [reciterId])
+
+  // Persist autoplay
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem(AUTOPLAY_STORAGE_KEY, autoContinue ? '1' : '0')
+  }, [autoContinue])
+
+  const currentReciter = useMemo(
+    () => RECITERS.find(r => r.id === reciterId) || RECITERS[0],
+    [reciterId]
+  )
+
+  // Play a specific ayah
+  const playAyah = useCallback((a: ApiAyah) => {
+    setAudioError(null)
+    setOpenAyahPopover(null)
+    const audio = audioRef.current
+    if (!audio) return
+    const url = ayahAudioUrl(reciterId, a.surah.number, a.numberInSurah)
+    audio.src = url
+    audio.play()
+      .then(() => {
+        setPlaying({ surah: a.surah.number, ayah: a.numberInSurah, globalNumber: a.number })
+        setIsPlaying(true)
+      })
+      .catch(err => {
+        console.error('[v0] audio play error', err)
+        setAudioError('تعذّر تشغيل الصوت')
+        setIsPlaying(false)
+      })
+  }, [reciterId])
+
+  const togglePlayPause = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio || !playing) return
+    if (audio.paused) {
+      audio.play().then(() => setIsPlaying(true)).catch(() => {})
+    } else {
+      audio.pause()
+      setIsPlaying(false)
+    }
+  }, [playing])
+
+  const stopPlayback = useCallback(() => {
+    const audio = audioRef.current
+    if (audio) {
+      audio.pause()
+      audio.currentTime = 0
+    }
+    setPlaying(null)
+    setIsPlaying(false)
+  }, [])
+
+  // Find an ayah on the current page by global number
+  const findAyah = useCallback((globalNumber: number): ApiAyah | null => {
+    const data = pageDataRef.current
+    if (!data) return null
+    return data.ayahs.find(a => a.number === globalNumber) || null
+  }, [])
+
+  // Pending auto-continue: when a page changes due to playAdjacent, play the appropriate ayah after load
+  const pendingAutoContinue = useRef<'first' | 'last' | null>(null)
+
+  const playAdjacent = useCallback((direction: 1 | -1) => {
+    if (!playing) return
+    const data = pageDataRef.current
+    if (!data) return
+    const idx = data.ayahs.findIndex(a => a.number === playing.globalNumber)
+    if (idx < 0) return
+    const next = data.ayahs[idx + direction]
+    if (next) {
+      playAyah(next)
+    } else if (direction === 1 && pageNumber < TOTAL_PAGES) {
+      // jump to next page and start from its first ayah after load
+      pendingAutoContinue.current = 'first'
+      setPageNumber(p => Math.min(TOTAL_PAGES, p + 1))
+    } else if (direction === -1 && pageNumber > 1) {
+      // jump to previous page and start from its last ayah after load
+      pendingAutoContinue.current = 'last'
+      setPageNumber(p => Math.max(1, p - 1))
+    }
+  }, [playing, pageNumber, playAyah])
+
+  useEffect(() => {
+    if (!loading && pageData && pendingAutoContinue.current) {
+      const which = pendingAutoContinue.current
+      pendingAutoContinue.current = null
+      const target = which === 'first' ? pageData.ayahs[0] : pageData.ayahs[pageData.ayahs.length - 1]
+      if (target) playAyah(target)
+    }
+  }, [loading, pageData, playAyah])
+
+  // When the active reciter changes during playback, swap the audio source for the same ayah
+  useEffect(() => {
+    if (!playing) return
+    const audio = audioRef.current
+    if (!audio) return
+    const url = ayahAudioUrl(reciterId, playing.surah, playing.ayah)
+    if (audio.src !== url) {
+      const wasPlaying = !audio.paused
+      audio.src = url
+      if (wasPlaying) audio.play().catch(() => {})
+    }
+  }, [reciterId, playing])
 
   // Restore last page on mount
   useEffect(() => {
@@ -270,8 +434,25 @@ export default function MushafPage() {
               </div>
             </div>
 
-            {/* Right: Page indicator + index button */}
-            <div className="flex items-center gap-2">
+            {/* Right: Reciter + Page indicator + index button */}
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              {/* Reciter selector */}
+              <Select value={reciterId} onValueChange={setReciterId}>
+                <SelectTrigger className="h-9 rounded-xl text-xs font-bold w-[180px] sm:w-[220px] gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Mic2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    <SelectValue placeholder={isAr ? 'اختر القارئ' : 'Select reciter'} />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {RECITERS.map(r => (
+                    <SelectItem key={r.id} value={r.id} className="font-bold">
+                      {isAr ? r.nameAr : r.nameEn}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <div className="px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-black">
                 {isAr
                   ? `${t.student?.pageNumber || 'صفحة'} ${toArabicDigits(pageNumber)} / ${toArabicDigits(TOTAL_PAGES)}`
@@ -403,18 +584,89 @@ export default function MushafPage() {
                     >
                       {g.ayahs.map((a, idx) => {
                         const text = stripLeadingBismillah(a.text, a.surah.number, a.numberInSurah)
+                        const isActive = playing?.globalNumber === a.number
                         return (
                           <span key={a.number}>
                             {idx > 0 ? ' ' : ''}
-                            <span>{text}</span>
-                            {' '}
                             <span
-                              className="ayah-marker inline-block align-middle text-base sm:text-lg font-black text-amber-800 dark:text-primary mx-1"
-                              style={{ fontFamily: 'system-ui, sans-serif' }}
-                              aria-label={`Ayah ${a.numberInSurah}`}
+                              className={
+                                isActive
+                                  ? 'rounded-md bg-primary/15 dark:bg-primary/25 px-1 transition-colors'
+                                  : 'transition-colors'
+                              }
                             >
-                              ﴿{toArabicDigits(a.numberInSurah)}﴾
+                              {text}
                             </span>
+                            {' '}
+                            <Popover
+                              open={openAyahPopover === a.number}
+                              onOpenChange={(o) => setOpenAyahPopover(o ? a.number : null)}
+                            >
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  className={`ayah-marker inline-block align-middle text-base sm:text-lg font-black mx-1 cursor-pointer transition-all hover:scale-110 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-md ${
+                                    isActive
+                                      ? 'text-primary scale-110'
+                                      : 'text-amber-800 dark:text-primary'
+                                  }`}
+                                  style={{ fontFamily: 'system-ui, sans-serif' }}
+                                  aria-label={`Ayah ${a.numberInSurah}`}
+                                >
+                                  ﴿{toArabicDigits(a.numberInSurah)}﴾
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-64 p-2"
+                                side="bottom"
+                                align="center"
+                                onOpenAutoFocus={(e) => e.preventDefault()}
+                              >
+                                <div className="px-2 py-1.5 mb-1 border-b border-border/50">
+                                  <div className="text-[11px] text-muted-foreground font-bold">
+                                    {isAr ? 'الآية' : 'Ayah'}
+                                  </div>
+                                  <div className="text-sm font-black text-foreground">
+                                    {stripSurahPrefix(a.surah.name)} · {isAr ? toArabicDigits(a.numberInSurah) : a.numberInSurah}
+                                  </div>
+                                </div>
+                                {isActive && isPlaying ? (
+                                  <Button
+                                    variant="ghost"
+                                    onClick={togglePlayPause}
+                                    className="w-full justify-start gap-2 h-9 font-bold"
+                                  >
+                                    <Pause className="w-4 h-4 text-primary" />
+                                    {isAr ? 'إيقاف مؤقت' : 'Pause'}
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => playAyah(a)}
+                                    className="w-full justify-start gap-2 h-9 font-bold"
+                                  >
+                                    <Play className="w-4 h-4 text-primary" />
+                                    {isActive
+                                      ? (isAr ? 'متابعة التشغيل' : 'Resume')
+                                      : (isAr ? 'تشغيل الآية' : 'Listen to ayah')}
+                                  </Button>
+                                )}
+                                {isActive && (
+                                  <Button
+                                    variant="ghost"
+                                    onClick={stopPlayback}
+                                    className="w-full justify-start gap-2 h-9 font-bold text-rose-600 dark:text-rose-400 hover:text-rose-600"
+                                  >
+                                    <Square className="w-4 h-4" />
+                                    {isAr ? 'إيقاف' : 'Stop'}
+                                  </Button>
+                                )}
+                                <div className="mt-1 px-2 py-1.5 border-t border-border/50 flex items-center gap-1.5 text-[11px] text-muted-foreground font-bold">
+                                  <Volume2 className="w-3 h-3" />
+                                  <span className="truncate">{isAr ? currentReciter.nameAr : currentReciter.nameEn}</span>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
                           </span>
                         )
                       })}
@@ -472,6 +724,129 @@ export default function MushafPage() {
             </Button>
           </div>
         </div>
+
+        {/* Hidden audio element controlled by refs */}
+        <audio
+          ref={audioRef}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => {
+            setIsPlaying(false)
+            if (!autoContinue || !playing) {
+              setPlaying(null)
+              return
+            }
+            // Auto-continue: play next ayah on this page, or jump to next page
+            const data = pageDataRef.current
+            if (!data) return
+            const idx = data.ayahs.findIndex(a => a.number === playing.globalNumber)
+            const next = idx >= 0 ? data.ayahs[idx + 1] : null
+            if (next) {
+              playAyah(next)
+            } else if (pageNumber < TOTAL_PAGES) {
+              pendingAutoContinue.current = 'first'
+              setPageNumber(p => Math.min(TOTAL_PAGES, p + 1))
+            } else {
+              setPlaying(null)
+            }
+          }}
+          onError={() => {
+            setAudioError(isAr ? 'تعذّر تشغيل الصوت، حاول قارئاً آخر' : 'Audio failed to load, try another reciter')
+            setIsPlaying(false)
+          }}
+        />
+
+        {/* Sticky audio player at bottom — only visible when something is playing */}
+        {playing && (
+          <div className="fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border shadow-2xl">
+            <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
+              {/* Now playing info */}
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+                  isPlaying ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+                }`}>
+                  {isPlaying ? <Volume2 className="w-5 h-5 animate-pulse" /> : <Play className="w-5 h-5" />}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-black text-foreground truncate flex items-center gap-2">
+                    <span style={{ fontFamily: "'Amiri Quran', serif" }}>
+                      {(() => {
+                        const a = findAyah(playing.globalNumber)
+                        return a ? stripSurahPrefix(a.surah.name) : ''
+                      })()}
+                    </span>
+                    <span>·</span>
+                    <span>{isAr ? `الآية ${toArabicDigits(playing.ayah)}` : `Ayah ${playing.ayah}`}</span>
+                  </div>
+                  <div className="text-[11px] text-muted-foreground font-bold truncate flex items-center gap-1.5">
+                    <Mic2 className="w-3 h-3" />
+                    {isAr ? currentReciter.nameAr : currentReciter.nameEn}
+                  </div>
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center gap-1">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => playAdjacent(-1)}
+                  className="rounded-xl h-9 w-9"
+                  aria-label={isAr ? 'الآية السابقة' : 'Previous ayah'}
+                >
+                  <SkipBack className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  onClick={togglePlayPause}
+                  className="rounded-xl h-10 w-10"
+                  aria-label={isPlaying ? (isAr ? 'إيقاف مؤقت' : 'Pause') : (isAr ? 'تشغيل' : 'Play')}
+                >
+                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => playAdjacent(1)}
+                  className="rounded-xl h-9 w-9"
+                  aria-label={isAr ? 'الآية التالية' : 'Next ayah'}
+                >
+                  <SkipForward className="w-4 h-4" />
+                </Button>
+
+                {/* Auto-continue toggle */}
+                <Button
+                  size="icon"
+                  variant={autoContinue ? 'default' : 'ghost'}
+                  onClick={() => setAutoContinue(v => !v)}
+                  className="rounded-xl h-9 w-9 ms-1"
+                  title={isAr ? 'تكرار/متابعة الآيات' : 'Auto-continue'}
+                  aria-label={isAr ? 'تكرار/متابعة الآيات' : 'Auto-continue'}
+                >
+                  <Repeat className="w-4 h-4" />
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={stopPlayback}
+                  className="rounded-xl h-9 w-9 text-rose-600 dark:text-rose-400 hover:text-rose-600 hover:bg-rose-500/10"
+                  aria-label={isAr ? 'إغلاق المشغل' : 'Close player'}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            {audioError && (
+              <div className="bg-rose-500/10 border-t border-rose-500/30 px-4 py-2 text-xs font-bold text-rose-700 dark:text-rose-300 text-center">
+                {audioError}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Spacer so the sticky player doesn't cover the last navigation row */}
+        {playing && <div className="h-20" />}
       </div>
     </>
   )
