@@ -2,11 +2,133 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Mic, Square, Play, Pause, RotateCcw, Send, Info, Loader2, BookOpen, Hash } from "lucide-react"
+import { Mic, Square, Play, Pause, RotateCcw, Send, Info, Loader2, BookOpen, Hash, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useI18n } from "@/lib/i18n/context"
 import { useUploadThing } from "@/lib/uploadthing-client"
 import { SURAHS } from "@/lib/data/surahs"
+
+// ─── Ayah text reference panel ───────────────────────────────────────────────
+type AyahData = { numberInSurah: number; text: string }
+
+function AyahReferencePanel({
+  surahNumber,
+  ayahFrom,
+  ayahTo,
+}: {
+  surahNumber: number
+  ayahFrom: number
+  ayahTo: number
+}) {
+  const [ayahs, setAyahs] = useState<AyahData[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
+
+  // Normalize Arabic digits helper
+  const toAr = (n: number) =>
+    String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[parseInt(d)])
+
+  useEffect(() => {
+    if (!surahNumber || !ayahFrom || !ayahTo || ayahFrom > ayahTo) return
+    setLoading(true)
+    setError(false)
+    setAyahs([])
+
+    const controller = new AbortController()
+    // alquran.cloud: GET /surah/{n}/{edition} returns full surah, we slice client-side
+    fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/quran-uthmani`, {
+      signal: controller.signal,
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.data?.ayahs) {
+          const slice: AyahData[] = (data.data.ayahs as Array<{ numberInSurah: number; text: string }>)
+            .filter((a) => a.numberInSurah >= ayahFrom && a.numberInSurah <= ayahTo)
+            .map((a) => ({ numberInSurah: a.numberInSurah, text: a.text }))
+          setAyahs(slice)
+        } else {
+          setError(true)
+        }
+      })
+      .catch((e) => { if (e.name !== "AbortError") setError(true) })
+      .finally(() => setLoading(false))
+
+    return () => controller.abort()
+  }, [surahNumber, ayahFrom, ayahTo])
+
+  const count = ayahTo - ayahFrom + 1
+
+  return (
+    <div className="bg-[#fbf6e6] dark:bg-card border border-amber-700/25 dark:border-border rounded-2xl overflow-hidden">
+      {/* Header */}
+      <button
+        type="button"
+        onClick={() => setCollapsed((v) => !v)}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-amber-700/5 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-amber-700 dark:text-amber-500 flex-shrink-0" />
+          <span className="text-sm font-bold text-amber-900 dark:text-amber-200">
+            نص الآيات المختارة كمرجع
+          </span>
+          {!loading && ayahs.length > 0 && (
+            <span className="text-[10px] font-bold bg-amber-700/10 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
+              {toAr(count)} {count === 1 ? 'آية' : 'آيات'}
+            </span>
+          )}
+        </div>
+        {collapsed
+          ? <ChevronDown className="w-4 h-4 text-amber-700/60" />
+          : <ChevronUp className="w-4 h-4 text-amber-700/60" />
+        }
+      </button>
+
+      {/* Body */}
+      {!collapsed && (
+        <div className="px-4 pb-4">
+          {loading && (
+            <div className="flex items-center justify-center py-6 gap-2 text-amber-700/70 dark:text-amber-500/70">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-xs font-bold">جاري تحميل النص...</span>
+            </div>
+          )}
+
+          {error && !loading && (
+            <p className="text-xs text-center text-muted-foreground py-4">
+              تعذّر تحميل نص الآيات. تحقق من اتصالك بالإنترنت.
+            </p>
+          )}
+
+          {!loading && !error && ayahs.length > 0 && (
+            <div
+              className="leading-loose text-xl sm:text-2xl font-['Amiri_Quran',serif] text-slate-800 dark:text-slate-100 text-justify pt-2"
+              style={{ direction: "rtl", fontFamily: "'Amiri Quran', 'Amiri', serif" }}
+            >
+              {ayahs.map((a, idx) => (
+                <span key={a.numberInSurah}>
+                  {idx > 0 ? " " : ""}
+                  <span>{a.text}</span>
+                  {" "}
+                  <span
+                    className="inline-block align-middle text-base font-black text-amber-700 dark:text-amber-500 mx-0.5"
+                    style={{ fontFamily: "system-ui, sans-serif" }}
+                  >
+                    ﴿{toAr(a.numberInSurah)}﴾
+                  </span>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {!loading && !error && ayahs.length === 0 && (
+            <p className="text-xs text-center text-muted-foreground py-4">لا توجد آيات لعرضها.</p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const MAX_SECONDS = 180 // 3 minutes
 
@@ -469,6 +591,13 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
           </p>
         )}
       </div>
+
+      {/* Ayah text reference */}
+      <AyahReferencePanel
+        surahNumber={surahNumber}
+        ayahFrom={ayahFrom}
+        ayahTo={ayahTo}
+      />
 
       <div className="bg-card rounded-2xl shadow-sm border border-border p-4 md:p-8 flex flex-col items-center justify-center relative min-h-[400px] md:min-h-[450px]">
         <div className="mb-6 md:mb-10 text-center">
