@@ -144,10 +144,17 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     useEffect(() => {
         async function fetchData() {
             try {
-                const res = await fetch(`/api/admin/users/${id}`)
-                if (!res.ok) throw new Error(t.admin.failedToLoadData)
-                const json = await res.json()
+                const [userRes, specsRes] = await Promise.all([
+                    fetch(`/api/admin/users/${id}`),
+                    fetch(`/api/admin/users/${id}/specializations`),
+                ])
+                if (!userRes.ok) throw new Error(t.admin.failedToLoadData)
+                const [json, specsJson] = await Promise.all([
+                    userRes.json(),
+                    specsRes.ok ? specsRes.json() : { specializations: [] },
+                ])
                 setData(json)
+                setUserSpecs(specsJson.specializations || [])
             } catch (err: any) {
                 setError(err.message)
             } finally {
@@ -155,10 +162,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             }
         }
         fetchData()
-        // Fetch specializations separately
-        fetch(`/api/admin/users/${id}/specializations`)
-          .then(r => r.ok ? r.json() : { specializations: [] })
-          .then(d => setUserSpecs(d.specializations || []))
     }, [id, t.admin.failedToLoadData])
 
     if (loading) {
