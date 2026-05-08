@@ -17,6 +17,7 @@ export async function GET(
 
         const user = await db.queryOne<any>(
             `SELECT u.id, u.name, u.email, u.phone, u.role, u.avatar_url, u.bio, u.is_active, u.created_at, u.last_login_at,
+             u.city as user_city,
              EXISTS(
                 SELECT 1 FROM user_sessions us 
                 WHERE us.user_id = u.id 

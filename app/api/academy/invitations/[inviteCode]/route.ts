@@ -8,23 +8,36 @@ export async function GET(
   try {
     const { inviteCode } = await params
     // Schema columns are `token` and `target_course_id` (not `code`/`course_id`)
-    const rows = await query(
-      `SELECT 
-         i.*,
-         u.name as invited_by_name,
-         c.title as course_title
+    // Auto-expire pending invitations
+    await query(
+      `UPDATE invitations SET status = 'EXPIRED'
+       WHERE status = 'PENDING' AND expires_at < NOW()`
+    )
+
+    const rows = await query<any>(
+      `SELECT
+         i.email, i.invited_name, i.role_to_assign, i.status,
+         i.expires_at, i.plan_id,
+         u.name  AS inviter_name,
+         p.title AS plan_title
        FROM invitations i
-       LEFT JOIN users u ON i.invited_by = u.id
-       LEFT JOIN courses c ON i.target_course_id = c.id
+       LEFT JOIN users   u ON u.id = i.invited_by
+       LEFT JOIN courses p ON p.id = i.plan_id
        WHERE i.token = $1`,
       [inviteCode]
     )
 
-    if (rows.length === 0) {
+    if (!rows.length) {
       return NextResponse.json({ error: 'Invitation not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ data: rows[0] })
+    const inv = rows[0]
+    // Surface expired to caller
+    if (inv.expires_at && new Date(inv.expires_at) < new Date()) {
+      return NextResponse.json({ ...inv, status: 'EXPIRED' }, { status: 410 })
+    }
+
+    return NextResponse.json(inv)
   } catch (error) {
     console.error('Error fetching invitation:', error)
     return NextResponse.json({ error: 'Invitation not found' }, { status: 404 })
