@@ -28,12 +28,12 @@ export async function GET(req: NextRequest) {
   const search = (url.searchParams.get('search') || '').trim()
 
   // Map our UI filter to DB status values
-  // DB values: 'pending_review' | 'approved' | 'rejected' | 'draft'
+  // DB values: 'pending_review' | 'approved' | 'rejected' | 'draft' | 'published'
   const statusMap: Record<string, string[]> = {
     pending:  ['pending_review'],
-    approved: ['approved'],
+    approved: ['approved', 'published'],
     rejected: ['rejected'],
-    all:      ['pending_review', 'approved', 'rejected', 'draft'],
+    all:      ['pending_review', 'approved', 'rejected', 'draft', 'published'],
   }
   const statusValues = statusMap[status] || statusMap.pending
 
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
       `
       SELECT status, COUNT(*)::int AS count
       FROM lessons
-      WHERE status IN ('pending_review','approved','rejected','draft')
+      WHERE status IN ('pending_review','approved','rejected','draft','published')
       GROUP BY status
       `,
     )
@@ -88,9 +88,10 @@ export async function GET(req: NextRequest) {
     for (const r of countsRows) {
       const c = Number(r.count) || 0
       counts.all += c
-      if (r.status === 'pending_review') counts.pending = c
-      else if (r.status === 'approved')  counts.approved = c
-      else if (r.status === 'rejected')  counts.rejected = c
+      if (r.status === 'pending_review')               counts.pending  += c
+      else if (r.status === 'approved' ||
+               r.status === 'published')               counts.approved += c
+      else if (r.status === 'rejected')                counts.rejected += c
     }
 
     return NextResponse.json({ data: rows, counts })
