@@ -5,7 +5,7 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "hana-lazan-secret-key-change-in-production"
 )
 
-export type AllRoles = "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor" | "teacher" | "parent" | "academy_admin"
+export type AllRoles = "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor" | "teacher" | "parent" | "academy_admin" | "fiqh_supervisor" | "supervisor"
 
 export interface JWTPayload {
   sub: string

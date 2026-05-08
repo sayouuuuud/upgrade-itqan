@@ -207,7 +207,7 @@ export default function StudentChatPage() {
             <>
               {/* Chat Header */}
               <div className="px-6 py-4 border-b border-border/50 flex items-center gap-4 shrink-0 bg-card z-10 shadow-sm relative">
-                <Button variant="ghost" size="icon" className="md:hiddenshrink-0 mr-[-8px] ml-1" onClick={() => setActiveConv(null)}>
+                <Button variant="ghost" size="icon" className="md:hidden shrink-0 mr-[-8px] ml-1" onClick={() => setActiveConv(null)}>
                   <ArrowRight className={`w-5 h-5 ${isAr ? '' : 'rotate-180'}`} />
                 </Button>
                 <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20">

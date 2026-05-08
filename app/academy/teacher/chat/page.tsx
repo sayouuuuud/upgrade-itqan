@@ -4,8 +4,14 @@ import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Send, User, Loader2, ArrowRight } from 'lucide-react'
+import { Search, Send, User, Loader2, ArrowRight, UserPlus, X } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
+
+interface Student {
+  id: string
+  name: string
+  email: string
+}
 
 interface Conversation {
   id: string
@@ -34,6 +40,11 @@ export default function TeacherChatPage() {
   const [loadingConv, setLoadingConv] = useState(true)
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const [sending, setSending] = useState(false)
+  const [showNewConv, setShowNewConv] = useState(false)
+  const [students, setStudents] = useState<Student[]>([])
+  const [loadingStudents, setLoadingStudents] = useState(false)
+  const [studentSearch, setStudentSearch] = useState('')
+  const [creatingConv, setCreatingConv] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -55,6 +66,57 @@ export default function TeacherChatPage() {
       setLoadingConv(false)
     }
   }
+
+  const fetchStudents = async () => {
+    setLoadingStudents(true)
+    try {
+      const res = await fetch('/api/academy/teacher/students')
+      const data = await res.json()
+      if (res.ok) {
+        setStudents(data.data || [])
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingStudents(false)
+    }
+  }
+
+  const startConversation = async (studentId: string) => {
+    setCreatingConv(true)
+    try {
+      const res = await fetch('/api/academy/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otherUserId: studentId })
+      })
+      const data = await res.json()
+      if (res.ok && data.conversationId) {
+        // Refresh conversations and select the new one
+        await fetchConversations()
+        const newConv = conversations.find(c => c.id === data.conversationId) ||
+          { id: data.conversationId, other_user_id: studentId, other_user_name: students.find(s => s.id === studentId)?.name || '', other_user_avatar: null, last_message: null, last_message_at: null, unread_count: 0 }
+        setActiveConv(newConv)
+        setShowNewConv(false)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setCreatingConv(false)
+    }
+  }
+
+  // When opening new conversation modal, fetch students
+  useEffect(() => {
+    if (showNewConv && students.length === 0) {
+      fetchStudents()
+    }
+  }, [showNewConv])
+
+  const filteredStudents = students.filter(s =>
+    s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
+    s.email.toLowerCase().includes(studentSearch.toLowerCase())
+  )
 
   // Fetch messages for active conversation
   useEffect(() => {
@@ -144,7 +206,7 @@ export default function TeacherChatPage() {
 
         {/* Sidebar (Conversations) */}
         <div className={`w-full md:w-80 border-${isAr ? 'l' : 'r'} border-border/50 flex flex-col min-h-0 ${activeConv ? 'hidden md:flex' : 'flex'}`}>
-          <div className="p-4 border-b border-border/50">
+          <div className="p-4 border-b border-border/50 space-y-3">
             <div className="relative">
               <Search className={`absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
               <Input
@@ -152,6 +214,13 @@ export default function TeacherChatPage() {
                 className={`pl-9 pr-9 h-10 rounded-xl bg-muted/30 border-border/50 focus:bg-card`}
               />
             </div>
+            <Button
+              onClick={() => setShowNewConv(true)}
+              className="w-full rounded-xl h-10 gap-2 font-bold"
+            >
+              <UserPlus className="w-4 h-4" />
+              {isAr ? "محادثة جديدة" : "New Conversation"}
+            </Button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-1 overflow-x-hidden custom-scrollbar">
@@ -270,6 +339,63 @@ export default function TeacherChatPage() {
         </div>
 
       </div>
+
+      {/* New Conversation Modal */}
+      {showNewConv && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowNewConv(false)}>
+          <Card className="w-full max-w-md max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
+              <h3 className="font-bold text-lg">{isAr ? "بدء محادثة جديدة" : "Start New Conversation"}</h3>
+              <Button variant="ghost" size="icon" onClick={() => setShowNewConv(false)}>
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            <div className="p-4 border-b border-border shrink-0">
+              <div className="relative">
+                <Search className={`absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
+                <Input
+                  placeholder={isAr ? "ابحث عن طالب..." : "Search student..."}
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  className={`${isAr ? 'pr-9' : 'pl-9'} h-10 rounded-xl`}
+                />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              {loadingStudents ? (
+                <div className="flex justify-center p-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : filteredStudents.length === 0 ? (
+                <div className="text-center p-8 text-muted-foreground text-sm">
+                  {students.length === 0
+                    ? (isAr ? "لا يوجد طلاب مسجلين لديك" : "No students enrolled")
+                    : (isAr ? "لا توجد نتائج" : "No results found")
+                  }
+                </div>
+              ) : (
+                filteredStudents.map(student => (
+                  <button
+                    key={student.id}
+                    onClick={() => startConversation(student.id)}
+                    disabled={creatingConv}
+                    className="w-full text-start p-3 rounded-xl flex items-center gap-3 hover:bg-muted/50 transition-colors disabled:opacity-50"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20">
+                      <User className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm truncate">{student.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{student.email}</p>
+                    </div>
+                    {creatingConv && <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />}
+                  </button>
+                ))
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

@@ -10,7 +10,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params
   try {
     const body = await req.json()
-    const { title, description, category_id, status } = body
+    const { title, description, category_id, status, teacher_id, thumbnail_url, price, is_free, duration_hours, level, is_featured } = body
 
     const result = await query(`
       UPDATE courses SET 
@@ -18,10 +18,30 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         description = COALESCE($2, description),
         category_id = COALESCE($3, category_id),
         status = COALESCE($4, status),
+        teacher_id = COALESCE($5, teacher_id),
+        thumbnail_url = COALESCE($6, thumbnail_url),
+        price = COALESCE($7, price),
+        is_free = COALESCE($8, is_free),
+        duration_hours = COALESCE($9, duration_hours),
+        level = COALESCE($10, level),
+        is_featured = COALESCE($11, is_featured),
         updated_at = NOW()
-      WHERE id = $5
+      WHERE id = $12
       RETURNING *
-    `, [title || null, description !== undefined ? description : null, category_id !== undefined ? category_id : null, status || null, id])
+    `, [
+      title || null, 
+      description !== undefined ? description : null, 
+      category_id !== undefined ? category_id : null, 
+      status || null, 
+      teacher_id || null,
+      thumbnail_url || null,
+      price !== undefined ? price : null,
+      is_free !== undefined ? is_free : null,
+      duration_hours !== undefined ? duration_hours : null,
+      level || null,
+      is_featured !== undefined ? is_featured : null,
+      id
+    ])
 
     if (result.length === 0) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })

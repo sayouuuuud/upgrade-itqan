@@ -1,900 +1,1018 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { motion, useScroll, useTransform } from "framer-motion"
+import { useTheme } from "next-themes"
+import { motion, useScroll, useTransform, AnimatePresence, useInView } from "framer-motion"
 import {
-  BookOpen, GraduationCap, Users, Play, Mic2, Award,
-  Moon, Sun, Star, Trophy, Heart, ArrowLeft, Menu, X, Headphones, Video,
-  CheckCircle2, Sparkles, Clock, Globe, Shield, Zap, MessageCircle
+  BookOpen,
+  GraduationCap,
+  ArrowLeft,
+  Menu,
+  X,
+  Star,
+  Award,
+  Users,
+  Mic,
+  Calendar,
+  ScrollText,
+  Sparkles,
+  Quote,
+  ChevronDown,
+  Sun,
+  Moon,
 } from "lucide-react"
-import { IslamicPattern } from "@/components/ui/islamic-pattern"
-import { BlurText } from "@/components/ui/blur-text"
-import { FadeIn } from "@/components/ui/fade-in"
-import { AnimatedCounter } from "@/components/ui/animated-counter"
-import { Spotlight } from "@/components/ui/spotlight"
-import { Magnet } from "@/components/ui/magnet"
 
-// Stats data
-const stats = [
-  { value: 15000, label: "طالب نشط", suffix: "+" },
-  { value: 500, label: "معلم متخصص", suffix: "+" },
-  { value: 1200, label: "ساعة تعليمية", suffix: "+" },
-  { value: 98, label: "نسبة الرضا", suffix: "%" },
-]
+/* ============================================================
+   ISLAMIC ORNAMENTAL SVG COMPONENTS
+   ============================================================ */
 
-// Features data - expanded
-const features = [
-  { icon: BookOpen, title: "حفظ القرآن الكريم", description: "منهجية متدرجة لحفظ القرآن مع متابعة يومية من معلمين متخصصين", highlight: true },
-  { icon: Mic2, title: "تلاوات متميزة", description: "استمع لأجمل التلاوات من كبار القراء بجودة صوت عالية" },
-  { icon: Users, title: "حلقات تفاعلية", description: "انضم إلى حلقات مباشرة مع معلمين وطلاب من حول العالم" },
-  { icon: Award, title: "شهادات معتمدة", description: "احصل على إجازات وشهادات معتمدة في القرآن والقراءات", highlight: true },
-  { icon: Trophy, title: "مسابقات قرآنية", description: "شارك في تحديات ومسابقات لتحفيز رحلتك" },
-  { icon: Heart, title: "مجتمع داعم", description: "كن جزءاً من مجتمع قرآني داعم ومحفز" },
-]
+const OrnamentDivider = ({ className = "", color = "currentColor" }: { className?: string; color?: string }) => (
+  <svg viewBox="0 0 400 40" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <line x1="0" y1="20" x2="140" y2="20" stroke={color} strokeWidth="0.5" opacity="0.4" />
+    <line x1="260" y1="20" x2="400" y2="20" stroke={color} strokeWidth="0.5" opacity="0.4" />
+    <g transform="translate(200,20)">
+      <circle r="14" stroke={color} strokeWidth="0.6" fill="none" opacity="0.6" />
+      <circle r="8" stroke={color} strokeWidth="0.6" fill="none" opacity="0.5" />
+      <g stroke={color} strokeWidth="0.6" opacity="0.7">
+        <line x1="-18" y1="0" x2="-26" y2="0" />
+        <line x1="18" y1="0" x2="26" y2="0" />
+        <line x1="0" y1="-18" x2="0" y2="-26" />
+        <line x1="0" y1="18" x2="0" y2="26" />
+      </g>
+      <circle r="2" fill={color} opacity="0.8" />
+    </g>
+  </svg>
+)
 
-// Learning path steps
-const learningPath = [
-  { step: 1, title: "التسجيل", description: "أنشئ حسابك مجاناً في دقائق" },
-  { step: 2, title: "اختيار المسار", description: "حدد مستواك وأهدافك التعليمية" },
-  { step: 3, title: "التعلم", description: "ابدأ رحلتك مع معلم متخصص" },
-  { step: 4, title: "الإتقان", description: "احصل على الإجازة والشهادة" },
-]
+const EightStar = ({ size = 60, className = "", color = "currentColor", strokeWidth = 0.8 }: any) => (
+  <svg viewBox="-50 -50 100 100" width={size} height={size} className={className} fill="none" stroke={color} strokeWidth={strokeWidth} aria-hidden>
+    <polygon points="0,-40 11,-11 40,0 11,11 0,40 -11,11 -40,0 -11,-11" />
+    <polygon points="0,-28 8,-8 28,0 8,8 0,28 -8,8 -28,0 -8,-8" transform="rotate(22.5)" />
+    <circle r="6" />
+  </svg>
+)
 
-// Academy stats
-const academyStats = [
-  { label: "حافظ للقرآن", value: "2,500+" },
-  { label: "إجازة ممنوحة", value: "850+" },
-  { label: "دولة", value: "45+" },
-  { label: "ساعة تعليمية", value: "50,000+" },
-]
+const ArchFrame = ({ className = "", color = "currentColor" }: any) => (
+  <svg viewBox="0 0 200 280" className={className} fill="none" stroke={color} strokeWidth="0.8" aria-hidden preserveAspectRatio="none">
+    <path d="M 10 280 L 10 100 Q 10 10 100 10 Q 190 10 190 100 L 190 280" />
+    <path d="M 24 280 L 24 105 Q 24 24 100 24 Q 176 24 176 105 L 176 280" opacity="0.5" />
+  </svg>
+)
 
-// Testimonials data
-const testimonials = [
-  { quote: "منصة إتقان غيرت حياتي بالكامل، أصبحت أقرأ القرآن بطلاقة وأحفظ بسهولة", author: "أحمد محمد", role: "طالب" },
-  { quote: "التعليم هنا مختلف تماماً، المعلمون متميزون والمنهجية فعالة جداً", author: "فاطمة علي", role: "معلمة" },
-  { quote: "أفضل منصة قرآنية جربتها، أنصح كل الآباء بتسجيل أبنائهم فيها", author: "محمد الأحمد", role: "ولي أمر" },
-]
+const ArabesqueCorner = ({ size = 100, className = "", color = "currentColor" }: any) => (
+  <svg viewBox="0 0 100 100" width={size} height={size} className={className} fill="none" stroke={color} strokeWidth="0.7" aria-hidden>
+    <path d="M 0 0 L 100 0 L 100 30 Q 70 30 70 60 Q 70 100 30 100 L 0 100 Z" opacity="0.15" fill={color} />
+    <path d="M 0 0 L 100 0 L 100 30 Q 70 30 70 60 Q 70 100 30 100 L 0 100" />
+    <path d="M 20 0 Q 20 50 50 50 Q 80 50 80 30" opacity="0.6" />
+    <circle cx="50" cy="50" r="3" fill={color} />
+    <circle cx="20" cy="20" r="1.5" fill={color} />
+    <circle cx="80" cy="20" r="1.5" fill={color} />
+  </svg>
+)
 
-export default function HomePage() {
-  const [isDark, setIsDark] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const { scrollYProgress } = useScroll()
+const TessellatedBg = ({ className = "", color = "#0F2A44", opacity = 0.04 }: any) => (
+  <svg className={className} aria-hidden>
+    <defs>
+      <pattern id={`tess-${color.replace("#", "")}`} x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke={color} strokeWidth="0.6" opacity={opacity * 12}>
+          <polygon points="40,5 47,33 75,40 47,47 40,75 33,47 5,40 33,33" />
+          <circle cx="40" cy="40" r="22" />
+          <circle cx="40" cy="40" r="3" fill={color} />
+        </g>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill={`url(#tess-${color.replace("#", "")})`} />
+  </svg>
+)
 
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
-  const heroY = useTransform(scrollYProgress, [0, 0.2], [0, -50])
+/* ============================================================
+   ANIMATION HELPERS
+   ============================================================ */
 
+function Reveal({ children, delay = 0, y = 40, className = "" }: any) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: "-80px" })
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+function CountUp({ value, suffix = "", duration = 2 }: { value: number; suffix?: string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const inView = useInView(ref, { once: true })
+  const [n, setN] = useState(0)
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"))
-    const handleScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    if (!inView) return
+    const start = performance.now()
+    let raf = 0
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / (duration * 1000), 1)
+      const eased = 1 - Math.pow(1 - t, 3)
+      setN(Math.floor(eased * value))
+      if (t < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [inView, value, duration])
+  return <span ref={ref}>{n.toLocaleString("ar-EG")}{suffix}</span>
+}
 
-  const toggleDark = () => {
-    document.documentElement.classList.toggle("dark")
-    setIsDark(!isDark)
-  }
+/* ============================================================
+   TESTIMONIALS MARQUEE
+   ============================================================ */
+
+type Testimonial = { q: string; n: string; r: string }
+
+function TestimonialCard({ q, n, r }: Testimonial) {
+  return (
+    <article
+      dir="rtl"
+      className="ml-6 flex-shrink-0 w-[320px] md:w-[420px] relative p-8 md:p-10 bg-[#FAF6EE] dark:bg-[#101A22] border border-[#0F2A44]/10 dark:border-[#C9A962]/15 rounded-2xl"
+    >
+      <Quote className="absolute top-6 left-6 w-8 h-8 text-[#B08D57]/20 dark:text-[#C9A962]/30 rotate-180" />
+      <ArabesqueCorner size={70} className="absolute top-0 right-0 text-[#B08D57]/15 dark:text-[#C9A962]/25" />
+      <div className="relative pt-4">
+        <p
+          className="text-base md:text-lg text-[#1A1A1A]/85 dark:text-[#F2EBDD]/85 leading-loose mb-6 line-clamp-4"
+          style={{ fontFamily: "var(--font-quran)" }}
+        >
+          {q}
+        </p>
+        <div className="pt-4 border-t border-[#0F2A44]/10 dark:border-[#C9A962]/15">
+          <div className="font-bold text-[#0F2A44] dark:text-[#F2EBDD]" style={{ fontFamily: "var(--font-quran)" }}>
+            {n}
+          </div>
+          <div className="text-sm text-[#1A1A1A]/55 dark:text-[#F2EBDD]/55 mt-1">{r}</div>
+        </div>
+        <div className="flex gap-1 mt-3">
+          {[...Array(5)].map((_, k) => (
+            <Star key={k} className="w-3.5 h-3.5 fill-[#B08D57] dark:fill-[#C9A962] text-[#B08D57] dark:text-[#C9A962]" />
+          ))}
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function MarqueeRow({
+  items,
+  direction,
+  duration,
+}: {
+  items: Testimonial[]
+  direction: "right" | "left"
+  duration: number
+}) {
+  // Duplicate items so -50% translation lands exactly on the second copy → seamless loop.
+  const doubled = [...items, ...items]
+  const keyframes = direction === "right" ? "itqan-marquee-right" : "itqan-marquee-left"
+  return (
+    <div className="overflow-hidden" dir="ltr">
+      <div
+        className="marquee-track flex w-max"
+        style={{
+          animationName: keyframes,
+          animationDuration: `${duration}s`,
+          animationTimingFunction: "linear",
+          animationIterationCount: "infinite",
+        }}
+      >
+        {doubled.map((t, i) => (
+          <TestimonialCard key={i} {...t} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TestimonialsMarquee() {
+  const rowTop: Testimonial[] = [
+    { q: "تجربةٌ أعادتْ لي شَغفي بالقرآن، فالأستاذُ يُتابعُ تِلاوتي حرفًا حرفًا، وأنا في بيتي.", n: "أحمد المصري", r: "طالبٌ في مسارِ الإجازة" },
+    { q: "حفظتُ ربعَ القرآن في ستَّةِ أشهرٍ بفضلِ المتابعةِ المُنظَّمةِ والمُقرئةِ المُتميِّزة.", n: "فاطمة الزهراء", r: "طالبةُ تحفيظ" },
+    { q: "الجَودةُ، التَّنظيمُ، الاحترامُ في التعامل، كلُّ شيءٍ يَدلُّ على أنَّ القائمين أهلُ علمٍ وصِدق.", n: "د. خالد الأنصاري", r: "وَلِيُّ أمر" },
+    { q: "ما مرَّ يومٌ بعد التحاقي بالمَقْرأة إلا وذُقتُ حلاوةَ القرآنِ من جديد.", n: "محمد العبسي", r: "طالبُ تجويد" },
+    { q: "المنصَّةُ راقيةٌ، والأساتذةُ مُجازون، والإدارةُ تَسمعُ لكلِّ مُلاحظةٍ بِصَدرٍ رَحب.", n: "أم عبد الله", r: "وَلِيَّةُ أمر" },
+    { q: "أَخذتُ إجازتي في رواية حفصٍ هنا، بعد سنواتٍ من التشتُّتِ بين منصَّاتٍ أخرى.", n: "يوسف الإدريسي", r: "حاصلٌ على إجازة" },
+    { q: "الجلساتُ المباشرةُ فيها رُوحٌ لا تَجدُها في أيِّ تسجيلٍ مُسبَّق.", n: "سارة المغربي", r: "طالبةُ تجويد" },
+    { q: "أَشعرُ أنَّ الأستاذَ يُكلِّمُني وحدي، كأنَّنا في حَلْقةٍ خاصَّة.", n: "طارق الزيات", r: "طالبٌ مبتدئ" },
+    { q: "في أقلَّ من ثلاثةِ أشهرٍ صَحَّح لي المُقرئُ أخطاءً حملتُها سنين.", n: "رانيا عبد الحميد", r: "طالبةُ تحفيظ" },
+    { q: "أجودُ ما قَضيتُه من وقتٍ هذا العام هو جلساتي في المَقْرأة.", n: "عمر سيد أحمد", r: "طالبٌ في الإجازة" },
+    { q: "بعد سنواتٍ من البحثِ عن مُقرئٍ مُجاز، وجدتُ ضالَّتي هنا.", n: "عائشة الحربي", r: "طالبةُ إجازة" },
+    { q: "أبنائي الثلاثةُ مُلتحقون بالأكاديميَّة ومستواهم في تَحسُّنٍ مُستمرّ.", n: "أبو يوسف", r: "وَلِيُّ أمر" },
+  ]
+  const rowBottom: Testimonial[] = [
+    { q: "تجربةٌ مُختلفةٌ تمامًا، شعرتُ أنني في حَلْقةٍ حقيقيَّةٍ في أحدِ المساجدِ العَتيقة.", n: "هدى الشريف", r: "طالبةُ علم" },
+    { q: "كنتُ أبحثُ عن مَقْرأةٍ مُنضَبطةٍ منذُ زمن، فوجدتُ هنا ما يَفوقُ ما تَمنَّيت.", n: "إبراهيم الرفاعي", r: "طالبٌ في الإجازة" },
+    { q: "الواجباتُ مُحَكَّمة، والمُتابعةُ يوميَّة، والنتائجُ مُبشِّرةٌ بفضلِ الله.", n: "نوال البصري", r: "طالبةُ تحفيظ" },
+    { q: "ما رأيتُ أَشمَلَ من هذه المنصَّةِ في الجَمعِ بين العلمِ النظريِّ والتطبيقيِّ.", n: "د. صالح الشمري", r: "أستاذٌ مُحاضِر" },
+    { q: "ابني تَغيَّرت علاقتُه بالقرآنِ بعد التحاقِه، صار يَنتظرُ الجلسةَ بشَغف.", n: "أم محمد", r: "وَلِيَّةُ أمر" },
+    { q: "خِدمةٌ مُتقَنةٌ من البدايةِ إلى النهاية، شُكرًا لكلِّ القائمين على هذا المشروع.", n: "عبد الرحمن الحارثي", r: "خرِّيج" },
+    { q: "الانتظامُ في الجلساتِ جعلَ حفظي أمتنَ وتلاوتي أصفى من أيِّ وقتٍ مضى.", n: "منى القرشي", r: "طالبةُ تحفيظ" },
+    { q: "المُقرئُ يَشرحُ المَخارجَ بأسلوبٍ واضحٍ لم أَجدْه في مكانٍ آخر.", n: "بلال حسين", r: "طالبُ تجويد" },
+    { q: "من أفضلِ قراراتي الانضمامُ للأكاديميَّة، والنتائجُ تَتكلَّمُ عن نفسها.", n: "لينا الحمداني", r: "طالبةٌ في مسارِ الإجازة" },
+    { q: "كلُّ جلسةٍ فيها علمٌ وأدبٌ وبركة، اللهُ يُجزي القائمين خيرًا.", n: "حسام الدين عوض", r: "طالبٌ متقدِّم" },
+    { q: "تَعلَّمتُ أحكامَ التجويدِ بطريقةٍ سَلِسةٍ لم أتوقَّعها من قبل.", n: "مريم الأحمد", r: "طالبةُ تجويد" },
+    { q: "المنصَّةُ سَهَّلت عليَّ الجَمعَ بين العملِ والدراسةِ القرآنيَّة.", n: "ماجد العنزي", r: "طالبٌ عامل" },
+  ]
 
   return (
-    <div className="min-h-screen bg-background text-foreground" dir="rtl">
-      {/* Header */}
-      <header
-        className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${scrolled
-          ? "bg-background/90 backdrop-blur-lg border-b border-border shadow-sm"
-          : "bg-transparent"
-          }`}
+    <section id="voices" className="relative py-20 md:py-24 bg-[#F7F2E9] dark:bg-[#0B1217] overflow-hidden transition-colors duration-500">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-10 md:mb-12">
+          <span className="text-xs tracking-[0.35em] text-[#B08D57] dark:text-[#C9A962] uppercase mb-4 block">آراؤهم</span>
+          <h2
+            className="text-5xl md:text-6xl font-bold text-[#0F2A44] dark:text-[#F2EBDD] leading-tight"
+            style={{ fontFamily: "var(--font-quran)" }}
+          >
+            كَلِماتٌ مِن طُلَّابِنا
+          </h2>
+        </div>
+      </div>
+
+      {/* Two-row marquee with edge fades */}
+      <div className="relative space-y-5">
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-48 bg-gradient-to-l from-[#F7F2E9] dark:from-[#0B1217] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-48 bg-gradient-to-r from-[#F7F2E9] dark:from-[#0B1217] to-transparent" />
+
+        <MarqueeRow items={rowTop} direction="right" duration={60} />
+        <MarqueeRow items={rowBottom} direction="left" duration={65} />
+      </div>
+    </section>
+  )
+}
+
+/* ============================================================
+   PAGE
+   ============================================================ */
+
+export default function Home() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const { resolvedTheme, setTheme } = useTheme()
+  const heroRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] })
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 200])
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
+
+  useEffect(() => {
+    setMounted(true)
+    const handler = () => setScrolled(window.scrollY > 30)
+    window.addEventListener("scroll", handler)
+    return () => window.removeEventListener("scroll", handler)
+  }, [])
+
+  const isDark = mounted && resolvedTheme === "dark"
+  const toggleTheme = () => setTheme(isDark ? "light" : "dark")
+
+  return (
+    <div className="min-h-screen bg-[#F7F2E9] text-[#1A1A1A] dark:bg-[#0B1217] dark:text-[#F2EBDD] overflow-x-hidden font-sans transition-colors duration-500" dir="rtl">
+      {/* ============ HEADER ============ */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.7 }}
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
+          scrolled
+            ? "bg-[#F7F2E9]/85 dark:bg-[#0B1217]/85 backdrop-blur-xl border-b border-[#1A1A1A]/10 dark:border-[#F2EBDD]/10 py-3"
+            : "bg-transparent py-5"
+        }`}
       >
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16 md:h-20">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <div>
-                <span className="text-xl font-bold text-foreground">إتقان</span>
-                <span className="block text-[10px] text-muted-foreground -mt-1">حلقة القرآن</span>
-              </div>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-8">
-              {["المميزات", "الأقسام", "آراء الطلاب"].map((label) => (
-                <Link
-                  key={label}
-                  href={`#${label}`}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={toggleDark}
-                className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
-              >
-                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-
-              <Link
-                href="/login"
-                className="hidden sm:flex h-10 px-5 bg-primary text-primary-foreground rounded-lg items-center justify-center text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                تسجيل الدخول
-              </Link>
-
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden w-10 h-10 rounded-lg bg-secondary flex items-center justify-center"
-              >
-                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
+        <div className="container mx-auto px-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="relative w-11 h-11">
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#0F2A44] to-[#1B4332]" />
+              <svg viewBox="0 0 44 44" className="absolute inset-0 w-full h-full p-2.5 text-[#C9A962]" fill="currentColor" aria-hidden>
+                <path d="M22 4 L26 18 L40 18 L29 27 L33 41 L22 32 L11 41 L15 27 L4 18 L18 18 Z" opacity="0.95" />
+              </svg>
             </div>
+            <div className="leading-tight">
+              <div className="text-xl font-bold tracking-tight text-[#0F2A44] dark:text-[#C9A962]" style={{ fontFamily: "var(--font-quran)" }}>
+                إتْقان
+              </div>
+              <div className="text-[10px] tracking-[0.2em] text-[#1A1A1A]/55 dark:text-[#F2EBDD]/55 uppercase">
+                Itqan Platform
+              </div>
+            </div>
+          </Link>
+
+          <nav className="hidden lg:flex items-center gap-10">
+            {[
+              { href: "#sections", label: "المنصات" },
+              { href: "#features", label: "المميزات" },
+              { href: "#journey", label: "المسار" },
+              { href: "#voices", label: "آراؤهم" },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-sm text-[#1A1A1A]/70 dark:text-[#F2EBDD]/70 hover:text-[#0F2A44] dark:hover:text-[#C9A962] transition-colors relative group"
+              >
+                {item.label}
+                <span className="absolute -bottom-1.5 right-0 h-px w-0 bg-[#B08D57] transition-all duration-500 group-hover:w-full" />
+              </Link>
+            ))}
+          </nav>
+
+          <div className="hidden lg:flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              aria-label="تبديل المظهر"
+              className="relative w-10 h-10 rounded-full border border-[#1A1A1A]/15 dark:border-[#F2EBDD]/20 flex items-center justify-center text-[#0F2A44] dark:text-[#C9A962] hover:border-[#B08D57] dark:hover:border-[#C9A962] transition-all duration-500 hover:scale-105 overflow-hidden"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {mounted && (
+                  <motion.span
+                    key={isDark ? "sun" : "moon"}
+                    initial={{ rotate: -90, opacity: 0, scale: 0.6 }}
+                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                    exit={{ rotate: 90, opacity: 0, scale: 0.6 }}
+                    transition={{ duration: 0.4 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+            <Link
+              href="/login"
+              className="text-sm text-[#1A1A1A]/70 dark:text-[#F2EBDD]/70 hover:text-[#0F2A44] dark:hover:text-[#C9A962] px-4 py-2 transition-colors"
+            >
+              دخول
+            </Link>
+            <Link
+              href="/register"
+              className="text-sm font-medium px-5 py-2.5 rounded-full bg-[#0F2A44] text-[#F7F2E9] dark:bg-[#C9A962] dark:text-[#0B1217] hover:bg-[#1B4332] dark:hover:bg-[#D4B27A] transition-all duration-500 shadow-sm hover:shadow-lg"
+            >
+              التسجيل
+            </Link>
+          </div>
+
+          <div className="lg:hidden flex items-center gap-1">
+            <button
+              onClick={toggleTheme}
+              aria-label="تبديل المظهر"
+              className="p-2 text-[#0F2A44] dark:text-[#C9A962]"
+            >
+              {mounted && (isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />)}
+            </button>
+            <button
+              className="p-2 text-[#0F2A44] dark:text-[#C9A962]"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="القائمة"
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-background border-t border-border"
-          >
-            <div className="container mx-auto px-4 py-4 space-y-2">
-              {["المميزات", "الأقسام", "آراء الطلاب"].map((label) => (
-                <Link
-                  key={label}
-                  href={`#${label}`}
-                  className="block py-2 text-muted-foreground hover:text-foreground"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {label}
-                </Link>
-              ))}
-              <Link
-                href="/login"
-                className="block py-2 text-primary font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                تسجيل الدخول
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </header>
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden bg-[#F7F2E9] dark:bg-[#0B1217] border-t border-[#1A1A1A]/10 dark:border-[#F2EBDD]/10 overflow-hidden"
+            >
+              <div className="container mx-auto px-6 py-6 space-y-3">
+                {[
+                  { href: "#sections", label: "المنصات" },
+                  { href: "#features", label: "المميزات" },
+                  { href: "#journey", label: "المسار" },
+                  { href: "#voices", label: "آراؤهم" },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block py-2 text-[#1A1A1A]/75 dark:text-[#F2EBDD]/75 hover:text-[#0F2A44] dark:hover:text-[#C9A962]"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <div className="pt-4 border-t border-[#1A1A1A]/10 dark:border-[#F2EBDD]/10 flex gap-3">
+                  <Link href="/login" className="flex-1 py-3 text-center border border-[#0F2A44]/20 dark:border-[#C9A962]/30 dark:text-[#C9A962] rounded-full">
+                    دخول
+                  </Link>
+                  <Link href="/register" className="flex-1 py-3 text-center bg-[#0F2A44] text-[#F7F2E9] dark:bg-[#C9A962] dark:text-[#0B1217] rounded-full">
+                    تسجيل
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
 
-      {/* Hero Section */}
-      <motion.section
-        style={{ opacity: heroOpacity, y: heroY }}
-        className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden"
-      >
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-[0.03]">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <circle cx="30" cy="30" r="1" fill="currentColor" className="text-foreground" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
+      {/* ============ HERO ============ */}
+      <section ref={heroRef} className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Ottoman carpet pattern — pure CSS, static opacity. SSR renders the
+              same opacity the browser will keep, so refresh never flashes the
+              pattern at full intensity. No framer-motion, no hydration delay. */}
+          <div
+            className="absolute inset-0 bg-repeat opacity-[0.18] dark:opacity-[0.26]"
+            style={{
+              backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
+              backgroundSize: "440px",
+              filter: "grayscale(1) sepia(0.45) brightness(1.05) contrast(0.95)",
+            }}
+          />
+          {/* Soft parchment / dark wash so text stays readable */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F7F2E9]/85 via-[#F7F2E9]/70 to-[#F7F2E9] dark:from-[#0B1217]/85 dark:via-[#0B1217]/75 dark:to-[#0B1217]" />
+
+          {/* Breathing warm radial glow behind the headline (in place, no drift) */}
+          <motion.div
+            animate={{ scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60vw] h-[60vw] rounded-full blur-[140px] bg-[#B08D57]/15 dark:bg-[#C9A962]/10"
+          />
+
+          {/* Large rotating eight-stars — pure in-place rotation around their own center */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
+            className="absolute top-32 -right-20 text-[#0F2A44]/10 dark:text-[#C9A962]/15"
+          >
+            <EightStar size={400} strokeWidth={0.4} />
+          </motion.div>
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 110, repeat: Infinity, ease: "linear" }}
+            className="absolute bottom-20 -left-20 text-[#1B4332]/10 dark:text-[#C9A962]/10"
+          >
+            <EightStar size={340} strokeWidth={0.4} />
+          </motion.div>
+
+          {/* Arabesque corners — pulse opacity ONLY, no Y drift */}
+          <motion.div
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-24 right-0"
+          >
+            <ArabesqueCorner size={180} className="text-[#B08D57]/30 dark:text-[#C9A962]/30" />
+          </motion.div>
+          <motion.div
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+            className="absolute bottom-10 left-0"
+          >
+            <ArabesqueCorner size={180} className="text-[#B08D57]/30 dark:text-[#C9A962]/30 rotate-180" />
+          </motion.div>
+
+          {/* Gold sparks — twinkle in place (scale + opacity), no drift */}
+          {[
+            { top: "18%", left: "12%", d: 12, delay: 0, dur: 5 },
+            { top: "28%", left: "82%", d: 16, delay: 1.4, dur: 6 },
+            { top: "62%", left: "8%", d: 9, delay: 2.8, dur: 4.5 },
+            { top: "72%", left: "88%", d: 14, delay: 0.6, dur: 5.5 },
+            { top: "44%", left: "20%", d: 8, delay: 3.2, dur: 4 },
+            { top: "55%", left: "78%", d: 10, delay: 2, dur: 5 },
+          ].map((m, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-[#B08D57]/50 dark:bg-[#C9A962]/45 blur-[2px]"
+              style={{ top: m.top, left: m.left, width: m.d, height: m.d }}
+              animate={{
+                scale: [0.6, 1.3, 0.6],
+                opacity: [0.2, 0.85, 0.2],
+              }}
+              transition={{
+                duration: m.dur,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: m.delay,
+              }}
+            />
+          ))}
+
+          {/* Eight-point sparkles — rotate around their own center + breathe */}
+          {[
+            { top: "22%", left: "30%", size: 22, delay: 0 },
+            { top: "70%", left: "65%", size: 18, delay: 2.5 },
+            { top: "38%", left: "75%", size: 14, delay: 1.2 },
+          ].map((s, i) => (
+            <motion.div
+              key={`sparkle-${i}`}
+              className="absolute text-[#B08D57]/35 dark:text-[#C9A962]/40"
+              style={{ top: s.top, left: s.left }}
+              animate={{
+                rotate: 360,
+                scale: [0.85, 1.2, 0.85],
+                opacity: [0.3, 0.9, 0.3],
+              }}
+              transition={{
+                rotate: { duration: 20 + i * 4, repeat: Infinity, ease: "linear" },
+                scale: { duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: s.delay },
+                opacity: { duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: s.delay },
+              }}
+            >
+              <EightStar size={s.size} strokeWidth={0.8} />
+            </motion.div>
+          ))}
         </div>
 
-        {/* Gradient Orbs */}
-        <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-accent/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: "1s" }} />
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Badge */}
-            <FadeIn delay={0}>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
-                <Star className="w-4 h-4 text-accent fill-accent" />
-                <span className="text-sm text-primary font-medium">منصة قرآنية متكاملة</span>
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-6 relative z-10">
+          <div className="max-w-5xl mx-auto text-center">
+            <Reveal delay={0} y={20}>
+              <div className="inline-flex items-center gap-3 mb-10">
+                <div className="h-px w-12 bg-[#B08D57]" />
+                <span className="text-xs tracking-[0.4em] text-[#B08D57] uppercase font-medium">
+                  بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيم
+                </span>
+                <div className="h-px w-12 bg-[#B08D57]" />
               </div>
-            </FadeIn>
+            </Reveal>
 
-            {/* Main Heading */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              <BlurText
-                text="رحلتك نحو إتقان"
-                className="text-foreground"
-                delay={80}
-              />
-              <BlurText
-                text="القرآن الكريم"
-                className="text-primary mt-2"
-                delay={80}
-                direction="bottom"
-              />
-            </h1>
+            <Reveal delay={0.15}>
+              <h1
+                className="text-[14vw] sm:text-[10vw] md:text-8xl lg:text-9xl font-bold leading-[0.95] tracking-tight text-[#0F2A44] dark:text-[#F2EBDD] mb-10 md:mb-14"
+                style={{ fontFamily: "var(--font-quran)" }}
+              >
+                إتقانُ التِلاوة
+              </h1>
+            </Reveal>
 
-            {/* Description */}
-            <FadeIn delay={0.4}>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-                منصة تعليمية شاملة تجمع بين الأكاديمية القرآنية المتخصصة وحلقة القرآن الصوتية، لنرافقك في رحلة الحفظ والتلاوة والتجويد
+            <Reveal delay={0.28}>
+              <div className="flex items-center justify-center gap-5 mb-10 md:mb-12" aria-hidden>
+                <div className="h-px w-14 md:w-20 bg-[#B08D57]/50 dark:bg-[#C9A962]/40" />
+                <span className="text-xs tracking-[0.5em] text-[#B08D57] dark:text-[#C9A962]">٭</span>
+                <div className="h-px w-14 md:w-20 bg-[#B08D57]/50 dark:bg-[#C9A962]/40" />
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.38}>
+              <h2
+                className="text-[10vw] sm:text-[7vw] md:text-6xl lg:text-7xl font-light italic text-[#B08D57] dark:text-[#C9A962] mb-12 md:mb-14"
+                style={{ fontFamily: "var(--font-quran)" }}
+              >
+                ورحلةُ التَعَلُّم
+              </h2>
+            </Reveal>
+
+            <Reveal delay={0.5}>
+              <OrnamentDivider className="w-72 h-10 mx-auto mb-10 text-[#B08D57] dark:text-[#C9A962]" />
+            </Reveal>
+
+            <Reveal delay={0.6}>
+              <p className="text-base md:text-lg text-[#1A1A1A]/70 dark:text-[#F2EBDD]/70 leading-loose max-w-2xl mx-auto mb-14 px-4">
+                مِنبرٌ علميٌّ يجمع بين <span className="text-[#0F2A44] dark:text-[#C9A962] font-semibold">أكاديميَّةٍ</span> راسخةٍ للدُّروسِ والشَّهادات،
+                و<span className="text-[#1B4332] dark:text-[#C9A962] font-semibold">مَقْرأةٍ</span> روحانيَّةٍ للحفظِ والتَّسميعِ بإشرافِ المقرِئينَ المُجازين.
               </p>
-            </FadeIn>
+            </Reveal>
 
-            {/* CTA Buttons */}
-            <FadeIn delay={0.5}>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Magnet padding={40} magnetStrength={3}>
-                  <Link
-                    href="/register"
-                    className="group flex items-center gap-2 h-14 px-8 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/25"
-                  >
-                    <span>ابدأ رحلتك مجاناً</span>
-                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                  </Link>
-                </Magnet>
+            <Reveal delay={0.75}>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
                 <Link
-                  href="#sections"
-                  className="flex items-center gap-2 h-14 px-8 bg-secondary text-secondary-foreground rounded-xl font-medium hover:bg-secondary/80 transition-colors"
+                  href="/academy/student"
+                  className="group relative h-14 px-8 inline-flex items-center gap-3 bg-[#0F2A44] text-[#F7F2E9] dark:bg-[#C9A962] dark:text-[#0B1217] rounded-full overflow-hidden transition-all duration-500 hover:gap-5 shadow-lg shadow-[#0F2A44]/20 dark:shadow-[#C9A962]/20 hover:shadow-2xl"
                 >
-                  <Play className="w-5 h-5" />
-                  <span>استكشف المنصة</span>
+                  <span className="absolute inset-0 bg-[#1B4332] dark:bg-[#D4B27A] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                  <GraduationCap className="w-5 h-5 relative z-10" />
+                  <span className="relative z-10 font-medium">الأكاديميَّة</span>
+                  <ArrowLeft className="w-4 h-4 relative z-10" />
+                </Link>
+                <Link
+                  href="/student"
+                  className="group relative h-14 px-8 inline-flex items-center gap-3 border border-[#0F2A44]/25 dark:border-[#C9A962]/35 text-[#0F2A44] dark:text-[#C9A962] rounded-full hover:gap-5 transition-all duration-500 hover:border-[#1B4332] hover:bg-[#1B4332] hover:text-[#F7F2E9] dark:hover:border-[#C9A962] dark:hover:bg-[#C9A962] dark:hover:text-[#0B1217]"
+                >
+                  <BookOpen className="w-5 h-5" />
+                  <span className="font-medium">المَقْرأة</span>
+                  <ArrowLeft className="w-4 h-4" />
                 </Link>
               </div>
-            </FadeIn>
+            </Reveal>
 
-            {/* Stats */}
-            <FadeIn delay={0.6}>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 pt-16 border-t border-border/50">
-                {stats.map((stat, i) => (
-                  <div key={i} className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold text-foreground mb-1">
-                      <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+            <Reveal delay={0.9}>
+              <div className="grid grid-cols-2 md:grid-cols-4 max-w-4xl mx-auto border-y border-[#1A1A1A]/10 dark:border-[#F2EBDD]/10 divide-x divide-[#1A1A1A]/10 dark:divide-[#F2EBDD]/10 divide-x-reverse">
+                {[
+                  { v: 12500, s: "+", l: "طالب وطالبة" },
+                  { v: 320, s: "+", l: "معلِّم ومُقرئ" },
+                  { v: 85, s: "%", l: "نسبة الإتقان" },
+                  { v: 24, s: "/7", l: "متابعة دائمة" },
+                ].map((s, i) => (
+                  <div key={i} className="py-8 px-2 text-center">
+                    <div className="text-3xl md:text-4xl font-bold text-[#0F2A44] dark:text-[#C9A962]" style={{ fontFamily: "var(--font-quran)" }}>
+                      <CountUp value={s.v} suffix={s.s} />
                     </div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                    <div className="text-xs md:text-sm text-[#1A1A1A]/60 dark:text-[#F2EBDD]/60 mt-2 tracking-wide">{s.l}</div>
                   </div>
                 ))}
               </div>
-            </FadeIn>
-          </div>
-        </div>
+            </Reveal>
 
-        {/* Scroll Indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <div className="w-6 h-10 rounded-full border-2 border-border flex items-start justify-center p-1">
             <motion.div
-              className="w-1.5 h-1.5 rounded-full bg-primary"
-              animate={{ y: [0, 16, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
+              animate={{ y: [0, 12, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity }}
+              className="mt-16 text-[#1A1A1A]/40 dark:text-[#F2EBDD]/40 inline-flex flex-col items-center gap-2"
+            >
+              <span className="text-xs tracking-[0.3em]">تَصَفَّح</span>
+              <ChevronDown className="w-4 h-4" />
+            </motion.div>
           </div>
         </motion.div>
-      </motion.section>
+      </section>
 
-      {/* Main Sections */}
-      <section id="sections" className="py-24 md:py-32 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <FadeIn>
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                اختر وجهتك
+      {/* ============ TWO PILLARS ============ */}
+      <section id="sections" className="relative py-32 md:py-40 bg-[#0F2A44] text-[#F7F2E9] overflow-hidden">
+        <TessellatedBg className="absolute inset-0 w-full h-full" color="#C9A962" opacity={0.04} />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0F2A44] via-[#0F2A44] to-[#0a1f33]" />
+
+        <div className="container mx-auto px-6 relative">
+          <Reveal>
+            <div className="text-center mb-20 max-w-2xl mx-auto">
+              <div className="inline-flex items-center gap-3 mb-6">
+                <div className="h-px w-12 bg-[#C9A962]" />
+                <span className="text-xs tracking-[0.35em] text-[#C9A962] uppercase">المنصَّتان</span>
+                <div className="h-px w-12 bg-[#C9A962]" />
+              </div>
+              <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight" style={{ fontFamily: "var(--font-quran)" }}>
+                طريقانِ نحوَ الإتقان
               </h2>
-              <p className="text-muted-foreground text-lg">
-                منصة واحدة بوجهتين، اختر ما يناسب احتياجاتك
+              <p className="text-[#F7F2E9]/70 text-lg leading-relaxed">
+                اخترْ مسارَك الذي يُلائمُ هِمَّتَكَ ووقتَك
               </p>
             </div>
-          </FadeIn>
+          </Reveal>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {/* Academy Card */}
-            <FadeIn delay={0.1} direction="right">
-              <Spotlight className="h-full rounded-2xl" spotlightColor="rgba(13, 90, 60, 0.1)">
-                <Link href="/academy/student" className="block h-full">
-                  <div className="relative h-full min-h-[400px] p-8 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden group">
-                    {/* Decorative */}
-                    <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-br-[80px]" />
-                    <div className="absolute bottom-0 right-0 w-48 h-48 bg-black/10 rounded-tl-[100px]" />
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-6xl mx-auto">
+            {/* ACADEMY */}
+            <Reveal delay={0.1}>
+              <Link href="/academy/student" className="group block relative">
+                <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#C9A962]/45 pointer-events-none" />
+                <article className="relative h-full bg-gradient-to-br from-[#FFFCF5] via-[#FAF4E5] to-[#F2E8CF] dark:from-[#0F1B23] dark:via-[#10202A] dark:to-[#13283A] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/50 dark:border-[#C9A962]/30 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/80 dark:group-hover:border-[#C9A962]/60 group-hover:-translate-y-2 shadow-2xl shadow-black/40 dark:shadow-black/60">
+                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#B08D57]/15 dark:bg-[#C9A962]/10 rounded-full blur-3xl group-hover:bg-[#B08D57]/25 dark:group-hover:bg-[#C9A962]/20 transition-all duration-700" />
+                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/10 dark:bg-[#C9A962]/8 rounded-full blur-3xl" />
+                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#B08D57]/35 dark:text-[#C9A962]/30" />
+                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#B08D57]/35 dark:text-[#C9A962]/30 rotate-180" />
 
-                    <div className="relative z-10">
-                      <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <GraduationCap className="w-8 h-8" />
-                      </div>
+                  <div className="relative">
+                    <div className="text-7xl font-bold text-[#B08D57]/35 dark:text-[#C9A962]/30 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
+                      ٠١
+                    </div>
+                    <div className="flex items-center gap-3 mb-2 -mt-8">
+                      <span className="text-xs tracking-[0.3em] text-[#B08D57] dark:text-[#C9A962] uppercase">القسم الأول</span>
+                    </div>
+                    <h3 className="text-4xl md:text-5xl font-bold mb-4 text-[#0F2A44] dark:text-[#F2EBDD]" style={{ fontFamily: "var(--font-quran)" }}>
+                      الأكاديميَّة
+                    </h3>
+                    <p className="text-[#1A1A1A]/75 dark:text-[#F2EBDD]/75 leading-loose mb-10 text-base md:text-lg">
+                      مَدْرسةٌ افتراضيَّةٌ منظَّمة، بدوراتٍ مُتدرِّجةٍ في علوم القرآن والتجويد والفقه،
+                      تُتوَّجُ بشهاداتٍ وإجازاتٍ معتمدة.
+                    </p>
 
-                      <h3 className="text-2xl md:text-3xl font-bold mb-3">الأكاديمية القرآنية</h3>
-                      <p className="text-primary-foreground/80 mb-6 leading-relaxed">
-                        تعلم القرآن الكريم مع معلمين متخصصين، احفظ وأتقن التجويد واحصل على إجازات معتمدة
-                      </p>
+                    <div className="space-y-4 mb-12">
+                      {[
+                        { i: ScrollText, t: "مناهجُ متدرِّجة", d: "من المبتدئ إلى الإجازة" },
+                        { i: Award, t: "شهاداتٌ معتمدة", d: "موثَّقةٌ بختمِ الأكاديميَّة" },
+                        { i: Users, t: "إشرافٌ مباشر", d: "أساتذةٌ مُجازون" },
+                      ].map((f, i) => (
+                        <div key={i} className="flex items-start gap-4 group/item">
+                          <div className="w-10 h-10 rounded-full border border-[#B08D57]/45 dark:border-[#C9A962]/40 bg-[#B08D57]/10 dark:bg-[#C9A962]/10 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#B08D57]/20 dark:group-hover/item:bg-[#C9A962]/20 group-hover/item:border-[#B08D57]/70 dark:group-hover/item:border-[#C9A962]/65 transition-colors">
+                            <f.i className="w-4 h-4 text-[#B08D57] dark:text-[#C9A962]" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-base mb-0.5 text-[#0F2A44] dark:text-[#F2EBDD]" style={{ fontFamily: "var(--font-quran)" }}>{f.t}</div>
+                            <div className="text-sm text-[#1A1A1A]/65 dark:text-[#F2EBDD]/60">{f.d}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
 
-                      <ul className="space-y-3 mb-8">
-                        {["حلقات حفظ تفاعلية", "متابعة يومية مكثفة", "مسارات تعليمية متدرجة", "شهادات وإجازات"].map((item, i) => (
-                          <li key={i} className="flex items-center gap-3 text-primary-foreground/90">
-                            <div className="w-2 h-2 rounded-full bg-accent" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <div className="flex items-center gap-2 text-primary-foreground/90 group-hover:gap-4 transition-all">
-                        <span className="font-medium">انضم للأكاديمية</span>
+                    <div className="flex items-center justify-between pt-6 border-t border-[#B08D57]/30 dark:border-[#C9A962]/25">
+                      <span className="text-[#B08D57] dark:text-[#C9A962] font-medium">دخول الأكاديميَّة</span>
+                      <div className="w-12 h-12 rounded-full bg-[#0F2A44] dark:bg-[#C9A962] text-[#C9A962] dark:text-[#0B1217] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
                         <ArrowLeft className="w-5 h-5" />
                       </div>
                     </div>
                   </div>
-                </Link>
-              </Spotlight>
-            </FadeIn>
+                </article>
+              </Link>
+            </Reveal>
 
-            {/* Halqa Card */}
-            <FadeIn delay={0.2} direction="left">
-              <Spotlight className="h-full rounded-2xl" spotlightColor="rgba(201, 169, 98, 0.1)">
-                <Link href="/student" className="block h-full">
-                  <div className="relative h-full min-h-[400px] p-8 rounded-2xl bg-gradient-to-br from-accent to-accent/80 text-accent-foreground overflow-hidden group">
-                    {/* Decorative */}
-                    <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-br-[80px]" />
-                    <div className="absolute bottom-0 right-0 w-48 h-48 bg-black/10 rounded-tl-[100px]" />
+            {/* MAQRA'A */}
+            <Reveal delay={0.25}>
+              <Link href="/student" className="group block relative">
+                <ArchFrame className="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#C9A962]/45 pointer-events-none" />
+                <article className="relative h-full bg-gradient-to-br from-[#FBF7EB] via-[#F5EDDA] to-[#EBDFC0] dark:from-[#C9A962] dark:via-[#D4B27A] dark:to-[#C9A962] rounded-t-[100px] rounded-b-2xl p-10 md:p-12 border border-[#C9A962]/50 dark:border-[#0B1217]/30 overflow-hidden transition-all duration-700 group-hover:border-[#C9A962]/80 dark:group-hover:border-[#0B1217]/50 group-hover:-translate-y-2 shadow-2xl shadow-black/40 dark:shadow-black/60">
+                  <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#B08D57]/18 dark:bg-[#0B1217]/10 rounded-full blur-3xl group-hover:bg-[#B08D57]/28 dark:group-hover:bg-[#0B1217]/15 transition-all duration-700" />
+                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#B08D57]/12 dark:bg-[#0B1217]/8 rounded-full blur-3xl" />
+                  <ArabesqueCorner size={120} className="absolute top-0 right-0 text-[#B08D57]/35 dark:text-[#0B1217]/25" />
+                  <ArabesqueCorner size={120} className="absolute bottom-0 left-0 text-[#B08D57]/35 dark:text-[#0B1217]/25 rotate-180" />
 
-                    <div className="relative z-10">
-                      <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <Headphones className="w-8 h-8" />
-                      </div>
+                  <div className="relative">
+                    <div className="text-7xl font-bold text-[#B08D57]/35 dark:text-[#0B1217]/30 mb-2 leading-none" style={{ fontFamily: "var(--font-quran)" }}>
+                      ٠٢
+                    </div>
+                    <div className="flex items-center gap-3 mb-2 -mt-8">
+                      <span className="text-xs tracking-[0.3em] text-[#B08D57] dark:text-[#0B1217]/80 uppercase">القسم الثاني</span>
+                    </div>
+                    <h3 className="text-4xl md:text-5xl font-bold mb-4 text-[#1B4332] dark:text-[#0B1217]" style={{ fontFamily: "var(--font-quran)" }}>
+                      المَقْرأة
+                    </h3>
+                    <p className="text-[#1A1A1A]/75 dark:text-[#0B1217]/85 leading-loose mb-10 text-base md:text-lg">
+                      مجلسٌ روحانيٌّ مُباشَر، تَعْرضُ تِلاوتَكَ على المُقرئِ المُجاز،
+                      فيُصحِّحُ ويُتابعُ ويُجيز.
+                    </p>
 
-                      <h3 className="text-2xl md:text-3xl font-bold mb-3">حلقة القرآن</h3>
-                      <p className="text-accent-foreground/80 mb-6 leading-relaxed">
-                        استمع إلى أجمل التلاوات القرآنية من كبار القراء حول العالم بجودة صوت استثنائية
-                      </p>
+                    <div className="space-y-4 mb-12">
+                      {[
+                        { i: Mic, t: "تَسميعٌ مُباشر", d: "بصوتِكَ وبتفاعلٍ حيّ" },
+                        { i: Calendar, t: "حَجزٌ مَرِن", d: "مواعيدُ تُناسبُك" },
+                        { i: BookOpen, t: "مُتابعةُ الحفظ", d: "تقدُّمٌ مُسجَّلٌ كلَّ جلسة" },
+                      ].map((f, i) => (
+                        <div key={i} className="flex items-start gap-4 group/item">
+                          <div className="w-10 h-10 rounded-full border border-[#B08D57]/45 dark:border-[#0B1217]/40 bg-[#B08D57]/10 dark:bg-[#0B1217]/10 flex items-center justify-center flex-shrink-0 group-hover/item:bg-[#B08D57]/20 dark:group-hover/item:bg-[#0B1217]/20 group-hover/item:border-[#B08D57]/70 dark:group-hover/item:border-[#0B1217]/60 transition-colors">
+                            <f.i className="w-4 h-4 text-[#B08D57] dark:text-[#0B1217]" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-base mb-0.5 text-[#1B4332] dark:text-[#0B1217]" style={{ fontFamily: "var(--font-quran)" }}>{f.t}</div>
+                            <div className="text-sm text-[#1A1A1A]/65 dark:text-[#0B1217]/75">{f.d}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
 
-                      <ul className="space-y-3 mb-8">
-                        {["تلاوات بجودة عالية", "قراء من حول العالم", "قوائم تشغيل مخصصة", "استماع بدون انترنت"].map((item, i) => (
-                          <li key={i} className="flex items-center gap-3 text-accent-foreground/90">
-                            <div className="w-2 h-2 rounded-full bg-primary" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <div className="flex items-center gap-2 text-accent-foreground/90 group-hover:gap-4 transition-all">
-                        <span className="font-medium">استكشف التلاوات</span>
+                    <div className="flex items-center justify-between pt-6 border-t border-[#B08D57]/30 dark:border-[#0B1217]/25">
+                      <span className="text-[#B08D57] dark:text-[#0B1217] font-medium">دخول المَقْرأة</span>
+                      <div className="w-12 h-12 rounded-full bg-[#1B4332] dark:bg-[#0B1217] text-[#C9A962] dark:text-[#C9A962] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-45deg]">
                         <ArrowLeft className="w-5 h-5" />
                       </div>
                     </div>
                   </div>
-                </Link>
-              </Spotlight>
-            </FadeIn>
+                </article>
+              </Link>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* Features Section - Redesigned */}
-      <section id="features" className="py-24 md:py-32 relative overflow-hidden">
-        <IslamicPattern />
+      {/* ============ FEATURES ============ */}
+      <section id="features" className="relative py-32 md:py-40 bg-[#F7F2E9] dark:bg-[#0B1217] overflow-hidden transition-colors duration-500">
+        <div className="absolute inset-0 pointer-events-none">
+          <EightStar size={500} className="absolute -top-40 -left-40 text-[#0F2A44]/5 dark:text-[#C9A962]/8" strokeWidth={0.3} />
+          <EightStar size={400} className="absolute -bottom-32 -right-32 text-[#1B4332]/5 dark:text-[#C9A962]/6" strokeWidth={0.3} />
+        </div>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <FadeIn>
-            <div className="text-center max-w-3xl mx-auto mb-20">
-              <motion.div
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6"
-              >
-                <Sparkles className="w-10 h-10 text-primary" />
-              </motion.div>
-              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-                لماذا <span className="text-primary">إتقان</span>؟
-              </h2>
-              <p className="text-muted-foreground text-lg md:text-xl leading-relaxed">
-                لأننا نؤمن أن تعلم القرآن يستحق أفضل الأدوات والمعلمين. نقدم لك تجربة تعليمية فريدة تجمع بين الأصالة والتقنية الحديثة.
-              </p>
+        <div className="container mx-auto px-6 relative">
+          <Reveal>
+            <div className="grid lg:grid-cols-12 gap-10 mb-20">
+              <div className="lg:col-span-5">
+                <span className="text-xs tracking-[0.35em] text-[#B08D57] dark:text-[#C9A962] uppercase mb-4 block">المميزات</span>
+                <h2 className="text-5xl md:text-6xl font-bold leading-tight text-[#0F2A44] dark:text-[#F2EBDD]" style={{ fontFamily: "var(--font-quran)" }}>
+                  تجربةٌ مُتكاملة بِتفاصيلَ مَدروسة
+                </h2>
+              </div>
+              <div className="lg:col-span-6 lg:col-start-7 flex items-end">
+                <p className="text-lg text-[#1A1A1A]/65 dark:text-[#F2EBDD]/65 leading-loose">
+                  كلُّ ميزةٍ صُمِّمَت لِتُلامسَ احتياجَ الطالب، فلا تَكلُّفَ ولا تَعقيد،
+                  بل أدواتٌ صريحةٌ تُعينُك على الإتقان.
+                </p>
+              </div>
             </div>
-          </FadeIn>
+          </Reveal>
 
-          {/* Features Grid - Bento Style */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
-            {/* Large Feature Card */}
-            <FadeIn delay={0.1} className="md:col-span-2 lg:col-span-2">
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="relative h-full min-h-[280px] p-8 rounded-3xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden"
-              >
-                <div className="absolute top-0 left-0 w-full h-full opacity-10">
-                  <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <pattern id="grid-pattern" width="10" height="10" patternUnits="userSpaceOnUse">
-                      <circle cx="5" cy="5" r="1" fill="currentColor" />
-                    </pattern>
-                    <rect width="100" height="100" fill="url(#grid-pattern)" />
-                  </svg>
-                </div>
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                      <BookOpen className="w-6 h-6" />
-                    </div>
-                    <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">الأكثر طلباً</span>
-                  </div>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-3">حفظ القرآن الكريم كاملاً</h3>
-                  <p className="text-primary-foreground/80 text-lg mb-6 max-w-lg">
-                    برنامج متكامل لحفظ القرآن الكريم مع متابعة يومية مكثفة من معلمين حاصلين على إجازات عالية
-                  </p>
-                  <div className="flex flex-wrap gap-3">
-                    {["متابعة يومية", "معلم خاص", "تقييم مستمر", "إجازة معتمدة"].map((tag, i) => (
-                      <span key={i} className="text-sm bg-white/10 px-4 py-2 rounded-full flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4" />
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </FadeIn>
-
-            {/* Side Features */}
-            <FadeIn delay={0.2}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="h-full min-h-[280px] p-6 rounded-3xl bg-card border border-border hover:border-accent/50 transition-colors"
-              >
-                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
-                  <Mic2 className="w-6 h-6 text-accent" />
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">تلاوات بجودة استثنائية</h3>
-                <p className="text-muted-foreground mb-4">آلاف التلاوات من أشهر القراء حول العالم بجودة صوت HD</p>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Headphones className="w-4 h-4" />
-                  <span>+5000 تلاوة</span>
-                </div>
-              </motion.div>
-            </FadeIn>
-
-            {/* Stats Card */}
-            <FadeIn delay={0.3}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="h-full min-h-[200px] p-6 rounded-3xl bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20"
-              >
-                <h3 className="text-lg font-bold text-foreground mb-4">أرقام نفخر بها</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {academyStats.map((stat, i) => (
-                    <div key={i} className="text-center">
-                      <div className="text-2xl font-bold text-primary">{stat.value}</div>
-                      <div className="text-xs text-muted-foreground">{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            </FadeIn>
-
-            {/* Medium Cards Row */}
-            <FadeIn delay={0.4}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="p-6 rounded-3xl bg-card border border-border hover:border-primary/30 transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Users className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground mb-1">حلقات تفاعلية مباشرة</h3>
-                    <p className="text-sm text-muted-foreground">تعلم في مجموعات صغيرة مع طلاب من حول العالم</p>
-                  </div>
-                </div>
-              </motion.div>
-            </FadeIn>
-
-            <FadeIn delay={0.5}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="p-6 rounded-3xl bg-card border border-border hover:border-primary/30 transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Award className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground mb-1">شهادات وإجازات معتمدة</h3>
-                    <p className="text-sm text-muted-foreground">احصل على إجازة بالسند المتصل إلى رسول الله</p>
-                  </div>
-                </div>
-              </motion.div>
-            </FadeIn>
-
-            <FadeIn delay={0.6}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="p-6 rounded-3xl bg-card border border-border hover:border-primary/30 transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Trophy className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground mb-1">مسابقات ومكافآت</h3>
-                    <p className="text-sm text-muted-foreground">شارك في تحديات أسبوعية واربح نقاط وجوائز</p>
-                  </div>
-                </div>
-              </motion.div>
-            </FadeIn>
-          </div>
-
-          {/* Additional Info Row */}
-          <div className="grid md:grid-cols-4 gap-4 mt-4 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: Clock, text: "متاح 24/7" },
-              { icon: Globe, text: "من أي مكان" },
-              { icon: Shield, text: "آمن وموثوق" },
-              { icon: Zap, text: "تجربة سلسة" },
-            ].map((item, i) => (
-              <FadeIn key={i} delay={0.7 + i * 0.1}>
-                <div className="flex items-center justify-center gap-3 p-4 rounded-2xl bg-secondary/50">
-                  <item.icon className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-medium text-foreground">{item.text}</span>
-                </div>
-              </FadeIn>
+              { num: "٠١", t: "حَلَقاتٌ مرئيَّة", d: "جلساتٌ مباشرةٌ بصوتٍ وصورةٍ، تَحاكي الحَلْقةَ التقليديَّة في رحابِ المساجد.", i: Users },
+              { num: "٠٢", t: "تَسجيلُ التِّلاوة", d: "سجِّل تِلاوتَكَ في أيِّ وقت، وأرسلْها للمُقرئ ليُصحِّحَ ويُعلِّقَ على كلِّ آية.", i: Mic },
+              { num: "٠٣", t: "مُتابعةُ التَّقدُّم", d: "إحصاءاتٌ دقيقةٌ تُظهِرُ مُعدَّلَ حِفظِك وإتقانِك أسبوعيًّا وشهريًّا.", i: Star },
+              { num: "٠٤", t: "شهاداتٌ مُوثَّقة", d: "عند إتمامِ مسارٍ تعليميٍّ، تَحصُلُ على شهادةٍ مَعزُوَّةٍ بختمِ الأكاديميَّة.", i: Award },
+              { num: "٠٥", t: "حَجْزٌ مَرِن", d: "اختر مُقرِئَكَ والوقتَ المُناسبَ لك من تقويمٍ ذكيٍّ يَعرضُ المتاحَ فقط.", i: Calendar },
+              { num: "٠٦", t: "مَكتبةٌ معرفيَّة", d: "محاضراتٌ ومَقالاتٌ في علوم القرآن والفقه والتفسير، يتجدَّدُ مُحتواها أُسبوعيًّا.", i: ScrollText },
+            ].map((f, i) => (
+              <Reveal key={i} delay={i * 0.08}>
+                <article className="group relative h-full p-10 bg-[#FAF6EE] dark:bg-[#101A22] border border-[#0F2A44]/10 dark:border-[#C9A962]/15 rounded-2xl overflow-hidden hover:border-[#B08D57]/40 dark:hover:border-[#C9A962]/45 transition-all duration-500">
+                  <div className="absolute top-0 left-0 w-20 h-20">
+                    <ArabesqueCorner size={80} color="#B08D57" className="opacity-20 dark:opacity-30 group-hover:opacity-40 dark:group-hover:opacity-50 transition-opacity" />
+                  </div>
+
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-8">
+                      <span className="text-3xl font-bold text-[#B08D57]/60 dark:text-[#C9A962]/55" style={{ fontFamily: "var(--font-quran)" }}>
+                        {f.num}
+                      </span>
+                      <div className="w-12 h-12 rounded-full bg-[#0F2A44]/5 dark:bg-[#C9A962]/10 flex items-center justify-center transition-all duration-500 group-hover:bg-[#0F2A44] dark:group-hover:bg-[#C9A962] group-hover:rotate-12">
+                        <f.i className="w-5 h-5 text-[#0F2A44] dark:text-[#C9A962] group-hover:text-[#C9A962] dark:group-hover:text-[#0F2A44] transition-colors" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-[#0F2A44] dark:text-[#F2EBDD] mb-3" style={{ fontFamily: "var(--font-quran)" }}>
+                      {f.t}
+                    </h3>
+                    <p className="text-[#1A1A1A]/65 dark:text-[#F2EBDD]/65 leading-loose text-sm">{f.d}</p>
+                  </div>
+
+                  <div className="absolute bottom-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-[#B08D57]/30 dark:via-[#C9A962]/40 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
+                </article>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-24 md:py-32 bg-secondary/30 relative overflow-hidden">
-        <div className="container mx-auto px-4 relative z-10">
-          <FadeIn>
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                كيف تبدأ رحلتك؟
+      {/* ============ JOURNEY ============ */}
+      <section id="journey" className="relative py-32 md:py-40 bg-[#FAF6EE] dark:bg-[#0E1820] border-y border-[#0F2A44]/10 dark:border-[#C9A962]/15 overflow-hidden transition-colors duration-500">
+        <div className="container mx-auto px-6">
+          <Reveal>
+            <div className="text-center mb-20 max-w-2xl mx-auto">
+              <span className="text-xs tracking-[0.35em] text-[#B08D57] dark:text-[#C9A962] uppercase mb-4 block">المسار</span>
+              <OrnamentDivider className="w-48 h-8 mx-auto mb-6 text-[#B08D57] dark:text-[#C9A962]" />
+              <h2 className="text-5xl md:text-6xl font-bold text-[#0F2A44] dark:text-[#F2EBDD] leading-tight mb-6" style={{ fontFamily: "var(--font-quran)" }}>
+                كيف تَبدأُ رحلتَك
               </h2>
-              <p className="text-muted-foreground text-lg">
-                أربع خطوات بسيطة لتبدأ رحلتك مع القرآن الكريم
+              <p className="text-lg text-[#1A1A1A]/65 dark:text-[#F2EBDD]/65">
+                أربعُ خطواتٍ هَيِّنات، وأنتَ في صَدرِ المَجلس
               </p>
             </div>
-          </FadeIn>
+          </Reveal>
 
           <div className="max-w-4xl mx-auto">
-            <div className="relative">
-              {/* Connection Line */}
-              <div className="absolute top-8 right-8 left-8 h-0.5 bg-border hidden md:block" />
-
-              <div className="grid md:grid-cols-4 gap-8">
-                {learningPath.map((item, i) => (
-                  <FadeIn key={i} delay={i * 0.15}>
-                    <motion.div
-                      whileHover={{ y: -10 }}
-                      className="relative text-center"
-                    >
-                      <div className="relative z-10 w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold mx-auto mb-4 shadow-lg shadow-primary/25">
-                        {item.step}
-                      </div>
-                      <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
-                      <p className="text-sm text-muted-foreground">{item.description}</p>
-                    </motion.div>
-                  </FadeIn>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section - Enhanced */}
-      <section id="testimonials" className="py-24 md:py-32 relative overflow-hidden">
-        <IslamicPattern animate={false} />
-
-        <div className="container mx-auto px-4 relative z-10">
-          <FadeIn>
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-6">
-                <MessageCircle className="w-4 h-4 text-accent" />
-                <span className="text-sm text-accent font-medium">قصص نجاح</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                ماذا يقول <span className="text-primary">طلابنا</span>
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                تجارب حقيقية من طلاب أتموا رحلتهم معنا
-              </p>
-            </div>
-          </FadeIn>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
-              {
-                quote: "بفضل الله ثم منصة إتقان، أتممت حفظ القرآن الكريم كاملاً في سنتين. المعلمون متميزون والمنهجية فعالة جداً",
-                author: "أحمد محمد سالم",
-                role: "حافظ للقرآن الكريم",
-                country: "السعودية",
-                achievement: "أتم الحفظ"
-              },
-              {
-                quote: "كمعلمة، أجد في إتقان بيئة مثالية لتدريس القرآن. الأدوات التقنية تسهل المتابعة والتواصل مع الطالبات",
-                author: "فاطمة علي الزهراء",
-                role: "معلمة قرآن",
-                country: "مصر",
-                achievement: "معلمة متميزة"
-              },
-              {
-                quote: "ابني يحب جلسات إتقان كثيراً. المعلم صبور ومتفهم، والتقدم ملحوظ ماشاء الله. أنصح كل الآباء بهذه المنصة",
-                author: "خالد عبدالرحمن",
-                role: "ولي أمر",
-                country: "الإمارات",
-                achievement: "ولي أمر راضٍ"
-              },
-            ].map((testimonial, i) => (
-              <FadeIn key={i} delay={i * 0.15}>
-                <motion.div
-                  whileHover={{ y: -5 }}
-                  className="relative p-6 rounded-3xl bg-card border border-border hover:border-primary/20 transition-all h-full"
-                >
-                  {/* Quote mark */}
-                  <div className="absolute top-4 left-4 text-6xl text-primary/10 font-serif leading-none">"</div>
-
-                  {/* Achievement badge */}
-                  <div className="flex justify-end mb-4">
-                    <span className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full">
-                      {testimonial.achievement}
-                    </span>
-                  </div>
-
-                  <p className="text-foreground/80 mb-6 leading-relaxed relative z-10">{testimonial.quote}</p>
-
-                  <div className="flex items-center gap-4 pt-4 border-t border-border">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-bold text-lg">
-                      {testimonial.author.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-foreground">{testimonial.author}</div>
-                      <div className="text-sm text-muted-foreground flex items-center gap-2">
-                        <span>{testimonial.role}</span>
-                        <span className="w-1 h-1 rounded-full bg-muted-foreground" />
-                        <span>{testimonial.country}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stars */}
-                  <div className="flex gap-1 mt-4">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="w-4 h-4 text-accent fill-accent" />
-                    ))}
-                  </div>
-                </motion.div>
-              </FadeIn>
-            ))}
-          </div>
-
-          {/* Trust indicators */}
-          <FadeIn delay={0.5}>
-            <div className="mt-16 text-center">
-              <p className="text-muted-foreground mb-6">موثوق من آلاف الطلاب حول العالم</p>
-              <div className="flex flex-wrap items-center justify-center gap-8">
-                {["4.9/5 تقييم", "15,000+ طالب", "45+ دولة", "98% رضا"].map((stat, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-5 h-5 text-primary" />
-                    <span className="text-foreground font-medium">{stat}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* CTA Section - Enhanced */}
-      <section className="py-24 md:py-32 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <FadeIn>
-            <div className="relative max-w-5xl mx-auto overflow-hidden rounded-[2.5rem]">
-              {/* Background with pattern */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
-              <IslamicPattern className="opacity-10" animate={false} />
-
-              <div className="relative z-10 p-8 md:p-16 lg:p-20 text-center text-primary-foreground">
-                {/* Decorative elements */}
-                <motion.div
-                  className="absolute top-10 right-10 w-20 h-20 border border-white/20 rounded-full"
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                />
-                <motion.div
-                  className="absolute bottom-10 left-10 w-16 h-16 border border-white/20 rotate-45"
-                  animate={{ rotate: [45, 90, 45], opacity: [0.2, 0.4, 0.2] }}
-                  transition={{ duration: 6, repeat: Infinity }}
-                />
-
-                <motion.div
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  viewport={{ once: true }}
-                  className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-8"
-                >
-                  <BookOpen className="w-10 h-10" />
-                </motion.div>
-
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-                  رحلة الألف ميل تبدأ بخطوة
-                  <br />
-                  <span className="text-accent">ابدأ اليوم</span>
-                </h2>
-                <p className="text-primary-foreground/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-                  انضم إلى مجتمع إتقان وابدأ رحلتك مع القرآن الكريم. التسجيل مجاني وسريع.
-                </p>
-
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-                  <Magnet padding={50} magnetStrength={2}>
-                    <Link
-                      href="/register"
-                      className="group flex items-center gap-3 h-14 px-10 bg-white text-primary rounded-2xl font-semibold hover:bg-white/90 transition-all shadow-xl"
+              { n: "١", t: "سَجِّل في المنصَّة", d: "أنشئ حسابَكَ في دقائق، اختر منصَّتَك (الأكاديميَّة أو المَقْرأة أو كلتيهما)، وأَكمِل ملفَّكَ التعريفيَّ." },
+              { n: "٢", t: "اخْتَر مُعلِّمَك", d: "تصفَّح قائمةَ الأساتذةِ والمُقرئين، اقرأْ سيرَهم وتقييماتِ طلَّابِهم، ثم اخترِ الأنسبَ لك." },
+              { n: "٣", t: "احْجِزْ موعدَك", d: "اختر اليومَ والساعةَ من تقويمِ المُعلِّم، فيَصلُكَ تَنبيهٌ قبلَ الجلسةِ بوقتٍ كافٍ." },
+              { n: "٤", t: "ابْدأْ في الإتقان", d: "احْضُرْ الجلساتِ، أَنجِزْ الواجبات، وَتابعْ تقدُّمَك حتى تَبلُغَ غايتَك بإذن الله." },
+            ].map((step, i) => (
+              <Reveal key={i} delay={i * 0.12}>
+                <div className="group relative flex gap-8 md:gap-12 py-10 border-b border-[#0F2A44]/10 dark:border-[#C9A962]/15 last:border-0">
+                  <div className="flex-shrink-0">
+                    <div
+                      className="text-7xl md:text-8xl font-bold text-[#B08D57]/30 dark:text-[#C9A962]/35 leading-none transition-all duration-500 group-hover:text-[#B08D57] dark:group-hover:text-[#C9A962]"
+                      style={{ fontFamily: "var(--font-quran)" }}
                     >
-                      <span>ابدأ رحلتك مجاناً</span>
-                      <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                    </Link>
-                  </Magnet>
-                  <Link
-                    href="/about"
-                    className="flex items-center gap-2 h-14 px-10 bg-white/10 text-primary-foreground rounded-2xl font-medium hover:bg-white/20 transition-colors border border-white/20"
-                  >
-                    <Play className="w-5 h-5" />
-                    <span>شاهد الفيديو التعريفي</span>
-                  </Link>
-                </div>
-
-                {/* Trust badges */}
-                <div className="flex flex-wrap items-center justify-center gap-6 pt-8 border-t border-white/20">
-                  {[
-                    { icon: Shield, text: "تسجيل آمن" },
-                    { icon: Clock, text: "دقيقتين للتسجيل" },
-                    { icon: Heart, text: "بدون التزام" },
-                  ].map((badge, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-primary-foreground/80">
-                      <badge.icon className="w-4 h-4" />
-                      <span>{badge.text}</span>
+                      {step.n}
                     </div>
-                  ))}
+                  </div>
+                  <div className="flex-1 pt-2">
+                    <h3 className="text-2xl md:text-3xl font-bold text-[#0F2A44] dark:text-[#F2EBDD] mb-4" style={{ fontFamily: "var(--font-quran)" }}>
+                      {step.t}
+                    </h3>
+                    <p className="text-[#1A1A1A]/65 dark:text-[#F2EBDD]/65 leading-loose md:text-lg max-w-2xl">{step.d}</p>
+                  </div>
+                  <div className="hidden md:flex items-center text-[#B08D57]/40 dark:text-[#C9A962]/45 group-hover:text-[#B08D57] dark:group-hover:text-[#C9A962] group-hover:-translate-x-2 transition-all duration-500">
+                    <ArrowLeft className="w-6 h-6" />
+                  </div>
                 </div>
-              </div>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-24 md:py-32">
-        <div className="container mx-auto px-4">
-          <FadeIn>
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                أسئلة شائعة
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                إجابات لأكثر الأسئلة التي تصلنا
-              </p>
-            </div>
-          </FadeIn>
-
-          <div className="max-w-3xl mx-auto space-y-4">
-            {[
-              { q: "هل المنصة مجانية؟", a: "نعم، التسجيل والاستماع للتلاوات مجاني. الأكاديمية لها اشتراك شهري بسيط يشمل الحلقات التفاعلية والمتابعة الشخصية." },
-              { q: "من هم المعلمون في إتقان؟", a: "جميع معلمينا حاصلون على إجازات في القرآن الكريم بالسند المتصل، ولديهم خبرة لا تقل عن 5 سنوات في التدريس." },
-              { q: "كيف تتم الحلقات التعليمية؟", a: "تتم الحلقات عبر الفيديو المباشر في مجموعات صغيرة (3-5 طلاب) أو بشكل فردي حسب اختيارك." },
-              { q: "هل يمكنني الحصول على إجازة؟", a: "نعم، عند إتمام حفظ القرآن الكريم وإتقان التجويد، يمكنك الحصول على إجازة بالسند المتصل من معلمينا المجازين." },
-            ].map((faq, i) => (
-              <FadeIn key={i} delay={i * 0.1}>
-                <motion.div
-                  whileHover={{ scale: 1.01 }}
-                  className="p-6 rounded-2xl bg-card border border-border hover:border-primary/20 transition-all"
-                >
-                  <h3 className="text-lg font-semibold text-foreground mb-2 flex items-start gap-3">
-                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm shrink-0 mt-0.5">؟</span>
-                    {faq.q}
-                  </h3>
-                  <p className="text-muted-foreground pr-9">{faq.a}</p>
-                </motion.div>
-              </FadeIn>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer - Enhanced */}
-      <footer className="py-16 bg-card border-t border-border">
-        <div className="container mx-auto px-4">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
-            {/* Brand Column */}
-            <div className="lg:col-span-2">
+      {/* ============ TESTIMONIALS ============ */}
+      <TestimonialsMarquee />
+
+      {/* ============ CTA ============ */}
+      <section className="relative py-32 md:py-40 bg-[#0F2A44] text-[#F7F2E9] overflow-hidden">
+        {/* Ottoman carpet pattern — desaturated, gold-toned woven texture */}
+        <div
+          className="absolute inset-0 bg-repeat opacity-[0.22] pointer-events-none"
+          style={{
+            backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
+            backgroundSize: "440px",
+            filter: "grayscale(1) sepia(0.55) brightness(0.95) contrast(1)",
+          }}
+        />
+        {/* Navy wash to keep text readable on top of the pattern */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0F2A44]/85 via-[#0F2A44]/75 to-[#0F2A44]/90 pointer-events-none" />
+        {/* Gold seams */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/40 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/30 to-transparent" />
+
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-40 -right-40 text-[#C9A962]/10"
+        >
+          <EightStar size={500} strokeWidth={0.4} />
+        </motion.div>
+        <motion.div
+          animate={{ rotate: -360 }}
+          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-40 -left-40 text-[#C9A962]/10"
+        >
+          <EightStar size={500} strokeWidth={0.4} />
+        </motion.div>
+
+        <div className="container mx-auto px-6 relative">
+          <Reveal>
+            <div className="max-w-3xl mx-auto text-center">
+              <Sparkles className="w-10 h-10 text-[#C9A962] mx-auto mb-6" />
+              <OrnamentDivider className="w-48 h-8 mx-auto mb-8 text-[#C9A962]" />
+              <h2 className="text-5xl md:text-7xl font-bold mb-8 leading-tight" style={{ fontFamily: "var(--font-quran)" }}>
+                ابْدَأْ رحلتَك اليومَ
+              </h2>
+              <p className="text-lg md:text-xl text-[#F7F2E9]/70 leading-loose mb-12">
+                انضمَّ إلى آلاف الطلَّابِ الذينَ بَدَؤوا رحلتَهم نحو إتقانِ كتابِ الله،
+                ولا تَنْسَ أنَّ <span className="text-[#C9A962]" style={{ fontFamily: "var(--font-quran)" }}>«خيرُكم مَن تَعَلَّمَ القرآنَ وعَلَّمَه»</span>.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                  href="/register"
+                  className="group h-14 px-10 inline-flex items-center gap-3 bg-[#C9A962] text-[#0F2A44] rounded-full font-bold transition-all duration-500 hover:gap-5 shadow-2xl shadow-[#C9A962]/20"
+                >
+                  <span>سَجِّل مَجَّانًا</span>
+                  <ArrowLeft className="w-5 h-5 transition-transform duration-500 group-hover:-translate-x-1" />
+                </Link>
+                <Link
+                  href="/login"
+                  className="h-14 px-10 inline-flex items-center gap-3 border border-[#F7F2E9]/25 rounded-full hover:bg-[#F7F2E9]/5 transition-colors"
+                >
+                  لديَّ حسابٌ بالفعل
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============ FOOTER ============ */}
+      <footer className="relative bg-[#0a1f33] text-[#F7F2E9]/85 pt-20 pb-10 overflow-hidden">
+        {/* Ottoman carpet — woven texture beneath the dark wash */}
+        <div
+          className="absolute inset-0 bg-repeat opacity-[0.18] mix-blend-overlay pointer-events-none"
+          style={{
+            backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
+            backgroundSize: "440px",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1f33] via-[#0a1f33]/92 to-[#0a1f33] pointer-events-none" />
+        {/* Top thin gold seam */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C9A962]/40 to-transparent" />
+
+        <div className="container mx-auto px-6 relative">
+          <div className="grid lg:grid-cols-12 gap-10 pb-12 border-b border-[#F7F2E9]/10">
+            <div className="lg:col-span-5">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-primary-foreground" />
+                <div className="relative w-12 h-12">
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#13325a] to-[#1B4332]" />
+                  <svg viewBox="0 0 44 44" className="absolute inset-0 w-full h-full p-2.5 text-[#C9A962]" fill="currentColor" aria-hidden>
+                    <path d="M22 4 L26 18 L40 18 L29 27 L33 41 L22 32 L11 41 L15 27 L4 18 L18 18 Z" />
+                  </svg>
                 </div>
                 <div>
-                  <span className="text-2xl font-bold text-foreground">إتقان</span>
-                  <span className="block text-xs text-muted-foreground">حلقة القرآن والأكاديمية</span>
+                  <div className="text-2xl font-bold text-[#F7F2E9]" style={{ fontFamily: "var(--font-quran)" }}>
+                    إتْقان
+                  </div>
+                  <div className="text-[10px] tracking-[0.2em] text-[#F7F2E9]/50 uppercase">
+                    Itqan Platform
+                  </div>
                 </div>
               </div>
-              <p className="text-muted-foreground leading-relaxed mb-6 max-w-sm">
-                منصة قرآنية متكاملة تجمع بين حلقة القرآن للاستماع والأكاديمية للتعلم والحفظ مع أفضل المعلمين حول العالم.
+              <p className="text-[#F7F2E9]/60 leading-loose max-w-md mb-6">
+                مِنبرٌ علميٌّ يجمع بين الأكاديميَّة الراسخة والمَقْرأة الروحانيَّة،
+                لِيَكونَ صَرحًا متكاملًا لإتقانِ كتابِ الله.
               </p>
-              {/* Social Links */}
-              <div className="flex gap-3">
-                {["twitter", "youtube", "telegram"].map((social) => (
-                  <Link
-                    key={social}
-                    href="#"
-                    className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-                  >
-                    <span className="sr-only">{social}</span>
-                    <div className="w-5 h-5 bg-current rounded opacity-50" />
-                  </Link>
-                ))}
-              </div>
+              <OrnamentDivider className="w-40 h-6 text-[#C9A962]/50" />
             </div>
 
-            {/* Links Columns */}
-            {[
-              {
-                title: "الأكاديمية",
-                links: [
-                  { label: "الدورات", href: "/academy/student/courses" },
-                  { label: "المعلمون", href: "/academy/admin/teachers" },
-                  { label: "المسارات التعليمية", href: "/academy/student/path" },
-                  { label: "الشهادات", href: "#" },
-                ]
-              },
-              {
-                title: "حلقة القرآن",
-                links: [
-                  { label: "التلاوات", href: "/student" },
-                  { label: "القراء", href: "/student" },
-                  { label: "القوائم", href: "/student" },
-                  { label: "المفضلة", href: "/student" },
-                ]
-              },
-              {
-                title: "الدعم",
-                links: [
-                  { label: "مركز المساعدة", href: "/contact" },
-                  { label: "تواصل معنا", href: "/contact" },
-                  { label: "الأسئلة الشائعة", href: "#" },
-                  { label: "سياسة الخصوصية", href: "/privacy" },
-                ]
-              },
-            ].map((section, i) => (
-              <div key={i}>
-                <h4 className="font-semibold text-foreground mb-4">{section.title}</h4>
-                <ul className="space-y-3">
-                  {section.links.map((link, j) => (
-                    <li key={j}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
+            <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
+              <div>
+                <h4 className="text-sm font-bold text-[#C9A962] mb-5 tracking-wider">الأكاديميَّة</h4>
+                <ul className="space-y-3 text-sm">
+                  <li><Link href="/academy/student" className="hover:text-[#C9A962] transition-colors">لوحة التحكُّم</Link></li>
+                  <li><Link href="/academy/student/courses" className="hover:text-[#C9A962] transition-colors">الدَّورات</Link></li>
+                  <li><Link href="/academy/student/path" className="hover:text-[#C9A962] transition-colors">المَسار</Link></li>
+                  <li><Link href="/academy/student/certificates" className="hover:text-[#C9A962] transition-colors">الشَّهادات</Link></li>
                 </ul>
               </div>
-            ))}
+              <div>
+                <h4 className="text-sm font-bold text-[#C9A962] mb-5 tracking-wider">المَقْرأة</h4>
+                <ul className="space-y-3 text-sm">
+                  <li><Link href="/student" className="hover:text-[#C9A962] transition-colors">لوحة التحكُّم</Link></li>
+                  <li><Link href="/student/recitations" className="hover:text-[#C9A962] transition-colors">التَّسميعات</Link></li>
+                  <li><Link href="/student/booking" className="hover:text-[#C9A962] transition-colors">حَجْزُ موعد</Link></li>
+                  <li><Link href="/student/progress" className="hover:text-[#C9A962] transition-colors">التَّقدُّم</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[#C9A962] mb-5 tracking-wider">الدَّعم</h4>
+                <ul className="space-y-3 text-sm">
+                  <li><Link href="/about" className="hover:text-[#C9A962] transition-colors">عَن المنصَّة</Link></li>
+                  <li><Link href="/contact" className="hover:text-[#C9A962] transition-colors">تَواصلْ معنا</Link></li>
+                  <li><Link href="/privacy" className="hover:text-[#C9A962] transition-colors">الخصوصيَّة</Link></li>
+                  <li><Link href="/terms" className="hover:text-[#C9A962] transition-colors">الشُّروط</Link></li>
+                </ul>
+              </div>
+            </div>
           </div>
 
-          {/* Bottom Bar */}
-          <div className="pt-8 border-t border-border">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                جميع الحقوق محفوظة © {new Date().getFullYear()} منصة إتقان
-              </p>
-              <div className="flex items-center gap-6">
-                <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  سياسة الخصوصية
-                </Link>
-                <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  الشروط والأحكام
-                </Link>
-                <span className="text-sm text-muted-foreground">
-                  صنع بـ ❤️ لخدمة القرآن
-                </span>
-              </div>
+          <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#F7F2E9]/55">
+            <div>© {new Date().getFullYear()} إتْقان. جميعُ الحقوقِ محفوظة.</div>
+            <div className="flex items-center gap-2">
+              <span>صُنِعَ بِـ</span>
+              <span className="text-[#C9A962]">♥</span>
+              <span>لِخدمةِ كتابِ الله</span>
             </div>
           </div>
         </div>

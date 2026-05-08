@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-const publicPaths = ["/", "/about", "/contact", "/sitemap-page", "/login", "/login-admin", "/register", "/reader-register", "/teacher-register", "/forgot-password", "/reset-password", "/verify", "/privacy", "/terms", "/maintenance", "/change-password"]
+const publicPaths = ["/", "/about", "/contact", "/sitemap-page", "/login", "/login-admin", "/register", "/reader-register", "/teacher-register", "/forgot-password", "/reset-password", "/verify", "/privacy", "/terms", "/maintenance", "/change-password", "/rejected"]
 const apiPublicPaths = ["/api/auth", "/api/admin/homepage", "/api/admin/analytics", "/api/uploadthing"]
 
 // Academy public paths (for public lessons and invitations)
@@ -114,12 +114,12 @@ export async function middleware(req: NextRequest) {
                             return NextResponse.redirect(new URL("/change-password", req.url))
                         }
 
-                        // Check if user approval status changed (e.g., reader was rejected)
-                        if (dbUser.approval_status === 'rejected' && ['reader'].includes(sessionPayload.role)) {
-                            const response = NextResponse.redirect(new URL("/login", req.url))
-                            response.cookies.delete("better-auth.session_token")
-                            response.cookies.delete("auth-token")
-                            return response
+                        // Check if user approval status changed (e.g., reader/teacher was rejected)
+                        // Redirect to rejected page instead of login so they can reapply
+                        if (dbUser.approval_status === 'rejected' && ['reader', 'teacher', 'student'].includes(sessionPayload.role)) {
+                            if (!pathname.startsWith('/rejected') && !pathname.startsWith('/api/auth')) {
+                                return NextResponse.redirect(new URL("/rejected", req.url))
+                            }
                         }
 
                         // #4: Detect role mismatch between JWT and DB (e.g., teacher just got approved).

@@ -120,6 +120,69 @@ export async function POST(req: NextRequest) {
     }
 }
 
+// PATCH /api/reader/schedule - edit a slot
+export async function PATCH(req: NextRequest) {
+    try {
+        const session = await getSession()
+        if (!session || session.role !== "reader") {
+            return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+        }
+
+        const { id, startTime, endTime, isAvailable } = await req.json()
+
+        if (!id) {
+            return NextResponse.json({ error: "معرف الموعد مطلوب" }, { status: 400 })
+        }
+
+        // Verify ownership
+        const existing = await query(
+            `SELECT id FROM availability_slots WHERE id = $1 AND reader_id = $2`,
+            [id, session.sub]
+        )
+
+        if (existing.length === 0) {
+            return NextResponse.json({ error: "الموعد غير موجود" }, { status: 404 })
+        }
+
+        const updates: string[] = []
+        const values: any[] = []
+        let paramIndex = 1
+
+        if (startTime) {
+            updates.push(`start_time = $${paramIndex}`)
+            values.push(startTime)
+            paramIndex++
+        }
+        if (endTime) {
+            updates.push(`end_time = $${paramIndex}`)
+            values.push(endTime)
+            paramIndex++
+        }
+        if (isAvailable !== undefined) {
+            updates.push(`is_available = $${paramIndex}`)
+            values.push(isAvailable)
+            paramIndex++
+        }
+
+        if (updates.length === 0) {
+            return NextResponse.json({ error: "لا توجد بيانات للتحديث" }, { status: 400 })
+        }
+
+        values.push(id)
+        values.push(session.sub)
+
+        const result = await query(
+            `UPDATE availability_slots SET ${updates.join(', ')} WHERE id = $${paramIndex} AND reader_id = $${paramIndex + 1} RETURNING *`,
+            values
+        )
+
+        return NextResponse.json({ slot: result[0], success: true })
+    } catch (error) {
+        console.error("Update slot error:", error)
+        return NextResponse.json({ error: "حدث خطأ في الخادم" }, { status: 500 })
+    }
+}
+
 // DELETE /api/reader/schedule - delete a slot
 export async function DELETE(req: NextRequest) {
     try {

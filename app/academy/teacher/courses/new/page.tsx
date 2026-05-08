@@ -3,12 +3,22 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, BookOpen } from 'lucide-react'
+import { ArrowRight, BookOpen, Tag } from 'lucide-react'
+
+const SPEC_LABELS: Record<string, string> = {
+  sira:    'السيرة النبوية',
+  fiqh:    'الفقه',
+  aqeedah: 'العقيدة',
+  tajweed: 'التجويد',
+  tafseer: 'التفسير',
+  arabic:  'اللغة العربية',
+}
 
 export default function NewCoursePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<{id: string; name: string}[]>([])
+  const [teacherSpec, setTeacherSpec] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -21,18 +31,26 @@ export default function NewCoursePage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    async function fetchCategories() {
+    async function fetchData() {
       try {
-        const res = await fetch('/api/academy/admin/categories')
-        if (res.ok) {
-          const json = await res.json()
+        const [catRes, specRes] = await Promise.all([
+          fetch('/api/academy/admin/categories'),
+          fetch('/api/student/specializations'), // same table, works for teachers too
+        ])
+        if (catRes.ok) {
+          const json = await catRes.json()
           setCategories(json.data || [])
         }
-      } catch (error) {
-        console.error('Failed to fetch categories:', error)
+        if (specRes.ok) {
+          const json = await specRes.json()
+          const specs: { specialization: string }[] = json.specializations || []
+          if (specs.length > 0) setTeacherSpec(specs[0].specialization)
+        }
+      } catch (err) {
+        console.error('Failed to fetch data:', err)
       }
     }
-    fetchCategories()
+    fetchData()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,6 +113,20 @@ export default function NewCoursePage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* Teacher specialization — read-only info */}
+          {teacherSpec && (
+            <div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/20 rounded-xl">
+              <Tag className="w-4 h-4 text-primary flex-shrink-0" />
+              <span className="text-sm text-muted-foreground font-medium">
+                سيتم تصنيف هذه الدورة تلقائياً تحت تخصصك:
+              </span>
+              <span className="text-sm font-bold text-primary">
+                {SPEC_LABELS[teacherSpec] ?? teacherSpec}
+              </span>
+            </div>
+          )}
+
           <div className="space-y-2">
             <label className="text-sm font-bold text-foreground">عنوان الدورة <span className="text-red-500">*</span></label>
             <input 

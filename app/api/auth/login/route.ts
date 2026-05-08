@@ -5,10 +5,26 @@ import { signToken } from "@/lib/auth"
 
 const MAX_FAILED_ATTEMPTS = 5
 
+// Validate that a string is a real IP address (IPv4 or IPv6) usable for the Postgres `inet` type.
+// Returns null if the input is not a valid IP, so we don't crash inserts on values like "localhost" or "".
+function sanitizeIp(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  const ip = raw.trim()
+  if (!ip) return null
+  // IPv4: 0-255 in each of 4 octets
+  const ipv4 = /^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/
+  // IPv6: very permissive — `inet` will reject obviously bad values, this just filters out non-IP strings
+  const ipv6 = /^[0-9a-fA-F:]+$/
+  if (ipv4.test(ip)) return ip
+  if (ipv6.test(ip) && ip.includes(":")) return ip
+  return null
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password, loginType } = await req.json()
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || null
+    const rawIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip")
+    const ip = sanitizeIp(rawIp)
 
     if (!email || !password) {
       return NextResponse.json(
@@ -22,7 +38,7 @@ export async function POST(req: NextRequest) {
       name: string
       email: string
       password_hash: string
-      role: "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor" | "parent" | "teacher" | "academy_admin"
+      role: "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor" | "parent" | "teacher" | "academy_admin" | "fiqh_supervisor" | "supervisor"
       is_active: boolean
       is_locked: boolean
       failed_login_count: number
@@ -126,7 +142,7 @@ export async function POST(req: NextRequest) {
 
     if (loginType === "admin") {
       // Admin login page check
-      const allowedAdminRoles = ["admin", "academy_admin", "student_supervisor", "reciter_supervisor"];
+      const allowedAdminRoles = ["admin", "academy_admin", "student_supervisor", "reciter_supervisor", "fiqh_supervisor", "supervisor"];
       if (!allowedAdminRoles.includes(user.role)) {
         return NextResponse.json(
           { error: "غير مصرح لك بالدخول كمدير" },
@@ -146,30 +162,40 @@ export async function POST(req: NextRequest) {
     )
 
     const userAgent = req.headers.get("user-agent") || "Unknown"
-    const { getDetailedDeviceType, getCountryFromIp } = await import('@/lib/geo')
-    const deviceDetail = getDetailedDeviceType(userAgent)
 
-    // Geolocation from IP
-    let country = req.headers.get('x-vercel-ip-country') || req.headers.get('cf-ipcountry') || null
-    if ((!country || country === 'N/A') && ip) {
-      country = await getCountryFromIp(ip)
+    // Best-effort geo + device detection — never let these break the login flow
+    let deviceDetail = "Unknown Device"
+    let country: string | null = null
+    try {
+      const { getDetailedDeviceType, getCountryFromIp } = await import('@/lib/geo')
+      deviceDetail = getDetailedDeviceType(userAgent)
+      country = req.headers.get('x-vercel-ip-country') || req.headers.get('cf-ipcountry') || null
+      if ((!country || country === 'N/A') && ip) {
+        country = await getCountryFromIp(ip)
+      }
+    } catch (geoErr) {
+      console.error("[login] geo lookup failed (non-fatal):", geoErr)
     }
 
-    // Log successful login with tech details
+    // Log successful login with tech details (best-effort)
     await query(
       `INSERT INTO activity_logs (user_id, action, description, ip_address, user_agent)
        VALUES ($1, 'login_success', $2, $3, $4)`,
       [user.id, `Successful login from ${deviceDetail}${country ? ` (${country})` : ''}`, ip, userAgent]
-    ).catch(() => { })
+    ).catch((err) => { console.error("[login] activity_logs insert failed (non-fatal):", err) })
 
     if (activeRole === 'admin' || activeRole === 'student_supervisor' || activeRole === 'reciter_supervisor') {
-      const { createNotificationForAdmins } = await import('@/lib/notifications')
-      await createNotificationForAdmins({
-        type: 'general',
-        title: 'تسجيل دخول إداري 🔐',
-        message: `قام ${user.name} بتسجيل الدخول إلى لوحة التحكم (${activeRole}) من ${deviceDetail}`,
-        category: 'account'
-      })
+      try {
+        const { createNotificationForAdmins } = await import('@/lib/notifications')
+        await createNotificationForAdmins({
+          type: 'general',
+          title: 'تسجيل دخول إداري 🔐',
+          message: `قام ${user.name} بتسجيل الدخول إلى لوحة التحكم (${activeRole}) من ${deviceDetail}`,
+          category: 'account'
+        })
+      } catch (notifErr) {
+        console.error("[login] admin notification failed (non-fatal):", notifErr)
+      }
     }
 
     const token = await signToken({
@@ -212,7 +238,15 @@ export async function POST(req: NextRequest) {
 
     return response
   } catch (error) {
-    console.error("Login error:", error)
-    return NextResponse.json({ error: "حدث خطأ في الخادم" }, { status: 500 })
+    console.error("[login] Login error:", error)
+    const isDev = process.env.NODE_ENV !== "production"
+    const message = error instanceof Error ? error.message : String(error)
+    return NextResponse.json(
+      {
+        error: "حدث خطأ في الخادم",
+        ...(isDev ? { debug: message } : {}),
+      },
+      { status: 500 },
+    )
   }
 }

@@ -15,7 +15,7 @@ import {
   Menu, X, Users, Settings, BarChart3, ClipboardList, Clock, MessageSquare,
   Search, Plus, BookOpen, Award, UserCheck, CalendarCheck, CalendarDays,
   MessagesSquare, Megaphone, ScrollText, PieChart, Star, ShieldCheck,
-  Globe, Home, Archive, Shield, Phone
+  Globe, Home, Archive, Shield, Phone, BookMarked
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 
@@ -30,9 +30,11 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/student', label: t.student.dashboard, icon: LayoutDashboard },
           { href: '/student/submit', label: t.student.submitTask || "تسليم تلاوة", icon: Mic || null },
           { href: '/student/recitations', label: t.student.recitations, icon: FileText },
+          { href: '/student/mushaf', label: t.student.mushaf || "مصحفي", icon: BookOpen },
           { href: '/student/sessions', label: t.student.sessions, icon: CalendarCheck },
           { href: '/student/chat', label: t.student.chat, icon: MessageSquare },
           { href: '/student/certificates', label: t.student.certificates || t.student.certificate, icon: Award },
+          { href: '/student/wird', label: 'الورد اليومي', icon: BookMarked },
         ]
       },
       {
@@ -43,7 +45,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
         ]
       }
     ],
-    label: t.shell?.studentPortal, name: t.auth.student, sublabel: t.auth.student
+    label: t.shell?.studentPortal, name: t.auth.student, sublabel: t.auth.quranStudent || t.auth.student
   },
   reader: {
     sections: [

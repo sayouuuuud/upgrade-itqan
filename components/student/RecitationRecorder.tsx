@@ -2,11 +2,165 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Mic, Square, Play, Pause, RotateCcw, Send, Info, Loader2, BookOpen, Hash } from "lucide-react"
+import { Mic, Square, Play, Pause, RotateCcw, Send, Info, Loader2, BookOpen, Hash, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useI18n } from "@/lib/i18n/context"
 import { useUploadThing } from "@/lib/uploadthing-client"
 import { SURAHS } from "@/lib/data/surahs"
+
+// ─── Ayah text reference panel (shown only for Tilawa type) ──────────────────
+type AyahData = { numberInSurah: number; text: string; surahNumber: number }
+
+function AyahReferencePanel({
+  rangeMode,
+  surahNumber,
+  ayahFrom,
+  ayahTo,
+  pageFrom,
+  pageTo,
+}: {
+  rangeMode: "ayah" | "page"
+  surahNumber: number
+  ayahFrom: number
+  ayahTo: number
+  pageFrom: number
+  pageTo: number
+}) {
+  const [ayahs, setAyahs] = useState<AyahData[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
+
+  const toAr = (n: number) =>
+    String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[parseInt(d)])
+
+  useEffect(() => {
+    setLoading(true)
+    setError(false)
+    setAyahs([])
+
+    const controller = new AbortController()
+
+    if (rangeMode === "ayah") {
+      if (!surahNumber || !ayahFrom || !ayahTo || ayahFrom > ayahTo) {
+        setLoading(false)
+        return
+      }
+      fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/quran-uthmani`, { signal: controller.signal })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.data?.ayahs) {
+            const slice: AyahData[] = (data.data.ayahs as Array<{ numberInSurah: number; text: string }>)
+              .filter((a) => a.numberInSurah >= ayahFrom && a.numberInSurah <= ayahTo)
+              .map((a) => ({ numberInSurah: a.numberInSurah, text: a.text, surahNumber }))
+            setAyahs(slice)
+            if (slice.length === 0) setError(true)
+          } else { setError(true) }
+        })
+        .catch((e) => { if (e.name !== "AbortError") setError(true) })
+        .finally(() => setLoading(false))
+    } else {
+      if (!pageFrom || !pageTo || pageFrom > pageTo) {
+        setLoading(false)
+        return
+      }
+      const pages = Array.from({ length: pageTo - pageFrom + 1 }, (_, i) => pageFrom + i)
+      Promise.all(
+        pages.map((p) =>
+          fetch(`https://api.alquran.cloud/v1/page/${p}/quran-uthmani`, { signal: controller.signal })
+            .then((r) => r.json())
+        )
+      )
+        .then((results) => {
+          const all: AyahData[] = []
+          for (const data of results) {
+            if (data?.data?.ayahs) {
+              for (const a of data.data.ayahs as Array<{ numberInSurah: number; text: string; surah: { number: number } }>) {
+                all.push({ numberInSurah: a.numberInSurah, text: a.text, surahNumber: a.surah.number })
+              }
+            }
+          }
+          setAyahs(all)
+          if (all.length === 0) setError(true)
+        })
+        .catch((e) => { if (e.name !== "AbortError") setError(true) })
+        .finally(() => setLoading(false))
+    }
+
+    return () => controller.abort()
+  }, [rangeMode, surahNumber, ayahFrom, ayahTo, pageFrom, pageTo])
+
+  const badge = rangeMode === "page"
+    ? (pageFrom === pageTo ? `صفحة ${toAr(pageFrom)}` : `صفحة ${toAr(pageFrom)} – ${toAr(pageTo)}`)
+    : (ayahFrom === ayahTo ? `آية ${toAr(ayahFrom)}` : `الآيات ${toAr(ayahFrom)} – ${toAr(ayahTo)}`)
+
+  return (
+    <div className="bg-[#fbf6e6] dark:bg-card border border-amber-700/25 dark:border-border rounded-2xl overflow-hidden">
+      {/* Header */}
+      <button
+        type="button"
+        onClick={() => setCollapsed((v) => !v)}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-amber-700/5 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-amber-700 dark:text-amber-500 flex-shrink-0" />
+          <span className="text-sm font-bold text-amber-900 dark:text-amber-200">نص الآيات كمرجع</span>
+          {!loading && ayahs.length > 0 && (
+            <span className="text-[10px] font-bold bg-amber-700/10 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
+              {badge}
+            </span>
+          )}
+        </div>
+        {collapsed
+          ? <ChevronDown className="w-4 h-4 text-amber-700/60" />
+          : <ChevronUp className="w-4 h-4 text-amber-700/60" />
+        }
+      </button>
+
+      {/* Body — max ~6 Quran text lines then scroll */}
+      {!collapsed && (
+        <div className="px-4 pb-4">
+          {loading && (
+            <div className="flex items-center justify-center py-6 gap-2 text-amber-700/70 dark:text-amber-500/70">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-xs font-bold">جاري تحميل النص...</span>
+            </div>
+          )}
+          {error && !loading && (
+            <p className="text-xs text-center text-muted-foreground py-4">
+              تعذّر تحميل نص الآيات. تحقق من اتصالك بالإنترنت.
+            </p>
+          )}
+          {!loading && !error && ayahs.length > 0 && (
+            <div
+              className="overflow-y-auto max-h-[15rem] pr-1"
+              style={{ direction: "rtl" }}
+            >
+              <p
+                className="leading-loose text-xl sm:text-2xl text-slate-800 dark:text-slate-100 text-justify pt-1"
+                style={{ fontFamily: "'Amiri Quran', 'Amiri', serif" }}
+              >
+                {ayahs.map((a, idx) => (
+                  <span key={`${a.surahNumber}-${a.numberInSurah}`}>
+                    {idx > 0 ? " " : ""}
+                    {a.text}
+                    {" "}
+                    <span
+                      className="inline-block align-middle text-base font-black text-amber-700 dark:text-amber-500 mx-0.5"
+                      style={{ fontFamily: "system-ui, sans-serif" }}
+                    >
+                      ﴿{toAr(a.numberInSurah)}﴾
+                    </span>
+                  </span>
+                ))}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const MAX_SECONDS = 180 // 3 minutes
 
@@ -30,6 +184,9 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
   const [surahNumber, setSurahNumber] = useState<number>(1)
   const [ayahFrom, setAyahFrom] = useState<number>(1)
   const [ayahTo, setAyahTo] = useState<number>(7)
+  const [pageFrom, setPageFrom] = useState<number>(1)
+  const [pageTo, setPageTo] = useState<number>(1)
+  const [rangeMode, setRangeMode] = useState<"ayah" | "page">("ayah")
   const [recitationType, setRecitationType] = useState<RecitationType>("tilawa")
   const [validationError, setValidationError] = useState<string | null>(null)
   const [holdTimer, setHoldTimer] = useState<NodeJS.Timeout | null>(null)
@@ -397,42 +554,103 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
             </select>
           </div>
 
-          {/* Ayah from */}
-          <div>
-            <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
-              <span className="inline-flex items-center gap-1">
-                <Hash className="w-3 h-3" />
-                من الآية
-              </span>
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={selectedSurah.verses}
-              value={ayahFrom}
-              onChange={(e) => setAyahFrom(Math.max(1, parseInt(e.target.value, 10) || 1))}
-              disabled={recordingState === "recording" || submitting}
-              className="w-full bg-muted/50 border border-border rounded-xl py-2.5 md:py-3 px-3 md:px-4 text-sm md:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50"
-            />
+          {/* Range mode toggle */}
+          <div className="md:col-span-2">
+            <div className="inline-flex rounded-xl border border-border overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setRangeMode("ayah")}
+                disabled={recordingState === "recording" || submitting}
+                className={`px-4 py-2 text-xs font-bold transition-colors disabled:opacity-50 ${
+                  rangeMode === "ayah"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                من آية لآية
+              </button>
+              <button
+                type="button"
+                onClick={() => setRangeMode("page")}
+                disabled={recordingState === "recording" || submitting}
+                className={`px-4 py-2 text-xs font-bold transition-colors disabled:opacity-50 ${
+                  rangeMode === "page"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                من صفحة لصفحة
+              </button>
+            </div>
           </div>
 
-          {/* Ayah to */}
+          {/* From input */}
           <div>
             <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
               <span className="inline-flex items-center gap-1">
                 <Hash className="w-3 h-3" />
-                إلى الآية
+                {rangeMode === "page" ? "من الصفحة" : "من الآية"}
               </span>
             </label>
-            <input
-              type="number"
-              min={1}
-              max={selectedSurah.verses}
-              value={ayahTo}
-              onChange={(e) => setAyahTo(Math.max(1, parseInt(e.target.value, 10) || 1))}
-              disabled={recordingState === "recording" || submitting}
-              className="w-full bg-muted/50 border border-border rounded-xl py-2.5 md:py-3 px-3 md:px-4 text-sm md:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50"
-            />
+            {rangeMode === "page" ? (
+              <input
+                type="number"
+                min={1}
+                max={604}
+                value={pageFrom}
+                onChange={(e) => {
+                  const v = Math.max(1, Math.min(604, parseInt(e.target.value, 10) || 1))
+                  setPageFrom(v)
+                  if (v > pageTo) setPageTo(v)
+                }}
+                disabled={recordingState === "recording" || submitting}
+                className="w-full bg-muted/50 border border-border rounded-xl py-2.5 md:py-3 px-3 md:px-4 text-sm md:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50"
+              />
+            ) : (
+              <input
+                type="number"
+                min={1}
+                max={selectedSurah.verses}
+                value={ayahFrom}
+                onChange={(e) => setAyahFrom(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                disabled={recordingState === "recording" || submitting}
+                className="w-full bg-muted/50 border border-border rounded-xl py-2.5 md:py-3 px-3 md:px-4 text-sm md:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50"
+              />
+            )}
+          </div>
+
+          {/* To input */}
+          <div>
+            <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
+              <span className="inline-flex items-center gap-1">
+                <Hash className="w-3 h-3" />
+                {rangeMode === "page" ? "إلى الصفحة" : "إلى الآية"}
+              </span>
+            </label>
+            {rangeMode === "page" ? (
+              <input
+                type="number"
+                min={pageFrom}
+                max={604}
+                value={pageTo}
+                onChange={(e) => {
+                  const v = Math.max(pageFrom, Math.min(604, parseInt(e.target.value, 10) || pageFrom))
+                  setPageTo(v)
+                }}
+                disabled={recordingState === "recording" || submitting}
+                className="w-full bg-muted/50 border border-border rounded-xl py-2.5 md:py-3 px-3 md:px-4 text-sm md:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50"
+              />
+            ) : (
+              <input
+                type="number"
+                min={1}
+                max={selectedSurah.verses}
+                value={ayahTo}
+                onChange={(e) => setAyahTo(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                disabled={recordingState === "recording" || submitting}
+                className="w-full bg-muted/50 border border-border rounded-xl py-2.5 md:py-3 px-3 md:px-4 text-sm md:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50"
+              />
+            )}
           </div>
 
           {/* Recitation type */}
@@ -469,6 +687,18 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
           </p>
         )}
       </div>
+
+      {/* Ayah text reference — only for Tilawa */}
+      {recitationType === "tilawa" && (
+        <AyahReferencePanel
+          rangeMode={rangeMode}
+          surahNumber={surahNumber}
+          ayahFrom={ayahFrom}
+          ayahTo={ayahTo}
+          pageFrom={pageFrom}
+          pageTo={pageTo}
+        />
+      )}
 
       <div className="bg-card rounded-2xl shadow-sm border border-border p-4 md:p-8 flex flex-col items-center justify-center relative min-h-[400px] md:min-h-[450px]">
         <div className="mb-6 md:mb-10 text-center">

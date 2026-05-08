@@ -70,3 +70,40 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ children, summary })
 }
+
+/**
+ * DELETE /api/academy/parent/children
+ * Unlink a child from the parent's account
+ * body { child_id }
+ */
+export async function DELETE(req: NextRequest) {
+  const session = await getSession()
+  if (!session || session.role !== 'parent') {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
+  }
+
+  const body = await req.json()
+  const { child_id } = body
+
+  if (!child_id) {
+    return NextResponse.json({ error: 'معرف الابن مطلوب' }, { status: 400 })
+  }
+
+  // Verify the link exists
+  const link = await query<{ id: string }>(
+    `SELECT id FROM parent_children WHERE parent_id = $1 AND child_id = $2`,
+    [session.sub, child_id]
+  )
+
+  if (link.length === 0) {
+    return NextResponse.json({ error: 'الربط غير موجود' }, { status: 404 })
+  }
+
+  // Delete the link
+  await query(
+    `DELETE FROM parent_children WHERE parent_id = $1 AND child_id = $2`,
+    [session.sub, child_id]
+  )
+
+  return NextResponse.json({ success: true, message: 'تم إلغاء ربط الابن بنجاح' })
+}

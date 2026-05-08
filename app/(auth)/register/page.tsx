@@ -108,6 +108,7 @@ export default function RegisterPage() {
         } else if (platform === 'quran') {
           router.push('/student')
         } else {
+          // platform === 'academy' or 'both'
           router.push('/academy/student')
         }
       }

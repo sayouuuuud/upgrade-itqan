@@ -17,6 +17,7 @@ export async function GET(
 
         const user = await db.queryOne<any>(
             `SELECT u.id, u.name, u.email, u.phone, u.role, u.avatar_url, u.bio, u.is_active, u.created_at, u.last_login_at,
+             u.city as user_city,
              EXISTS(
                 SELECT 1 FROM user_sessions us 
                 WHERE us.user_id = u.id 
@@ -213,38 +214,148 @@ export async function DELETE(
             return NextResponse.json({ error: 'User not found' }, { status: 404 })
         }
 
-        // Permanent deletion - Thorough cleanup of related records that don't cascade
-        // 0. Nullify assigned_supervisor_id (NO ACTION FK - must be cleared before deletion)
-        await db.query('UPDATE conversations SET assigned_supervisor_id = NULL WHERE assigned_supervisor_id = $1', [userId])
+        // Helper: run query and ignore "table does not exist" errors so this is robust
+        const safe = async (sql: string, params: any[] = []) => {
+            try {
+                await db.query(sql, params)
+            } catch (e: any) {
+                // 42P01 = undefined_table, 42703 = undefined_column. Ignore those so a
+                // missing optional table never blocks deletion.
+                if (e?.code === '42P01' || e?.code === '42703') return
+                throw e
+            }
+        }
 
-        // 1. Delete bookings (student or reader)
-        await db.query('DELETE FROM bookings WHERE student_id = $1 OR reader_id = $1', [userId])
+        // ============================================================
+        // 1) Null-out non-critical references (SET NULL semantics)
+        // ============================================================
+        await safe('UPDATE conversations SET assigned_supervisor_id = NULL WHERE assigned_supervisor_id = $1', [userId])
+        await safe('UPDATE conversations SET admin_id = NULL WHERE admin_id = $1', [userId])
+        await safe('UPDATE academy_teachers SET verified_by = NULL WHERE verified_by = $1', [userId])
+        await safe('UPDATE teacher_applications SET reviewed_by = NULL WHERE reviewed_by = $1', [userId])
+        await safe('UPDATE reader_applications SET reviewer_id = NULL WHERE reviewer_id = $1', [userId])
+        await safe('UPDATE lessons SET reviewed_by = NULL WHERE reviewed_by = $1', [userId])
+        await safe('UPDATE lessons SET submitted_by = NULL WHERE submitted_by = $1', [userId])
+        await safe('UPDATE categories SET created_by = NULL WHERE created_by = $1', [userId])
+        await safe('UPDATE learning_paths SET created_by = NULL WHERE created_by = $1', [userId])
+        await safe('UPDATE competitions SET created_by = NULL WHERE created_by = $1', [userId])
+        await safe('UPDATE competitions SET winner_id = NULL WHERE winner_id = $1', [userId])
+        await safe('UPDATE competition_entries SET evaluated_by = NULL WHERE evaluated_by = $1', [userId])
+        await safe('UPDATE invitations SET invited_by = NULL WHERE invited_by = $1', [userId])
+        await safe('UPDATE invitations SET accepted_by_user_id = NULL WHERE accepted_by_user_id = $1', [userId])
+        await safe('UPDATE invitation_codes SET created_by = NULL WHERE created_by = $1', [userId])
+        await safe('UPDATE invitation_history SET changed_by = NULL WHERE changed_by = $1', [userId])
+        await safe('UPDATE announcements SET created_by = NULL WHERE created_by = $1', [userId])
+        await safe('UPDATE forum_posts SET last_reply_by = NULL WHERE last_reply_by = $1', [userId])
+        await safe('UPDATE fiqh_questions SET answered_by = NULL WHERE answered_by = $1', [userId])
+        await safe('UPDATE academy_certificates SET issued_by = NULL WHERE issued_by = $1', [userId])
+        await safe('UPDATE bookings SET cancelled_by = NULL WHERE cancelled_by = $1', [userId])
+        await safe('UPDATE users SET role_changed_by = NULL WHERE role_changed_by = $1', [userId])
+        await safe('UPDATE users SET created_by = NULL WHERE created_by = $1', [userId])
+        await safe('UPDATE system_settings SET updated_by = NULL WHERE updated_by = $1', [userId])
 
-        // 2. Delete recitations (student)
-        await db.query('DELETE FROM recitations WHERE student_id = $1', [userId])
+        // ============================================================
+        // 2) Delete records that belong to / are owned by this user
+        // ============================================================
 
-        // 3. Delete conversations (student or reader) - messages will cascade
-        await db.query('DELETE FROM conversations WHERE student_id = $1 OR reader_id = $1', [userId])
+        // --- Mokraa side ---
+        await safe('DELETE FROM word_mistakes WHERE student_id = $1 OR reader_id = $1', [userId])
+        await safe('DELETE FROM recitation_feedback WHERE reader_id = $1', [userId])
+        await safe('DELETE FROM reviews WHERE reader_id = $1', [userId])
+        await safe('DELETE FROM reader_ratings WHERE student_id = $1 OR reader_id = $1', [userId])
+        await safe('DELETE FROM reader_time_off WHERE reader_id = $1', [userId])
+        await safe('DELETE FROM reader_stats WHERE reader_id = $1', [userId])
+        await safe('DELETE FROM availability_slots WHERE reader_id = $1', [userId])
+        await safe('DELETE FROM reserved_slots WHERE student_id = $1 OR reader_id = $1', [userId])
+        await safe('DELETE FROM booking_reschedule_requests WHERE requested_by = $1', [userId])
+        await safe('DELETE FROM booking_comments WHERE user_id = $1', [userId])
+        await safe('DELETE FROM bookings WHERE student_id = $1 OR reader_id = $1', [userId])
+        await safe('DELETE FROM recitations WHERE student_id = $1 OR assigned_reader_id = $1', [userId])
+        await safe('DELETE FROM reader_profiles WHERE user_id = $1', [userId])
+        await safe('DELETE FROM reader_applications WHERE user_id = $1', [userId])
+        await safe('DELETE FROM student_stats WHERE student_id = $1', [userId])
+        await safe('DELETE FROM certificate_data WHERE student_id = $1', [userId])
+        await safe('DELETE FROM messages WHERE sender_id = $1 OR recipient_id = $1', [userId])
+        await safe('DELETE FROM conversations WHERE student_id = $1 OR reader_id = $1', [userId])
 
-        // 4. Delete notifications
-        await db.query('DELETE FROM notifications WHERE user_id = $1 OR related_user_id = $1', [userId])
+        // --- Academy side ---
+        await safe('DELETE FROM academy_messages WHERE sender_id = $1', [userId])
+        await safe('DELETE FROM academy_messages WHERE conversation_id IN (SELECT id FROM academy_conversations WHERE teacher_id = $1 OR student_id = $1)', [userId])
+        await safe('DELETE FROM academy_conversations WHERE teacher_id = $1 OR student_id = $1', [userId])
+        await safe('DELETE FROM academy_certificates WHERE student_id = $1', [userId])
+        await safe('DELETE FROM session_attendance WHERE student_id = $1', [userId])
+        await safe('DELETE FROM session_attendance WHERE session_id IN (SELECT id FROM course_sessions WHERE teacher_id = $1)', [userId])
+        await safe('DELETE FROM course_sessions WHERE teacher_id = $1', [userId])
+        await safe('DELETE FROM task_submissions WHERE student_id = $1', [userId])
+        await safe('DELETE FROM task_submissions WHERE task_id IN (SELECT id FROM tasks WHERE assigned_by = $1 OR assigned_to = $1)', [userId])
+        await safe('DELETE FROM tasks WHERE assigned_by = $1 OR assigned_to = $1', [userId])
+        await safe('DELETE FROM lesson_progress WHERE enrollment_id IN (SELECT id FROM enrollments WHERE student_id = $1)', [userId])
+        await safe('DELETE FROM enrollments WHERE student_id = $1', [userId])
+        await safe('DELETE FROM lessons WHERE course_id IN (SELECT id FROM courses WHERE teacher_id = $1)', [userId])
+        await safe('DELETE FROM lesson_attachments WHERE lesson_id IN (SELECT id FROM lessons WHERE course_id IN (SELECT id FROM courses WHERE teacher_id = $1))', [userId])
+        await safe('DELETE FROM enrollments WHERE course_id IN (SELECT id FROM courses WHERE teacher_id = $1)', [userId])
+        await safe('DELETE FROM learning_path_courses WHERE course_id IN (SELECT id FROM courses WHERE teacher_id = $1)', [userId])
+        await safe('DELETE FROM public_lesson_subscribers WHERE teacher_id = $1', [userId])
+        await safe('DELETE FROM courses WHERE teacher_id = $1', [userId])
+        await safe('DELETE FROM halaqat WHERE teacher_id = $1', [userId])
+        await safe('UPDATE users SET halaqah_id = NULL WHERE halaqah_id IN (SELECT id FROM halaqat WHERE teacher_id = $1)', [userId])
+        await safe('DELETE FROM teacher_verifications WHERE teacher_id = $1 OR supervisor_id = $1', [userId])
+        await safe('DELETE FROM academy_teachers WHERE user_id = $1', [userId])
+        await safe('DELETE FROM teacher_applications WHERE user_id = $1', [userId])
 
-        // 5. Delete activity logs of this user (but keep logs where they are the entity)
-        await db.query('DELETE FROM activity_logs WHERE user_id = $1', [userId])
+        // --- Parent / student links ---
+        await safe('DELETE FROM parent_student_link_audit WHERE performed_by = $1', [userId])
+        await safe('DELETE FROM parent_student_link_audit WHERE parent_student_link_id IN (SELECT id FROM parent_student_links WHERE parent_id = $1 OR student_id = $1)', [userId])
+        await safe('DELETE FROM parent_student_links WHERE parent_id = $1 OR student_id = $1', [userId])
+        await safe('DELETE FROM parent_children WHERE parent_id = $1 OR child_id = $1', [userId])
+        await safe('DELETE FROM parent_child_links WHERE parent_id = $1 OR child_id = $1', [userId])
 
-        // 6. Finally delete the user - profiles, stats, sessions, etc. will cascade from ON DELETE CASCADE in schema
+        // --- Forum / Fiqh / Community ---
+        await safe('DELETE FROM forum_replies WHERE author_id = $1', [userId])
+        await safe('DELETE FROM forum_replies WHERE post_id IN (SELECT id FROM forum_posts WHERE author_id = $1)', [userId])
+        await safe('DELETE FROM forum_posts WHERE author_id = $1', [userId])
+        await safe('DELETE FROM fiqh_questions WHERE asked_by = $1', [userId])
+
+        // --- Gamification / progress ---
+        await safe('DELETE FROM points_log WHERE user_id = $1', [userId])
+        await safe('DELETE FROM user_points WHERE user_id = $1', [userId])
+        await safe('DELETE FROM badges WHERE user_id = $1', [userId])
+        await safe('DELETE FROM memorization_log WHERE student_id = $1', [userId])
+        await safe('DELETE FROM student_path_progress WHERE student_id = $1', [userId])
+        await safe('DELETE FROM competition_entries WHERE student_id = $1', [userId])
+
+        // --- Supervisor / permissions / sessions ---
+        await safe('DELETE FROM supervisor_assignments WHERE supervisor_id = $1 OR assigned_by = $1', [userId])
+        await safe('DELETE FROM permission_invalidations WHERE user_id = $1 OR admin_id = $1', [userId])
+
+        // --- Notifications / activity / sessions / auth ---
+        await safe('DELETE FROM notifications WHERE user_id = $1 OR related_user_id = $1', [userId])
+        await safe('DELETE FROM activity_logs WHERE user_id = $1', [userId])
+        await safe('DELETE FROM user_sessions WHERE user_id = $1', [userId])
+        await safe('DELETE FROM refresh_tokens WHERE user_id = $1', [userId])
+        await safe('DELETE FROM page_views WHERE user_id = $1', [userId])
+        await safe('DELETE FROM report_exports WHERE user_id = $1', [userId])
+        await safe('DELETE FROM "session" WHERE "userId" = $1', [userId])
+        await safe('DELETE FROM "account" WHERE "userId" = $1', [userId])
+
+        // ============================================================
+        // 3) Finally delete the user
+        // ============================================================
         await db.query('DELETE FROM users WHERE id = $1', [userId])
 
-        // Log admin action (performed by the admin, not the deleted user)
-        await db.query(
+        // Log admin action
+        await safe(
             `INSERT INTO activity_logs (user_id, action, entity_type, entity_id, description)
              VALUES ($1, $2, $3, $4, $5)`,
             [session.sub, 'permanent_delete_user', 'user', userId, `Admin permanently deleted ${user.role} ${user.name}`]
         )
 
         return NextResponse.json({ success: true })
-    } catch (err) {
-        console.error(err)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    } catch (err: any) {
+        console.error('[v0] Delete user error:', err?.message, err?.code, err?.detail)
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            detail: err?.detail || err?.message || 'Unknown error'
+        }, { status: 500 })
     }
 }

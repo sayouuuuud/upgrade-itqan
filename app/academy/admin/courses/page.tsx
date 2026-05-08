@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, Eye, BookOpen, X, Loader2 } from 'lucide-react'
+import { Plus, Edit2, Trash2, Eye, BookOpen, X, Loader2, Users } from 'lucide-react'
 
 interface Course {
   id: string
@@ -19,11 +19,18 @@ interface Category {
   name: string
 }
 
-const emptyForm = { title: '', description: '', category_id: '', status: 'draft' }
+interface Teacher {
+  id: string
+  name: string
+  email: string
+}
+
+const emptyForm = { title: '', description: '', category_id: '', status: 'draft', teacher_id: '' }
 
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [teachers, setTeachers] = useState<Teacher[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editItem, setEditItem] = useState<Course | null>(null)
@@ -55,9 +62,20 @@ export default function AdminCoursesPage() {
     } catch {}
   }
 
+  const fetchTeachers = async () => {
+    try {
+      const res = await fetch('/api/academy/admin/teachers')
+      if (res.ok) {
+        const json = await res.json()
+        setTeachers(json.data || [])
+      }
+    } catch {}
+  }
+
   useEffect(() => {
     fetchCourses()
     fetchCategories()
+    fetchTeachers()
   }, [])
 
   const openAdd = () => {
@@ -68,7 +86,7 @@ export default function AdminCoursesPage() {
 
   const openEdit = (course: Course) => {
     setEditItem(course)
-    setForm({ title: course.title, description: course.description || '', category_id: course.category_id || '', status: course.status || 'draft' })
+    setForm({ title: course.title, description: course.description || '', category_id: course.category_id || '', status: course.status || 'draft', teacher_id: course.teacher_id || '' })
     setShowModal(true)
   }
 
@@ -235,6 +253,23 @@ export default function AdminCoursesPage() {
                   >
                     <option value="">اختر تصنيفاً</option>
                     {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                  </select>
+                </div>
+              )}
+              {teachers.length > 0 && (
+                <div>
+                  <label className="text-sm font-bold block mb-1.5 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    المدرس <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={form.teacher_id}
+                    onChange={e => setForm({ ...form, teacher_id: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">اختر مدرساً</option>
+                    {teachers.map(teacher => <option key={teacher.id} value={teacher.id}>{teacher.name}</option>)}
                   </select>
                 </div>
               )}

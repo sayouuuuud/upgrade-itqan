@@ -1,19 +1,36 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
+import { query } from "@/lib/db"
 import { getPrayerTimes, getPrayerTimesByCoordinates, getNextPrayer } from "@/lib/external/aladhan-api"
 import type { CalculationMethod } from "@/lib/external/aladhan-api"
 
 /**
  * GET /api/prayer-times
- * Get today's prayer times for the user
- * 
+ * Get today's prayer times for the user.
+ * Priority: query params → saved user city → "Riyadh"
+ *
  * Query params:
- * - city: City name (default: "Riyadh")
- * - country: Country name (default: "Saudi Arabia")
+ * - city: City name override
+ * - country: Country name override
  * - lat: Latitude (optional, if provided with lng, uses coordinates)
  * - lng: Longitude (optional)
  * - method: Calculation method (default: "makkah")
  */
+
+// Cities list for country lookup
+const CITY_COUNTRY_MAP: Record<string, string> = {
+  'Makkah': 'Saudi Arabia', 'Madinah': 'Saudi Arabia', 'Riyadh': 'Saudi Arabia',
+  'Jeddah': 'Saudi Arabia', 'Dammam': 'Saudi Arabia',
+  'Cairo': 'Egypt', 'Alexandria': 'Egypt', 'Giza': 'Egypt',
+  'Dubai': 'UAE', 'Abu Dhabi': 'UAE',
+  'Kuwait City': 'Kuwait', 'Doha': 'Qatar', 'Manama': 'Bahrain',
+  'Muscat': 'Oman', 'Amman': 'Jordan', 'Beirut': 'Lebanon',
+  'Damascus': 'Syria', 'Baghdad': 'Iraq', 'Tunis': 'Tunisia',
+  'Algiers': 'Algeria', 'Casablanca': 'Morocco', 'Rabat': 'Morocco',
+  'Khartoum': 'Sudan', 'Istanbul': 'Turkey',
+  'London': 'United Kingdom', 'Paris': 'France',
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession()
@@ -22,10 +39,20 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url)
-    
-    // Get parameters
-    const city = searchParams.get("city") || "Riyadh"
-    const country = searchParams.get("country") || "Saudi Arabia"
+
+    // Fetch user's saved city from DB if no explicit city param
+    let savedCity: string | null = null
+    if (!searchParams.get("city")) {
+      const rows = await query<{ city: string | null }>(
+        `SELECT city FROM users WHERE id = $1`,
+        [session.sub]
+      )
+      savedCity = rows[0]?.city || null
+    }
+
+    // Get parameters — query param > saved city > default
+    const city = searchParams.get("city") || savedCity || "Riyadh"
+    const country = searchParams.get("country") || CITY_COUNTRY_MAP[city] || "Saudi Arabia"
     const lat = searchParams.get("lat")
     const lng = searchParams.get("lng")
     const method = (searchParams.get("method") || "makkah") as CalculationMethod
@@ -70,9 +97,10 @@ export async function GET(req: NextRequest) {
         },
         date: prayerTimes.date,
         location: {
-          city: prayerTimes.city,
-          country: prayerTimes.country,
-          timezone: prayerTimes.timezone
+          city: prayerTimes.city || city,
+          country: prayerTimes.country || country,
+          timezone: prayerTimes.timezone,
+          isSavedCity: !!savedCity && !searchParams.get("city"),
         },
         nextPrayer
       }
