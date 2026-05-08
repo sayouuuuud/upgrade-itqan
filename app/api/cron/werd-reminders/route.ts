@@ -49,11 +49,15 @@ export async function POST(req: NextRequest) {
       ? "صباح الخير! لا تنسَ قراءة وردك اليومي من القرآن الكريم. اللهم اجعل القرآن ربيع قلوبنا."
       : "مساء الخير! حان وقت ورد المساء. اقرأ وردك اليومي واختم يومك بذكر الله."
 
-    // Get all active students
+    // Get all active students who have this reminder type enabled (or have no settings row yet = defaults true)
+    const reminderColumn = isAfterFajr ? "fajr_reminder_enabled" : "maghrib_reminder_enabled"
     const students = await query<{ id: string; name: string }>(
-      `SELECT id, name FROM users 
-       WHERE role = 'student' 
-       AND is_active = true`
+      `SELECT u.id, u.name
+       FROM users u
+       LEFT JOIN student_werd_settings ws ON ws.student_id = u.id
+       WHERE u.role = 'student'
+         AND u.is_active = true
+         AND COALESCE(ws.${reminderColumn}, true) = true`
     )
 
     if (students.length === 0) {

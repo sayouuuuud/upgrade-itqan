@@ -27,18 +27,26 @@ export async function POST(req: NextRequest) {
     )
 
     try {
-      const admins = await query<{ id: string }>(
-        `SELECT id FROM users WHERE role = 'admin'`
+      // Notify fiqh supervisors first, fallback to admins if none exist
+      const recipients = await query<{ id: string; role: string }>(
+        `SELECT id, role FROM users
+         WHERE role IN ('fiqh_supervisor', 'admin', 'academy_admin')
+         AND is_active = true`
       )
 
-      for (const admin of admins) {
+      // Prefer fiqh_supervisor if any exist, else notify all admins
+      const supervisors = recipients.filter(r => r.role === 'fiqh_supervisor')
+      const targets = supervisors.length > 0 ? supervisors : recipients
+
+      for (const target of targets) {
+        const isSupervisor = target.role === 'fiqh_supervisor'
         await createNotification({
-          userId: admin.id,
+          userId: target.id,
           type: 'general',
-          title: '❓ سؤال فقهي جديد',
+          title: 'سؤال فقهي جديد',
           message: `سؤال جديد في فئة ${category} ينتظر الإجابة`,
-          category: 'fiqh',
-          link: '/academy/admin/fiqh',
+          category: 'general',
+          link: isSupervisor ? '/academy/fiqh-supervisor/questions' : '/academy/admin/fiqh',
         }).catch(() => {})
       }
     } catch (notifErr) {

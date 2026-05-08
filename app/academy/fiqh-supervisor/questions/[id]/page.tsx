@@ -88,7 +88,7 @@ export default function FiqhQuestionDetailPage({ params }: { params: Promise<{ i
       <div className="text-center py-24">
         <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
         <h2 className="text-lg font-bold text-foreground">السؤال غير موجود</h2>
-        <Link href="/academy/supervisor/fiqh" className="text-sm text-primary hover:underline mt-2 inline-block">
+        <Link href="/academy/fiqh-supervisor/questions" className="text-sm text-primary hover:underline mt-2 inline-block">
           العودة للقائمة
         </Link>
       </div>
@@ -102,7 +102,7 @@ export default function FiqhQuestionDetailPage({ params }: { params: Promise<{ i
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Back */}
       <Link
-        href="/academy/supervisor/fiqh"
+        href="/academy/fiqh-supervisor/questions"
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowRight className="w-4 h-4" />
@@ -135,7 +135,7 @@ export default function FiqhQuestionDetailPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      {/* Existing answer display */}
+      {/* Existing answer */}
       {isAnswered && !editing && (
         <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl p-6 space-y-3">
           <div className="flex items-center justify-between">
@@ -192,12 +192,11 @@ export default function FiqhQuestionDetailPage({ params }: { params: Promise<{ i
             className="w-full bg-muted/30 border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none leading-relaxed"
           />
 
-          {/* Publish toggle */}
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <button
               type="button"
               onClick={() => setPublish(p => !p)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${publish ? 'bg-primary' : 'bg-muted'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${publish ? 'bg-primary' : 'bg-muted'}`}
             >
               <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${publish ? 'translate-x-5' : 'translate-x-0.5'}`} />
             </button>

@@ -19,6 +19,18 @@ export async function GET(req: NextRequest) {
     const params: any[] = [session.sub]
     let whereExtra = ''
 
+    // Fetch student's specializations for matching
+    const studentSpecs = await query<{ specialization: string }>(
+      `SELECT specialization FROM user_specializations WHERE user_id = $1`,
+      [session.sub]
+    )
+    // If student has specializations, filter courses to matching ones (or courses with no specialization = general)
+    if (studentSpecs.length > 0) {
+      const specValues = studentSpecs.map(s => s.specialization)
+      params.push(specValues)
+      whereExtra += ` AND (c.specialization = ANY($${params.length}) OR c.specialization IS NULL OR c.specialization = 'general')`
+    }
+
     if (categoryId) {
       params.push(categoryId)
       whereExtra += ` AND c.category_id = $${params.length}`

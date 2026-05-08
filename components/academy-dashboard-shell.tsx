@@ -21,7 +21,7 @@ import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 type NavItem = { href: string; label: string; icon: React.ElementType; badge?: number | string | null }
 type NavSection = { title?: string; items: NavItem[] }
 
-type AcademyRole = 'academy_student' | 'teacher' | 'academy_admin' | 'parent' | 'supervisor'
+type AcademyRole = 'academy_student' | 'teacher' | 'academy_admin' | 'parent' | 'supervisor' | 'fiqh_questions_supervisor' | 'content_supervisor'
 
 const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection[], label: string, name: string, sublabel: string } => {
   const configs: Record<AcademyRole, { sections: NavSection[], label: string, name: string, sublabel: string }> = {
@@ -116,6 +116,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/admin/paths', label: t.academy?.learningPaths || 'المسارات التعليمية', icon: Route },
             { href: '/academy/admin/invitations', label: t.academy?.invitations || 'الدعوات', icon: UserPlus },
             { href: '/academy/admin/users', label: t.admin?.users || 'المستخدمين', icon: Users },
+            { href: '/academy/admin/supervisors', label: 'مشرفو الفقه', icon: Shield },
           ]
         },
         {
@@ -192,6 +193,46 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
       label: t.academy?.supervisorPortal || 'لوحة المشرف',
       name: t.academy?.supervisor || 'مشرف',
       sublabel: t.academy?.academySupervisor || 'مشرف الأكاديمية'
+    },
+    fiqh_questions_supervisor: {
+      sections: [
+        {
+          items: [
+            { href: '/academy/fiqh-supervisor', label: 'لوحة التحكم', icon: LayoutDashboard },
+            { href: '/academy/fiqh-supervisor/questions', label: 'الأسئلة والإجابات', icon: HelpCircle },
+            { href: '/academy/fiqh-supervisor/messages', label: 'الرسائل', icon: MessageSquare },
+          ]
+        },
+        {
+          title: 'الحساب',
+          items: [
+            { href: '/academy/fiqh-supervisor/profile', label: 'الملف الشخصي', icon: User },
+          ]
+        }
+      ],
+      label: 'لوحة مشرف أسئلة الفقه',
+      name: 'مشرف أسئلة الفقه',
+      sublabel: 'مشرف أسئلة الفقه'
+    },
+    content_supervisor: {
+      sections: [
+        {
+          items: [
+            { href: '/academy/content-supervisor', label: 'لوحة التحكم', icon: LayoutDashboard },
+            { href: '/academy/content-supervisor/lessons', label: 'الدروس', icon: BookOpen },
+            { href: '/academy/content-supervisor/messages', label: 'الرسائل', icon: MessageSquare },
+          ]
+        },
+        {
+          title: 'الحساب',
+          items: [
+            { href: '/academy/content-supervisor/profile', label: 'الملف الشخصي', icon: User },
+          ]
+        }
+      ],
+      label: 'لوحة مشرف المحتوى',
+      name: 'مشرف المحتوى',
+      sublabel: 'مشرف المحتوى'
     }
   }
 
@@ -262,7 +303,16 @@ export function AcademyDashboardShell({
   const config = { ...rawConfig, name: userName }
 
   const isActive = (href: string) => {
-    const basePath = `/academy/${role === 'academy_student' ? 'student' : role === 'academy_admin' ? 'admin' : role}`
+    const basePaths: Record<string, string> = {
+      academy_student: '/academy/student',
+      teacher: '/academy/teacher',
+      academy_admin: '/academy/admin',
+      parent: '/academy/parent',
+      supervisor: '/academy/supervisor',
+      fiqh_questions_supervisor: '/academy/fiqh-supervisor',
+      content_supervisor: '/academy/content-supervisor',
+    }
+    const basePath = basePaths[role] || `/academy/${role}`
     return pathname === href || (href !== basePath && pathname.startsWith(href + '/'))
   }
 
