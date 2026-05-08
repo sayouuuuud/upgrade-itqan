@@ -332,10 +332,19 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                     <span className="text-muted-foreground font-bold">{t.admin.joinDate}</span>
                                     <span className="text-foreground font-black">{new Date(user.created_at).toLocaleDateString(t.locale === 'ar' ? 'ar-SA' : 'en-US')}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2">
+                                <div className="flex justify-between items-center py-2 border-b border-border/30">
                                     <span className="text-muted-foreground font-bold">{t.admin.lastLogin}</span>
                                     <span className="text-foreground font-black">{user.last_login_at ? new Date(user.last_login_at).toLocaleString(t.locale === 'ar' ? 'ar-SA' : 'en-US') : "---"}</span>
                                 </div>
+                                {user.user_city && (
+                                  <div className="flex justify-between items-center py-2">
+                                    <span className="text-muted-foreground font-bold flex items-center gap-2">
+                                      <Globe className="w-4 h-4" />
+                                      {isAr ? "مدينة مواقيت الصلاة" : "Prayer City"}
+                                    </span>
+                                    <span className="text-foreground font-black">{user.user_city}</span>
+                                  </div>
+                                )}
                             </CardContent>
                         </Card>
 

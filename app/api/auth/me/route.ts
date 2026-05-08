@@ -18,13 +18,14 @@ export async function GET() {
       avatar_url: string | null
       gender: string | null
       phone: string | null
+      city: string | null
       is_accepting_recitations: boolean
       student_status: string
       has_quran_access: boolean
       has_academy_access: boolean
       platform_preference: string
     }>(
-      `SELECT id, name, email, role, avatar_url, gender, phone, is_accepting_recitations, student_status, has_quran_access, has_academy_access, platform_preference FROM users WHERE id = $1`,
+      `SELECT id, name, email, role, avatar_url, gender, phone, city, is_accepting_recitations, student_status, has_quran_access, has_academy_access, platform_preference FROM users WHERE id = $1`,
       [session.sub]
     )
 
@@ -65,7 +66,7 @@ export async function PATCH(req: NextRequest) {
     if (!session) return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
 
     const body = await req.json()
-    const { name, avatar_url, phone, gender, is_accepting_recitations, platform_preference } = body
+    const { name, avatar_url, phone, gender, city, is_accepting_recitations, platform_preference } = body
 
     const updates: string[] = []
     const params: unknown[] = []
@@ -93,6 +94,10 @@ export async function PATCH(req: NextRequest) {
     if (platform_preference !== undefined) {
       params.push(platform_preference)
       updates.push(`platform_preference = $${params.length}`)
+    }
+    if (city !== undefined) {
+      params.push(city)
+      updates.push(`city = $${params.length}`)
     }
 
     // Reader-only updates
@@ -128,9 +133,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     params.push(session.sub)
-    const result = await query<{ id: string; name: string; email: string; avatar_url: string | null; role: string }>(
+    const result = await query<{ id: string; name: string; email: string; avatar_url: string | null; role: string; city: string | null }>(
       `UPDATE users SET ${updates.join(", ")}, updated_at = NOW() WHERE id = $${params.length}
-       RETURNING id, name, email, avatar_url, role`,
+       RETURNING id, name, email, avatar_url, role, city`,
       params
     )
 

@@ -6,7 +6,38 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AvatarUpload } from '@/components/avatar-upload'
-import { User, Lock, CheckCircle, Loader2, BookMarked, X, Plus } from 'lucide-react'
+import { User, Lock, CheckCircle, Loader2, BookMarked, X, Plus, MapPin } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+// Major Arab/Islamic cities for prayer times
+const PRAYER_CITIES = [
+  { value: 'Makkah',     country: 'Saudi Arabia', label: 'مكة المكرمة' },
+  { value: 'Madinah',    country: 'Saudi Arabia', label: 'المدينة المنورة' },
+  { value: 'Riyadh',     country: 'Saudi Arabia', label: 'الرياض' },
+  { value: 'Jeddah',     country: 'Saudi Arabia', label: 'جدة' },
+  { value: 'Dammam',     country: 'Saudi Arabia', label: 'الدمام' },
+  { value: 'Cairo',      country: 'Egypt',        label: 'القاهرة' },
+  { value: 'Alexandria', country: 'Egypt',        label: 'الإسكندرية' },
+  { value: 'Giza',       country: 'Egypt',        label: 'الجيزة' },
+  { value: 'Dubai',      country: 'UAE',          label: 'دبي' },
+  { value: 'Abu Dhabi',  country: 'UAE',          label: 'أبوظبي' },
+  { value: 'Kuwait City',country: 'Kuwait',       label: 'الكويت' },
+  { value: 'Doha',       country: 'Qatar',        label: 'الدوحة' },
+  { value: 'Manama',     country: 'Bahrain',      label: 'المنامة' },
+  { value: 'Muscat',     country: 'Oman',         label: 'مسقط' },
+  { value: 'Amman',      country: 'Jordan',       label: 'عمّان' },
+  { value: 'Beirut',     country: 'Lebanon',      label: 'بيروت' },
+  { value: 'Damascus',   country: 'Syria',        label: 'دمشق' },
+  { value: 'Baghdad',    country: 'Iraq',         label: 'بغداد' },
+  { value: 'Tunis',      country: 'Tunisia',      label: 'تونس' },
+  { value: 'Algiers',    country: 'Algeria',      label: 'الجزائر' },
+  { value: 'Casablanca', country: 'Morocco',      label: 'الدار البيضاء' },
+  { value: 'Rabat',      country: 'Morocco',      label: 'الرباط' },
+  { value: 'Khartoum',   country: 'Sudan',        label: 'الخرطوم' },
+  { value: 'Istanbul',   country: 'Turkey',       label: 'إسطنبول' },
+  { value: 'London',     country: 'United Kingdom', label: 'لندن' },
+  { value: 'Paris',      country: 'France',       label: 'باريس' },
+]
 import { useI18n } from '@/lib/i18n/context'
 
 interface UserProfile {
@@ -17,6 +48,7 @@ interface UserProfile {
   avatar_url: string | null
   phone: string | null
   gender: string | null
+  city: string | null
   has_quran_access?: boolean
   has_academy_access?: boolean
   platform_preference?: string
@@ -27,6 +59,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [city, setCity] = useState('')
   const [platformPreference, setPlatformPreference] = useState('both')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -47,6 +80,7 @@ export default function ProfilePage() {
           setProfile(d.user)
           setName(d.user.name || '')
           setPhone(d.user.phone || '')
+          setCity(d.user.city || '')
           setPlatformPreference(d.user.platform_preference || 'both')
         }
       })
@@ -69,7 +103,7 @@ export default function ProfilePage() {
       const res = await fetch('/api/auth/me', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, platform_preference: platformPreference }),
+        body: JSON.stringify({ name, phone, city: city || null, platform_preference: platformPreference }),
       })
       if (res.ok) {
         const d = await res.json()
@@ -265,6 +299,30 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   
+                  {/* Prayer City */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {isAr ? "مدينة مواقيت الصلاة" : "Prayer Times City"}
+                    </Label>
+                    <Select value={city} onValueChange={setCity}>
+                      <SelectTrigger className="h-12 border-border bg-muted/30 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all border font-medium">
+                        <SelectValue placeholder={isAr ? "اختر مدينتك..." : "Select your city..."} />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {PRAYER_CITIES.map(c => (
+                          <SelectItem key={c.value} value={c.value}>
+                            <span className="font-medium">{c.label}</span>
+                            <span className="text-muted-foreground text-xs ms-2">— {c.country}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground px-1">
+                      {isAr ? "ستُستخدم هذه المدينة لعرض مواقيت الصلاة الخاصة بك." : "This city will be used to show your prayer times."}
+                    </p>
+                  </div>
+
                   {profile?.has_quran_access && profile?.has_academy_access && (
                     <div className="space-y-2">
                        <Label htmlFor="platform_preference" className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">
