@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       description || null, 
       category || 'عام', 
       icon || '🏆', 
-      criteria_type || 'manual', 
+      criteria_type || 'custom',
       criteria_value || 0, 
       points_reward || 0, 
       display_order || 0

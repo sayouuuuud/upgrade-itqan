@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar, Clock, Users, Plus, Edit2, Trash2 } from 'lucide-react'
+import { Calendar, Clock, Globe2, Link2, Megaphone, Plus, Edit2, Trash2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -27,9 +27,14 @@ export default function TeacherSchedulePage() {
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [duration, setDuration] = useState('60')
+  const [meetingLink, setMeetingLink] = useState('')
+  const [meetingPlatform, setMeetingPlatform] = useState('zoom')
+  const [isPublicLesson, setIsPublicLesson] = useState(false)
+  const [announceToStudents, setAnnounceToStudents] = useState(true)
+  const [seriesTitle, setSeriesTitle] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
       const res = await fetch('/api/academy/teacher/sessions')
       if (res.ok) {
@@ -39,9 +44,9 @@ export default function TeacherSchedulePage() {
     } catch (error) {
       console.error('Failed to fetch sessions:', error)
     }
-  }
+  }, [])
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       const res = await fetch('/api/academy/teacher/courses')
       if (res.ok) {
@@ -51,17 +56,17 @@ export default function TeacherSchedulePage() {
     } catch (error) {
       console.error('Failed to fetch courses:', error)
     }
-  }
+  }, [])
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     await Promise.all([fetchSessions(), fetchCourses()])
     setLoading(false)
-  }
+  }, [fetchCourses, fetchSessions])
 
   useEffect(() => {
-    loadData()
-  }, [])
+    void Promise.resolve().then(loadData)
+  }, [loadData])
 
   const resetForm = () => {
     setEditingId(null)
@@ -71,6 +76,11 @@ export default function TeacherSchedulePage() {
     setDate('')
     setTime('')
     setDuration('60')
+    setMeetingLink('')
+    setMeetingPlatform('zoom')
+    setIsPublicLesson(false)
+    setAnnounceToStudents(true)
+    setSeriesTitle('')
   }
 
   const handleOpenNewModal = () => {
@@ -91,6 +101,11 @@ export default function TeacherSchedulePage() {
       setTime(dt.toTimeString().slice(0, 5))
     }
     setDuration(session.duration_minutes?.toString() || '60')
+    setMeetingLink(session.meeting_link || '')
+    setMeetingPlatform(session.meeting_platform || 'zoom')
+    setIsPublicLesson(!!session.is_public)
+    setAnnounceToStudents(false)
+    setSeriesTitle('')
     setIsEditModalOpen(true)
   }
 
@@ -112,7 +127,12 @@ export default function TeacherSchedulePage() {
       title,
       description,
       scheduled_at,
-      duration_minutes: parseInt(duration)
+      duration_minutes: parseInt(duration),
+      meeting_link: meetingLink,
+      meeting_platform: meetingPlatform,
+      is_public: isPublicLesson,
+      announce_to_students: announceToStudents,
+      series_title: seriesTitle,
     }
 
     try {
@@ -219,6 +239,35 @@ export default function TeacherSchedulePage() {
                         <div className="flex items-center gap-1 text-primary">
                           مدتها: {session.duration_minutes || 60} دقيقة
                         </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-sm">
+                        {session.meeting_link && (
+                          <a
+                            href={session.meeting_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                          >
+                            <Link2 className="w-4 h-4" />
+                            رابط الاجتماع
+                          </a>
+                        )}
+                        {session.is_public && session.public_join_token && (
+                          <a
+                            href={`/academy/public/session/${session.public_join_token}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-green-700 hover:underline"
+                          >
+                            <Globe2 className="w-4 h-4" />
+                            رابط عام للمشاركة
+                          </a>
+                        )}
+                        {session.series_title && (
+                          <span className="inline-flex items-center gap-1 text-purple-700">
+                            سلسلة: {session.series_title}
+                          </span>
+                        )}
                       </div>
                       {session.status === 'in_progress' && <p className="text-sm text-green-600 font-bold mt-1">الجلسة نشطة حالياً</p>}
                     </div>
@@ -346,6 +395,62 @@ export default function TeacherSchedulePage() {
                 onChange={(e) => setDuration(e.target.value)}
                 required
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="meetingPlatform">منصة الاجتماع</Label>
+                <select
+                  id="meetingPlatform"
+                  value={meetingPlatform}
+                  onChange={(e) => setMeetingPlatform(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="zoom">Zoom</option>
+                  <option value="google_meet">Google Meet</option>
+                  <option value="custom">رابط آخر</option>
+                </select>
+              </div>
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="meetingLink">رابط الاجتماع</Label>
+                <Input
+                  id="meetingLink"
+                  type="url"
+                  value={meetingLink}
+                  onChange={(e) => setMeetingLink(e.target.value)}
+                  placeholder="https://zoom.us/j/... أو https://meet.google.com/..."
+                />
+              </div>
+            </div>
+
+            <div className="rounded-lg border p-3 space-y-3 bg-muted/30">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={announceToStudents}
+                  onChange={(e) => setAnnounceToStudents(e.target.checked)}
+                />
+                <Megaphone className="w-4 h-4" />
+                نشر إعلان للطلاب برابط الجلسة
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={isPublicLesson}
+                  onChange={(e) => setIsPublicLesson(e.target.checked)}
+                />
+                <Globe2 className="w-4 h-4" />
+                درس عام مفتوح برابط قابل للمشاركة بدون تسجيل
+              </label>
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="seriesTitle">اسم السلسلة / البلاي ليست (اختياري)</Label>
+                <Input
+                  id="seriesTitle"
+                  value={seriesTitle}
+                  onChange={(e) => setSeriesTitle(e.target.value)}
+                  placeholder="مثال: سلسلة أحكام التجويد للمبتدئين"
+                />
+              </div>
             </div>
 
             <DialogFooter className="pt-4">

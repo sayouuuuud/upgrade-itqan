@@ -9,6 +9,7 @@ interface Badge {
   id: string
   name: string
   description: string
+  icon?: string | null
   icon_url?: string
   points_required?: number
   criteria_type: string
@@ -142,8 +143,10 @@ export default function BadgesPage() {
                       : "bg-muted"
                   )}>
                     {badge.is_earned ? (
-                      badge.icon_url ? (
-                        <img src={badge.icon_url} alt={badge.name} className="w-10 h-10" />
+                      badge.icon_url || badge.icon?.startsWith('http') ? (
+                        <img src={badge.icon_url || badge.icon || ''} alt={badge.name} className="w-10 h-10" />
+                      ) : badge.icon ? (
+                        <span className="text-3xl">{badge.icon}</span>
                       ) : (
                         <BadgeIcon className="w-8 h-8 text-yellow-600" />
                       )
@@ -180,8 +183,10 @@ export default function BadgesPage() {
                 : "bg-muted"
             )}>
               {selectedBadge.is_earned ? (
-                selectedBadge.icon_url ? (
-                  <img src={selectedBadge.icon_url} alt={selectedBadge.name} className="w-14 h-14" />
+                selectedBadge.icon_url || selectedBadge.icon?.startsWith('http') ? (
+                  <img src={selectedBadge.icon_url || selectedBadge.icon || ''} alt={selectedBadge.name} className="w-14 h-14" />
+                ) : selectedBadge.icon ? (
+                  <span className="text-4xl">{selectedBadge.icon}</span>
                 ) : (
                   <Award className="w-12 h-12 text-yellow-600" />
                 )

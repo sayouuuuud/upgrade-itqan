@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -52,22 +52,22 @@ export default function StudentForumPage() {
   const [replyText, setReplyText] = useState('')
   const [sendingReply, setSendingReply] = useState(false)
 
-  useEffect(() => {
-    fetchPosts()
-  }, [category])
-
-  const fetchPosts = async () => {
-    setLoading(true)
+  const fetchPosts = useCallback(async () => {
     try {
       const res = await fetch(`/api/academy/forum?category=${category}`)
-      const data = await res.json()
+      const data = await res.json() as { posts?: Post[] }
       if (res.ok) setPosts(data.posts || [])
     } catch {
       // ignore
     } finally {
       setLoading(false)
     }
-  }
+  }, [category])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchPosts()
+  }, [fetchPosts])
 
   const fetchSinglePost = async (id: string) => {
     setLoadingPost(true)
@@ -134,6 +134,8 @@ export default function StudentForumPage() {
     { id: 'general', label: isAr ? 'نقاش عام' : 'General' },
     { id: 'questions', label: isAr ? 'أسئلة ومساعدة' : 'Questions' },
     { id: 'announcements', label: isAr ? 'إعلانات' : 'Announcements' },
+    { id: 'articles', label: isAr ? 'مقالات تعليمية' : 'Articles' },
+    { id: 'guidance', label: isAr ? 'إرشادات' : 'Guidance' },
   ]
 
   const formatTime = (dateStr: string) => {

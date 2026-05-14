@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
-import { BADGE_CATALOGUE, BadgeType } from '@/lib/academy/gamification'
+import { BadgeType, getBadgeCatalogue } from '@/lib/academy/gamification'
 
 /**
  * GET /api/academy/student/badges
@@ -48,12 +48,15 @@ export async function GET(_req: NextRequest) {
         criteria_type: string
         criteria_value?: number
         points_required?: number
+        icon?: string | null
         is_earned: boolean
         earned_at?: string
       }>
     >()
 
-    for (const def of BADGE_CATALOGUE) {
+    const catalogue = await getBadgeCatalogue()
+
+    for (const def of catalogue) {
       const earned = earnedMap.get(def.badge_type)
       const list = categoriesMap.get(def.category) ?? []
       list.push({
@@ -62,6 +65,7 @@ export async function GET(_req: NextRequest) {
         description: def.description,
         criteria_type: def.criteria_type,
         criteria_value: def.criteria_value,
+        icon: def.icon ?? null,
         points_required:
           def.criteria_type === 'points' ? def.criteria_value : undefined,
         is_earned: !!earned,
@@ -75,7 +79,7 @@ export async function GET(_req: NextRequest) {
       badges,
     }))
 
-    const total = BADGE_CATALOGUE.length
+    const total = catalogue.length
     const earnedCount = earnedRows.length
 
     return NextResponse.json({

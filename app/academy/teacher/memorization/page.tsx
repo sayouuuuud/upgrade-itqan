@@ -19,7 +19,7 @@ export default function TeacherMemorizationPage() {
   const { data: session } = useSession()
   const { data: stats, isLoading: statsLoading } = useSWR<StudentMemorization[]>(
     session ? '/api/academy/teacher/memorization' : null,
-    async (url) => {
+    async (url: string) => {
       const res = await fetch(url)
       if (!res.ok) throw new Error(res.statusText)
       return res.json()

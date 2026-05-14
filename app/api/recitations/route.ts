@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query } from "@/lib/db"
 import { createNotification } from "@/lib/notifications"
+import { isTargetAllowedForStudent } from "@/lib/academy/parent-controls"
+import { awardRecitationSubmittedPoints } from "@/lib/academy/gamification"
 
 // GET /api/recitations - list recitations
 export async function GET(req: NextRequest) {
@@ -95,6 +97,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "نطاق الآيات غير صالح" }, { status: 400 })
     }
 
+    const surahDecision = await isTargetAllowedForStudent(session.sub, "surah", finalSurahNumber)
+    if (!surahDecision.allowed) {
+      return NextResponse.json({ error: "هذه السورة غير مسموحة لهذا الحساب بواسطة ولي الأمر" }, { status: 403 })
+    }
+
     // Check if student already has a pending/in_review recitation (prevent duplicate submissions)
     const existing = await query(
       `SELECT id, status FROM recitations 
@@ -127,6 +134,13 @@ export async function POST(req: NextRequest) {
         qiraah || 'حفص عن عاصم',
       ]
     )
+    const recitation = result[0]
+
+    try {
+      await awardRecitationSubmittedPoints(session.sub, recitation.id as string)
+    } catch (pointsError) {
+      console.error("[Gamification] Failed to award recitation submission points:", pointsError)
+    }
 
     // Auto-assign a reader matching the student's gender and is active for evaluation
     const student = await query<{ gender: string }>("SELECT gender FROM users WHERE id = $1", [session.sub])
@@ -144,7 +158,7 @@ export async function POST(req: NextRequest) {
       )
       if (reader.length > 0) {
         readerFound = true
-        await query("UPDATE recitations SET assigned_reader_id = $1, assigned_at = NOW() WHERE id = $2", [reader[0].id, result[0].id])
+        await query("UPDATE recitations SET assigned_reader_id = $1, assigned_at = NOW() WHERE id = $2", [reader[0].id, recitation.id])
         
         // Notify the assigned reader
         try {
@@ -155,7 +169,7 @@ export async function POST(req: NextRequest) {
             message: 'تم تعيينك لتقييم تلاوة جديدة لسورة الفاتحة. يرجى مراجعتها في أقرب وقت.',
             category: 'recitation',
             link: '/reader/recitations',
-            relatedRecitationId: result[0].id as string,
+            relatedRecitationId: recitation.id as string,
           })
         } catch (notifError) {
           console.error("Failed to create notification for reader:", notifError)
@@ -173,7 +187,7 @@ export async function POST(req: NextRequest) {
         : 'تم استلام تلاوتك بنجاح. سنقوم بتعيين مقرئ لمراجعتها في أقرب وقت ممكن.',
       category: 'recitation',
       link: '/student/recitations',
-      relatedRecitationId: result[0].id as string,
+      relatedRecitationId: recitation.id as string,
     })
 
     // Notify admins about new recitation
@@ -188,11 +202,11 @@ export async function POST(req: NextRequest) {
           : 'ارسل طالب تلاوته ولكن لا يوجد مقرئين متاحين حالياً. يرجى تعيين مقرئ يدوياً.',
         category: 'recitation',
         link: '/admin/recitations',
-        relatedRecitationId: result[0].id as string,
+        relatedRecitationId: recitation.id as string,
       })
     }
 
-    return NextResponse.json({ recitation: result[0] }, { status: 201 })
+    return NextResponse.json({ recitation }, { status: 201 })
   } catch (error) {
     console.error("Create recitation error:", error)
     return NextResponse.json({ error: "حدث خطأ في الخادم" }, { status: 500 })

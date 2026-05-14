@@ -20,6 +20,9 @@ interface Session {
   scheduled_at: string
   duration_minutes: number
   meeting_link?: string
+  meeting_platform?: string
+  is_public?: boolean
+  public_join_token?: string
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
   recording_url?: string
   attendees_count?: number
@@ -293,6 +296,13 @@ export default function StudentSessionsPage() {
                       )}
                     </div>
 
+                    {session.meeting_link && (
+                      <p className="text-sm text-green-700 mt-2 flex items-center gap-1">
+                        <ExternalLink className="w-4 h-4" />
+                        رابط الاجتماع جاهز: {session.meeting_platform === 'google_meet' ? 'Google Meet' : session.meeting_platform === 'zoom' ? 'Zoom' : 'رابط خارجي'}
+                      </p>
+                    )}
+
                     {/* Time Until */}
                     {!sessionIsLive && timeUntil && (
                       <p className="text-sm text-blue-600 mt-2">
@@ -303,7 +313,7 @@ export default function StudentSessionsPage() {
 
                   {/* Action */}
                   <div className="shrink-0">
-                    {sessionIsLive && session.meeting_link && (
+                    {session.meeting_link && (sessionIsLive || session.status === 'scheduled') && (
                       <a
                         href={session.meeting_link}
                         target="_blank"
@@ -311,8 +321,17 @@ export default function StudentSessionsPage() {
                         className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors animate-pulse"
                       >
                         <PlayCircle className="w-5 h-5" />
-                        {t.academy?.joinNow || 'انضم الآن'}
+                        {sessionIsLive ? (t.academy?.joinNow || 'انضم الآن') : 'رابط الجلسة'}
                       </a>
+                    )}
+                    {session.is_public && session.public_join_token && (
+                      <Link
+                        href={`/academy/public/session/${session.public_join_token}`}
+                        className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        رابط عام
+                      </Link>
                     )}
                     {session.status === 'completed' && session.recording_url && (
                       <a
@@ -325,7 +344,7 @@ export default function StudentSessionsPage() {
                         {t.academy?.watchRecording || 'شاهد التسجيل'}
                       </a>
                     )}
-                    {session.status === 'scheduled' && !sessionIsLive && (
+                    {session.status === 'scheduled' && !sessionIsLive && !session.meeting_link && (
                       <button
                         disabled
                         className="inline-flex items-center gap-2 px-4 py-2 bg-muted text-muted-foreground rounded-lg cursor-not-allowed"

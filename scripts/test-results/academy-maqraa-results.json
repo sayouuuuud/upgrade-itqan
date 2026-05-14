@@ -1,0 +1,91 @@
+{
+  "passed": 17,
+  "failed": 0,
+  "results": [
+    {
+      "name": "login admin@test.com",
+      "ok": true,
+      "details": "status=200, role=admin"
+    },
+    {
+      "name": "login student@test.com",
+      "ok": true,
+      "details": "status=200, role=student"
+    },
+    {
+      "name": "login reviewer@test.com",
+      "ok": true,
+      "details": "status=200, role=reader"
+    },
+    {
+      "name": "academy admin leaderboard allows admin",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "academy admin leaderboard blocks student",
+      "ok": true,
+      "details": "status=401, error=Unauthorized"
+    },
+    {
+      "name": "academy student platform leaderboard",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "academy student halaqa leaderboard",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "academy admin creates monthly competition",
+      "ok": true,
+      "details": "status=201"
+    },
+    {
+      "name": "academy student submits competition recitation",
+      "ok": true,
+      "details": "status=201"
+    },
+    {
+      "name": "academy admin/reader can list competition entries",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "academy reader/admin judges entry and awards winner",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "maqra’a student dashboard route loads",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "maqra’a student recitations API loads",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "maqra’a student submit route loads",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "maqra’a reader dashboard route loads",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "maqra’a reader pending recitations API loads",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "maqra’a reader recitations route loads",
+      "ok": true,
+      "details": "status=200"
+    }
+  ]
+}

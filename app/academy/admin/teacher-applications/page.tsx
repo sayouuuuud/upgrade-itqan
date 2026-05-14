@@ -1,214 +1,393 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { CheckCircle2, XCircle, FileText, User, Phone, Globe, GraduationCap, Clock, BookOpen, Trash2 } from 'lucide-react'
+import { useState, useEffect } from "react"
+import {
+    CheckCircle2, XCircle, FileText, User, Phone, Globe, GraduationCap,
+    Clock, BookOpen, Trash2, Mic, AlertCircle, Loader2, Calendar
+} from "lucide-react"
+import AdminAudioPlayer from "@/components/admin/audio-player"
+import AdminPdfViewer from "@/components/admin/pdf-viewer"
+
+type App = {
+    id: string
+    user_id: string
+    name: string
+    email: string
+    qualifications: string | Record<string, any>
+    responses: Record<string, any> | null
+    cv_url: string | null
+    cv_file_url: string | null
+    certificate_file_url: string | null
+    audio_url: string | null
+    status: string
+    created_at: string
+    submitted_at: string | null
+    rejection_reason: string | null
+    rejection_count: number
+}
+
+type Question = {
+    id: string
+    label: string
+    type: string
+    sort_order: number
+}
 
 export default function TeacherApplicationsPage() {
-  const [applications, setApplications] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+    const [apps, setApps] = useState<App[]>([])
+    const [questions, setQuestions] = useState<Question[]>([])
+    const [loading, setLoading] = useState(true)
+    const [selectedId, setSelectedId] = useState<string | null>(null)
+    const [filter, setFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending")
+    const [rejectingId, setRejectingId] = useState<string | null>(null)
+    const [rejectionReason, setRejectionReason] = useState("")
+    const [processing, setProcessing] = useState(false)
 
-  const fetchApps = async () => {
-    try {
-      const res = await fetch('/api/academy/admin/teacher-applications')
-      if (res.ok) {
-        const json = await res.json()
-        setApplications(json.data || [])
-      }
-    } finally { setLoading(false) }
-  }
+    const fetchData = async () => {
+        try {
+            const [a, q] = await Promise.all([
+                fetch("/api/academy/admin/teacher-applications"),
+                fetch("/api/admin/application-questions?role=teacher"),
+            ])
+            if (a.ok) {
+                const j = await a.json()
+                setApps(j.data || [])
+                if (!selectedId && j.data?.length) setSelectedId(j.data[0].id)
+            }
+            if (q.ok) {
+                const j = await q.json()
+                setQuestions(j.data || [])
+            }
+        } finally {
+            setLoading(false)
+        }
+    }
 
-  useEffect(() => { fetchApps() }, [])
+    useEffect(() => { fetchData() }, [])
 
-  const handleAction = async (id: string, action: 'approved' | 'rejected') => {
-    if (!confirm(action === 'approved' ? 'هل تريد قبول هذا المدرس؟' : 'هل تريد رفض هذا الطلب؟')) return
-    try {
-      const res = await fetch(`/api/academy/admin/teacher-applications/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: action })
-      })
-      if (res.ok) {
-        fetchApps()
-      } else {
-        alert('حدث خطأ')
-      }
-    } catch { }
-  }
+    const filtered = apps.filter(a => filter === "all" ? true : a.status === filter)
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return
-    try {
-      const res = await fetch(`/api/academy/admin/teacher-applications/${id}`, {
-        method: 'DELETE'
-      })
-      if (res.ok) {
-        fetchApps()
-      } else {
-        alert('حدث خطأ أثناء الحذف')
-      }
-    } catch { }
-  }
+    const counts = {
+        all: apps.length,
+        pending: apps.filter(a => a.status === "pending").length,
+        approved: apps.filter(a => a.status === "approved").length,
+        rejected: apps.filter(a => a.status === "rejected").length,
+    }
 
-  const pending = applications.filter(a => a.status === 'pending')
-  const history = applications.filter(a => a.status !== 'pending')
+    const selected = apps.find(a => a.id === selectedId) || null
 
-  if (loading) return (
-    <div className="p-8 flex justify-center">
-      <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent" />
-    </div>
-  )
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">طلبات الانضمام كأستاذ</h1>
-        <div className="flex gap-3 text-sm">
-          <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full font-medium">
-            {pending.length} في الانتظار
-          </span>
-          <span className="px-3 py-1 bg-muted text-muted-foreground rounded-full font-medium">
-            {history.length} سابق
-          </span>
-        </div>
-      </div>
-
-      {/* Pending Applications */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="p-4 border-b border-border bg-yellow-50/50 dark:bg-yellow-900/10">
-          <h2 className="font-bold text-yellow-700 dark:text-yellow-400 flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            طلبات في الانتظار ({pending.length})
-          </h2>
-        </div>
-        <div className="divide-y divide-border">
-          {pending.length === 0 ? (
-            <p className="p-8 text-center text-muted-foreground">لا توجد طلبات معلقة</p>
-          ) : (
-            pending.map(app => {
-              // Parse qualifications if it's JSON
-              let details: any = {}
-              try {
-                details = typeof app.qualifications === 'string'
-                  ? JSON.parse(app.qualifications)
-                  : (app.qualifications || {})
-              } catch { }
-
-              return (
-                <div key={app.id} className="p-5 flex flex-col lg:flex-row justify-between gap-4 hover:bg-muted/20 transition-colors">
-                  <div className="flex gap-4 flex-1">
-                    <div className="w-12 h-12 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full flex items-center justify-center shrink-0">
-                      <User className="w-6 h-6" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-lg">{app.name}</h3>
-                      <p className="text-sm text-muted-foreground">{app.email}</p>
-
-                      {/* Details Grid */}
-                      <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {details.phone && (
-                          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                            <Phone className="w-3.5 h-3.5" />
-                            <span dir="ltr">{details.phone}</span>
-                          </div>
-                        )}
-                        {details.nationality && (
-                          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                            <Globe className="w-3.5 h-3.5" />
-                            {details.nationality}
-                          </div>
-                        )}
-                        {details.qualification && (
-                          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                            <GraduationCap className="w-3.5 h-3.5" />
-                            {details.qualification}
-                          </div>
-                        )}
-                        {details.years_of_experience != null && details.years_of_experience > 0 && (
-                          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                            <Clock className="w-3.5 h-3.5" />
-                            {details.years_of_experience} سنوات خبرة
-                          </div>
-                        )}
-                      </div>
-
-                      {details.teaching_subjects && (
-                        <div className="mt-2 text-sm bg-muted/50 p-2.5 rounded-lg flex items-start gap-2">
-                          <BookOpen className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-                          <span><span className="font-semibold">المواد:</span> {details.teaching_subjects}</span>
-                        </div>
-                      )}
-
-                      {app.cv_url && (
-                        <a href={app.cv_url} target="_blank" rel="noreferrer" className="inline-flex gap-2 items-center text-sm text-blue-600 mt-2 hover:underline">
-                          <FileText className="w-4 h-4" /> عرض السيرة الذاتية
-                        </a>
-                      )}
-
-                      <p className="text-xs text-muted-foreground mt-2">
-                        📅 تاريخ الطلب: {new Date(app.created_at).toLocaleDateString('ar-SA', { dateStyle: 'long' })}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 shrink-0 self-end lg:self-center">
-                    <button
-                      onClick={() => handleAction(app.id, 'approved')}
-                      className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg whitespace-nowrap flex items-center gap-1.5 transition-colors"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />قبول كأستاذ
-                    </button>
-                    <button
-                      onClick={() => handleAction(app.id, 'rejected')}
-                      className="px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-700 dark:text-red-400 font-bold rounded-lg whitespace-nowrap flex items-center gap-1.5 transition-colors"
-                    >
-                      <XCircle className="w-4 h-4" />رفض
-                    </button>
-                  </div>
-                </div>
-              )
+    const approve = async (id: string) => {
+        if (!confirm("هل تريد قبول هذا المدرس؟")) return
+        setProcessing(true)
+        try {
+            const res = await fetch(`/api/academy/admin/teacher-applications/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "approved" }),
             })
-          )}
-        </div>
-      </div>
+            if (res.ok) await fetchData()
+            else alert("حدث خطأ")
+        } finally {
+            setProcessing(false)
+        }
+    }
 
-      {/* History */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="p-4 border-b border-border bg-muted/30">
-          <h2 className="font-bold">سجل الطلبات السابقة ({history.length})</h2>
-        </div>
-        <div className="divide-y divide-border">
-          {history.length === 0 ? (
-            <p className="p-8 text-center text-muted-foreground">لا يوجد سجل</p>
-          ) : (
-            history.map(app => (
-              <div key={app.id} className="p-4 flex justify-between items-center bg-muted/10">
-                <div>
-                  <h3 className="font-bold">{app.name}</h3>
-                  <p className="text-sm text-muted-foreground">{app.email}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(app.created_at).toLocaleDateString('ar-SA')}
-                  </p>
+    const submitReject = async () => {
+        if (!rejectingId) return
+        setProcessing(true)
+        try {
+            const res = await fetch(`/api/academy/admin/teacher-applications/${rejectingId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "rejected", rejection_reason: rejectionReason }),
+            })
+            if (res.ok) {
+                setRejectingId(null)
+                setRejectionReason("")
+                await fetchData()
+            } else {
+                alert("حدث خطأ")
+            }
+        } finally {
+            setProcessing(false)
+        }
+    }
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("حذف الطلب نهائياً؟")) return
+        setProcessing(true)
+        try {
+            const res = await fetch(`/api/academy/admin/teacher-applications/${id}`, { method: "DELETE" })
+            if (res.ok) {
+                setSelectedId(null)
+                await fetchData()
+            }
+        } finally {
+            setProcessing(false)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="p-12 flex justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    const parseQuals = (raw: any): Record<string, any> => {
+        if (!raw) return {}
+        if (typeof raw === "string") {
+            try { return JSON.parse(raw) } catch { return {} }
+        }
+        return raw
+    }
+
+    return (
+        <div className="space-y-6" dir="rtl">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+                <h1 className="text-2xl font-bold">طلبات الانضمام كأستاذ</h1>
+                <div className="flex gap-2 text-xs">
+                    {(["pending", "approved", "rejected", "all"] as const).map(k => (
+                        <button
+                            key={k}
+                            onClick={() => setFilter(k)}
+                            className={`px-3 py-1.5 rounded-full font-bold transition-colors ${filter === k
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                }`}
+                        >
+                            {k === "pending" ? "في الانتظار" : k === "approved" ? "مقبول" : k === "rejected" ? "مرفوض" : "الكل"}
+                            <span className="mr-1.5 opacity-80">({counts[k]})</span>
+                        </button>
+                    ))}
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className={`px-3 py-1 text-xs font-bold rounded-full ${app.status === 'approved'
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                    }`}>
-                    {app.status === 'approved' ? '✓ مقبول' : '✗ مرفوض'}
-                  </span>
-                  <button
-                    onClick={() => handleDelete(app.id)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    title="حذف الطلب"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+                {/* List */}
+                <div className="space-y-2 lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto pr-1">
+                    {filtered.length === 0 && (
+                        <div className="bg-card border border-border rounded-xl p-8 text-center text-muted-foreground">
+                            لا توجد طلبات
+                        </div>
+                    )}
+                    {filtered.map(app => (
+                        <button
+                            key={app.id}
+                            onClick={() => setSelectedId(app.id)}
+                            className={`w-full text-right p-3 rounded-xl border-2 transition-all ${selectedId === app.id
+                                ? "bg-primary/5 border-primary shadow-sm"
+                                : "bg-card border-border hover:border-primary/30"
+                                }`}
+                        >
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="font-bold truncate">{app.name}</h3>
+                                    <p className="text-xs text-muted-foreground truncate">{app.email}</p>
+                                </div>
+                                <StatusBadge status={app.status} />
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {new Date(app.created_at).toLocaleDateString("ar-EG")}
+                            </p>
+                        </button>
+                    ))}
                 </div>
-              </div>
-            ))
-          )}
+
+                {/* Detail */}
+                <div className="space-y-5">
+                    {!selected ? (
+                        <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">
+                            اختر طلباً من القائمة
+                        </div>
+                    ) : (
+                        <>
+                            {/* Header */}
+                            <div className="bg-card border border-border rounded-xl p-5 flex items-start justify-between flex-wrap gap-4">
+                                <div className="flex gap-4 items-start min-w-0">
+                                    <div className="w-14 h-14 bg-primary/10 text-primary rounded-full flex items-center justify-center shrink-0">
+                                        <User className="w-7 h-7" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h2 className="font-bold text-xl">{selected.name}</h2>
+                                        <p className="text-sm text-muted-foreground">{selected.email}</p>
+                                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                                            <StatusBadge status={selected.status} />
+                                            {selected.rejection_count > 0 && (
+                                                <span className="flex items-center gap-1">
+                                                    <AlertCircle className="w-3 h-3" />
+                                                    {selected.rejection_count} مرة رفض سابقة
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {selected.status === "pending" && (
+                                        <>
+                                            <button
+                                                disabled={processing}
+                                                onClick={() => approve(selected.id)}
+                                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-lg flex items-center gap-2"
+                                            >
+                                                <CheckCircle2 className="w-4 h-4" /> قبول
+                                            </button>
+                                            <button
+                                                disabled={processing}
+                                                onClick={() => { setRejectingId(selected.id); setRejectionReason("") }}
+                                                className="px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 text-red-700 font-bold rounded-lg flex items-center gap-2"
+                                            >
+                                                <XCircle className="w-4 h-4" /> رفض
+                                            </button>
+                                        </>
+                                    )}
+                                    <button
+                                        disabled={processing}
+                                        onClick={() => handleDelete(selected.id)}
+                                        className="px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                                        title="حذف"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Old qualifications fields (legacy from initial register) */}
+                            {(() => {
+                                const qual = parseQuals(selected.qualifications)
+                                const items: { icon: any; label: string; v: any }[] = []
+                                if (qual.phone) items.push({ icon: Phone, label: "هاتف", v: qual.phone })
+                                if (qual.nationality) items.push({ icon: Globe, label: "الجنسية", v: qual.nationality })
+                                if (qual.qualification) items.push({ icon: GraduationCap, label: "المؤهل", v: qual.qualification })
+                                if (qual.years_of_experience != null) items.push({ icon: Clock, label: "سنوات خبرة", v: qual.years_of_experience })
+                                if (qual.teaching_subjects) items.push({ icon: BookOpen, label: "المواد", v: qual.teaching_subjects })
+                                if (items.length === 0) return null
+                                return (
+                                    <div className="bg-card border border-border rounded-xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {items.map((it, i) => (
+                                            <div key={i} className="flex items-center gap-2 text-sm">
+                                                <it.icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                                                <span className="text-muted-foreground">{it.label}:</span>
+                                                <span className="font-bold truncate">{String(it.v)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )
+                            })()}
+
+                            {/* Audio test */}
+                            {selected.audio_url && (
+                                <div className="space-y-2">
+                                    <h3 className="text-sm font-bold flex items-center gap-2">
+                                        <Mic className="w-4 h-4 text-blue-600" /> الاختبار الصوتي
+                                    </h3>
+                                    <AdminAudioPlayer src={selected.audio_url} label="تسجيل المتقدم" />
+                                </div>
+                            )}
+
+                            {/* PDF */}
+                            {(selected.cv_file_url || selected.cv_url || selected.certificate_file_url) && (
+                                <div className="space-y-2">
+                                    <h3 className="text-sm font-bold flex items-center gap-2">
+                                        <FileText className="w-4 h-4 text-rose-600" /> الوثائق
+                                    </h3>
+                                    <AdminPdfViewer
+                                        src={selected.cv_file_url || selected.cv_url || selected.certificate_file_url || ""}
+                                        label="السيرة الذاتية / الشهادات"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Dynamic responses */}
+                            {selected.responses && Object.keys(selected.responses).length > 0 && (
+                                <div className="space-y-3">
+                                    <h3 className="text-sm font-bold">إجابات النموذج</h3>
+                                    <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+                                        {questions
+                                            .filter(q => q.type !== "audio" && q.type !== "file")
+                                            .map(q => {
+                                                const v = selected.responses?.[q.id]
+                                                if (!v) return null
+                                                return (
+                                                    <div key={q.id} className="border-b border-border last:border-0 pb-3 last:pb-0">
+                                                        <p className="text-xs font-bold text-muted-foreground">{q.label}</p>
+                                                        <p className="text-sm mt-1 whitespace-pre-wrap">{String(v)}</p>
+                                                    </div>
+                                                )
+                                            })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Existing rejection reason */}
+                            {selected.status === "rejected" && selected.rejection_reason && (
+                                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                                    <p className="text-xs font-bold text-red-700 mb-1">سبب الرفض السابق:</p>
+                                    <p className="text-sm text-red-900 dark:text-red-200 whitespace-pre-wrap">{selected.rejection_reason}</p>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+
+            {/* Reject dialog */}
+            {rejectingId && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+                    onClick={() => !processing && setRejectingId(null)}
+                >
+                    <div
+                        onClick={e => e.stopPropagation()}
+                        className="bg-card rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4"
+                    >
+                        <div className="flex items-center gap-2 text-red-600">
+                            <XCircle className="w-5 h-5" />
+                            <h2 className="font-bold text-lg">رفض الطلب</h2>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            اكتب رسالة للمتقدم تشرح فيها سبب الرفض. ستُعرض له في لوحة التحكم.
+                        </p>
+                        <textarea
+                            value={rejectionReason}
+                            onChange={e => setRejectionReason(e.target.value)}
+                            rows={4}
+                            placeholder="مثال: نقص في المؤهلات الأكاديمية، يرجى تحديث ملفك..."
+                            className="w-full px-4 py-2.5 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-red-500/20 outline-none resize-y"
+                        />
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setRejectingId(null)}
+                                disabled={processing}
+                                className="flex-1 px-4 py-2 bg-muted hover:bg-muted/80 rounded-xl font-bold"
+                            >
+                                إلغاء
+                            </button>
+                            <button
+                                onClick={submitReject}
+                                disabled={processing}
+                                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center gap-2"
+                            >
+                                {processing && <Loader2 className="w-4 h-4 animate-spin" />}
+                                تأكيد الرفض
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-      </div>
-    </div>
-  )
+    )
+}
+
+function StatusBadge({ status }: { status: string }) {
+    const cfg = status === "pending"
+        ? { label: "في الانتظار", cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" }
+        : status === "approved"
+            ? { label: "مقبول", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" }
+            : status === "rejected"
+                ? { label: "مرفوض", cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300" }
+                : { label: "مسودة", cls: "bg-muted text-muted-foreground" }
+    return <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${cfg.cls}`}>{cfg.label}</span>
 }

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import Link from 'next/link'
 import { useI18n } from '@/lib/i18n/context'
 import {
   ChevronLeft, ChevronRight, Loader2, BookOpen, Search, List, AlertCircle,
-  Play, Pause, Square, SkipForward, SkipBack, Repeat, X, Mic2, Volume2,
+  Play, Pause, Square, SkipForward, SkipBack, Repeat, X, Mic2, Volume2, Map,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -180,6 +181,26 @@ export default function MushafPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const pageDataRef = useRef<PageData | null>(null)
   pageDataRef.current = pageData
+
+  // Read ?page= query param on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const p = parseInt(params.get('page') || '', 10)
+    if (p >= 1 && p <= TOTAL_PAGES) {
+      setPageNumber(p)
+      setPageInput(String(p))
+    } else {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const n = parseInt(saved, 10)
+        if (n >= 1 && n <= TOTAL_PAGES) {
+          setPageNumber(n)
+          setPageInput(String(n))
+        }
+      }
+    }
+  }, [])
 
   // Restore reciter & autoplay preference
   useEffect(() => {
@@ -489,6 +510,13 @@ export default function MushafPage() {
                   ? `${t.student?.pageNumber || 'صفحة'} ${toArabicDigits(pageNumber)} / ${toArabicDigits(TOTAL_PAGES)}`
                   : `Page ${pageNumber} / ${TOTAL_PAGES}`}
               </div>
+              <Link
+                href="/student/mushaf-progress"
+                className="w-10 h-10 rounded-xl border border-border bg-card hover:bg-muted flex items-center justify-center transition-colors"
+                title="خريطة التقدم"
+              >
+                <Map className="w-4 h-4 text-primary" />
+              </Link>
               <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
                 <SheetTrigger asChild>
                   <Button variant="outline" size="icon" className="rounded-xl">

@@ -264,7 +264,7 @@ export default function TeacherProfilePage() {
           <CardContent className="flex flex-col items-center gap-4">
             <AvatarUpload
               currentUrl={profile?.avatar_url || null}
-              userName={profile?.name || ''}
+              name={profile?.name || ''}
               onUploaded={handleAvatarUploaded}
             />
             <div className="text-center">

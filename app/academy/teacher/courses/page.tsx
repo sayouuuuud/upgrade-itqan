@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useI18n } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { BookOpen, Plus, GraduationCap, PlayCircle, Users, Edit, FileText, Bell } from 'lucide-react'
+import { BookOpen, Plus, GraduationCap, PlayCircle, Users, Edit, FileText, Bell, Archive, Loader2 } from 'lucide-react'
 
 interface Course {
   id: string
@@ -13,6 +13,7 @@ interface Course {
   thumbnail_url?: string
   level: 'beginner' | 'intermediate' | 'advanced'
   status: 'draft' | 'published'
+  is_active?: boolean
   category_name?: string
   total_lessons: number
   total_enrolled: number
@@ -24,23 +25,45 @@ export default function TeacherCoursesPage() {
   const { t } = useI18n()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
+  const [archivingId, setArchivingId] = useState<string | null>(null)
+
+  const fetchCourses = async () => {
+    try {
+      const res = await fetch('/api/academy/teacher/courses')
+      if (res.ok) {
+        const json = await res.json()
+        setCourses(json.data || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch courses:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchCourses() {
-      try {
-        const res = await fetch('/api/academy/teacher/courses')
-        if (res.ok) {
-          const json = await res.json()
-          setCourses(json.data || [])
-        }
-      } catch (error) {
-        console.error('Failed to fetch courses:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchCourses()
   }, [])
+
+  const handleToggleArchive = async (course: Course) => {
+    const willDeactivate = course.is_active !== false
+    const msg = willDeactivate
+      ? 'تعطيل الدورة؟ هتختفي من الطلاب الجدد لكن الحاليين هيكملوا عادي.'
+      : 'إعادة تفعيل الدورة؟ هتظهر للطلاب الجدد تاني.'
+    if (!confirm(msg)) return
+    setArchivingId(course.id)
+    try {
+      const res = await fetch(`/api/academy/teacher/courses/${course.id}/archive`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !willDeactivate }),
+      })
+      if (res.ok) fetchCourses()
+      else alert('حدث خطأ')
+    } finally {
+      setArchivingId(null)
+    }
+  }
 
   const levelLabels: Record<string, string> = {
     beginner: t.academy?.beginner || 'مبتدئ',
@@ -138,7 +161,7 @@ export default function TeacherCoursesPage() {
                     <BookOpen className="w-12 h-12 text-blue-300/30" />
                   </div>
                 )}
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-2 right-2 flex flex-col gap-1">
                   <span className={cn(
                     "px-2 py-0.5 text-[10px] font-bold rounded-full border shadow-sm backdrop-blur-md",
                     course.status === 'published' 
@@ -147,6 +170,11 @@ export default function TeacherCoursesPage() {
                   )}>
                     {course.status === 'published' ? 'منشورة' : 'مسودة'}
                   </span>
+                  {course.is_active === false && (
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full border shadow-sm backdrop-blur-md bg-gray-700/80 text-white border-gray-500">
+                      مؤرشفة
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -182,6 +210,14 @@ export default function TeacherCoursesPage() {
                     <Edit className="w-4 h-4" />
                     إدارة الدورة
                   </Link>
+                  <button
+                    onClick={() => handleToggleArchive(course)}
+                    disabled={archivingId === course.id}
+                    className="shrink-0 flex items-center justify-center w-10 h-10 border border-border bg-card rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 text-muted-foreground hover:text-amber-600 transition-colors"
+                    title={course.is_active === false ? 'إعادة تفعيل' : 'تعطيل وأرشفة'}
+                  >
+                    {archivingId === course.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Archive className="w-4 h-4" />}
+                  </button>
                   <Link 
                     href={`/academy/teacher/enrollment-requests?course_id=${course.id}`}
                     className="shrink-0 flex items-center justify-center w-10 h-10 border border-border bg-card rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground relative transition-colors"

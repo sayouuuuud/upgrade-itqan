@@ -1,0 +1,86 @@
+{
+  "passed": 16,
+  "failed": 0,
+  "results": [
+    {
+      "name": "login admin@test.com",
+      "ok": true,
+      "details": "status=200, role=admin"
+    },
+    {
+      "name": "login student@test.com",
+      "ok": true,
+      "details": "status=200, role=student"
+    },
+    {
+      "name": "login reviewer@test.com",
+      "ok": true,
+      "details": "status=200, role=reader"
+    },
+    {
+      "name": "academy analytics API loads for admin",
+      "ok": true,
+      "details": "stats=totalStudents|activeCourses|completionRate|totalTeachers|weeklyEnrollments|totalCertificates|dailyActiveStudents|dailyActivityRate"
+    },
+    {
+      "name": "academy analytics page loads",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "academy analytics has country-level student counts",
+      "ok": true,
+      "details": "countries=1"
+    },
+    {
+      "name": "academy analytics has region-level heatmap data",
+      "ok": true,
+      "details": "regions=1"
+    },
+    {
+      "name": "academy analytics has daily activity rate",
+      "ok": true,
+      "details": "dailyActivityRate=33"
+    },
+    {
+      "name": "academy analytics has top recorded surahs",
+      "ok": true,
+      "details": "topSurahs=1"
+    },
+    {
+      "name": "maqra’a admin analytics API loads",
+      "ok": true,
+      "details": "topCountries=10, overTime=27"
+    },
+    {
+      "name": "maqra’a reports API loads weekly",
+      "ok": true,
+      "details": "daily=0, cities=1"
+    },
+    {
+      "name": "maqra’a reports API loads monthly",
+      "ok": true,
+      "details": "totalRecitations=0"
+    },
+    {
+      "name": "maqra’a reports page loads",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "weekly/monthly admin report delivery endpoint exists",
+      "ok": true,
+      "details": "status=200"
+    },
+    {
+      "name": "no unauthorized access for student to admin analytics",
+      "ok": true,
+      "details": "status=401"
+    },
+    {
+      "name": "maqra’a reader core unaffected",
+      "ok": true,
+      "details": "status=200"
+    }
+  ]
+}

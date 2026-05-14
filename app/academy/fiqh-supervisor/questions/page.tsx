@@ -111,7 +111,7 @@ export default function FiqhSupervisorQuestionsPage() {
         <div className="flex justify-center py-16">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
         </div>
-      ) : filtered.length === 0 ? (
+      ) : questions.length === 0 ? (
         <div className="bg-card border border-border rounded-2xl p-16 text-center">
           <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
           <h3 className="text-base font-bold text-foreground">لا توجد أسئلة</h3>
@@ -119,7 +119,7 @@ export default function FiqhSupervisorQuestionsPage() {
         </div>
       ) : (
         <div className="space-y-2.5">
-          {filtered.map(q => (
+          {questions.map((q: FiqhQuestion) => (
             <Link
               key={q.id}
               href={`/academy/fiqh-supervisor/questions/${q.id}`}

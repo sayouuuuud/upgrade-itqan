@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { usePathname } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AvatarUpload } from '@/components/avatar-upload'
-import { User, Lock, CheckCircle, Loader2, BookMarked, X, Plus, MapPin } from 'lucide-react'
+import { Award, User, Lock, CheckCircle, Loader2, BookMarked, X, Plus, MapPin } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 // Major Arab/Islamic cities for prayer times
@@ -55,6 +54,14 @@ interface UserProfile {
   platform_preference?: string
 }
 
+interface EarnedBadge {
+  id: string
+  name: string
+  icon?: string | null
+  icon_url?: string
+  is_earned: boolean
+}
+
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -64,6 +71,7 @@ export default function ProfilePage() {
   const [platformPreference, setPlatformPreference] = useState('both')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [earnedBadges, setEarnedBadges] = useState<EarnedBadge[]>([])
 
   // Password change state
   const [currentPw, setCurrentPw] = useState('')
@@ -86,6 +94,19 @@ export default function ProfilePage() {
         }
       })
       .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/academy/student/badges')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const badges = (data?.categories || [])
+          .flatMap((category: { badges: EarnedBadge[] }) => category.badges || [])
+          .filter((badge: EarnedBadge) => badge.is_earned)
+          .slice(0, 8)
+        setEarnedBadges(badges)
+      })
+      .catch(() => setEarnedBadges([]))
   }, [])
 
   const handleAvatarUploaded = async (url: string) => {
@@ -191,12 +212,7 @@ export default function ProfilePage() {
 
   const { t, locale } = useI18n()
   const isAr = locale === 'ar'
-  const pathname = usePathname()
-  const isAcademyContext = pathname?.startsWith('/academy/') ?? false
-  const studentLabel = isAcademyContext
-    ? (t.profile.roles.shariaSciencesStudent || t.profile.roles.student)
-    : (t.profile.roles.quranStudent || t.profile.roles.student)
-  const roleLabel = profile?.role === 'student' ? studentLabel : profile?.role === 'reader' ? t.profile.roles.reader : t.profile.roles.admin
+  const roleLabel = profile?.role === 'student' ? t.profile.roles.student : profile?.role === 'reader' ? t.profile.roles.reader : t.profile.roles.admin
 
   return (
     <div className="min-h-screen relative pb-20">
@@ -261,6 +277,33 @@ export default function ProfilePage() {
               <p className="text-xs text-muted-foreground leading-relaxed font-bold">
                 {isAr ? "بياناتك الشخصية محمية ومشفرة. لا نشارك معلوماتك مع أي جهة خارجية." : "Your personal data is protected and encrypted. We do not share your information with third parties."}
               </p>
+            </div>
+
+            <div className="bg-card border border-border p-6 rounded-3xl space-y-4 backdrop-blur-md">
+              <h3 className="font-bold flex items-center gap-2 text-sm">
+                <Award className="w-4 h-4 text-yellow-500" />
+                {isAr ? 'الشارات العامة' : 'Public Badges'}
+              </h3>
+              {earnedBadges.length > 0 ? (
+                <div className="grid grid-cols-4 gap-3">
+                  {earnedBadges.map((badge) => (
+                    <div key={badge.id} className="text-center">
+                      <div className="w-12 h-12 mx-auto rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center overflow-hidden">
+                        {badge.icon_url || badge.icon?.startsWith('http') ? (
+                          <img src={badge.icon_url || badge.icon || ''} alt={badge.name} className="w-8 h-8 object-contain" />
+                        ) : badge.icon ? (
+                          <span className="text-2xl">{badge.icon}</span>
+                        ) : (
+                          <Award className="w-6 h-6 text-yellow-600" />
+                        )}
+                      </div>
+                      <p className="mt-1 text-[10px] text-muted-foreground truncate">{badge.name}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">{isAr ? 'لم تحصل على شارات بعد.' : 'No earned badges yet.'}</p>
+              )}
             </div>
           </div>
 

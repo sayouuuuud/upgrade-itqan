@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query } from "@/lib/db"
+import { buildParentWeeklyReport, getPreviousWeekWindow } from "@/lib/academy/parent-reports"
 
 export async function GET(req: NextRequest) {
     try {
@@ -9,45 +10,90 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
         }
 
-        // Get children of this parent
-        const childrenQuery = await query<{ child_id: string, child_name: string }>(
-            `SELECT pc.child_id, u.name as child_name
+        const { searchParams } = new URL(req.url)
+        const weekStartParam = searchParams.get("weekStart")
+        const weekEndParam = searchParams.get("weekEnd")
+        const { weekStart, weekEnd } = weekStartParam && weekEndParam
+            ? { weekStart: weekStartParam, weekEnd: weekEndParam }
+            : getPreviousWeekWindow()
+
+        const childrenQuery = await query<{
+            parent_id: string
+            child_id: string
+            parent_child_id: string
+            parent_name: string
+            parent_email: string
+            child_name: string
+        }>(
+            `SELECT pc.parent_id,
+                    pc.child_id,
+                    pc.id AS parent_child_id,
+                    p.name AS parent_name,
+                    p.email AS parent_email,
+                    u.name AS child_name
        FROM parent_children pc
+       JOIN users p ON p.id = pc.parent_id
        JOIN users u ON u.id = pc.child_id
-       WHERE pc.parent_id = $1 AND pc.status = 'approved'`,
+       WHERE pc.parent_id = $1 AND pc.status IN ('active', 'approved')`,
             [session.sub]
         )
 
-        const reportsData = [];
+        const reportsData = []
         let reportIdCounter = 1;
 
         for (const child of childrenQuery) {
-            // For now, we will just return mock reports since there are no actual grades/reports
-            // table to query from the given minimal schema. In a full implementation, you would query
-            // a submissions or grades table.
+            const weekly = await buildParentWeeklyReport(child, weekStart, weekEnd)
 
-            reportsData.push(
-                {
+            reportsData.push({
+                id: reportIdCounter++,
+                childName: child.child_name,
+                course: 'ملخص أسبوعي',
+                item: `تلاوات: ${weekly.recitationsCount}، حضور جلسات: ${weekly.sessionsAttended}، شارات جديدة: ${weekly.badgesEarned}`,
+                type: 'weekly_summary',
+                status: 'completed',
+                grade: weekly.currentLevel,
+                date: weekEnd,
+                summary: weekly
+            })
+
+            for (const recitation of weekly.recitations) {
+                reportsData.push({
                     id: reportIdCounter++,
                     childName: child.child_name,
-                    course: 'الفقه الميسر - المستوى الأول',
-                    item: 'الواجب الأول: أحكام الطهارة',
-                    type: 'assignment',
-                    status: 'completed',
-                    grade: '95/100',
-                    date: '2026-04-10'
-                },
-                {
+                    course: 'التلاوات',
+                    item: recitation.surahName,
+                    type: 'recitation',
+                    status: recitation.status === 'rejected' ? 'absent' : 'completed',
+                    grade: recitation.status,
+                    date: recitation.createdAt
+                })
+            }
+
+            for (const sessionRow of weekly.sessions) {
+                reportsData.push({
                     id: reportIdCounter++,
                     childName: child.child_name,
-                    course: 'تلاوة وتجويد',
-                    item: 'جلسة التسميع الأسبوعية',
+                    course: sessionRow.courseTitle,
+                    item: sessionRow.title,
                     type: 'session',
-                    status: 'absent',
-                    grade: '-',
-                    date: '2026-04-12'
-                }
-            )
+                    status: 'completed',
+                    grade: 'حاضر',
+                    date: sessionRow.attendedAt
+                })
+            }
+
+            for (const badge of weekly.newBadges) {
+                reportsData.push({
+                    id: reportIdCounter++,
+                    childName: child.child_name,
+                    course: 'الشارات',
+                    item: badge.name,
+                    type: 'badge',
+                    status: 'completed',
+                    grade: 'جديد',
+                    date: badge.awardedAt
+                })
+            }
         }
 
         return NextResponse.json(reportsData)

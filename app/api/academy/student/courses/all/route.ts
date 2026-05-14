@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
+import { getStudentRestrictions } from '@/lib/academy/parent-controls'
 
 // C-1: GET /api/academy/student/courses/all — browse all published courses
 // يظهر كل الدورات المنشورة مع حالة الـ enrollment للطالب الحالي
@@ -18,6 +19,7 @@ export async function GET(req: NextRequest) {
   try {
     const params: any[] = [session.sub]
     let whereExtra = ''
+    const courseRestrictions = await getStudentRestrictions(session.sub, 'course')
 
     // Fetch student's specializations for matching
     const studentSpecs = await query<{ specialization: string }>(
@@ -46,6 +48,16 @@ export async function GET(req: NextRequest) {
       whereExtra += ` AND (c.title ILIKE $${params.length} OR c.description ILIKE $${params.length})`
     }
 
+    if (courseRestrictions.blockedIds.size > 0) {
+      params.push(Array.from(courseRestrictions.blockedIds))
+      whereExtra += ` AND NOT (c.id::text = ANY($${params.length}::text[]))`
+    }
+
+    if (courseRestrictions.hasAllowList) {
+      params.push(Array.from(courseRestrictions.allowedIds))
+      whereExtra += ` AND c.id::text = ANY($${params.length}::text[])`
+    }
+
     const q = `
       SELECT 
         c.id,
@@ -70,6 +82,7 @@ export async function GET(req: NextRequest) {
       LEFT JOIN enrollments e_all ON e_all.course_id = c.id AND e_all.status = 'active'
       LEFT JOIN enrollments e_me ON e_me.course_id = c.id AND e_me.student_id = $1
       WHERE (c.status = 'published' OR c.is_published = true)
+        AND COALESCE(c.is_active, TRUE) = TRUE
       ${whereExtra}
       GROUP BY c.id, c.title, c.description, c.thumbnail_url, c.difficulty_level, c.level, c.status, cat.name, c.category_id, u.name, c.created_at
       ORDER BY c.created_at DESC
@@ -82,4 +95,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

@@ -2,6 +2,26 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 
+async function canAccessConversation(conversationId: string, userId: string, role: string) {
+  if (role === "parent") {
+    return queryOne<{ id: string }>(
+      `SELECT c.id
+         FROM academy_conversations c
+         JOIN parent_children pc ON pc.child_id = c.student_id
+        WHERE c.id = $1
+          AND pc.parent_id = $2
+          AND pc.status IN ('active', 'approved')`,
+      [conversationId, userId]
+    )
+  }
+
+  return queryOne<{ id: string }>(
+    `SELECT id FROM academy_conversations 
+     WHERE id = $1 AND (student_id = $2 OR teacher_id = $2)`,
+    [conversationId, userId]
+  )
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -13,12 +33,7 @@ export async function GET(
   }
 
   try {
-    // Verify user is part of the conversation
-    const conv = await queryOne<{ id: string }>(
-      `SELECT id FROM academy_conversations 
-       WHERE id = $1 AND (student_id = $2 OR teacher_id = $2)`,
-      [conversationId, session.sub]
-    )
+    const conv = await canAccessConversation(conversationId, session.sub, session.role)
 
     if (!conv) {
       return NextResponse.json({ error: "محادثة غير موجودة أو غير مصرح بها" }, { status: 404 })
@@ -70,12 +85,7 @@ export async function POST(
       return NextResponse.json({ error: "الرسالة فارغة" }, { status: 400 })
     }
 
-    // Verify conversation access
-    const conv = await queryOne<{ id: string }>(
-      `SELECT id FROM academy_conversations 
-       WHERE id = $1 AND (student_id = $2 OR teacher_id = $2)`,
-      [conversationId, session.sub]
-    )
+    const conv = await canAccessConversation(conversationId, session.sub, session.role)
 
     if (!conv) {
       return NextResponse.json({ error: "محادثة غير موجودة أو غير مصرح بها" }, { status: 404 })

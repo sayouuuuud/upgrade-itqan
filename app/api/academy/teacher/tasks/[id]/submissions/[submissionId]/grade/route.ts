@@ -44,6 +44,12 @@ export async function PUT(
     if (tCheck.length === 0) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     const task = tCheck[0]
 
+    const existingSubmission = await query<{ status: string }>(
+      `SELECT status FROM task_submissions WHERE id = $1 AND task_id = $2`,
+      [submissionId, taskId]
+    )
+    const wasAlreadyGraded = existingSubmission[0]?.status === 'graded'
+
     // C-7: تحديث submission وضبط status = 'graded'
     const updateRes = await query<any>(`
       UPDATE task_submissions 
@@ -88,14 +94,10 @@ export async function PUT(
       console.error('[C-7] Failed to send grade notification:', notifErr)
     }
 
-    // Phase 5 (Gamification): award points to the student. Scale by score
-    // when a max_score is known so partial credit gives partial points.
+    // Phase 5 (Gamification): task completion gives the configured reward once.
     try {
-      const basePoints = Number(task.points_reward) || 15
-      const max = Number(task.max_score) || 0
-      const ratio = max > 0 ? Math.max(0, Math.min(1, Number(score) / max)) : 1
-      const earned = Math.round(basePoints * ratio)
-      if (earned > 0) {
+      const earned = Number(task.points_reward) || 15
+      if (earned > 0 && !wasAlreadyGraded) {
         const result = await awardTaskPoints(
           submission.student_id,
           earned,
@@ -210,4 +212,3 @@ export async function GET(
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
-

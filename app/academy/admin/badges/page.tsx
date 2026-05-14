@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Award, Plus, Trash2, Edit2, X, Loader2, Star } from 'lucide-react'
 
 interface Badge {
@@ -19,8 +19,19 @@ interface Badge {
 
 const ICONS = ['🏆', '⭐', '🌟', '🎖️', '🥇', '🏅', '📜', '💎', '🎯', '🚀', '🌙', '📖']
 const CATEGORIES = ['عام', 'القرآن', 'المهام', 'الاستمرارية', 'أخرى']
+const CRITERIA_TYPES = ['points', 'streak', 'courses', 'tasks', 'memorization', 'recitation', 'custom']
 
-const emptyForm = { badge_type: '', name: '', description: '', icon: '🏆', points_reward: 0, category: 'عام' }
+const emptyForm = {
+  badge_type: '',
+  name: '',
+  description: '',
+  icon: '🏆',
+  points_reward: 0,
+  category: 'عام',
+  criteria_type: 'custom',
+  criteria_value: 0,
+  display_order: 0,
+}
 
 export default function AdminBadgesPage() {
   const [badges, setBadges] = useState<Badge[]>([])
@@ -31,7 +42,7 @@ export default function AdminBadgesPage() {
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  const fetchBadges = async () => {
+  const fetchBadges = useCallback(async () => {
     try {
       const res = await fetch('/api/academy/admin/badges')
       if (res.ok) {
@@ -43,9 +54,11 @@ export default function AdminBadgesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  useEffect(() => { fetchBadges() }, [])
+  useEffect(() => {
+    void Promise.resolve().then(fetchBadges)
+  }, [fetchBadges])
 
   const openAdd = () => {
     setEditItem(null)
@@ -61,7 +74,10 @@ export default function AdminBadgesPage() {
       description: b.description || '', 
       icon: b.icon || '🏆', 
       points_reward: b.points_reward || 0,
-      category: b.category || 'عام'
+      category: b.category || 'عام',
+      criteria_type: b.criteria_type || 'custom',
+      criteria_value: b.criteria_value || 0,
+      display_order: b.display_order || 0,
     })
     setShowModal(true)
   }
@@ -185,6 +201,8 @@ export default function AdminBadgesPage() {
                     </button>
                   ))}
                 </div>
+                <input type="text" value={form.icon} onChange={e => setForm({ ...form, icon: e.target.value })} placeholder="أو رابط صورة للشارة"
+                  className="w-full mt-2 px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-yellow-500" dir="ltr" />
               </div>
               
               {!editItem && (
@@ -221,6 +239,21 @@ export default function AdminBadgesPage() {
                   <input type="number" min={0} value={form.points_reward} onChange={e => setForm({ ...form, points_reward: Number(e.target.value) })}
                     className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-yellow-500" />
                   <p className="text-[10px] text-muted-foreground mt-1">عدد النقاط التي سيحصل عليها الطالب</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-bold block mb-1.5">نوع الشرط</label>
+                  <select value={form.criteria_type} onChange={e => setForm({ ...form, criteria_type: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    {CRITERIA_TYPES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-bold block mb-1.5">قيمة الشرط</label>
+                  <input type="number" min={0} value={form.criteria_value} onChange={e => setForm({ ...form, criteria_value: Number(e.target.value) })}
+                    className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-yellow-500" />
                 </div>
               </div>
 

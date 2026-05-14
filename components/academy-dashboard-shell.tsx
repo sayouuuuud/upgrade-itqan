@@ -14,7 +14,7 @@ import {
   Menu, X, Users, Settings, Trophy, MessageSquare, ClipboardList,
   GraduationCap, PlayCircle, FileText, Target, Award, Star,
   HelpCircle, Megaphone, UserPlus, BarChart3, Clock, Video,
-  BookMarked, Route, Globe, Sparkles, Grid, UserCheck, Shield
+  BookMarked, Route, Globe, Sparkles, Grid, UserCheck, Shield, Archive
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 
@@ -30,15 +30,19 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
         {
           items: [
             { href: '/academy/student', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
+            { href: '/academy/student/calendar', label: t.academy?.calendar || 'التقويم', icon: Calendar },
             { href: '/academy/student/courses', label: t.academy?.myCourses || 'دوراتي', icon: BookOpen },
             { href: '/academy/student/courses/browse', label: t.academy?.browseCourses || 'تصفح الدورات', icon: GraduationCap },
+            { href: '/academy/student/courses/archive', label: t.academy?.archive || 'الأرشيف', icon: Archive },
             { href: '/academy/student/enrollment-requests', label: t.academy?.enrollmentRequests || 'طلبات الانضمام', icon: UserPlus },
             { href: '/academy/student/memorization', label: t.academy?.memorization || 'الحفظ والمراجعة', icon: BookMarked },
+            { href: '/academy/student/memorization/goal', label: t.academy?.weeklyGoal || 'هدف الحفظ الأسبوعي', icon: Target },
             { href: '/academy/student/tasks', label: t.academy?.tasks || 'المهام', icon: ClipboardList },
             { href: '/academy/student/sessions', label: t.academy?.liveSessions || 'الجلسات الحية', icon: Video },
             { href: '/academy/student/path', label: t.academy?.learningPath || 'المسار التعليمي', icon: Route },
             { href: '/academy/student/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
             { href: '/academy/student/fiqh', label: t.academy?.fiqhQuestions || 'أسئلة فقهية', icon: HelpCircle },
+            { href: '/academy/student/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: MessageSquare },
           ]
         },
         {
@@ -60,7 +64,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
       ],
       label: t.academy?.studentPortal || 'بوابة الطالب',
       name: t.auth?.student || 'طالب',
-      sublabel: t.auth?.shariaSciencesStudent || 'طالب علوم شرعية'
+      sublabel: t.academy?.academyStudent || 'طالب الأكاديمية'
     },
     teacher: {
       sections: [
@@ -69,11 +73,13 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/teacher', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
             { href: '/academy/teacher/courses', label: t.academy?.myCourses || 'دوراتي', icon: BookOpen },
             { href: '/academy/teacher/enrollment-requests', label: t.academy?.enrollmentRequests || 'طلبات الانضمام', icon: Bell },
-            { href: '/academy/teacher/schedule', label: t.academy?.schedule || 'الجدول', icon: Calendar },
+            { href: '/academy/teacher/sessions', label: t.academy?.liveSessions || 'الجلسات', icon: Calendar },
             { href: '/academy/teacher/tasks', label: t.academy?.tasks || 'المهام', icon: ClipboardList },
+            { href: '/academy/teacher/memorization-goals', label: t.academy?.memorizationGoals || 'أهداف الحفظ', icon: Target },
             { href: '/academy/teacher/students', label: t.academy?.myStudents || 'طلابي', icon: Users },
             { href: '/academy/teacher/halaqat', label: t.academy?.halaqat || 'الحلقات', icon: GraduationCap },
             { href: '/academy/teacher/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
+            { href: '/academy/teacher/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: FileText },
           ]
         },
         {
@@ -109,10 +115,13 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
           title: t.management || 'الإدارة',
           items: [
             { href: '/academy/admin/courses', label: t.academy?.courses || 'الدورات', icon: BookOpen },
+            { href: '/academy/admin/courses/archive', label: t.academy?.coursesArchive || 'أرشيف الدورات', icon: Archive },
             { href: '/academy/admin/categories', label: t.academy?.categories || 'التصنيفات', icon: Grid },
             { href: '/academy/admin/teachers', label: t.academy?.teachers || 'المدرسين', icon: GraduationCap },
             { href: '/academy/admin/teacher-applications', label: t.academy?.teacherApplications || 'طلبات التدريس', icon: UserCheck },
+            { href: '/academy/admin/application-questions', label: t.academy?.applicationQuestions || 'أسئلة طلبات الانضمام', icon: ClipboardList },
             { href: '/academy/admin/students', label: t.academy?.students || 'الطلاب', icon: Users },
+            { href: '/academy/admin/learning-paths', label: t.tajweedPaths?.title || 'مسارات التعلم', icon: GraduationCap },
             { href: '/academy/admin/paths', label: t.academy?.learningPaths || 'المسارات التعليمية', icon: Route },
             { href: '/academy/admin/invitations', label: t.academy?.invitations || 'الدعوات', icon: UserPlus },
             { href: '/academy/admin/users', label: t.admin?.users || 'المستخدمين', icon: Users },
@@ -157,6 +166,8 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/parent/children', label: t.academy?.myChildren || 'أبنائي', icon: Users },
             { href: '/academy/parent/reports', label: t.academy?.reports || 'التقارير', icon: FileText },
             { href: '/academy/parent/progress', label: t.academy?.progress || 'التقدم', icon: Target },
+            { href: '/academy/parent/messages', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
+            { href: '/academy/parent/restrictions', label: t.academy?.accessControl || 'تقييد المحتوى', icon: Shield },
           ]
         },
         {
@@ -220,6 +231,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
           items: [
             { href: '/academy/content-supervisor', label: 'لوحة التحكم', icon: LayoutDashboard },
             { href: '/academy/content-supervisor/lessons', label: 'الدروس', icon: BookOpen },
+            { href: '/academy/content-supervisor/archive', label: 'أرشيف الدورات', icon: Archive },
             { href: '/academy/content-supervisor/messages', label: 'الرسائل', icon: MessageSquare },
           ]
         },
@@ -266,6 +278,7 @@ export function AcademyDashboardShell({
     gender?: string;
     has_quran_access?: boolean;
     has_academy_access?: boolean;
+    approval_status?: string;
   } | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [avatarError, setAvatarError] = useState(false)
@@ -300,7 +313,30 @@ export function AcademyDashboardShell({
 
   const rawConfig = getAcademyRoleConfig(t, role)
   const userName = user?.name || rawConfig.name
-  const config = { ...rawConfig, name: userName }
+
+  // Gate the sidebar: pending/rejected applicants see only the pending dashboard link.
+  const isPendingApplicant =
+    role === 'teacher' &&
+    user?.approval_status &&
+    ['pending_approval', 'rejected'].includes(user.approval_status)
+
+  const config = isPendingApplicant
+    ? {
+        ...rawConfig,
+        name: userName,
+        sections: [
+          {
+            items: [
+              {
+                href: '/academy/pending',
+                label: t.academy?.applicationStatus || 'طلب الانضمام',
+                icon: ClipboardList,
+              },
+            ],
+          },
+        ] as NavSection[],
+      }
+    : { ...rawConfig, name: userName }
 
   const isActive = (href: string) => {
     const basePaths: Record<string, string> = {

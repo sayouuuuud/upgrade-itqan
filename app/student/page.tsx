@@ -5,8 +5,10 @@ import { useEffect, useMemo, useState } from "react"
 import {
   Mic, FileText, Clock, CheckCircle, Calendar, Award,
   ChevronLeft, Sun, Sunrise, Sunset, Moon, MoonStar,
-  BookOpen, Plus, Sparkles, TrendingUp, Loader2
+  BookOpen, Plus, Sparkles, TrendingUp, Loader2,
+  Flame, Target, BarChart3, PenLine, Save, Map,
 } from "lucide-react"
+import { SURAHS } from "@/lib/quran-data"
 import { useI18n } from "@/lib/i18n/context"
 
 type Recitation = {
@@ -33,6 +35,31 @@ type PrayerTimes = {
 
 type WirdItem = { id: string; label: string; detail?: string }
 
+type DailyChartItem = { date: string; day: string; newVerses: number; revisedVerses: number }
+type WeeklyChartItem = { weekStart: string; newVerses: number; revisedVerses: number }
+
+type ProgressReport = {
+  dailyChart: DailyChartItem[]
+  weeklyChart: WeeklyChartItem[]
+  totals: {
+    masteredAyahs: number
+    reviewingAyahs: number
+    totalAyahs: number
+    completedJuz: number
+    totalJuz: number
+    overallPercentage: number
+    totalNewFromLog: number
+    totalRevFromLog: number
+  }
+  streak: { current: number; longest: number; lastSubmission: string | null }
+  thisWeek: { newVerses: number; revisedVerses: number; activeDays: number }
+  consistency: { activeDays30: number; percentage: number }
+}
+
+function toArabicDigits(n: number | string): string {
+  return String(n).replace(/\d/g, d => '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669'[Number(d)])
+}
+
 const PRAYER_META: Record<string, { label: string; icon: any }> = {
   fajr: { label: "الفجر", icon: Sunrise },
   sunrise: { label: "الشروق", icon: Sun },
@@ -52,6 +79,21 @@ export default function StudentDashboard() {
   const [wirdItems, setWirdItems] = useState<WirdItem[]>([])
   const [loadingWird, setLoadingWird] = useState(true)
   const [wirdDone, setWirdDone] = useState<Record<string, boolean>>({})
+
+  // Progress report state
+  const [progress, setProgress] = useState<ProgressReport | null>(null)
+  const [loadingProgress, setLoadingProgress] = useState(true)
+
+  // Daily log form state
+  const [logNewVerses, setLogNewVerses] = useState("")
+  const [logRevisedVerses, setLogRevisedVerses] = useState("")
+  const [logSurah, setLogSurah] = useState("")
+  const [logNotes, setLogNotes] = useState("")
+  const [logSaving, setLogSaving] = useState(false)
+  const [logSaved, setLogSaved] = useState(false)
+
+  // Chart view toggle
+  const [chartView, setChartView] = useState<"week" | "month">("week")
 
   useEffect(() => {
     let cancelled = false
@@ -92,6 +134,14 @@ export default function StudentDashboard() {
       })
       .catch(() => { })
       .finally(() => { if (!cancelled) setLoadingWird(false) })
+
+    fetch("/api/student/progress-report")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: ProgressReport | null) => {
+        if (!cancelled && d) setProgress(d)
+      })
+      .catch(() => { })
+      .finally(() => { if (!cancelled) setLoadingProgress(false) })
 
     return () => { cancelled = true }
   }, [])
@@ -150,6 +200,54 @@ export default function StudentDashboard() {
     const todayKey = `wird-done-${new Date().toISOString().split("T")[0]}`
     try { localStorage.setItem(todayKey, JSON.stringify(next)) } catch { }
   }
+
+  const handleLogSubmit = async () => {
+    const newV = parseInt(logNewVerses || "0", 10)
+    const revV = parseInt(logRevisedVerses || "0", 10)
+    if (newV === 0 && revV === 0) return
+
+    setLogSaving(true)
+    try {
+      const surahNum = logSurah ? parseInt(logSurah, 10) : null
+      const surahData = surahNum ? SURAHS.find(s => s.number === surahNum) : null
+      const res = await fetch("/api/student/daily-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          new_verses: newV,
+          revised_verses: revV,
+          surah_number: surahNum,
+          surah_name: surahData?.name || null,
+          notes: logNotes.trim() || null,
+        }),
+      })
+      if (res.ok) {
+        setLogSaved(true)
+        setLogNewVerses("")
+        setLogRevisedVerses("")
+        setLogSurah("")
+        setLogNotes("")
+        setTimeout(() => setLogSaved(false), 3000)
+        // Refresh progress
+        fetch("/api/student/progress-report")
+          .then(r => r.ok ? r.json() : null)
+          .then((d: ProgressReport | null) => { if (d) setProgress(d) })
+          .catch(() => { })
+      }
+    } catch { }
+    setLogSaving(false)
+  }
+
+  // Chart data
+  const chartData = useMemo(() => {
+    if (!progress) return []
+    if (chartView === "week") return progress.dailyChart.slice(-7)
+    return progress.dailyChart
+  }, [progress, chartView])
+
+  const chartMax = useMemo(() => {
+    return Math.max(1, ...chartData.map(d => d.newVerses + d.revisedVerses))
+  }, [chartData])
 
   return (
     <div className="max-w-6xl mx-auto pb-12 space-y-6 md:space-y-8">
@@ -239,6 +337,305 @@ export default function StudentDashboard() {
           <span>{lastStatusLabel}</span>
         </div>
       </div>
+
+      {/* ═══ MEMORIZATION OVERVIEW ═══ */}
+      {!loadingProgress && progress && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="bg-card border border-border rounded-2xl p-4 md:p-5 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-3">
+              <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">آيات محفوظة</p>
+            <p className="text-xl md:text-2xl font-black text-foreground">
+              {toArabicDigits(progress.totals.masteredAyahs)}
+              <span className="text-sm font-bold text-muted-foreground mr-1">/ {toArabicDigits(progress.totals.totalAyahs)}</span>
+            </p>
+          </div>
+          <div className="bg-card border border-border rounded-2xl p-4 md:p-5 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center mb-3">
+              <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">أجزاء مكتملة</p>
+            <p className="text-xl md:text-2xl font-black text-foreground">
+              {toArabicDigits(progress.totals.completedJuz)}
+              <span className="text-sm font-bold text-muted-foreground mr-1">/ {toArabicDigits(progress.totals.totalJuz)}</span>
+            </p>
+          </div>
+          <div className="bg-card border border-border rounded-2xl p-4 md:p-5 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center mb-3">
+              <Flame className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">أيام الانتظام</p>
+            <p className="text-xl md:text-2xl font-black text-foreground">
+              {toArabicDigits(progress.streak.current)}
+              <span className="text-xs font-bold text-muted-foreground mr-1">يوم متتالي</span>
+            </p>
+            {progress.streak.longest > 0 && (
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                أعلى: {toArabicDigits(progress.streak.longest)} يوم
+              </p>
+            )}
+          </div>
+          <div className="bg-card border border-border rounded-2xl p-4 md:p-5 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-3">
+              <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">نسبة الإنجاز</p>
+            <p className="text-xl md:text-2xl font-black text-foreground">
+              {toArabicDigits(progress.totals.overallPercentage)}٪
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ OVERALL PROGRESS BAR ═══ */}
+      {!loadingProgress && progress && (
+        <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Map className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-foreground">إجمالي الحفظ</h3>
+                <p className="text-xs text-muted-foreground">
+                  {toArabicDigits(progress.totals.masteredAyahs)} آية محفوظة من {toArabicDigits(progress.totals.totalAyahs)}
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/student/mushaf-progress"
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+            >
+              خريطة المصحف
+              <ChevronLeft className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="w-full h-4 bg-muted rounded-full overflow-hidden flex" dir="ltr">
+            <div
+              className="h-full bg-emerald-500 transition-all duration-700"
+              style={{ width: `${(progress.totals.masteredAyahs / progress.totals.totalAyahs) * 100}%` }}
+            />
+            <div
+              className="h-full bg-amber-400 transition-all duration-700"
+              style={{ width: `${(progress.totals.reviewingAyahs / progress.totals.totalAyahs) * 100}%` }}
+            />
+          </div>
+          <div className="flex items-center gap-6 mt-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm bg-emerald-500" />
+              <span className="text-xs text-muted-foreground font-medium">محفوظ</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm bg-amber-400" />
+              <span className="text-xs text-muted-foreground font-medium">قيد المراجعة</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm bg-muted" />
+              <span className="text-xs text-muted-foreground font-medium">متبقي</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ PROGRESS CHART + DAILY LOG ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {/* Weekly/Monthly Chart */}
+        <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="text-base font-bold text-foreground">مخطط التقدم</h3>
+            </div>
+            <div className="flex items-center gap-1 bg-muted/50 border border-border rounded-lg p-0.5">
+              <button
+                onClick={() => setChartView("week")}
+                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${chartView === "week" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
+              >
+                أسبوعي
+              </button>
+              <button
+                onClick={() => setChartView("month")}
+                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${chartView === "month" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
+              >
+                شهري
+              </button>
+            </div>
+          </div>
+
+          {loadingProgress ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+          ) : chartData.length === 0 ? (
+            <div className="text-center py-12 text-sm text-muted-foreground">لا توجد بيانات بعد</div>
+          ) : (
+            <>
+              <div className="flex items-end gap-[3px] h-40" dir="ltr">
+                {chartData.map((d, i) => {
+                  const total = d.newVerses + d.revisedVerses
+                  const heightPct = (total / chartMax) * 100
+                  const newPct = total > 0 ? (d.newVerses / total) * 100 : 0
+                  return (
+                    <div
+                      key={i}
+                      className="flex-1 flex flex-col justify-end group relative"
+                      title={`${d.date}: حفظ ${d.newVerses} + مراجعة ${d.revisedVerses}`}
+                    >
+                      <div
+                        className="w-full rounded-t-sm overflow-hidden transition-all hover:opacity-80 cursor-pointer min-h-[2px]"
+                        style={{ height: `${Math.max(heightPct, 1)}%` }}
+                      >
+                        <div className="w-full bg-emerald-500" style={{ height: `${newPct}%` }} />
+                        <div className="w-full bg-amber-400" style={{ height: `${100 - newPct}%` }} />
+                      </div>
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-card border border-border rounded-lg px-2 py-1 text-[9px] font-bold text-foreground shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 transition-opacity">
+                        {toArabicDigits(d.newVerses)} حفظ · {toArabicDigits(d.revisedVerses)} مراجعة
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="flex items-center gap-4 mt-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
+                  <span className="text-[10px] text-muted-foreground">حفظ جديد</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-amber-400" />
+                  <span className="text-[10px] text-muted-foreground">مراجعة</span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Daily Memorization Log Form */}
+        <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+              <PenLine className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-foreground">سجل الحفظ اليومي</h3>
+              <p className="text-xs text-muted-foreground">سجّل كم آية حفظت وراجعت اليوم</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-bold text-muted-foreground mb-1.5 block">آيات حفظ جديدة</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={logNewVerses}
+                  onChange={e => setLogNewVerses(e.target.value)}
+                  placeholder="٠"
+                  className="w-full px-3 py-2.5 rounded-xl bg-muted/30 border border-border text-sm font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-muted-foreground mb-1.5 block">آيات مراجعة</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={logRevisedVerses}
+                  onChange={e => setLogRevisedVerses(e.target.value)}
+                  placeholder="٠"
+                  className="w-full px-3 py-2.5 rounded-xl bg-muted/30 border border-border text-sm font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-muted-foreground mb-1.5 block">السورة (اختياري)</label>
+              <select
+                value={logSurah}
+                onChange={e => setLogSurah(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-muted/30 border border-border text-sm font-bold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
+              >
+                <option value="">— اختر سورة —</option>
+                {SURAHS.map(s => (
+                  <option key={s.number} value={s.number}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-muted-foreground mb-1.5 block">ملاحظات (اختياري)</label>
+              <input
+                type="text"
+                value={logNotes}
+                onChange={e => setLogNotes(e.target.value)}
+                placeholder="مثلاً: حفظت من سورة البقرة..."
+                className="w-full px-3 py-2.5 rounded-xl bg-muted/30 border border-border text-sm text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
+              />
+            </div>
+            <button
+              onClick={handleLogSubmit}
+              disabled={logSaving || (logNewVerses === "" && logRevisedVerses === "")}
+              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-3 rounded-xl font-bold text-sm shadow-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {logSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : logSaved ? (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  تم الحفظ
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  تسجيل اليوم
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ STUDENT PROGRESS REPORT ═══ */}
+      {!loadingProgress && progress && (
+        <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-primary" />
+            </div>
+            <h3 className="text-base font-bold text-foreground">تقرير التقدم</h3>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="text-center p-3 rounded-xl bg-muted/30">
+              <div className="text-2xl font-black text-orange-600 dark:text-orange-400">
+                {toArabicDigits(progress.consistency.activeDays30)}
+              </div>
+              <div className="text-xs text-muted-foreground font-medium mt-1">يوم نشط (آخر ٣٠)</div>
+              <div className="text-[10px] text-muted-foreground">{toArabicDigits(progress.consistency.percentage)}٪ انتظام</div>
+            </div>
+            <div className="text-center p-3 rounded-xl bg-muted/30">
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                {toArabicDigits(progress.thisWeek.newVerses)}
+              </div>
+              <div className="text-xs text-muted-foreground font-medium mt-1">آية حفظ هذا الأسبوع</div>
+              <div className="text-[10px] text-muted-foreground">{toArabicDigits(progress.thisWeek.activeDays)} أيام نشطة</div>
+            </div>
+            <div className="text-center p-3 rounded-xl bg-muted/30">
+              <div className="text-2xl font-black text-amber-600 dark:text-amber-400">
+                {toArabicDigits(progress.thisWeek.revisedVerses)}
+              </div>
+              <div className="text-xs text-muted-foreground font-medium mt-1">آية مراجعة هذا الأسبوع</div>
+            </div>
+            <div className="text-center p-3 rounded-xl bg-muted/30">
+              <div className="text-2xl font-black text-purple-600 dark:text-purple-400">
+                {toArabicDigits(progress.totals.totalNewFromLog + progress.totals.totalRevFromLog)}
+              </div>
+              <div className="text-xs text-muted-foreground font-medium mt-1">إجمالي آيات مسجلة</div>
+              <div className="text-[10px] text-muted-foreground">
+                {toArabicDigits(progress.totals.totalNewFromLog)} حفظ + {toArabicDigits(progress.totals.totalRevFromLog)} مراجعة
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main two-column section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">

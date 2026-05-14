@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ClipboardList, Calendar, CalendarCheck, CheckCircle, ArrowLeft, Loader2, ArrowRight, Power, Star, Users, BarChart3, Clock } from "lucide-react"
+import { ClipboardList, Calendar, CalendarCheck, CheckCircle, ArrowLeft, Loader2, ArrowRight, Power, Star, Users, BarChart3, Clock, Target, Flame, BookOpen } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
@@ -23,6 +23,25 @@ interface NewSlotRequest {
   requested_at: string
 }
 
+interface StudentProgressReport {
+  student_id: string
+  student_name: string
+  student_email: string | null
+  active_days_30: number
+  week_new_verses: number
+  week_revised_verses: number
+  target_verses: number
+  goal_status: string | null
+  week_start: string | null
+  last_activity_at: string | null
+}
+
+interface ReaderPerformanceStats {
+  completionRate: number
+  studentCount: number
+  averageRating: string
+}
+
 export default function ReaderDashboard() {
   const { t, locale } = useI18n()
   const isAr = locale === 'ar'
@@ -32,7 +51,9 @@ export default function ReaderDashboard() {
   const [updatingActivity, setUpdatingActivity] = useState(false)
   const [slotRequests, setSlotRequests] = useState<NewSlotRequest[]>([])
   const [loadingRequests, setLoadingRequests] = useState(true)
-  const [performanceStats, setPerformanceStats] = useState<any>(null)
+  const [performanceStats, setPerformanceStats] = useState<ReaderPerformanceStats | null>(null)
+  const [studentProgress, setStudentProgress] = useState<StudentProgressReport[]>([])
+  const [loadingStudentProgress, setLoadingStudentProgress] = useState(true)
 
   useEffect(() => {
     // Fetch stats
@@ -63,7 +84,13 @@ export default function ReaderDashboard() {
       .then(r => r.ok ? r.json() : null)
       .then(data => setPerformanceStats(data))
 
-    Promise.all([fetchStats, fetchProfile, fetchRequests, fetchPerformance]).finally(() => setLoading(false))
+    const fetchStudentProgress = fetch('/api/reader/student-progress')
+      .then(r => r.ok ? r.json() : { students: [] })
+      .then(data => setStudentProgress(data.students || []))
+      .catch(() => setStudentProgress([]))
+      .finally(() => setLoadingStudentProgress(false))
+
+    Promise.all([fetchStats, fetchProfile, fetchRequests, fetchPerformance, fetchStudentProgress]).finally(() => setLoading(false))
   }, [])
 
   const handleToggleActivity = async (checked: boolean) => {
@@ -150,6 +177,8 @@ export default function ReaderDashboard() {
       toast.error("Error accepting request");
     }
   }
+
+  const formatArabicNumber = (value: number) => value.toLocaleString(isAr ? 'ar-EG' : 'en-US')
 
   return (
     <div className="bg-card min-h-full -m-6 lg:-m-8 p-6 lg:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -299,6 +328,141 @@ export default function ReaderDashboard() {
         </div>
       )}
 
+      {/* Student Progress Reports */}
+      <div className="space-y-6 pt-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+              <BookOpen className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-foreground tracking-tight">
+                {isAr ? "تقرير تقدم الطلاب" : "Student Progress Report"}
+              </h3>
+              <p className="text-sm text-muted-foreground font-medium">
+                {isAr
+                  ? "أيام الانتظام، آيات الأسبوع، والمقارنة مع هدف الحفظ."
+                  : "Consistency, weekly verses, and goal comparison."}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-[32px] shadow-sm overflow-hidden">
+          {loadingStudentProgress ? (
+            <div className="p-10 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : studentProgress.length === 0 ? (
+            <div className="p-10 text-center text-muted-foreground font-medium">
+              {isAr ? "لا توجد بيانات تقدم للطلاب بعد" : "No student progress data yet"}
+            </div>
+          ) : (
+            <div className="divide-y divide-border/60">
+              {studentProgress.map((student) => {
+                const completedVerses = student.week_new_verses
+                const totalWeeklyVerses = student.week_new_verses + student.week_revised_verses
+                const targetVerses = student.target_verses
+                const goalPercent = targetVerses > 0
+                  ? Math.min(100, Math.round((completedVerses / targetVerses) * 100))
+                  : 0
+                const goalLabel = targetVerses > 0
+                  ? `${formatArabicNumber(completedVerses)} / ${formatArabicNumber(targetVerses)} ${isAr ? "آية" : "verses"}`
+                  : (isAr ? "لا يوجد هدف محدد" : "No target set")
+
+                return (
+                  <div key={student.student_id} className="p-5 md:p-6 space-y-4 hover:bg-muted/20 transition-colors">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black shrink-0">
+                          {student.student_name.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-black text-foreground truncate">{student.student_name}</h4>
+                          {student.student_email && (
+                            <p className="text-xs text-muted-foreground truncate">{student.student_email}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:min-w-[620px]">
+                        <div className="rounded-2xl bg-orange-500/10 border border-orange-500/20 p-3">
+                          <div className="flex items-center gap-2 text-orange-600 mb-1">
+                            <Flame className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-wider">
+                              {isAr ? "الانتظام" : "Consistency"}
+                            </span>
+                          </div>
+                          <p className="text-lg font-black text-foreground">
+                            {formatArabicNumber(student.active_days_30)}
+                            <span className="text-xs text-muted-foreground font-bold mx-1">
+                              {isAr ? "يوم/٣٠" : "days/30"}
+                            </span>
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-3">
+                          <div className="flex items-center gap-2 text-emerald-600 mb-1">
+                            <BookOpen className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-wider">
+                              {isAr ? "حفظ الأسبوع" : "Week Hifz"}
+                            </span>
+                          </div>
+                          <p className="text-lg font-black text-foreground">
+                            {formatArabicNumber(student.week_new_verses)}
+                            <span className="text-xs text-muted-foreground font-bold mx-1">
+                              {isAr ? "آية" : "verses"}
+                            </span>
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 p-3">
+                          <div className="flex items-center gap-2 text-amber-600 mb-1">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-wider">
+                              {isAr ? "إجمالي الأسبوع" : "Week Total"}
+                            </span>
+                          </div>
+                          <p className="text-lg font-black text-foreground">
+                            {formatArabicNumber(totalWeeklyVerses)}
+                            <span className="text-xs text-muted-foreground font-bold mx-1">
+                              {isAr ? "حفظ + مراجعة" : "new + review"}
+                            </span>
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl bg-blue-500/10 border border-blue-500/20 p-3">
+                          <div className="flex items-center gap-2 text-blue-600 mb-1">
+                            <Target className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-wider">
+                              {isAr ? "مقارنة الهدف" : "Goal"}
+                            </span>
+                          </div>
+                          <p className="text-sm font-black text-foreground">{goalLabel}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
+                        <span>{isAr ? "نسبة تحقيق هدف الأسبوع" : "Weekly goal progress"}</span>
+                        <span>{targetVerses > 0 ? `${formatArabicNumber(goalPercent)}%` : "—"}</span>
+                      </div>
+                      <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden" dir="ltr">
+                        <div
+                          className="h-full bg-gradient-to-r from-emerald-500 to-primary transition-all duration-500"
+                          style={{ width: `${goalPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* New Slot Requests Recovery Flow - Premium Redesign */}
       {slotRequests.length > 0 && (
         <div className="relative p-1 rounded-[40px] border border-border bg-primary/5 shadow-2xl shadow-primary/5 overflow-hidden group">
@@ -310,8 +474,8 @@ export default function ReaderDashboard() {
                 <CalendarCheck className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-2xl font-black text-foreground tracking-tight">{(t.reader as any).newSlotRequests || (locale === 'ar' ? 'طلبات مواعد جديدة' : 'New Slot Requests')}</h3>
-                <p className="text-muted-foreground text-sm font-medium">{(t.reader as any).requestsFromSuspendedDesc || (locale === 'ar' ? 'طلاب انتهت مهلتهم ويطلبون فرصة جديدة لحجز موعد.' : 'Students whose window expired and are asking for a new chance to book.')}</p>
+                <h3 className="text-2xl font-black text-foreground tracking-tight">{t.reader.newSlotRequests || (locale === 'ar' ? 'طلبات مواعد جديدة' : 'New Slot Requests')}</h3>
+                <p className="text-muted-foreground text-sm font-medium">{t.reader.requestsFromSuspendedDesc || (locale === 'ar' ? 'طلاب انتهت مهلتهم ويطلبون فرصة جديدة لحجز موعد.' : 'Students whose window expired and are asking for a new chance to book.')}</p>
               </div>
             </div>
 
@@ -335,7 +499,7 @@ export default function ReaderDashboard() {
                     className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white h-14 px-8 rounded-2xl text-sm font-black transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 active:scale-95 group-hover/item:translate-x-[-4px] rtl:group-hover/item:translate-x-[4px]"
                   >
                     <CheckCircle className="w-5 h-5" />
-                    <span>{(t.reader as any).acceptRequest || (locale === 'ar' ? 'قبول الطلب وتجديد الفرصة' : 'Accept & Renew Opportunity')}</span>
+                    <span>{t.reader.acceptRequest || (locale === 'ar' ? 'قبول الطلب وتجديد الفرصة' : 'Accept & Renew Opportunity')}</span>
                   </button>
                 </div>
               ))}
@@ -351,7 +515,7 @@ export default function ReaderDashboard() {
             <ClipboardList className="w-10 h-10 text-muted-foreground/30" />
           </div>
           <p className="text-muted-foreground font-black text-xl uppercase tracking-widest max-w-md mx-auto leading-relaxed px-6">
-            {(t.reader as any).noNewRecitationsForReview}
+            {t.reader.noNewRecitationsForReview}
           </p>
         </div>
       )}

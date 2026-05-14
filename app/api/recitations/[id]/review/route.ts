@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 import { sendMasteredEmail, sendNeedsSessionEmail } from "@/lib/email"
 import { createNotification } from "@/lib/notifications"
-import { awardPoints } from "@/lib/academy/gamification"
+import { awardRecitationMasteredPoints } from "@/lib/academy/gamification"
 import { addDays } from "date-fns"
 
 // POST /api/recitations/:id/review - submit review (mastered / needs_session)
@@ -141,22 +141,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // Award Points (Error #14 Fix)
-    if (recitation.student_id) {
-      // Award points for the attempt
-      await awardPoints(recitation.student_id, 10, 'recitation', {
-        description: 'نقاط مقابل تسجيل تلاوة ومراجعتها',
-        relatedEntityType: 'recitation',
-        relatedEntityId: id
-      });
-
-      // Extra points if mastered
-      if (verdict === 'mastered') {
-        await awardPoints(recitation.student_id, 40, 'mastered', {
-          description: 'مبروك! لقد أتقنت التلاوة',
-          relatedEntityType: 'recitation',
-          relatedEntityId: id
-        });
-      }
+    if (recitation.student_id && verdict === 'mastered' && recitation.status !== 'mastered') {
+      await awardRecitationMasteredPoints(recitation.student_id, id)
     }
 
     // Send email notification to student

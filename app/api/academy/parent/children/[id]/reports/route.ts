@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
+import { buildParentWeeklyReport, getPreviousWeekWindow } from '@/lib/academy/parent-reports'
 
 // GET /api/academy/parent/children/[id]/reports
 // Returns detailed report for a specific child: attendance, submissions, grades, teacher comments
@@ -16,9 +17,35 @@ export async function GET(
   try {
     const childId = (await params).id
 
-    // Verify parent-child relationship
-    const link = await query<any>(
-      `SELECT id FROM parent_children WHERE parent_id = $1 AND child_id = $2 AND status = 'active'`,
+    const { searchParams } = new URL(req.url)
+    const weekStartParam = searchParams.get('weekStart')
+    const weekEndParam = searchParams.get('weekEnd')
+    const { weekStart, weekEnd } = weekStartParam && weekEndParam
+      ? { weekStart: weekStartParam, weekEnd: weekEndParam }
+      : getPreviousWeekWindow()
+
+    const link = await query<{
+      id: string
+      parent_id: string
+      child_id: string
+      parent_child_id: string
+      parent_name: string
+      parent_email: string
+      child_name: string
+    }>(
+      `SELECT pc.id,
+              pc.parent_id,
+              pc.child_id,
+              pc.id AS parent_child_id,
+              p.name AS parent_name,
+              p.email AS parent_email,
+              c.name AS child_name
+         FROM parent_children pc
+         JOIN users p ON p.id = pc.parent_id
+         JOIN users c ON c.id = pc.child_id
+        WHERE pc.parent_id = $1
+          AND pc.child_id = $2
+          AND pc.status IN ('active', 'approved')`,
       [session.sub, childId]
     )
     if (link.length === 0) {
@@ -74,10 +101,19 @@ export async function GET(
       WHERE e.student_id = $1 AND e.status = 'active'
     `, [childId])
 
+    const weekly = await buildParentWeeklyReport(link[0], weekStart, weekEnd)
+
     return NextResponse.json({
       courses,
       submissions,
-      stats: stats[0] || {}
+      stats: {
+        ...(stats[0] || {}),
+        recitations_count: weekly.recitationsCount,
+        sessions_attended: weekly.sessionsAttended,
+        badges_earned: weekly.badgesEarned,
+        current_level: weekly.currentLevel,
+      },
+      weekly
     })
   } catch (error) {
     console.error('[API] Error fetching child reports:', error)

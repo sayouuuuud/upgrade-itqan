@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,6 +29,8 @@ interface SessionDetails {
   scheduled_at: string
   duration_minutes: number
   meeting_link: string | null
+  meeting_platform: string | null
+  public_join_token: string | null
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
   recording_url: string | null
   notes: string | null
@@ -56,11 +58,7 @@ export default function SessionDetailsPage() {
 
   const sessionId = params.id as string
 
-  useEffect(() => {
-    fetchSession()
-  }, [sessionId])
-
-  const fetchSession = async () => {
+  const fetchSession = useCallback(async () => {
     try {
       const res = await fetch(`/api/academy/student/sessions/${sessionId}`)
       if (res.ok) {
@@ -74,7 +72,11 @@ export default function SessionDetailsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router, sessionId])
+
+  useEffect(() => {
+    void Promise.resolve().then(fetchSession)
+  }, [fetchSession])
 
   const handleJoinSession = async () => {
     if (!session?.meeting_link) return
@@ -267,12 +269,28 @@ export default function SessionDetailsPage() {
             </div>
           )}
 
+          {session.meeting_link && (
+            <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+              <div className="flex items-start gap-3">
+                <ExternalLink className="w-5 h-5 text-green-700 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-green-900 dark:text-green-100">
+                    {isAr ? 'رابط الاجتماع متاح' : 'Meeting link is ready'}
+                  </h4>
+                  <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                    {session.meeting_platform === 'google_meet' ? 'Google Meet' : session.meeting_platform === 'zoom' ? 'Zoom' : isAr ? 'رابط خارجي' : 'External meeting'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
-            {isLive && session.meeting_link && (
+            {(isLive || isUpcoming) && session.meeting_link && (
               <Button
                 size="lg"
-                className="gap-2 bg-red-600 hover:bg-red-700 flex-1"
+                className={cn("gap-2 flex-1", isLive ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700")}
                 onClick={handleJoinSession}
                 disabled={joining}
               >
@@ -281,7 +299,7 @@ export default function SessionDetailsPage() {
                 ) : (
                   <PlayCircle className="w-5 h-5" />
                 )}
-                {isAr ? 'انضم للجلسة الآن' : 'Join Session Now'}
+                {isLive ? (isAr ? 'انضم للجلسة الآن' : 'Join Session Now') : (isAr ? 'فتح رابط الجلسة' : 'Open Meeting Link')}
               </Button>
             )}
             
@@ -294,10 +312,19 @@ export default function SessionDetailsPage() {
               </Button>
             )}
 
-            {isUpcoming && (
+            {isUpcoming && !session.meeting_link && (
               <Button size="lg" disabled className="gap-2 flex-1">
                 <Clock className="w-5 h-5" />
                 {isAr ? 'الجلسة لم تبدأ بعد' : 'Session not started yet'}
+              </Button>
+            )}
+
+            {session.public_join_token && (
+              <Button size="lg" variant="outline" asChild className="gap-2">
+                <Link href={`/academy/public/session/${session.public_join_token}`}>
+                  <ExternalLink className="w-5 h-5" />
+                  {isAr ? 'رابط الدرس العام' : 'Public Lesson Link'}
+                </Link>
               </Button>
             )}
 

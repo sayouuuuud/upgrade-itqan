@@ -83,7 +83,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "معرف السؤال والإجابة مطلوبان" }, { status: 400 })
     }
 
-    const rows = await query(
+    const rows = await query<{ asked_by: string; category: string }>(
       `UPDATE fiqh_questions
        SET answer = $1, answered_by = $2, answered_at = NOW(),
            is_published = $3, updated_at = NOW()

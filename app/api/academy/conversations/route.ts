@@ -9,8 +9,37 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // If user is student, get their conversations with teachers
-    // If user is teacher, get their conversations with students
+    if (session.role === "parent") {
+      const conversations = await query<{
+        id: string
+        student_id: string
+        teacher_id: string
+        last_message: string | null
+        last_message_at: string | null
+        other_user_id: string
+        other_user_name: string
+        other_user_avatar: string | null
+        other_user_role: string
+        unread_count: number
+      }>(
+        `SELECT
+           c.id, c.student_id, c.teacher_id, c.last_message, c.last_message_at,
+           u.id as other_user_id, u.name as other_user_name, u.avatar_url as other_user_avatar,
+           u.role as other_user_role,
+           (SELECT COUNT(*) FROM academy_messages m WHERE m.conversation_id = c.id AND m.sender_id != $1 AND m.is_read = FALSE) as unread_count
+         FROM academy_conversations c
+         JOIN users u ON u.id = c.teacher_id
+         WHERE c.student_id IN (
+           SELECT child_id FROM parent_children
+           WHERE parent_id = $1 AND status IN ('active', 'approved')
+         )
+         ORDER BY c.last_message_at DESC NULLS LAST`,
+        [session.sub]
+      )
+
+      return NextResponse.json({ conversations })
+    }
+
     const isStudent = session.role === "student"
     
     // We join to get the "other person's" details
@@ -50,9 +79,50 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { otherUserId } = await req.json()
+    const { otherUserId, childId } = await req.json()
     if (!otherUserId) {
       return NextResponse.json({ error: "مطلوب معرف المستخدم الآخر" }, { status: 400 })
+    }
+
+    if (session.role === "parent") {
+      if (!childId) {
+        return NextResponse.json({ error: "مطلوب اختيار الابن" }, { status: 400 })
+      }
+
+      const link = await queryOne<{ id: string }>(
+        `SELECT id FROM parent_children
+         WHERE parent_id = $1 AND child_id = $2 AND status IN ('active', 'approved')`,
+        [session.sub, childId]
+      )
+      if (!link) {
+        return NextResponse.json({ error: "هذا الابن غير مرتبط بحسابك" }, { status: 403 })
+      }
+
+      const teacher = await queryOne<{ id: string }>(
+        `SELECT id FROM users WHERE id = $1 AND role IN ('teacher', 'reader')`,
+        [otherUserId]
+      )
+      if (!teacher) {
+        return NextResponse.json({ error: "الشيخ غير موجود أو غير متاح للمحادثة" }, { status: 404 })
+      }
+
+      const existing = await queryOne<{ id: string }>(
+        `SELECT id FROM academy_conversations WHERE student_id = $1 AND teacher_id = $2`,
+        [childId, otherUserId]
+      )
+
+      if (existing) {
+        return NextResponse.json({ conversationId: existing.id })
+      }
+
+      const newConv = await query<{ id: string }>(
+        `INSERT INTO academy_conversations (student_id, teacher_id)
+         VALUES ($1, $2)
+         RETURNING id`,
+        [childId, otherUserId]
+      )
+
+      return NextResponse.json({ conversationId: newConv[0].id })
     }
 
     const isStudent = session.role === "student"

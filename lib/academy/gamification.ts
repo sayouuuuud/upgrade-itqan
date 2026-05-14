@@ -49,29 +49,13 @@ export type AcademyLevel =
   | 'hafiz'
   | 'master'
 
-export type BadgeType =
-  | 'first_recitation'
-  | 'week_streak'
-  | 'month_streak'
-  | 'hafiz_juz_amma'
-  | 'hundred_recitations'
-  | 'tajweed_master'
-  | 'ramadan_badge'
-  | 'full_quran'
-  | 'star_of_halaqah'
-  | 'first_course'
-  | 'five_courses'
-  | 'ten_courses'
-  | 'first_task'
-  | 'task_master'
-  | 'early_bird'
-  | 'night_owl'
-  | 'helper'
+export type BadgeType = string
 
 export interface AwardOptions {
   description?: string
   relatedEntityType?: string
   relatedEntityId?: string
+  applyStreakMultiplier?: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -88,22 +72,32 @@ export interface BadgeDefinition {
   criteria_type: 'points' | 'streak' | 'courses' | 'tasks' | 'memorization' | 'recitation' | 'custom'
   criteria_value?: number
   points_reward: number
+  icon?: string | null
 }
+
+export const POINTS_RULES = {
+  recitation: 10,
+  mastered: 30,
+  task: 15,
+  session_attend: 20,
+  streak: 5,
+  juz_complete: 100,
+} as const
 
 export const BADGE_CATALOGUE: BadgeDefinition[] = [
   // التلاوة
-  { badge_type: 'first_recitation',    name: 'أول تلاوة',    description: 'سجلت أول تلاوة لك في المنصة', category: 'التلاوة',  criteria_type: 'recitation',   criteria_value: 1,   points_reward: 10 },
-  { badge_type: 'hundred_recitations', name: '100 تلاوة',    description: 'سجلت 100 تلاوة',                 category: 'التلاوة',  criteria_type: 'recitation',   criteria_value: 100, points_reward: 100 },
-  { badge_type: 'tajweed_master',      name: 'متقن التجويد', description: 'حصلت على ممتاز في 10 تلاوات متتالية', category: 'التلاوة',  criteria_type: 'recitation', criteria_value: 10,  points_reward: 150 },
+  { badge_type: 'first_recitation',    name: 'أول تلاوة',    description: 'سجلت أول تلاوة لك في المنصة', category: 'التلاوة',  criteria_type: 'recitation',   criteria_value: 1,   points_reward: 20 },
+  { badge_type: 'hundred_recitations', name: '100 تلاوة',    description: 'سجلت 100 تلاوة',                 category: 'التلاوة',  criteria_type: 'recitation',   criteria_value: 100, points_reward: 150 },
+  { badge_type: 'tajweed_master',      name: 'متقن التجويد', description: 'اجتزت مسار التجويد الكامل', category: 'التلاوة',  criteria_type: 'recitation', criteria_value: 10,  points_reward: 300 },
 
   // المثابرة
-  { badge_type: 'week_streak',         name: 'أسبوع متواصل', description: 'حافظت على نشاطك لمدة 7 أيام', category: 'المثابرة', criteria_type: 'streak', criteria_value: 7,  points_reward: 25 },
+  { badge_type: 'week_streak',         name: 'أسبوع متواصل', description: 'حافظت على نشاطك لمدة 7 أيام', category: 'المثابرة', criteria_type: 'streak', criteria_value: 7,  points_reward: 70 },
   { badge_type: 'month_streak',        name: 'شهر متواصل',   description: 'حافظت على نشاطك لمدة 30 يوماً', category: 'المثابرة', criteria_type: 'streak', criteria_value: 30, points_reward: 100 },
-  { badge_type: 'ramadan_badge',       name: 'مجاهد رمضان',  description: 'أكملت تحدي رمضان',              category: 'المثابرة', criteria_type: 'streak', criteria_value: 30, points_reward: 200 },
+  { badge_type: 'ramadan_badge',       name: 'شهر رمضان',  description: 'سجلت تلاوة كل يوم خلال شهر رمضان',              category: 'المثابرة', criteria_type: 'streak', criteria_value: 30, points_reward: 250 },
 
   // الحفظ
-  { badge_type: 'hafiz_juz_amma', name: 'حافظ جزء عمّ', description: 'حفظت جزء عمّ كاملاً',          category: 'الحفظ', criteria_type: 'memorization', criteria_value: 1,  points_reward: 150 },
-  { badge_type: 'full_quran',     name: 'حافظ القرآن',  description: 'أكملت حفظ القرآن الكريم',     category: 'الحفظ', criteria_type: 'memorization', criteria_value: 30, points_reward: 1000 },
+  { badge_type: 'hafiz_juz_amma', name: 'حافظ جزء عمّ', description: 'أتقنت جميع سور الجزء الثلاثين',          category: 'الحفظ', criteria_type: 'memorization', criteria_value: 1,  points_reward: 200 },
+  { badge_type: 'full_quran',     name: 'الختمة الكاملة',  description: 'أتقنت القرآن كاملاً وحصلت على إجازة',     category: 'الحفظ', criteria_type: 'memorization', criteria_value: 30, points_reward: 1000 },
 
   // الدورات
   { badge_type: 'first_course',  name: 'أول دورة', description: 'أكملت أول دورة لك',  category: 'الدورات', criteria_type: 'courses', criteria_value: 1,  points_reward: 50 },
@@ -115,11 +109,26 @@ export const BADGE_CATALOGUE: BadgeDefinition[] = [
   { badge_type: 'task_master', name: 'سيد المهام', description: 'أنجزت 50 مهمة',  category: 'المهام', criteria_type: 'tasks', criteria_value: 50, points_reward: 250 },
 
   // تكريم
-  { badge_type: 'star_of_halaqah', name: 'نجم الحلقة', description: 'كنت الأفضل في حلقتك هذا الأسبوع', category: 'تكريم', criteria_type: 'custom', points_reward: 100 },
+  { badge_type: 'star_of_halaqah', name: 'نجم الحلقة', description: 'الأعلى نقاطاً في حلقته لمدة شهر', category: 'تكريم', criteria_type: 'custom', points_reward: 180 },
   { badge_type: 'helper',          name: 'المُعين',    description: 'ساعدت زملاءك في المنتدى',         category: 'تكريم', criteria_type: 'custom', points_reward: 50 },
   { badge_type: 'early_bird',      name: 'الباكر',     description: 'دخلت المنصة قبل الفجر 7 أيام',    category: 'تكريم', criteria_type: 'custom', criteria_value: 7, points_reward: 50 },
   { badge_type: 'night_owl',       name: 'الساهر',     description: 'تلوت بعد منتصف الليل 7 ليالي',   category: 'تكريم', criteria_type: 'custom', criteria_value: 7, points_reward: 50 },
 ]
+
+export async function getBadgeCatalogue(): Promise<BadgeDefinition[]> {
+  try {
+    const rows = await query<BadgeDefinition>(
+      `SELECT badge_type, name, description, category, criteria_type, criteria_value, points_reward, icon
+         FROM badge_definitions
+        WHERE COALESCE(is_active, true) = true
+        ORDER BY display_order ASC, created_at ASC`
+    )
+    return rows.length > 0 ? rows : BADGE_CATALOGUE
+  } catch (error) {
+    console.warn('[gamification] badge_definitions unavailable, using fallback catalogue:', (error as Error).message)
+    return BADGE_CATALOGUE
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -127,10 +136,9 @@ export const BADGE_CATALOGUE: BadgeDefinition[] = [
 
 const LEVEL_THRESHOLDS: { level: AcademyLevel; min: number }[] = [
   { level: 'beginner',     min: 0 },
-  { level: 'intermediate', min: 100 },
-  { level: 'advanced',     min: 500 },
-  { level: 'hafiz',        min: 2000 },
-  { level: 'master',       min: 5000 },
+  { level: 'intermediate', min: 500 },
+  { level: 'advanced',     min: 2000 },
+  { level: 'hafiz',        min: 5000 },
 ]
 
 export function computeLevel(totalPoints: number): AcademyLevel {
@@ -245,7 +253,9 @@ export async function awardPoints(
 
   const prev = await ensureUserPoints(userId)
   const { streak, longest, today } = bumpStreak(prev)
-  const newTotal = (prev.total_points || 0) + points
+  const shouldMultiply = options.applyStreakMultiplier !== false && reason !== 'badge_earned' && streak >= 7
+  const awardedPoints = shouldMultiply ? Math.round(points * 1.5) : points
+  const newTotal = (prev.total_points || 0) + awardedPoints
   const newLevel = computeLevel(newTotal)
 
   await query(
@@ -265,9 +275,11 @@ export async function awardPoints(
      VALUES ($1, $2, $3, $4, $5, $6)`,
     [
       userId,
-      points,
+      awardedPoints,
       reason,
-      options.description ?? null,
+      shouldMultiply
+        ? `${options.description ?? ''} (مضاعفة Streak ×1.5)`.trim()
+        : options.description ?? null,
       options.relatedEntityType ?? null,
       options.relatedEntityId ?? null,
     ]
@@ -286,6 +298,10 @@ interface BadgeStatsRow {
   streak_days: number
   task_count: number
   course_count: number
+  recitation_count: number
+  juz_amma_mastered_count: number
+  mastered_surah_count: number
+  tajweed_completed_count: number
 }
 
 async function fetchBadgeStats(userId: string): Promise<BadgeStatsRow> {
@@ -297,13 +313,42 @@ async function fetchBadgeStats(userId: string): Promise<BadgeStatsRow> {
       (SELECT COUNT(*)::int FROM task_submissions ts
          WHERE ts.student_id = $1 AND ts.status = 'graded')     AS task_count,
       (SELECT COUNT(*)::int FROM enrollments e
-         WHERE e.student_id = $1 AND e.status = 'completed')    AS course_count
+         WHERE e.student_id = $1 AND e.status = 'completed')    AS course_count,
+      (SELECT COUNT(*)::int FROM recitations r
+         WHERE r.student_id = $1)                                AS recitation_count,
+      (SELECT COUNT(DISTINCT r.surah_number)::int
+         FROM recitations r
+         JOIN reviews rv ON rv.recitation_id = r.id
+        WHERE r.student_id = $1
+          AND rv.verdict = 'mastered'
+          AND r.surah_number BETWEEN 78 AND 114)                 AS juz_amma_mastered_count,
+      (SELECT COUNT(DISTINCT r.surah_number)::int
+         FROM recitations r
+         JOIN reviews rv ON rv.recitation_id = r.id
+        WHERE r.student_id = $1
+          AND rv.verdict = 'mastered'
+          AND r.surah_number BETWEEN 1 AND 114)                  AS mastered_surah_count,
+      (SELECT COUNT(*)::int FROM enrollments e
+         JOIN courses c ON c.id = e.course_id
+        WHERE e.student_id = $1
+          AND e.status = 'completed'
+          AND (LOWER(COALESCE(c.subject, '')) = 'tajweed'
+               OR c.title ILIKE '%تجويد%'))                     AS tajweed_completed_count
     FROM (SELECT 1) _
     LEFT JOIN user_points up ON up.user_id = $1
     `,
     [userId]
   )
-  return row || { total_points: 0, streak_days: 0, task_count: 0, course_count: 0 }
+  return row || {
+    total_points: 0,
+    streak_days: 0,
+    task_count: 0,
+    course_count: 0,
+    recitation_count: 0,
+    juz_amma_mastered_count: 0,
+    mastered_surah_count: 0,
+    tajweed_completed_count: 0,
+  }
 }
 
 async function getEarnedBadgeTypes(userId: string): Promise<Set<BadgeType>> {
@@ -317,11 +362,11 @@ async function getEarnedBadgeTypes(userId: string): Promise<Set<BadgeType>> {
 async function insertBadge(userId: string, def: BadgeDefinition): Promise<boolean> {
   try {
     const res = await query(
-      `INSERT INTO badges (user_id, badge_type, badge_name, badge_description, points_awarded, awarded_at)
-       VALUES ($1, $2, $3, $4, $5, NOW())
+      `INSERT INTO badges (user_id, badge_type, badge_name, badge_description, badge_icon_url, points_awarded, awarded_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())
        ON CONFLICT (user_id, badge_type) DO NOTHING
        RETURNING id`,
-      [userId, def.badge_type, def.name, def.description, def.points_reward]
+      [userId, def.badge_type, def.name, def.description, def.icon ?? null, def.points_reward]
     )
     return res.length > 0
   } catch (e) {
@@ -336,13 +381,14 @@ async function insertBadge(userId: string, def: BadgeDefinition): Promise<boolea
  */
 export async function checkAndAwardBadges(userId: string): Promise<BadgeType[]> {
   if (!userId) return []
-  const [stats, earned] = await Promise.all([
+  const [stats, earned, catalogue] = await Promise.all([
     fetchBadgeStats(userId),
     getEarnedBadgeTypes(userId),
+    getBadgeCatalogue(),
   ])
 
   const unlocked: BadgeDefinition[] = []
-  for (const def of BADGE_CATALOGUE) {
+  for (const def of catalogue) {
     if (earned.has(def.badge_type)) continue
 
     let qualifies = false
@@ -354,8 +400,18 @@ export async function checkAndAwardBadges(userId: string): Promise<BadgeType[]> 
       qualifies = stats.streak_days >= def.criteria_value
     } else if (def.criteria_type === 'points' && def.criteria_value != null) {
       qualifies = stats.total_points >= def.criteria_value
+    } else if (def.badge_type === 'first_recitation') {
+      qualifies = stats.recitation_count >= 1
+    } else if (def.badge_type === 'hundred_recitations') {
+      qualifies = stats.recitation_count >= 100
+    } else if (def.badge_type === 'hafiz_juz_amma') {
+      qualifies = stats.juz_amma_mastered_count >= 37
+    } else if (def.badge_type === 'tajweed_master') {
+      qualifies = stats.tajweed_completed_count > 0
+    } else if (def.badge_type === 'full_quran') {
+      qualifies = stats.mastered_surah_count >= 114
     }
-    // Custom / recitation / memorization badges are not auto-unlocked here.
+    // Other custom badges, such as star_of_halaqah, are awarded manually by admins.
 
     if (qualifies) unlocked.push(def)
   }
@@ -402,6 +458,21 @@ export interface UserPointsSummary {
   last_activity_date: string | null
   level_progress: ReturnType<typeof levelProgress>
   badges_earned: number
+  unlocked_features: string[]
+}
+
+export function unlockedFeaturesForLevel(level: AcademyLevel): string[] {
+  const features = ['تسجيل التلاوات', 'حضور الدروس', 'لوحة المتصدرين']
+  if (['intermediate', 'advanced', 'hafiz', 'master'].includes(level)) {
+    features.push('شارات متقدمة', 'تحديات أسبوعية')
+  }
+  if (['advanced', 'hafiz', 'master'].includes(level)) {
+    features.push('مسارات تجويد متقدمة', 'ملف إنجاز عام')
+  }
+  if (['hafiz', 'master'].includes(level)) {
+    features.push('طلب الإجازة', 'تكريم الحافظين')
+  }
+  return features
 }
 
 export async function getUserPointsSummary(userId: string): Promise<UserPointsSummary> {
@@ -419,6 +490,7 @@ export async function getUserPointsSummary(userId: string): Promise<UserPointsSu
     last_activity_date: points.last_activity_date,
     level_progress: levelProgress(points.total_points || 0),
     badges_earned: badgesCount?.c ?? 0,
+    unlocked_features: unlockedFeaturesForLevel(points.level || 'beginner'),
   }
 }
 
@@ -435,7 +507,7 @@ export const awardTaskPoints = (userId: string, points: number, taskId: string, 
   })
 
 export const awardSessionAttendancePoints = (userId: string, sessionId: string, sessionTitle?: string) =>
-  awardPoints(userId, 20, 'session_attend', {
+  awardPoints(userId, POINTS_RULES.session_attend, 'session_attend', {
     description: sessionTitle ? `حضور جلسة: ${sessionTitle}` : 'حضور جلسة',
     relatedEntityType: 'session',
     relatedEntityId: sessionId,
@@ -449,11 +521,31 @@ export const awardLessonPoints = (userId: string, lessonId: string, lessonTitle?
   })
 
 export const awardDailyLoginPoints = (userId: string) =>
-  awardPoints(userId, 5, 'daily_login', { description: 'دخول يومي للمنصة' })
+  awardPoints(userId, POINTS_RULES.streak, 'streak', { description: 'يوم Streak' })
 
 export const awardCourseCompletePoints = (userId: string, courseId: string, courseTitle?: string) =>
-  awardPoints(userId, 100, 'course_complete', {
+  awardPoints(userId, POINTS_RULES.juz_complete, 'course_complete', {
     description: courseTitle ? `إكمال دورة: ${courseTitle}` : 'إكمال دورة',
     relatedEntityType: 'course',
     relatedEntityId: courseId,
+  })
+
+export const awardRecitationSubmittedPoints = (userId: string, recitationId: string) =>
+  awardPoints(userId, POINTS_RULES.recitation, 'recitation', {
+    description: 'تسجيل تلاوة',
+    relatedEntityType: 'recitation',
+    relatedEntityId: recitationId,
+  })
+
+export const awardRecitationMasteredPoints = (userId: string, recitationId: string) =>
+  awardPoints(userId, POINTS_RULES.mastered, 'mastered', {
+    description: 'إتقان تلاوة',
+    relatedEntityType: 'recitation',
+    relatedEntityId: recitationId,
+  })
+
+export const awardJuzCompletePoints = (userId: string, juzNumber: number) =>
+  awardPoints(userId, POINTS_RULES.juz_complete, 'juz_complete', {
+    description: `إنهاء جزء كامل: ${juzNumber}`,
+    relatedEntityType: 'juz',
   })

@@ -79,6 +79,69 @@ export async function GET() {
     ).catch(() => [{ count: 0 }])
     const totalCertificates = certificatesResult[0]?.count || 0
 
+    const activeStudentsResult = await query<{ count: number }>(
+      `SELECT COUNT(DISTINCT user_id)::int AS count
+       FROM points_log
+       WHERE created_at >= NOW() - INTERVAL '1 day'`
+    ).catch(() => [{ count: 0 }])
+    const dailyActivityRate = totalStudents > 0
+      ? Math.round(((activeStudentsResult[0]?.count || 0) / totalStudents) * 100)
+      : 0
+
+    const studentsByCountry = await query<{ country: string; country_code: string | null; count: number; active_count: number }>(
+      `SELECT
+        COALESCE(NULLIF(country, ''), 'غير محدد') AS country,
+        NULLIF(country_code, '') AS country_code,
+        COUNT(*)::int AS count,
+        COUNT(*) FILTER (WHERE last_login_at >= NOW() - INTERVAL '7 days')::int AS active_count
+       FROM users
+       WHERE role = 'student' AND has_academy_access = true
+       GROUP BY COALESCE(NULLIF(country, ''), 'غير محدد'), NULLIF(country_code, '')
+       ORDER BY count DESC, country ASC`
+    ).catch(() => [])
+
+    const geoHeatmap = await query<{ country: string; country_code: string | null; region: string; city: string; count: number }>(
+      `SELECT
+        COALESCE(NULLIF(country, ''), 'غير محدد') AS country,
+        NULLIF(country_code, '') AS country_code,
+        COALESCE(NULLIF(region, ''), 'غير محدد') AS region,
+        COALESCE(NULLIF(city, ''), 'غير محدد') AS city,
+        COUNT(*)::int AS count
+       FROM users
+       WHERE role = 'student' AND has_academy_access = true
+       GROUP BY
+        COALESCE(NULLIF(country, ''), 'غير محدد'),
+        NULLIF(country_code, ''),
+        COALESCE(NULLIF(region, ''), 'غير محدد'),
+        COALESCE(NULLIF(city, ''), 'غير محدد')
+       ORDER BY count DESC, country ASC, region ASC
+       LIMIT 50`
+    ).catch(() => [])
+
+    const dailyActivity = await query<{ day: string; active_students: number; points: number }>(
+      `SELECT
+        TO_CHAR(created_at::date, 'YYYY-MM-DD') AS day,
+        COUNT(DISTINCT user_id)::int AS active_students,
+        COALESCE(SUM(points), 0)::int AS points
+       FROM points_log
+       WHERE created_at >= NOW() - INTERVAL '30 days'
+       GROUP BY created_at::date
+       ORDER BY created_at::date ASC`
+    ).catch(() => [])
+
+    const topSurahs = await query<{ surah_name: string; surah_number: number | null; recordings: number; unique_students: number }>(
+      `SELECT
+        COALESCE(surah_name, 'غير محدد') AS surah_name,
+        surah_number,
+        COUNT(*)::int AS recordings,
+        COUNT(DISTINCT student_id)::int AS unique_students
+       FROM recitations
+       WHERE created_at >= NOW() - INTERVAL '90 days'
+       GROUP BY COALESCE(surah_name, 'غير محدد'), surah_number
+       ORDER BY recordings DESC, unique_students DESC
+       LIMIT 10`
+    ).catch(() => [])
+
     return NextResponse.json({
       stats: {
         totalStudents,
@@ -86,11 +149,17 @@ export async function GET() {
         completionRate,
         totalTeachers,
         weeklyEnrollments,
-        totalCertificates
+        totalCertificates,
+        dailyActiveStudents: activeStudentsResult[0]?.count || 0,
+        dailyActivityRate,
       },
       enrollmentTrend,
       genderDistribution,
-      topCourses
+      topCourses,
+      studentsByCountry,
+      geoHeatmap,
+      dailyActivity,
+      topSurahs,
     })
   } catch (error) {
     console.error('[API] Analytics error:', error)

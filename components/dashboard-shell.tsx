@@ -15,7 +15,7 @@ import {
   Menu, X, Users, Settings, BarChart3, ClipboardList, Clock, MessageSquare,
   Search, Plus, BookOpen, Award, UserCheck, CalendarCheck, CalendarDays,
   MessagesSquare, Megaphone, ScrollText, PieChart, Star, ShieldCheck,
-  Globe, Home, Archive, Shield, Phone, BookMarked
+  Globe, Home, Archive, Shield, Phone, BookMarked, FileEdit, Route, Target, GraduationCap
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 
@@ -30,7 +30,10 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/student', label: t.student.dashboard, icon: LayoutDashboard },
           { href: '/student/submit', label: t.student.submitTask || "تسليم تلاوة", icon: Mic || null },
           { href: '/student/recitations', label: t.student.recitations, icon: FileText },
+          { href: '/student/memorization-paths', label: t.student.memorizationPaths || 'مسارات الحفظ', icon: Route },
+          { href: '/student/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },
           { href: '/student/mushaf', label: t.student.mushaf || "مصحفي", icon: BookOpen },
+          { href: '/student/mushaf-progress', label: 'خريطة مصحفي', icon: Target },
           { href: '/student/sessions', label: t.student.sessions, icon: CalendarCheck },
           { href: '/student/chat', label: t.student.chat, icon: MessageSquare },
           { href: '/student/certificates', label: t.student.certificates || t.student.certificate, icon: Award },
@@ -45,7 +48,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
         ]
       }
     ],
-    label: t.shell?.studentPortal, name: t.auth.student, sublabel: t.auth.quranStudent || t.auth.student
+    label: t.shell?.studentPortal, name: t.auth.student, sublabel: t.auth.student
   },
   reader: {
     sections: [
@@ -53,6 +56,8 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
         items: [
           { href: '/reader', label: t.reader.dashboard, icon: LayoutDashboard },
           { href: '/reader/recitations', label: t.reader.reviewList, icon: ClipboardList },
+          { href: '/reader/memorization-paths', label: t.reader.memorizationPaths || 'مسارات الحفظ', icon: Route },
+          { href: '/reader/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },
           { href: '/reader/sessions', label: t.reader.sessions || "الجلسات", icon: Calendar },
           { href: '/reader/schedule', label: t.reader.schedule, icon: Clock },
           { href: '/reader/chat', label: t.reader.chat, icon: MessageSquare },
@@ -76,6 +81,8 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin/readers', label: t.admin.readers, icon: BookOpen },
           { href: '/admin/reader-applications', label: t.admin.readerApplications, icon: UserCheck },
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
+          { href: '/admin/memorization-paths', label: t.admin.memorizationPaths || 'مسارات الحفظ', icon: Route },
+          { href: '/admin/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },
           { href: '/admin/bookings', label: t.admin.bookings, icon: CalendarDays },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
           { href: '/admin/certificates', label: t.admin.certificates.title, icon: Award },
@@ -160,6 +167,7 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
     academy_role?: string | null;
     has_quran_access?: boolean;
     has_academy_access?: boolean;
+    approval_status?: string;
   } | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(0)
@@ -226,7 +234,26 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
   }))
 
   const userName = user?.name || rawConfig.name
-  const config = { ...rawConfig, name: userName, sections: sectionsWithBadges }
+
+  // Gate the sidebar: pending/rejected reader applicants see only the application link.
+  const isPendingReader =
+    role === 'reader' &&
+    user?.approval_status &&
+    ['pending_approval', 'rejected'].includes(user.approval_status)
+
+  const config = isPendingReader
+    ? {
+        ...rawConfig,
+        name: userName,
+        sections: [
+          {
+            items: [
+              { href: '/reader/pending', label: t.reader?.applicationStatus || 'طلب الانضمام', icon: FileEdit },
+            ],
+          },
+        ] as NavSection[],
+      }
+    : { ...rawConfig, name: userName, sections: sectionsWithBadges }
   const isReader = role === 'reader'
 
   const sidebarBase = 'bg-card border-l border-border'

@@ -6,8 +6,9 @@ import {
   UserCheck, UserX, Clock, ChevronRight, GraduationCap,
   BookOpen, Phone, MapPin, CheckCircle, XCircle, AlertCircle,
   Loader2, Mail, Calendar, FileText, ExternalLink, Globe,
-  ShieldCheck, BadgeCheck, Search, Trash2, User as UserIcon
+  ShieldCheck, BadgeCheck, Search, Trash2, User as UserIcon, Mic
 } from "lucide-react"
+import AdminAudioPlayer from "@/components/admin/audio-player"
 import {
   Dialog,
   DialogContent,
@@ -47,6 +48,12 @@ type Application = {
   memorized_parts: string | null
   years_of_experience: number | null
   certificate_file_url: string | null
+  audio_url: string | null
+  pdf_url: string | null
+  rejection_reason: string | null
+  rejection_count: number | null
+  submitted_at: string | null
+  responses: Record<string, any> | null
 }
 
 export default function ReaderApplicationsPage() {
@@ -396,6 +403,27 @@ export default function ReaderApplicationsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Audio test */}
+              {selectedApp.audio_url && (
+                <div className="bg-card border border-border rounded-[32px] p-6 space-y-3">
+                  <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                    <Mic className="w-4 h-4 text-blue-600" />
+                    {isAr ? "الاختبار الصوتي" : "Audio Test"}
+                  </h3>
+                  <AdminAudioPlayer src={selectedApp.audio_url} label={isAr ? "تسجيل المتقدم" : "Applicant recording"} />
+                </div>
+              )}
+
+              {/* Previous rejection reason */}
+              {selectedApp.approval_status === "rejected" && selectedApp.rejection_reason && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4">
+                  <p className="text-xs font-black text-red-700 dark:text-red-300 mb-1 uppercase tracking-widest">
+                    {isAr ? "سبب الرفض" : "Rejection reason"}
+                  </p>
+                  <p className="text-sm text-red-900 dark:text-red-200 whitespace-pre-wrap">{selectedApp.rejection_reason}</p>
+                </div>
+              )}
 
               {/* Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

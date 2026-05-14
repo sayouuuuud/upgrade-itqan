@@ -6,7 +6,8 @@ import { useI18n } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
 import { 
   ClipboardList, Clock, Star, Filter, CheckCircle2,
-  AlertCircle, BookOpen, Mic, FileText, HelpCircle
+  AlertCircle, BookOpen, Mic, FileText, HelpCircle,
+  TrendingUp, Loader2
 } from 'lucide-react'
 
 type TaskKind = 'memorization' | 'recitation' | 'written' | 'quiz'
@@ -41,23 +42,47 @@ export default function StudentTasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'graded'>('all')
+  const [marking, setMarking] = useState<string | null>(null)
+
+  async function fetchTasks() {
+    try {
+      const res = await fetch('/api/academy/student/tasks')
+      if (res.ok) {
+        const data = await res.json()
+        setTasks(data.data || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch tasks:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchTasks() {
-      try {
-        const res = await fetch('/api/academy/student/tasks')
-        if (res.ok) {
-          const data = await res.json()
-          setTasks(data.data || [])
-        }
-      } catch (error) {
-        console.error('Failed to fetch tasks:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchTasks()
   }, [])
+
+  // Quick mark-done from the list (no submission flow)
+  const handleMarkDone = async (taskId: string, currentStatus: Task['status']) => {
+    setMarking(taskId)
+    const action = currentStatus === 'submitted' ? 'undo_done' : 'mark_done'
+    try {
+      const res = await fetch(`/api/academy/student/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      })
+      if (res.ok) {
+        setTasks(prev => prev.map(t => t.id === taskId
+          ? { ...t, status: action === 'mark_done' ? 'submitted' : 'pending' }
+          : t))
+      }
+    } catch (err) {
+      console.error('mark done failed', err)
+    } finally {
+      setMarking(null)
+    }
+  }
 
   const filteredTasks = tasks.filter(task => {
     if (filter === 'all') return true
@@ -134,6 +159,10 @@ export default function StudentTasksPage() {
   const pendingCount = tasks.filter(t => t.status === 'pending').length
   const submittedCount = tasks.filter(t => t.status === 'submitted').length
   const gradedCount = tasks.filter(t => t.status === 'graded').length
+  const lateCount = tasks.filter(t => t.status === 'late').length
+  const totalCount = tasks.length
+  const doneCount = submittedCount + gradedCount
+  const completionPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
 
   return (
     <div className="space-y-6">
@@ -144,6 +173,39 @@ export default function StudentTasksPage() {
           {t.academy?.tasksDesc || 'أكمل المهام واكسب النقاط'}
         </p>
       </div>
+
+      {/* Completion progress card */}
+      {totalCount > 0 && (
+        <div className="bg-card rounded-xl border border-border p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">
+                  {t.academy?.completionRate || 'نسبة الإنجاز'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {doneCount} / {totalCount} {t.academy?.tasks || 'مهام'}
+                  {lateCount > 0 && (
+                    <span className="text-red-500 ms-2">
+                      · {lateCount} {t.academy?.late || 'متأخرة'}
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+            <span className="text-2xl font-black text-emerald-600">{completionPct}%</span>
+          </div>
+          <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
+              style={{ width: `${completionPct}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
@@ -221,13 +283,44 @@ export default function StudentTasksPage() {
             const TypeIcon = typeIcons[kind]
             const StatusIcon = statusConfig[task.status].icon
             const dueStatus = getDueStatus(task.due_date)
+            const isDoneOrGraded = task.status === 'submitted' || task.status === 'graded'
+            const canSelfMark = task.status === 'pending' || task.status === 'late' || task.status === 'submitted'
 
             return (
-              <Link
+              <div
                 key={task.id}
-                href={`/academy/student/tasks/${task.id}/submit`}
-                className="block bg-card rounded-xl border border-border p-4 hover:border-blue-500/50 hover:shadow-md transition-all group"
+                className="relative bg-card rounded-xl border border-border p-4 hover:border-blue-500/50 hover:shadow-md transition-all group"
               >
+                {canSelfMark && task.status !== 'graded' && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleMarkDone(task.id, task.status)
+                    }}
+                    disabled={marking === task.id}
+                    className={cn(
+                      "absolute top-3 end-3 z-10 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors",
+                      isDoneOrGraded
+                        ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+                        : "bg-emerald-500 text-white hover:bg-emerald-600"
+                    )}
+                    aria-label="mark done"
+                  >
+                    {marking === task.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
+                    {isDoneOrGraded
+                      ? (t.academy?.undoDone || 'تراجع')
+                      : (t.academy?.markDone || 'تأشير كمنجز')}
+                  </button>
+                )}
+                <Link
+                  href={`/academy/student/tasks/${task.id}/submit`}
+                  className="block"
+                >
                 <div className="flex items-start gap-4">
                   {/* Type Icon */}
                   <div className={cn(
@@ -297,7 +390,8 @@ export default function StudentTasksPage() {
                     </div>
                   </div>
                 </div>
-              </Link>
+                </Link>
+              </div>
             )
           })}
         </div>

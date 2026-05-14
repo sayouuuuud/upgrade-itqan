@@ -19,7 +19,7 @@ export async function GET() {
     `SELECT id, fajr_reminder_enabled, maghrib_reminder_enabled, wird_items, daily_goal_note, updated_at
      FROM student_werd_settings
      WHERE student_id = $1`,
-    [session.id]
+    [session.sub]
   )
 
   if (rows.length === 0) {
@@ -62,7 +62,7 @@ export async function PUT(req: NextRequest) {
        updated_at               = now()
      RETURNING id`,
     [
-      session.id,
+      session.sub,
       fajr_reminder_enabled ?? true,
       maghrib_reminder_enabled ?? true,
       JSON.stringify(wird_items ?? []),

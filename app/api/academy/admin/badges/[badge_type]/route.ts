@@ -19,8 +19,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ba
         points_reward = COALESCE($4, points_reward),
         category = COALESCE($5, category),
         criteria_type = COALESCE($6, criteria_type),
-        criteria_value = COALESCE($7, criteria_value)
-      WHERE badge_type = $8 
+        criteria_value = COALESCE($7, criteria_value),
+        display_order = COALESCE($8, display_order)
+      WHERE badge_type = $9 
       RETURNING *
     `, [
       body.name ?? null, 
@@ -30,6 +31,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ba
       body.category ?? null,
       body.criteria_type ?? null,
       body.criteria_value ?? null,
+      body.display_order ?? null,
       badge_type
     ])
     

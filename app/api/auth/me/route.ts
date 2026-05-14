@@ -24,8 +24,9 @@ export async function GET() {
       has_quran_access: boolean
       has_academy_access: boolean
       platform_preference: string
+      approval_status: string | null
     }>(
-      `SELECT id, name, email, role, avatar_url, gender, phone, city, is_accepting_recitations, student_status, has_quran_access, has_academy_access, platform_preference FROM users WHERE id = $1`,
+      `SELECT id, name, email, role, avatar_url, gender, phone, city, is_accepting_recitations, student_status, has_quran_access, has_academy_access, platform_preference, approval_status FROM users WHERE id = $1`,
       [session.sub]
     )
 

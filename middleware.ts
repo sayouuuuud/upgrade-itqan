@@ -114,11 +114,32 @@ export async function middleware(req: NextRequest) {
                             return NextResponse.redirect(new URL("/change-password", req.url))
                         }
 
-                        // Check if user approval status changed (e.g., reader/teacher was rejected)
-                        // Redirect to rejected page instead of login so they can reapply
-                        if (dbUser.approval_status === 'rejected' && ['reader', 'teacher', 'student'].includes(sessionPayload.role)) {
-                            if (!pathname.startsWith('/rejected') && !pathname.startsWith('/api/auth')) {
-                                return NextResponse.redirect(new URL("/rejected", req.url))
+                        // Pending/rejected applicants (teacher/reader) are gated to a single
+                        // application dashboard until the admin approves them. They can:
+                        //   - read GET /api/auth/* and the questions/upload endpoints they need
+                        //   - view /academy/pending (teacher) or /reader/pending (reader)
+                        //   - view /rejected (legacy)
+                        // Anything else under /academy or /reader is redirected to their pending page.
+                        const gatedRoles = ['teacher', 'reader']
+                        const isGatedStatus = dbUser.approval_status === 'pending_approval' || dbUser.approval_status === 'rejected'
+                        if (isGatedStatus && gatedRoles.includes(sessionPayload.role)) {
+                            const pendingPath = sessionPayload.role === 'teacher' ? '/academy/pending' : '/reader/pending'
+                            const allowed =
+                                pathname === pendingPath ||
+                                pathname.startsWith('/api/auth') ||
+                                pathname.startsWith('/api/upload-audio') ||
+                                pathname.startsWith('/api/upload-pdf') ||
+                                pathname.startsWith('/api/uploadthing') ||
+                                pathname.startsWith('/api/admin/application-questions') ||
+                                pathname.startsWith('/api/notifications') ||
+                                pathname.startsWith('/api/unread-counts') ||
+                                pathname.startsWith('/rejected') ||
+                                pathname === '/'
+                            if (!allowed) {
+                                if (pathname.startsWith('/api/')) {
+                                    return NextResponse.json({ error: 'pending_approval' }, { status: 403 })
+                                }
+                                return NextResponse.redirect(new URL(pendingPath, req.url))
                             }
                         }
 

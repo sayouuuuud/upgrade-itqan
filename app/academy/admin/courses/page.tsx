@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, Eye, BookOpen, X, Loader2, Users } from 'lucide-react'
+import Link from 'next/link'
+import { Plus, Edit2, Trash2, Eye, BookOpen, X, Loader2, Users, Archive } from 'lucide-react'
 
 interface Course {
   id: string
@@ -11,6 +12,7 @@ interface Course {
   category_id: string
   teacher_id: string
   is_published: boolean
+  is_active?: boolean
   created_at: string
 }
 
@@ -37,6 +39,7 @@ export default function AdminCoursesPage() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [archivingId, setArchivingId] = useState<string | null>(null)
 
   const fetchCourses = async () => {
     try {
@@ -125,6 +128,26 @@ export default function AdminCoursesPage() {
     }
   }
 
+  const handleToggleArchive = async (course: Course) => {
+    const willDeactivate = course.is_active !== false
+    const msg = willDeactivate
+      ? 'تعطيل الدورة؟ هتختفي من الطلاب الجدد لكن الحاليين هيكملوا عادي.'
+      : 'إعادة تفعيل الدورة؟ هتظهر للطلاب الجدد تاني.'
+    if (!confirm(msg)) return
+    setArchivingId(course.id)
+    try {
+      const res = await fetch(`/api/academy/teacher/courses/${course.id}/archive`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !willDeactivate }),
+      })
+      if (res.ok) fetchCourses()
+      else alert('حدث خطأ')
+    } finally {
+      setArchivingId(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -144,13 +167,22 @@ export default function AdminCoursesPage() {
           </h1>
           <p className="text-muted-foreground mt-1">إجمالي: {courses.length} دورة</p>
         </div>
-        <button
-          onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-colors shadow-sm"
-        >
-          <Plus className="w-5 h-5" />
-          دورة جديدة
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/academy/admin/courses/archive"
+            className="flex items-center gap-2 px-4 py-2.5 border border-border bg-card hover:bg-muted rounded-xl font-bold transition-colors"
+          >
+            <Archive className="w-5 h-5" />
+            الأرشيف
+          </Link>
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-colors shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            دورة جديدة
+          </button>
+        </div>
       </div>
 
       {/* Table */}
@@ -175,36 +207,55 @@ export default function AdminCoursesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {courses.map((course) => (
-                  <tr key={course.id} className="hover:bg-muted/30 transition-colors">
+                {courses.map((course) => {
+                  const isArchived = course.is_active === false
+                  return (
+                  <tr key={course.id} className={`hover:bg-muted/30 transition-colors ${isArchived ? 'opacity-60' : ''}`}>
                     <td className="p-4">
                       <p className="font-bold">{course.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{course.description}</p>
                     </td>
                     <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${course.status === 'published' || course.is_published ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
-                        {course.status === 'published' || course.is_published ? 'منشورة' : 'مسودة'}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold w-fit ${course.status === 'published' || course.is_published ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
+                          {course.status === 'published' || course.is_published ? 'منشورة' : 'مسودة'}
+                        </span>
+                        {isArchived && (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 w-fit">
+                            مؤرشفة
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4 text-sm text-muted-foreground">
                       {course.created_at ? new Date(course.created_at).toLocaleDateString('ar-EG') : '—'}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => openEdit(course)} className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors text-blue-600">
+                        <button onClick={() => openEdit(course)} className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors text-blue-600" title="تعديل">
                           <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleToggleArchive(course)}
+                          disabled={archivingId === course.id}
+                          className="p-2 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors text-amber-600"
+                          title={isArchived ? 'إعادة تفعيل' : 'تعطيل وأرشفة'}
+                        >
+                          {archivingId === course.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Archive className="w-4 h-4" />}
                         </button>
                         <button
                           onClick={() => handleDelete(course.id)}
                           disabled={deletingId === course.id}
                           className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors text-red-500"
+                          title="حذف"
                         >
                           {deletingId === course.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

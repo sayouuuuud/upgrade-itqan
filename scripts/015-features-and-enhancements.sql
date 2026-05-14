@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS badge_definitions (
   name         VARCHAR(100) NOT NULL,
   description  TEXT NOT NULL,
   category     VARCHAR(40) NOT NULL,
-  icon         VARCHAR(40),
+  icon         TEXT,
   criteria_type  VARCHAR(30)  NOT NULL CHECK (criteria_type IN ('points','streak','courses','tasks','memorization','recitation','custom')),
   criteria_value INTEGER,
   points_reward  INTEGER DEFAULT 0,
@@ -177,21 +177,23 @@ CREATE TABLE IF NOT EXISTS badge_definitions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+ALTER TABLE badge_definitions ALTER COLUMN icon TYPE TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_badge_definitions_category ON badge_definitions(category);
 
 -- Seed the catalogue. ON CONFLICT DO NOTHING so it's safe to re-run.
 INSERT INTO badge_definitions (badge_type, name, description, category, icon, criteria_type, criteria_value, points_reward, display_order)
 VALUES
-  ('first_recitation',   'أول تلاوة',          'سجلت أول تلاوة لك في المنصة',                'التلاوة',  'mic',        'recitation', 1,    10,  1),
-  ('hundred_recitations','100 تلاوة',          'سجلت 100 تلاوة',                              'التلاوة',  'mic',        'recitation', 100,  100, 2),
-  ('tajweed_master',     'متقن التجويد',        'حصلت على تقدير ممتاز في 10 تلاوات متتالية',  'التلاوة',  'star',       'recitation', 10,   150, 3),
+  ('first_recitation',   'أول تلاوة',          'يسجل تلاوته الأولى على المنصة',                'التلاوة',  '🎙️',        'recitation', 1,    20,  1),
+  ('hundred_recitations','مئة تلاوة',          'يسجل 100 تلاوة على المنصة',                    'التلاوة',  '💯',        'recitation', 100,  150, 2),
+  ('tajweed_master',     'متقن التجويد',        'يجتاز مسار التجويد الكامل',                    'التجويد',  '⭐',        'recitation', 10,   300, 3),
 
-  ('week_streak',        'أسبوع متواصل',        'حافظت على نشاطك لمدة 7 أيام',                 'المثابرة',  'flame',      'streak',     7,    25,  10),
+  ('week_streak',        'أسبوع كامل',          '7 أيام Streak متواصلة',                       'المثابرة',  '🔥',        'streak',     7,    70,  10),
   ('month_streak',       'شهر متواصل',          'حافظت على نشاطك لمدة 30 يوم',                'المثابرة',  'flame',      'streak',     30,   100, 11),
-  ('ramadan_badge',      'مجاهد رمضان',         'أكملت تحدي رمضان',                           'المثابرة',  'moon',       'streak',     30,   200, 12),
+  ('ramadan_badge',      'شهر رمضان',           'يسجل تلاوة كل يوم خلال الشهر',                'المثابرة',  '🌙',        'streak',     30,   250, 12),
 
-  ('hafiz_juz_amma',     'حافظ جزء عمّ',        'حفظت جزء عمّ كاملاً',                         'الحفظ',     'book',       'memorization', 1,  150, 20),
-  ('full_quran',         'حافظ القرآن',         'أكملت حفظ القرآن الكريم',                    'الحفظ',     'book-open',  'memorization', 30, 1000, 21),
+  ('hafiz_juz_amma',     'حافظ جزء عمّ',        'يتقن جميع سور الجزء الثلاثين',                 'الحفظ',     '📖',        'memorization', 1,  200, 20),
+  ('full_quran',         'الختمة الكاملة',      'يتقن القرآن كاملاً ويحصل على إجازة',           'الحفظ',     '👑',        'memorization', 30, 1000, 21),
 
   ('first_course',       'أول دورة',            'أكملت أول دورة لك',                          'الدورات',   'graduation', 'courses',    1,    50,  30),
   ('five_courses',       '5 دورات',             'أكملت 5 دورات',                              'الدورات',   'graduation', 'courses',    5,    200, 31),
@@ -200,11 +202,19 @@ VALUES
   ('first_task',         'أول مهمة',            'أنجزت أول مهمة',                             'المهام',    'check',      'tasks',      1,    15,  40),
   ('task_master',        'سيد المهام',          'أنجزت 50 مهمة',                              'المهام',    'check',      'tasks',      50,   250, 41),
 
-  ('star_of_halaqah',    'نجم الحلقة',          'كنت الأفضل في حلقتك هذا الأسبوع',            'تكريم',     'crown',      'custom',     NULL, 100, 50),
+  ('star_of_halaqah',    'نجم الحلقة',          'الأعلى نقاطاً في حلقته لمدة شهر',             'تكريم',     '🏆',        'custom',     NULL, 180, 50),
   ('helper',             'المُعين',              'ساعدت زملاءك في المنتدى',                    'تكريم',     'heart',      'custom',     NULL, 50,  51),
   ('early_bird',         'الباكر',               'دخلت المنصة قبل الفجر 7 أيام',              'تكريم',     'sun',        'custom',     7,    50,  52),
   ('night_owl',          'الساهر',               'تلوت بعد منتصف الليل 7 ليالي',              'تكريم',     'moon',       'custom',     7,    50,  53)
-ON CONFLICT (badge_type) DO NOTHING;
+ON CONFLICT (badge_type) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  category = EXCLUDED.category,
+  icon = EXCLUDED.icon,
+  criteria_type = EXCLUDED.criteria_type,
+  criteria_value = EXCLUDED.criteria_value,
+  points_reward = EXCLUDED.points_reward,
+  display_order = EXCLUDED.display_order;
 
 -- ============================================
 -- 6. Trigger: keep updated_at fresh on parent_children + chat tables

@@ -16,17 +16,17 @@ export async function GET(req: NextRequest) {
         cs.title,
         cs.course_id,
         cs.scheduled_at,
-        cs.meeting_url,
+        cs.meeting_link as meeting_url,
         cs.duration_minutes,
         cs.status,
         c.title as course_title
       FROM course_sessions cs
       JOIN courses c ON c.id = cs.course_id
       WHERE c.teacher_id = $1
-        AND cs.status IN ('scheduled', 'live')
+        AND cs.status IN ('scheduled', 'live', 'in_progress')
         AND cs.scheduled_at >= NOW() - INTERVAL '2 hours'
       ORDER BY 
-        CASE WHEN cs.status = 'live' THEN 0 ELSE 1 END,
+        CASE WHEN cs.status IN ('live', 'in_progress') THEN 0 ELSE 1 END,
         cs.scheduled_at ASC
       LIMIT 1
     `, [session.sub])
@@ -44,8 +44,8 @@ export async function GET(req: NextRequest) {
         sp.joined_at,
         u.name,
         u.email
-      FROM session_participants sp
-      JOIN users u ON u.id = sp.user_id
+      FROM session_attendance sp
+      JOIN users u ON u.id = sp.student_id
       WHERE sp.session_id = $1
         AND sp.left_at IS NULL
       ORDER BY sp.joined_at ASC
@@ -98,15 +98,16 @@ export async function POST(req: NextRequest) {
     // Create new live session
     const result = await query<any>(`
       INSERT INTO course_sessions (
-        course_id, 
-        title, 
-        scheduled_at, 
-        duration_minutes, 
-        meeting_url, 
+        course_id,
+        title,
+        scheduled_at,
+        duration_minutes,
+        meeting_link,
+        session_type,
         status,
         created_at
       )
-      VALUES ($1, $2, NOW(), $3, $4, 'live', NOW())
+      VALUES ($1, $2, NOW(), $3, $4, 'live', 'in_progress', NOW())
       RETURNING *
     `, [course_id, title || 'جلسة حية', duration_minutes || 60, meeting_url])
 
@@ -145,7 +146,7 @@ export async function PATCH(req: NextRequest) {
 
     let newStatus = 'scheduled'
     if (action === 'start') {
-      newStatus = 'live'
+      newStatus = 'in_progress'
     } else if (action === 'end') {
       newStatus = 'completed'
     }

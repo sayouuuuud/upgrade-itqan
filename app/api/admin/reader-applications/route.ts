@@ -16,7 +16,9 @@ export async function GET() {
   const applications = await query(
     `SELECT u.id, u.name, u.email, u.gender, u.approval_status, u.created_at,
             rp.full_name_triple, rp.phone, rp.city, rp.qualification,
-            rp.memorized_parts, rp.years_of_experience, rp.certificate_file_url
+            rp.memorized_parts, rp.years_of_experience, rp.certificate_file_url,
+            rp.audio_url, rp.pdf_url, rp.responses,
+            rp.rejection_reason, rp.rejection_count, rp.submitted_at
      FROM users u
      LEFT JOIN reader_profiles rp ON rp.user_id = u.id
      WHERE u.role = 'reader'

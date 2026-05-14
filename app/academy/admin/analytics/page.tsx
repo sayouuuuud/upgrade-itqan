@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { BarChart3, TrendingUp, Users, BookOpen, GraduationCap, Award, Loader2, UserCheck } from 'lucide-react'
+import { BarChart3, TrendingUp, Users, BookOpen, GraduationCap, Award, Loader2, UserCheck, MapPin, Globe2, Activity, Mic2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface AnalyticsData {
@@ -12,10 +12,16 @@ interface AnalyticsData {
     totalTeachers: number
     weeklyEnrollments: number
     totalCertificates: number
+    dailyActiveStudents: number
+    dailyActivityRate: number
   }
   enrollmentTrend: { month: string; count: number }[]
   genderDistribution: { gender: string; count: number }[]
   topCourses: { title: string; enrollments: number }[]
+  studentsByCountry: { country: string; country_code?: string | null; count: number; active_count: number }[]
+  geoHeatmap: { country: string; country_code?: string | null; region: string; city: string; count: number }[]
+  dailyActivity: { day: string; active_students: number; points: number }[]
+  topSurahs: { surah_name: string; surah_number?: number | null; recordings: number; unique_students: number }[]
 }
 
 export default function AdminAnalyticsPage() {
@@ -44,7 +50,9 @@ export default function AdminAnalyticsPage() {
     completionRate: 0,
     totalTeachers: 0,
     weeklyEnrollments: 0,
-    totalCertificates: 0
+    totalCertificates: 0,
+    dailyActiveStudents: 0,
+    dailyActivityRate: 0
   }
 
   const statCards = [
@@ -54,6 +62,7 @@ export default function AdminAnalyticsPage() {
     { label: 'عدد المدرسين', value: stats.totalTeachers.toString(), icon: GraduationCap, color: 'text-purple-500', bg: 'bg-purple-500/10' },
     { label: 'تسجيلات هذا الأسبوع', value: stats.weeklyEnrollments.toString(), icon: UserCheck, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
     { label: 'الشهادات الصادرة', value: stats.totalCertificates.toString(), icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { label: 'نشاط اليوم', value: `${stats.dailyActivityRate}%`, icon: Activity, color: 'text-rose-500', bg: 'bg-rose-500/10' },
   ]
 
   const months: Record<string, string> = {
@@ -163,6 +172,134 @@ export default function AdminAnalyticsPage() {
               <div className="h-48 flex items-center justify-center text-muted-foreground">
                 لا توجد بيانات كافية
               </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Globe2 className="w-5 h-5 text-primary" />
+              توزيع الطلاب حسب الدول
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data?.studentsByCountry && data.studentsByCountry.length > 0 ? (
+              <div className="space-y-3">
+                {data.studentsByCountry.slice(0, 8).map((item, idx) => {
+                  const maxCountry = Math.max(...data.studentsByCountry.map(c => c.count), 1)
+                  const width = (item.count / maxCountry) * 100
+                  return (
+                    <div key={`${item.country}-${idx}`} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-bold text-foreground">{item.country}</span>
+                        <span className="text-muted-foreground">{item.count} طالب • {item.active_count} نشط</span>
+                      </div>
+                      <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${width}%` }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="h-40 flex items-center justify-center text-muted-foreground">لا توجد بيانات دول كافية</div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              خريطة حرارية للمناطق
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data?.geoHeatmap && data.geoHeatmap.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {data.geoHeatmap.slice(0, 12).map((item, idx) => {
+                  const maxRegion = Math.max(...data.geoHeatmap.map(r => r.count), 1)
+                  const opacity = 0.2 + (item.count / maxRegion) * 0.8
+                  return (
+                    <div key={`${item.country}-${item.region}-${idx}`} className="rounded-xl border border-border p-3" style={{ backgroundColor: `rgba(16, 185, 129, ${opacity})` }}>
+                      <p className="text-sm font-black text-foreground truncate">{item.region}</p>
+                      <p className="text-xs text-muted-foreground truncate">{item.country} • {item.city}</p>
+                      <p className="mt-2 text-xl font-black">{item.count}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="h-40 flex items-center justify-center text-muted-foreground">لا توجد بيانات مناطق كافية</div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Activity className="w-5 h-5 text-primary" />
+              معدل النشاط اليومي
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data?.dailyActivity && data.dailyActivity.length > 0 ? (
+              <div className="space-y-3">
+                {data.dailyActivity.slice(-10).map((item) => {
+                  const maxActivity = Math.max(...data.dailyActivity.map(d => d.active_students), 1)
+                  const width = (item.active_students / maxActivity) * 100
+                  return (
+                    <div key={item.day} className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground w-20 shrink-0">{item.day}</span>
+                      <div className="flex-1 h-5 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-rose-500 rounded-full" style={{ width: `${width}%` }} />
+                      </div>
+                      <span className="text-xs font-bold w-16 text-left">{item.active_students} طالب</span>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="h-40 flex items-center justify-center text-muted-foreground">لا توجد أنشطة حديثة</div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Mic2 className="w-5 h-5 text-primary" />
+              أكثر السور تسجيلاً
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data?.topSurahs && data.topSurahs.length > 0 ? (
+              <div className="space-y-3">
+                {data.topSurahs.map((surah, idx) => {
+                  const maxSurah = Math.max(...data.topSurahs.map(s => s.recordings), 1)
+                  const width = (surah.recordings / maxSurah) * 100
+                  return (
+                    <div key={`${surah.surah_name}-${idx}`} className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-black">{idx + 1}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold truncate">{surah.surah_name}</p>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden mt-1">
+                          <div className="h-full bg-primary rounded-full" style={{ width: `${width}%` }} />
+                        </div>
+                      </div>
+                      <span className="text-sm font-bold text-muted-foreground">{surah.recordings} تسجيل</span>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="h-40 flex items-center justify-center text-muted-foreground">لا توجد تسجيلات سور حديثة</div>
             )}
           </CardContent>
         </Card>

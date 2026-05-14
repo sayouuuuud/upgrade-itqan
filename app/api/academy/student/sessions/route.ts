@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
         const rows = await query(`
             SELECT 
                 cs.*,
-                c.title as course_name,
+                c.title as course_title,
                 COALESCE(u.name, 'غير محدد') as teacher_name
             FROM course_sessions cs
             JOIN courses c ON cs.course_id = c.id

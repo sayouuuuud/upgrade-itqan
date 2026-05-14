@@ -7,10 +7,12 @@ interface CalendarEvent {
   title: string
   date: string
   time: string
-  type: 'live_session' | 'assignment_deadline' | 'review' | 'lesson'
+  type: 'live_session' | 'assignment_deadline' | 'review' | 'lesson' | 'memorization_goal'
   course: string
   course_id: string
   link?: string
+  status?: string
+  meta?: Record<string, any>
 }
 
 export async function GET(req: NextRequest) {
@@ -108,6 +110,30 @@ export async function GET(req: NextRequest) {
       })
     }
 
+    // 3b. Mark assignment deadlines as already-submitted when the student
+    //     has a non-pending submission, so the calendar can grey them out.
+    if (events.length > 0) {
+      const taskEventIds = events
+        .filter(e => e.type === 'assignment_deadline')
+        .map(e => e.id.replace(/^task-/, ''))
+      if (taskEventIds.length > 0) {
+        const submissions = await query<any>(`
+          SELECT task_id, status
+            FROM task_submissions
+           WHERE student_id = $1
+             AND task_id = ANY($2)
+        `, [session.sub, taskEventIds])
+        const subMap = new Map(submissions.map(s => [s.task_id, s.status]))
+        for (const ev of events) {
+          if (ev.type === 'assignment_deadline') {
+            const taskId = ev.id.replace(/^task-/, '')
+            const status = subMap.get(taskId)
+            if (status) ev.status = status
+          }
+        }
+      }
+    }
+
     // 4. Get scheduled lessons (if they have a scheduled_at date)
     const lessons = await query<any>(`
       SELECT 
@@ -135,6 +161,57 @@ export async function GET(req: NextRequest) {
         course: courseMap.get(lesson.course_id) || 'دورة',
         course_id: lesson.course_id
       })
+    }
+
+    // 5. Memorization goals — surface this week's goal as a Saturday event
+    //    plus a "review reminder" each day until completed.  Goals whose
+    //    week_start lies inside the requested month are returned.
+    try {
+      const goals = await query<any>(`
+        SELECT id, week_start, surah_from, ayah_from, surah_to, ayah_to,
+               target_verses, notes, status, completed_at, set_by
+          FROM memorization_goals
+         WHERE student_id = $1
+           AND week_start >= $2::date - INTERVAL '7 days'
+           AND week_start <= $3::date
+      `, [session.sub, startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]])
+
+      for (const g of goals) {
+        const weekStart = new Date(g.week_start)
+        // Show on each day of the week that falls inside the requested month
+        for (let i = 0; i < 7; i++) {
+          const day = new Date(weekStart)
+          day.setUTCDate(day.getUTCDate() + i)
+          if (day < startDate || day > endDate) continue
+          const dateStr = day.toISOString().split('T')[0]
+          events.push({
+            id: `goal-${g.id}-${i}`,
+            title: g.target_verses
+              ? `هدف الحفظ: ${g.target_verses} آية`
+              : 'هدف الحفظ الأسبوعي',
+            date: dateStr,
+            time: '07:00',
+            type: 'memorization_goal',
+            course: 'الحفظ والمراجعة',
+            course_id: '',
+            link: '/academy/student/memorization/goal',
+            status: g.status,
+            meta: {
+              surah_from: g.surah_from,
+              ayah_from: g.ayah_from,
+              surah_to: g.surah_to,
+              ayah_to: g.ayah_to,
+              target_verses: g.target_verses,
+              notes: g.notes,
+              week_start: g.week_start,
+            },
+          })
+        }
+      }
+    } catch (goalErr) {
+      // Table may not exist yet (migration 021 not run).  Calendar should
+      // still work without goals.
+      console.warn('[API] memorization_goals not available:', (goalErr as any)?.message)
     }
 
     // Sort all events by date and time

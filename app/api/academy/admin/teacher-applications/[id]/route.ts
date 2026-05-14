@@ -16,15 +16,19 @@ export async function PUT(
   try {
     const p = await params;
     const appId = p.id;
-    const { status } = await req.json()
+    const { status, rejection_reason } = await req.json()
 
     if (!['approved', 'rejected'].includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
-    // Update application status
-    const updateQ = `UPDATE teacher_applications SET status = $1, reviewed_at = NOW() WHERE id = $2 RETURNING *`
-    const res = await query<any>(updateQ, [status, appId])
+    // Update application status (and rejection_reason when rejecting)
+    const updateQ = status === 'rejected'
+      ? `UPDATE teacher_applications SET status = $1, reviewed_at = NOW(), rejection_reason = $3, reviewed_by = $4 WHERE id = $2 RETURNING *`
+      : `UPDATE teacher_applications SET status = $1, reviewed_at = NOW(), rejection_reason = NULL, reviewed_by = $3 WHERE id = $2 RETURNING *`
+    const res = status === 'rejected'
+      ? await query<any>(updateQ, [status, appId, rejection_reason || null, session.sub])
+      : await query<any>(updateQ, [status, appId, session.sub])
 
     if (res.length > 0) {
       const app = res[0]

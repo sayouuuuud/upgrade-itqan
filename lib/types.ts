@@ -1,7 +1,7 @@
-export type UserRole = 'student' | 'reader' | 'admin' | 'teacher' | 'parent' | 'academy_admin'
+export type UserRole = 'student' | 'reader' | 'admin' | 'teacher' | 'parent' | 'academy_admin' | 'student_supervisor' | 'reciter_supervisor' | 'fiqh_supervisor' | 'content_supervisor' | 'supervisor' | 'quality_supervisor'
 
 // Academy-specific types
-export type AcademyRole = 'academy_student' | 'teacher' | 'academy_admin' | 'parent'
+export type AcademyRole = 'academy_student' | 'teacher' | 'academy_admin' | 'parent' | 'supervisor' | 'fiqh_supervisor' | 'content_supervisor' | 'quality_supervisor'
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
 export type CourseStatus = 'draft' | 'published' | 'archived'
 export type EnrollmentStatus = 'active' | 'completed' | 'dropped' | 'suspended'
@@ -11,7 +11,7 @@ export type SessionStatus = 'scheduled' | 'live' | 'completed' | 'cancelled'
 export type MemorizationQuality = 'excellent' | 'good' | 'acceptable' | 'needs_review'
 export type PointsAction = 'task_complete' | 'memorization' | 'attendance' | 'competition_win' | 'streak_bonus' | 'badge_earned' | 'forum_answer' | 'manual'
 export type CompetitionStatus = 'upcoming' | 'active' | 'completed'
-export type ForumCategory = 'general' | 'quran' | 'tajweed' | 'fiqh' | 'other'
+export type ForumCategory = 'general' | 'quran' | 'tajweed' | 'fiqh' | 'advice' | 'youth' | 'sisters' | 'announcements' | 'questions' | 'articles' | 'guidance' | 'other'
 export type FiqhStatus = 'pending' | 'answered' | 'closed'
 export type RecitationStatus = 'pending' | 'in_review' | 'mastered' | 'needs_session' | 'session_booked' | 'rejected'
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'

@@ -50,6 +50,7 @@ export async function GET(_req: NextRequest) {
           last_activity_date: summary.last_activity_date,
           badges_earned: summary.badges_earned,
           level_progress: summary.level_progress,
+          unlocked_features: summary.unlocked_features,
         },
         log,
       },

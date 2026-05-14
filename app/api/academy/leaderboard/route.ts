@@ -3,223 +3,160 @@ import { getSession } from '@/lib/auth'
 import { query, queryOne } from '@/lib/db'
 import { computeLevel } from '@/lib/academy/gamification'
 
-/**
- * GET /api/academy/leaderboard?period=weekly|monthly|all_time&limit=50
- *
- * Returns the top N students by points. For `weekly` and `monthly` we sum
- * `points_log` rows in the requested window; `all_time` uses the cached
- * `user_points.total_points`.
- *
- * Response shape:
- *   {
- *     data: [{ rank, user_id, user_name, avatar_url, total_points,
- *              current_level, streak_days, is_current_user }],
- *     current_user: { ...same fields, rank } | null
- *   }
- */
+type Period = 'weekly' | 'monthly' | 'all_time'
+
+type LeaderboardRow = {
+  user_id: string
+  user_name: string
+  avatar_url: string | null
+  halaqah_id: string | null
+  halaqa_name: string | null
+  total_points: number
+  level: string | null
+  streak_days: number | null
+  rank: number
+}
+
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const url = new URL(req.url)
-  const period = (url.searchParams.get('period') || 'all_time') as
-    | 'weekly'
-    | 'monthly'
-    | 'all_time'
+  const period = (url.searchParams.get('period') || 'all_time') as Period
+  const scope = url.searchParams.get('scope') || 'platform'
+  const requestedHalqaId = url.searchParams.get('halqa_id')
   const limitRaw = parseInt(url.searchParams.get('limit') || '50', 10)
   const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 200) : 50
 
   try {
-    let rows: Array<{
-      user_id: string
-      user_name: string
-      avatar_url: string | null
-      total_points: number
-      level: string | null
-      streak_days: number | null
-    }>
+    const halaqaId = scope === 'halaqa'
+      ? requestedHalqaId || await getUserHalaqaId(session.sub)
+      : null
+    const rows = await fetchLeaderboardRows(period, limit, halaqaId)
+    const data = rows.map((row) => mapRow(row, session.sub))
+    let current_user = data.find((row) => row.is_current_user) || null
 
-    if (period === 'all_time') {
-      rows = await query(
-        `
-        SELECT u.id              AS user_id,
-               u.name            AS user_name,
-               u.avatar_url      AS avatar_url,
-               COALESCE(up.total_points, 0)::int AS total_points,
-               up.level          AS level,
-               COALESCE(up.streak_days, 0)::int  AS streak_days
-          FROM users u
-          LEFT JOIN user_points up ON up.user_id = u.id
-         WHERE u.role IN ('student', 'reader')
-           AND COALESCE(u.is_active, TRUE) = TRUE
-         ORDER BY COALESCE(up.total_points, 0) DESC, u.name ASC
-         LIMIT $1
-        `,
-        [limit]
-      )
-    } else {
-      const days = period === 'weekly' ? 7 : 30
-      rows = await query(
-        `
-        WITH window_points AS (
-          SELECT user_id, COALESCE(SUM(points), 0)::int AS total_points
-            FROM points_log
-           WHERE created_at >= NOW() - ($1 || ' days')::interval
-           GROUP BY user_id
-        )
-        SELECT u.id              AS user_id,
-               u.name            AS user_name,
-               u.avatar_url      AS avatar_url,
-               COALESCE(wp.total_points, 0)::int AS total_points,
-               up.level          AS level,
-               COALESCE(up.streak_days, 0)::int  AS streak_days
-          FROM users u
-          LEFT JOIN window_points wp ON wp.user_id = u.id
-          LEFT JOIN user_points up   ON up.user_id = u.id
-         WHERE u.role IN ('student', 'reader')
-           AND COALESCE(u.is_active, TRUE) = TRUE
-         ORDER BY COALESCE(wp.total_points, 0) DESC, u.name ASC
-         LIMIT $2
-        `,
-        [String(days), limit]
-      )
-    }
-
-    const data = rows.map((r, idx) => {
-      const total = r.total_points || 0
-      return {
-        rank: idx + 1,
-        user_id: r.user_id,
-        user_name: r.user_name,
-        avatar_url: r.avatar_url,
-        total_points: total,
-        current_level: levelToNumber((r.level as any) || computeLevel(total)),
-        streak_days: r.streak_days || 0,
-        is_current_user: r.user_id === session.sub,
-      }
-    })
-
-    // If the current user isn't in the top N, fetch their position separately.
-    let current_user: any = data.find(d => d.is_current_user) || null
     if (!current_user) {
-      current_user = await fetchCurrentUserRank(session.sub, period, data.length)
+      const currentRow = await fetchCurrentUserRank(session.sub, period, halaqaId)
+      current_user = currentRow ? mapRow(currentRow, session.sub) : null
     }
 
-    return NextResponse.json({ data, current_user })
+    return NextResponse.json({ data, current_user, scope, halaqa_id: halaqaId })
   } catch (error) {
     console.error('[API] leaderboard GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-function levelToNumber(level: string): number {
-  switch (level) {
-    case 'master':       return 5
-    case 'hafiz':        return 4
-    case 'advanced':     return 3
-    case 'intermediate': return 2
-    case 'beginner':     return 1
-    default:             return 1
+function mapRow(row: LeaderboardRow, currentUserId: string) {
+  const total = Number(row.total_points || 0)
+  return {
+    rank: Number(row.rank),
+    user_id: row.user_id,
+    user_name: row.user_name,
+    avatar_url: row.avatar_url,
+    halaqah_id: row.halaqah_id,
+    halaqa_name: row.halaqa_name,
+    total_points: total,
+    current_level: levelToNumber(row.level || computeLevel(total)),
+    streak_days: Number(row.streak_days || 0),
+    is_current_user: row.user_id === currentUserId,
   }
 }
 
-async function fetchCurrentUserRank(
-  userId: string,
-  period: 'weekly' | 'monthly' | 'all_time',
-  topCount: number,
-) {
-  try {
-    if (period === 'all_time') {
-      const me = await queryOne<{
-        user_id: string
-        user_name: string
-        avatar_url: string | null
-        total_points: number
-        level: string | null
-        streak_days: number | null
-        rank: number
-      }>(
-        `
-        WITH ranked AS (
-          SELECT u.id              AS user_id,
-                 u.name            AS user_name,
-                 u.avatar_url      AS avatar_url,
-                 COALESCE(up.total_points, 0)::int AS total_points,
-                 up.level          AS level,
-                 COALESCE(up.streak_days, 0)::int  AS streak_days,
-                 RANK() OVER (ORDER BY COALESCE(up.total_points, 0) DESC, u.name ASC) AS rank
-            FROM users u
-            LEFT JOIN user_points up ON up.user_id = u.id
-           WHERE u.role IN ('student', 'reader')
-             AND COALESCE(u.is_active, TRUE) = TRUE
-        )
-        SELECT * FROM ranked WHERE user_id = $1
-        `,
-        [userId]
-      )
-      if (!me) return null
-      return {
-        rank: Number(me.rank),
-        user_id: me.user_id,
-        user_name: me.user_name,
-        avatar_url: me.avatar_url,
-        total_points: me.total_points || 0,
-        current_level: levelToNumber((me.level as any) || computeLevel(me.total_points || 0)),
-        streak_days: me.streak_days || 0,
-        is_current_user: true,
-      }
-    }
+async function getUserHalaqaId(userId: string) {
+  const row = await queryOne<{ halaqah_id: string | null }>(
+    `SELECT halaqah_id FROM users WHERE id = $1`,
+    [userId]
+  )
+  return row?.halaqah_id || null
+}
 
-    const days = period === 'weekly' ? 7 : 30
-    const me = await queryOne<{
-      user_id: string
-      user_name: string
-      avatar_url: string | null
-      total_points: number
-      level: string | null
-      streak_days: number | null
-      rank: number
-    }>(
-      `
-      WITH window_points AS (
-        SELECT user_id, COALESCE(SUM(points), 0)::int AS total_points
-          FROM points_log
-         WHERE created_at >= NOW() - ($1 || ' days')::interval
-         GROUP BY user_id
-      ),
-      ranked AS (
-        SELECT u.id              AS user_id,
-               u.name            AS user_name,
-               u.avatar_url      AS avatar_url,
-               COALESCE(wp.total_points, 0)::int AS total_points,
-               up.level          AS level,
-               COALESCE(up.streak_days, 0)::int  AS streak_days,
-               RANK() OVER (ORDER BY COALESCE(wp.total_points, 0) DESC, u.name ASC) AS rank
-          FROM users u
-          LEFT JOIN window_points wp ON wp.user_id = u.id
-          LEFT JOIN user_points up   ON up.user_id = u.id
-         WHERE u.role IN ('student', 'reader')
-           AND COALESCE(u.is_active, TRUE) = TRUE
-      )
-      SELECT * FROM ranked WHERE user_id = $2
-      `,
-      [String(days), userId]
+async function fetchLeaderboardRows(period: Period, limit: number, halaqaId: string | null) {
+  const params: Array<string | number> = []
+  const where = ["u.role IN ('student', 'reader')", 'COALESCE(u.is_active, TRUE) = TRUE']
+  if (halaqaId) {
+    params.push(halaqaId)
+    where.push(`u.halaqah_id = $${params.length}`)
+  }
+  params.push(limit)
+  const limitParam = `$${params.length}`
+  const days = period === 'weekly' ? 7 : period === 'monthly' ? 30 : null
+
+  return query<LeaderboardRow>(`
+    ${days ? `
+    WITH window_points AS (
+      SELECT user_id, COALESCE(SUM(points), 0)::int AS total_points
+      FROM points_log
+      WHERE created_at >= NOW() - ('${days} days')::interval
+      GROUP BY user_id
+    )` : ''}
+    SELECT
+      u.id AS user_id,
+      u.name AS user_name,
+      u.avatar_url,
+      u.halaqah_id,
+      h.name AS halaqa_name,
+      COALESCE(${days ? 'wp.total_points' : 'up.total_points'}, 0)::int AS total_points,
+      up.level,
+      COALESCE(up.streak_days, 0)::int AS streak_days,
+      RANK() OVER (ORDER BY COALESCE(${days ? 'wp.total_points' : 'up.total_points'}, 0) DESC, u.name ASC) AS rank
+    FROM users u
+    LEFT JOIN user_points up ON up.user_id = u.id
+    ${days ? 'LEFT JOIN window_points wp ON wp.user_id = u.id' : ''}
+    LEFT JOIN halaqat h ON h.id = u.halaqah_id
+    WHERE ${where.join(' AND ')}
+    ORDER BY total_points DESC, u.name ASC
+    LIMIT ${limitParam}
+  `, params)
+}
+
+async function fetchCurrentUserRank(userId: string, period: Period, halaqaId: string | null) {
+  const params: Array<string | number> = []
+  const where = ["u.role IN ('student', 'reader')", 'COALESCE(u.is_active, TRUE) = TRUE']
+  if (halaqaId) {
+    params.push(halaqaId)
+    where.push(`u.halaqah_id = $${params.length}`)
+  }
+  params.push(userId)
+  const userParam = `$${params.length}`
+  const days = period === 'weekly' ? 7 : period === 'monthly' ? 30 : null
+
+  return queryOne<LeaderboardRow>(`
+    ${days ? `
+    WITH window_points AS (
+      SELECT user_id, COALESCE(SUM(points), 0)::int AS total_points
+      FROM points_log
+      WHERE created_at >= NOW() - ('${days} days')::interval
+      GROUP BY user_id
+    ),` : 'WITH'}
+    ranked AS (
+      SELECT
+        u.id AS user_id,
+        u.name AS user_name,
+        u.avatar_url,
+        u.halaqah_id,
+        h.name AS halaqa_name,
+        COALESCE(${days ? 'wp.total_points' : 'up.total_points'}, 0)::int AS total_points,
+        up.level,
+        COALESCE(up.streak_days, 0)::int AS streak_days,
+        RANK() OVER (ORDER BY COALESCE(${days ? 'wp.total_points' : 'up.total_points'}, 0) DESC, u.name ASC) AS rank
+      FROM users u
+      LEFT JOIN user_points up ON up.user_id = u.id
+      ${days ? 'LEFT JOIN window_points wp ON wp.user_id = u.id' : ''}
+      LEFT JOIN halaqat h ON h.id = u.halaqah_id
+      WHERE ${where.join(' AND ')}
     )
-    if (!me) return null
-    return {
-      rank: Number(me.rank),
-      user_id: me.user_id,
-      user_name: me.user_name,
-      avatar_url: me.avatar_url,
-      total_points: me.total_points || 0,
-      current_level: levelToNumber((me.level as any) || computeLevel(me.total_points || 0)),
-      streak_days: me.streak_days || 0,
-      is_current_user: true,
-    }
-  } catch (e) {
-    console.error('[API] leaderboard current_user error:', e)
-    return null
+    SELECT * FROM ranked WHERE user_id = ${userParam}
+  `, params)
+}
+
+function levelToNumber(level: string): number {
+  switch (level) {
+    case 'master': return 5
+    case 'hafiz': return 4
+    case 'advanced': return 3
+    case 'intermediate': return 2
+    default: return 1
   }
 }

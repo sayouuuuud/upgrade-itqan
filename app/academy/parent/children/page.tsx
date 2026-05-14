@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useI18n } from '@/lib/i18n/context'
 import { Card, CardContent } from '@/components/ui/card'
-import { Users, BookOpen, Target, UserMinus, Plus, Loader2, AlertTriangle } from 'lucide-react'
+import { Users, BookOpen, Target, UserMinus, Plus, Loader2, AlertTriangle, Mic, Calendar, Award } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -29,11 +29,36 @@ interface LinkedChild {
   linked_at: string
 }
 
+interface ChildActivity {
+  recitations: Array<{
+    id: string
+    surah_name: string
+    status: string
+    created_at: string
+    reader_name: string | null
+    overall_score: string | number | null
+  }>
+  sessions: Array<{
+    id: string
+    status: string
+    scheduled_at: string | null
+    slot_start: string | null
+    teacher_name: string | null
+  }>
+  badges: Array<{
+    id: string
+    badge_name: string | null
+    badge_type: string
+    earned_at: string | null
+  }>
+}
+
 export default function ParentChildrenPage() {
   const { t, locale } = useI18n()
   const isAr = locale === 'ar'
   const [children, setChildren] = useState<LinkedChild[]>([])
   const [loading, setLoading] = useState(true)
+  const [activities, setActivities] = useState<Record<string, ChildActivity>>({})
   const [unlinkingChild, setUnlinkingChild] = useState<LinkedChild | null>(null)
   const [unlinkLoading, setUnlinkLoading] = useState(false)
 
@@ -46,7 +71,19 @@ export default function ParentChildrenPage() {
       const res = await fetch('/api/academy/parent/children')
       const data = await res.json()
       if (res.ok) {
-        setChildren(data.children || [])
+        const linkedChildren: LinkedChild[] = data.children || []
+        setChildren(linkedChildren)
+        const entries = await Promise.all(linkedChildren.map(async (child) => {
+          try {
+            const activityRes = await fetch(`/api/academy/parent/children/${child.child_id}/activity`)
+            if (!activityRes.ok) return [child.child_id, { recitations: [], sessions: [], badges: [] }] as const
+            const activityData = await activityRes.json()
+            return [child.child_id, activityData as ChildActivity] as const
+          } catch {
+            return [child.child_id, { recitations: [], sessions: [], badges: [] }] as const
+          }
+        }))
+        setActivities(Object.fromEntries(entries))
       }
     } catch {
       // ignore
@@ -147,6 +184,46 @@ export default function ParentChildrenPage() {
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-muted/60 mt-2">
                       <span className="text-xs font-bold text-muted-foreground uppercase">{isAr ? "صلة القرابة:" : "Relation:"}</span>
                       <span className="text-xs font-black text-foreground">{getRelationLabel(child.relation)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-6 pb-6 grid grid-cols-1 gap-4">
+                  <div className="rounded-2xl border border-border bg-muted/10 p-4">
+                    <div className="flex items-center gap-2 font-bold mb-3">
+                      <Mic className="w-4 h-4 text-primary" />
+                      {isAr ? 'آخر التلاوات' : 'Recent Recitations'}
+                    </div>
+                    {(activities[child.child_id]?.recitations || []).slice(0, 3).length === 0 ? (
+                      <p className="text-sm text-muted-foreground">{isAr ? 'لا توجد تلاوات بعد.' : 'No recitations yet.'}</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {(activities[child.child_id]?.recitations || []).slice(0, 3).map(recitation => (
+                          <div key={recitation.id} className="flex items-center justify-between gap-3 text-sm">
+                            <span className="font-semibold text-foreground">{recitation.surah_name}</span>
+                            <span className="text-muted-foreground">{recitation.status}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="rounded-2xl border border-border bg-muted/10 p-4">
+                      <div className="flex items-center gap-2 font-bold mb-3">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        {isAr ? 'الجلسات' : 'Sessions'}
+                      </div>
+                      <p className="text-2xl font-black text-foreground">{activities[child.child_id]?.sessions?.length || 0}</p>
+                      <p className="text-xs text-muted-foreground">{isAr ? 'جلسة مرتبطة' : 'linked sessions'}</p>
+                    </div>
+                    <div className="rounded-2xl border border-border bg-muted/10 p-4">
+                      <div className="flex items-center gap-2 font-bold mb-3">
+                        <Award className="w-4 h-4 text-primary" />
+                        {isAr ? 'الشارات' : 'Badges'}
+                      </div>
+                      <p className="text-2xl font-black text-foreground">{activities[child.child_id]?.badges?.length || 0}</p>
+                      <p className="text-xs text-muted-foreground">{isAr ? 'شارة مكتسبة' : 'earned badges'}</p>
                     </div>
                   </div>
                 </div>

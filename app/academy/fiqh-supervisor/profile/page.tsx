@@ -113,7 +113,7 @@ export default function FiqhSupervisorProfilePage() {
             <AvatarUpload
               currentUrl={avatarUrl}
               name={name}
-              onUpload={url => setAvatarUrl(url)}
+              onUploaded={(url: string) => setAvatarUrl(url)}
             />
           </div>
 

@@ -99,7 +99,7 @@ export async function PATCH(
       WHERE id = $5
       RETURNING id, title, status, course_id
       `,
-      [newStatus, notes?.trim() || null, session.sub, isPublished, id],
+      [newStatus, notes?.trim() || null, session!.sub, isPublished, id],
     )
 
     if (rows.length === 0) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 import { createNotification } from '@/lib/notifications'
+import { isTargetAllowedForStudent } from '@/lib/academy/parent-controls'
 
 export async function POST(
   req: NextRequest,
@@ -14,6 +15,11 @@ export async function POST(
 
   try {
     const courseId = (await params).id;
+
+    const courseDecision = await isTargetAllowedForStudent(session.sub, 'course', courseId)
+    if (!courseDecision.allowed) {
+      return NextResponse.json({ error: 'هذه الدورة غير مسموحة لهذا الحساب بواسطة ولي الأمر' }, { status: 403 })
+    }
 
     // 1. Check if already enrolled or requested
     const checkQuery = `SELECT id FROM enrollments WHERE course_id = $1 AND student_id = $2`
