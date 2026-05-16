@@ -7,6 +7,58 @@ import { generatePathUnits, isValidUnitType, type PathDirection } from "@/lib/me
 // they personally created. The admin endpoints under /api/admin/memorization-paths
 // see ALL paths regardless of creator.
 
+const MEMORIZATION_PREREQUISITE_RELATIONS = ["users", "recitations"] as const
+
+type SchemaNotice = {
+  notice: "migration_not_applied" | "schema_prerequisite_missing"
+  missing_relation: string | null
+}
+
+function getDbErrorCode(error: unknown) {
+  if (typeof error !== "object" || error === null || !("code" in error)) return null
+  return typeof error.code === "string" ? error.code : null
+}
+
+function getMissingRelation(error: unknown) {
+  if (!(error instanceof Error)) return null
+  return error.message.match(/relation "([^"]+)" does not exist/)?.[1] ?? null
+}
+
+async function getMissingPrerequisiteRelation() {
+  try {
+    const rows = await query<{ table_name: string }>(
+      `SELECT table_name
+         FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = ANY($1::text[])`,
+      [Array.from(MEMORIZATION_PREREQUISITE_RELATIONS)],
+    )
+    const existing = new Set(rows.map(row => row.table_name))
+    return MEMORIZATION_PREREQUISITE_RELATIONS.find(table => !existing.has(table)) ?? null
+  } catch {
+    return null
+  }
+}
+
+async function getMemorizationSchemaNotice(error: unknown): Promise<SchemaNotice | null> {
+  if (getDbErrorCode(error) !== "42P01") return null
+
+  const missingRelation = getMissingRelation(error)
+  if (missingRelation === "users" || missingRelation === "recitations") {
+    return { notice: "schema_prerequisite_missing", missing_relation: missingRelation }
+  }
+
+  if (!missingRelation || missingRelation.startsWith("memorization_path")) {
+    const missingPrerequisite = await getMissingPrerequisiteRelation()
+    if (missingPrerequisite) {
+      return { notice: "schema_prerequisite_missing", missing_relation: missingPrerequisite }
+    }
+    return { notice: "migration_not_applied", missing_relation: missingRelation }
+  }
+
+  return null
+}
+
 // GET /api/reader/memorization-paths
 //   ?include_stats=1 → also returns enrollment counts + completion rate per path
 export async function GET(req: NextRequest) {
@@ -29,39 +81,54 @@ export async function GET(req: NextRequest) {
           ORDER BY p.is_published DESC, p.created_at DESC`,
         [session!.sub],
       )) as any[]
-    } catch (err: any) {
-      if (err?.code === "42P01") {
-        return NextResponse.json({ paths: [], notice: "migration_not_applied" })
+    } catch (err) {
+      const schemaNotice = await getMemorizationSchemaNotice(err)
+      if (schemaNotice) {
+        return NextResponse.json({ paths: [], ...schemaNotice })
       }
       throw err
     }
 
     if (includeStats && paths.length > 0) {
       const ids = paths.map(p => p.id)
-      const stats = (await query<any>(
-        `SELECT
-           e.path_id,
-           COUNT(*)::text AS enrolled,
-           COUNT(*) FILTER (WHERE e.status = 'active')::text AS active,
-           COUNT(*) FILTER (WHERE e.status = 'completed')::text AS completed,
-           ROUND(AVG(
-             CASE WHEN p.total_units > 0
-               THEN (e.units_completed::numeric / p.total_units::numeric) * 100
-               ELSE 0
-             END
-           ), 1)::text AS avg_progress
-         FROM memorization_path_enrollments e
-         JOIN memorization_paths p ON p.id = e.path_id
-         WHERE e.path_id = ANY($1::uuid[])
-         GROUP BY e.path_id`,
-        [ids],
-      )) as any[]
-      const byId: Record<string, any> = {}
-      for (const s of stats) byId[s.path_id] = s
-      paths = paths.map(p => ({
-        ...p,
-        stats: byId[p.id] || { enrolled: "0", active: "0", completed: "0", avg_progress: "0" },
-      }))
+      try {
+        const stats = await query<{
+          path_id: string
+          enrolled: string
+          active: string
+          completed: string
+          avg_progress: string
+        }>(
+          `SELECT
+             e.path_id,
+             COUNT(*)::text AS enrolled,
+             COUNT(*) FILTER (WHERE e.status = 'active')::text AS active,
+             COUNT(*) FILTER (WHERE e.status = 'completed')::text AS completed,
+             ROUND(AVG(
+               CASE WHEN p.total_units > 0
+                 THEN (e.units_completed::numeric / p.total_units::numeric) * 100
+                 ELSE 0
+               END
+             ), 1)::text AS avg_progress
+           FROM memorization_path_enrollments e
+           JOIN memorization_paths p ON p.id = e.path_id
+           WHERE e.path_id = ANY($1::uuid[])
+           GROUP BY e.path_id`,
+          [ids],
+        )
+        const byId: Record<string, (typeof stats)[number]> = {}
+        for (const s of stats) byId[s.path_id] = s
+        paths = paths.map(p => ({
+          ...p,
+          stats: byId[p.id] || { enrolled: "0", active: "0", completed: "0", avg_progress: "0" },
+        }))
+      } catch (err) {
+        const schemaNotice = await getMemorizationSchemaNotice(err)
+        if (schemaNotice) {
+          return NextResponse.json({ paths, ...schemaNotice })
+        }
+        throw err
+      }
     }
 
     return NextResponse.json({ paths })
@@ -126,9 +193,10 @@ export async function POST(req: NextRequest) {
         ],
       )) as any[]
       pathRow = inserted[0]
-    } catch (err: any) {
-      if (err?.code === "42P01") {
-        return NextResponse.json({ error: "migration_not_applied" }, { status: 409 })
+    } catch (err) {
+      const schemaNotice = await getMemorizationSchemaNotice(err)
+      if (schemaNotice) {
+        return NextResponse.json({ error: schemaNotice.notice, missing_relation: schemaNotice.missing_relation }, { status: 409 })
       }
       throw err
     }
