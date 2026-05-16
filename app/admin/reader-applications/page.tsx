@@ -6,7 +6,8 @@ import {
   UserCheck, UserX, Clock, ChevronRight, GraduationCap,
   BookOpen, Phone, MapPin, CheckCircle, XCircle, AlertCircle,
   Loader2, Mail, Calendar, FileText, ExternalLink, Globe,
-  ShieldCheck, BadgeCheck, Search, Trash2, User as UserIcon, Mic
+  ShieldCheck, BadgeCheck, Search, Trash2, User as UserIcon, Mic,
+  RefreshCcw
 } from "lucide-react"
 import AdminAudioPlayer from "@/components/admin/audio-player"
 import {
@@ -68,25 +69,36 @@ export default function ReaderApplicationsPage() {
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false)
   const [rejectionReason, setRejectionReason] = useState("")
   const [rejectingUserId, setRejectingUserId] = useState<string | null>(null)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+
+  const loadApps = async () => {
+    setFetchError(null)
+    try {
+      const res = await fetch("/api/admin/reader-applications")
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        const msg =
+          (data && (data.error || data.detail)) ||
+          (isAr ? `فشل تحميل الطلبات (${res.status})` : `Failed to load applications (${res.status})`)
+        setFetchError(typeof msg === "string" ? msg : (isAr ? "فشل تحميل الطلبات" : "Failed to load applications"))
+        setApplications([])
+        return
+      }
+      setApplications(data.applications || [])
+      const firstPending = (data.applications || []).find((a: Application) => a.approval_status === "pending_approval")
+      if (firstPending) setSelectedId(firstPending.id)
+      else if (data.applications?.length > 0) setSelectedId(data.applications[0].id)
+    } catch (err: any) {
+      console.error(err)
+      setFetchError(err?.message || (isAr ? "تعذّر الاتصال بالخادم" : "Network error"))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function loadApps() {
-      try {
-        const res = await fetch("/api/admin/reader-applications")
-        if (res.ok) {
-          const data = await res.json()
-          setApplications(data.applications || [])
-          const firstPending = (data.applications || []).find((a: Application) => a.approval_status === "pending_approval")
-          if (firstPending) setSelectedId(firstPending.id)
-          else if (data.applications?.length > 0) setSelectedId(data.applications[0].id)
-        }
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
     loadApps()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const filtered = applications.filter((app) => {
@@ -222,6 +234,24 @@ export default function ReaderApplicationsPage() {
           )}
         </div>
       </div>
+
+      {fetchError && (
+        <div className="px-6 py-3">
+          <div className="flex items-center justify-between gap-3 bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 rounded-2xl px-4 py-3">
+            <div className="flex items-center gap-2 text-sm font-bold">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span className="break-all">{fetchError}</span>
+            </div>
+            <button
+              onClick={loadApps}
+              className="flex items-center gap-2 text-xs font-black uppercase tracking-widest bg-red-500/20 hover:bg-red-500/30 px-3 py-1.5 rounded-xl transition-colors shrink-0"
+            >
+              <RefreshCcw className="w-3.5 h-3.5" />
+              {isAr ? "إعادة المحاولة" : "Retry"}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col lg:flex-row flex-1 overflow-visible lg:overflow-hidden relative">
         {/* Sidebar List */}
