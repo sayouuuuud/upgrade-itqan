@@ -46,9 +46,9 @@ export default async function middleware(req: NextRequest) {
         if (pathname.startsWith("/api/")) {
             return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
         }
-        // If trying to access admin panel, redirect to login-admin
+        // If trying to access admin panel, redirect to login
         if (pathname.startsWith("/admin")) {
-            return NextResponse.redirect(new URL("/login-admin", req.url))
+            return NextResponse.redirect(new URL("/login", req.url))
         }
         // If trying to access academy, redirect to login
         if (pathname.startsWith("/academy")) {
@@ -120,6 +120,9 @@ export default async function middleware(req: NextRequest) {
                         //   - view /academy/pending (teacher) or /reader/pending (reader)
                         //   - view /rejected (legacy)
                         // Anything else under /academy or /reader is redirected to their pending page.
+                        // IMPORTANT: This check must come BEFORE the academy-access check so a
+                        // rejected teacher (who may have has_academy_access=false) is always sent
+                        // to /academy/pending rather than to the homepage.
                         const gatedRoles = ['teacher', 'reader']
                         const isGatedStatus = dbUser.approval_status === 'pending_approval' || dbUser.approval_status === 'rejected'
                         if (isGatedStatus && gatedRoles.includes(sessionPayload.role)) {
@@ -141,6 +144,10 @@ export default async function middleware(req: NextRequest) {
                                 }
                                 return NextResponse.redirect(new URL(pendingPath, req.url))
                             }
+                            // Early return for pending/rejected — skip academy-access checks below
+                            // so they don't get bounced to homepage due to has_academy_access=false
+                            const response = NextResponse.next()
+                            return response
                         }
 
                         // #4: Detect role mismatch between JWT and DB (e.g., teacher just got approved).
@@ -179,7 +186,8 @@ export default async function middleware(req: NextRequest) {
                     }
                 }
 
-                // Check if user has academy access before allowing them into /academy
+                // Check if user has academy access before allowing them into /academy.
+                // NOTE: pending/rejected teachers are handled above and never reach this check.
                 if (pathname.startsWith("/academy") && !academyPublicPaths.some(p => pathname.startsWith(p))) {
                     if (!hasAcademyAccess && sessionPayload.role !== 'admin') {
                         // Send to /student if they still have quran access, else home

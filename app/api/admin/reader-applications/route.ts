@@ -13,24 +13,57 @@ export async function GET() {
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
   }
 
-  const applications = await query(
-    `SELECT u.id, u.name, u.email, u.gender, u.approval_status, u.created_at,
-            rp.full_name_triple, rp.phone, rp.city, rp.qualification,
-            rp.memorized_parts, rp.years_of_experience, rp.certificate_file_url,
-            rp.audio_url, rp.pdf_url, rp.responses,
-            rp.rejection_reason, rp.rejection_count, rp.submitted_at
-     FROM users u
-     LEFT JOIN reader_profiles rp ON rp.user_id = u.id
-     WHERE u.role = 'reader'
-     ORDER BY 
-       CASE u.approval_status 
-         WHEN 'pending_approval' THEN 0 
-         ELSE 1 
-       END,
-       u.created_at DESC`
-  )
-
-  return NextResponse.json({ applications })
+  // Defensive query: many reader_profiles fields (audio_url, pdf_url,
+  // responses, submitted_at, rejection_reason, rejection_count) are added by
+  // migration 020 and may not exist on every production DB. Same for some
+  // migration 003 fields. Selecting them directly fails the entire query and
+  // makes the page silently look empty.
+  //
+  // We instead select the entire row as JSONB and pull fields out with `->>`
+  // (which returns NULL for missing keys), so the API succeeds with whatever
+  // columns are present.
+  try {
+    const applications = await query(
+      `SELECT u.id, u.name, u.email, u.gender, u.approval_status, u.created_at,
+              rp_data ->> 'full_name_triple'                     AS full_name_triple,
+              rp_data ->> 'phone'                                AS phone,
+              rp_data ->> 'city'                                 AS city,
+              rp_data ->> 'qualification'                        AS qualification,
+              rp_data ->> 'memorized_parts'                      AS memorized_parts,
+              NULLIF(rp_data ->> 'years_of_experience', '')::int AS years_of_experience,
+              rp_data ->> 'certificate_file_url'                 AS certificate_file_url,
+              rp_data ->> 'audio_url'                            AS audio_url,
+              rp_data ->> 'pdf_url'                              AS pdf_url,
+              COALESCE(rp_data -> 'responses', '{}'::jsonb)      AS responses,
+              rp_data ->> 'rejection_reason'                     AS rejection_reason,
+              NULLIF(rp_data ->> 'rejection_count', '')::int     AS rejection_count,
+              rp_data ->> 'submitted_at'                         AS submitted_at
+       FROM users u
+       LEFT JOIN LATERAL (
+         SELECT to_jsonb(rp) AS rp_data
+         FROM reader_profiles rp
+         WHERE rp.user_id = u.id
+         LIMIT 1
+       ) j ON TRUE
+       WHERE u.role = 'reader'
+       ORDER BY
+         CASE u.approval_status
+           WHEN 'pending_approval' THEN 0
+           ELSE 1
+         END,
+         u.created_at DESC`
+    )
+    return NextResponse.json({ applications })
+  } catch (error: any) {
+    console.error('Error fetching reader applications:', error)
+    const detail = process.env.NODE_ENV !== 'production'
+      ? (error?.message || String(error))
+      : undefined
+    return NextResponse.json(
+      { error: 'فشل تحميل طلبات المقرئين', detail },
+      { status: 500 }
+    )
+  }
 }
 
 // PUT /api/admin/reader-applications - approve or reject

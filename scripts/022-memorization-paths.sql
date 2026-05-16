@@ -7,6 +7,20 @@
 --   psql "$DATABASE_URL" -f scripts/022-memorization-paths.sql
 -- =====================================================================
 
+DO $$
+BEGIN
+  IF to_regclass('public.users') IS NULL THEN
+    RAISE EXCEPTION 'scripts/022-memorization-paths.sql requires public.users. Verify DATABASE_URL/POSTGRES_URL points to the Itqan application database and run the base schema before this script.'
+      USING ERRCODE = '42P01';
+  END IF;
+
+  IF to_regclass('public.recitations') IS NULL THEN
+    RAISE EXCEPTION 'scripts/022-memorization-paths.sql requires public.recitations. Run the recitations/base schema before this script.'
+      USING ERRCODE = '42P01';
+  END IF;
+END;
+$$;
+
 -- ---------------------------------------------------------------------
 -- 1. memorization_paths
 -- ---------------------------------------------------------------------

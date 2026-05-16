@@ -305,7 +305,7 @@ export default function LandingPage() {
               <span>{t.landing.finalCtaBtn}</span>
               <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
             </Link>
-            <Link href="/reader-register" className="text-white/40 hover:text-[#D4A843] text-sm font-bold transition-all border-b border-white/10 hover:border-[#D4A843]/40 pb-0.5 tracking-wide">
+            <Link href="/register?role=reader" className="text-white/40 hover:text-[#D4A843] text-sm font-bold transition-all border-b border-white/10 hover:border-[#D4A843]/40 pb-0.5 tracking-wide">
               {t.landing.readerJoin}
             </Link>
           </div>
@@ -336,7 +336,7 @@ export default function LandingPage() {
               <Link href="/login" className="text-white/50 hover:text-[#D4A843] text-xs md:text-sm font-bold uppercase tracking-widest transition-colors">
                 {t.landing.footerLogin}
               </Link>
-              <Link href="/reader-register" className="text-white/50 hover:text-[#D4A843] text-xs md:text-sm font-bold uppercase tracking-widest transition-colors">
+              <Link href="/register?role=reader" className="text-white/50 hover:text-[#D4A843] text-xs md:text-sm font-bold uppercase tracking-widest transition-colors">
                 {t.landing.footerJoin}
               </Link>
               <Link href="/contact" className="text-white/50 hover:text-[#D4A843] text-xs md:text-sm font-bold uppercase tracking-widest transition-colors">

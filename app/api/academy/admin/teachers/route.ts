@@ -9,22 +9,55 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
+    // Pull the latest teacher_application row per user so we can show the
+    // application status (pending / approved / rejected) and rejection reason
+    // alongside the user's approval_status column.
+    //
+    // NOTE: We intentionally do NOT reference teacher_applications.submitted_at
+    // here because not every production database has run migration 020 yet,
+    // and the column may not exist. We use created_at for both ordering and
+    // the timestamp shown to admins -- it is part of the base schema.
     const rows = await query(`
-      SELECT 
-        u.*,
-        COUNT(DISTINCT c.id)::int as courses_count,
-        COUNT(DISTINCT e.student_id)::int as total_students
+      SELECT
+        u.id,
+        u.name,
+        u.email,
+        u.gender,
+        u.is_active,
+        u.approval_status,
+        u.created_at,
+        COUNT(DISTINCT c.id)::int AS courses_count,
+        COUNT(DISTINCT e.student_id)::int AS total_students,
+        latest_app.status AS application_status,
+        latest_app.rejection_reason,
+        latest_app.app_created_at AS submitted_at
       FROM users u
       LEFT JOIN courses c ON u.id = c.teacher_id
       LEFT JOIN enrollments e ON c.id = e.course_id AND e.status = 'active'
+      LEFT JOIN LATERAL (
+        SELECT ta.status, ta.rejection_reason, ta.created_at AS app_created_at
+        FROM teacher_applications ta
+        WHERE ta.user_id = u.id
+        ORDER BY ta.created_at DESC
+        LIMIT 1
+      ) latest_app ON TRUE
       WHERE u.role = 'teacher'
-      GROUP BY u.id
+      GROUP BY u.id, latest_app.status, latest_app.rejection_reason, latest_app.app_created_at
       ORDER BY u.created_at DESC
     `)
     return NextResponse.json({ data: rows })
-  } catch (error) {
+  } catch (error: any) {
+    // Surface the underlying DB error message in development / preview builds
+    // so the admin UI can show something useful when something goes wrong.
+    // In production we still keep the message generic.
     console.error('Error fetching teachers:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const detail = process.env.NODE_ENV !== 'production'
+      ? (error?.message || String(error))
+      : undefined
+    return NextResponse.json(
+      { error: 'Internal server error', detail },
+      { status: 500 }
+    )
   }
 }
 

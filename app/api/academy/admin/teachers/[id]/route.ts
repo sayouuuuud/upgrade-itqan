@@ -46,10 +46,31 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   }
   const { id } = await params
   try {
-    await query(`UPDATE users SET is_active = false WHERE id = $1 AND role = 'teacher'`, [id])
+    // Hard delete the user row. Most teacher-related tables reference users(id)
+    // with ON DELETE CASCADE (teacher_applications, sessions, enrollments, …),
+    // so they get cleaned up automatically. The only ON DELETE RESTRICT FK is
+    // courses.teacher_id — if the teacher still owns courses, the DELETE will
+    // fail with Postgres error code 23503 and we surface that to the admin so
+    // they can reassign or archive the courses first.
+    const result = await query<{ id: string }>(
+      `DELETE FROM users WHERE id = $1 AND role = 'teacher' RETURNING id`,
+      [id]
+    )
+    if (result.length === 0) {
+      return NextResponse.json({ error: 'المدرس غير موجود' }, { status: 404 })
+    }
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error deactivating teacher:', error)
+  } catch (error: any) {
+    console.error('Error deleting teacher:', error)
+    if (error?.code === '23503') {
+      return NextResponse.json(
+        {
+          error:
+            'لا يمكن حذف هذا المدرس لأنه مرتبط بكورسات أو حلقات. يرجى نقل أو أرشفة الكورسات أولاً ثم إعادة المحاولة.',
+        },
+        { status: 409 }
+      )
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

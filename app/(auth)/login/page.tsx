@@ -1,66 +1,89 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n/context'
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react'
+
+type LoginUser = {
+  role: string
+  has_academy_access?: boolean
+  has_quran_access?: boolean
+  approval_status?: string | null
+}
+
+// Route the user to their proper dashboard based on role + approval status.
+// Teachers / readers that are pending or rejected go straight to the
+// application status page so they don't bounce through /academy/teacher
+// (which the middleware would then redirect to /academy/pending anyway).
+function getRedirectPath(u: LoginUser): string {
+  const role = u.role
+  const status = u.approval_status
+
+  if (role === 'teacher' && (status === 'pending_approval' || status === 'rejected')) {
+    return '/academy/pending'
+  }
+  if (role === 'reader' && (status === 'pending_approval' || status === 'rejected')) {
+    return '/reader/pending'
+  }
+
+  if (role === 'admin') return '/admin'
+  if (role === 'academy_admin') return '/academy/admin'
+  if (role === 'student_supervisor' || role === 'reciter_supervisor') return `/${role}`
+  if (role === 'fiqh_supervisor') return '/academy/fiqh-supervisor'
+  if (role === 'content_supervisor') return '/academy/content-supervisor'
+  if (role === 'supervisor') return '/academy/supervisor'
+  if (role === 'reader') return '/reader'
+  if (role === 'teacher') return '/academy/teacher'
+  if (role === 'parent') return '/academy/parent'
+
+  // Student: route based on platform access flags.
+  const hasAcademy = u.has_academy_access !== false
+  const hasQuran = u.has_quran_access !== false
+  if (hasAcademy && !hasQuran) return '/academy/student'
+  if (!hasAcademy && hasQuran) return '/student'
+  // Both available → default to academy (the primary platform); user can switch via ModeSwitcher.
+  return '/academy/student'
+}
 
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
   const [error, setError] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const router = useRouter()
   const { t } = useI18n()
+  // Guard: run the auth check only once to avoid loops.
+  const authChecked = useRef(false)
 
   useEffect(() => {
+    if (authChecked.current) return
+    authChecked.current = true
+
+    let cancelled = false
     async function checkAuth() {
       try {
         const res = await fetch('/api/auth/me')
-        if (res.ok) {
-          const data = await res.json()
-          if (data.user) {
-            router.push(getRedirectPath(data.user))
-          }
+        if (!res.ok || cancelled) return
+        const data = await res.json()
+        if (data.user && !cancelled) {
+          setRedirecting(true)
+          // Hard navigation so middleware sees a fresh cookie and routes
+          // correctly. Avoids the soft-navigation hang reported by users.
+          window.location.replace(getRedirectPath(data.user))
         }
-      } catch (err) {
-        // ignore
+      } catch {
+        // Ignore - user is just not logged in.
       }
     }
     checkAuth()
-  }, [router])
-
-  // #2: Honor the user's chosen platform (academy / quran / both) when redirecting.
-  function getRedirectPath(u: {
-    role: string
-    has_academy_access?: boolean
-    has_quran_access?: boolean
-  }): string {
-    const role = u.role
-    // Admin / supervisor roles always go to their own panels
-    if (role === 'admin') return '/admin'
-    if (role === 'academy_admin') return '/academy/admin'
-    if (role === 'student_supervisor' || role === 'reciter_supervisor') return `/${role}`
-    if (role === 'fiqh_supervisor') return '/academy/fiqh-supervisor'
-    if (role === 'content_supervisor') return '/academy/content-supervisor'
-    if (role === 'supervisor') return '/academy/supervisor'
-    if (role === 'reader') return '/reader'
-    if (role === 'teacher') return '/academy/teacher'
-    if (role === 'parent') return '/academy/parent'
-
-    // Student: route based on platform access flags.
-    const hasAcademy = u.has_academy_access !== false
-    const hasQuran = u.has_quran_access !== false
-    if (hasAcademy && !hasQuran) return '/academy/student'
-    if (!hasAcademy && hasQuran) return '/student'
-    // Both available → default to academy (the primary platform); user can switch via ModeSwitcher.
-    return '/academy/student'
-  }
+    return () => { cancelled = true }
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (loading || redirecting) return
     setError('')
     setLoading(true)
 
@@ -70,7 +93,7 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
         // In dev, the API returns a `debug` field with the underlying exception
@@ -81,8 +104,12 @@ export default function LoginPage() {
         return
       }
 
-      // #2: Redirect based on role and platform flags returned from the API.
-      router.push(getRedirectPath(data.user || { role: 'student' }))
+      // Hard navigation so the just-set auth cookie is included in the next
+      // request and the middleware can route based on the fresh session.
+      // `router.push` was causing the form to hang because the client-side
+      // navigation raced with the middleware's session validation.
+      setRedirecting(true)
+      window.location.replace(getRedirectPath(data.user || { role: 'student' }))
     } catch {
       setError(t.auth.connectionError)
       setLoading(false)

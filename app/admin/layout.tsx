@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session || !allowedRoles.includes(session.role)) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <meta httpEquiv="refresh" content="0; url=/login-admin" />
+        <meta httpEquiv="refresh" content="0; url=/login" />
       </div>
     )
   }
