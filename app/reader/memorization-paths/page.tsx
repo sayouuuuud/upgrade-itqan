@@ -49,7 +49,10 @@ export default function ReaderMemorizationPathsPage() {
   const [loading, setLoading] = useState(true)
   const [openCreate, setOpenCreate] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [migrationMissing, setMigrationMissing] = useState(false)
+  const [schemaNotice, setSchemaNotice] = useState<{
+    notice: "migration_not_applied" | "schema_prerequisite_missing"
+    missing_relation?: string | null
+  } | null>(null)
 
   const [form, setForm] = useState({
     title: "",
@@ -69,7 +72,11 @@ export default function ReaderMemorizationPathsPage() {
     try {
       const res = await fetch("/api/reader/memorization-paths?include_stats=1")
       const data = await res.json()
-      if (data.notice === "migration_not_applied") setMigrationMissing(true)
+      if (data.notice === "migration_not_applied" || data.notice === "schema_prerequisite_missing") {
+        setSchemaNotice({ notice: data.notice, missing_relation: data.missing_relation })
+      } else {
+        setSchemaNotice(null)
+      }
       setPaths(data.paths || [])
     } catch (err) {
       console.error(err)
@@ -77,7 +84,11 @@ export default function ReaderMemorizationPathsPage() {
       setLoading(false)
     }
   }
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    queueMicrotask(() => {
+      void load()
+    })
+  }, [])
 
   async function submit() {
     if (!form.title.trim()) return
@@ -145,10 +156,21 @@ export default function ReaderMemorizationPathsPage() {
         </Button>
       </div>
 
-      {migrationMissing && (
+      {schemaNotice && (
         <Card className="p-4 bg-amber-50 border-amber-200 text-sm text-amber-900">
-          <strong>الميجريشن لسه ما اتشغّلش.</strong> راسل الإدارة لتشغيل
-          <code className="bg-amber-100 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
+          {schemaNotice.notice === "schema_prerequisite_missing" ? (
+            <>
+              <strong>اتصال قاعدة البيانات مش على schema التطبيق المطلوبة.</strong> الجدول الأساسي
+              <code className="bg-amber-100 px-2 py-0.5 mx-1 rounded">{schemaNotice.missing_relation}</code>
+              غير موجود، فتأكد من `DATABASE_URL`/`POSTGRES_URL` أو شغّل السكريبتات الأساسية قبل
+              <code className="bg-amber-100 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
+            </>
+          ) : (
+            <>
+              <strong>الميجريشن لسه ما اتشغّلش.</strong> راسل الإدارة لتشغيل
+              <code className="bg-amber-100 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
+            </>
+          )}
         </Card>
       )}
 
@@ -158,7 +180,7 @@ export default function ReaderMemorizationPathsPage() {
         </div>
       ) : paths.length === 0 ? (
         <Card className="p-10 text-center text-muted-foreground">
-          لم تنشئ أي مسار بعد — اضغط "إنشاء مسار جديد" لتبدأ.
+          لم تنشئ أي مسار بعد — اضغط «إنشاء مسار جديد» لتبدأ.
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
