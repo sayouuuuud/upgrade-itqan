@@ -216,7 +216,9 @@ export async function POST(req: NextRequest) {
       console.error("Failed to insert user session:", err)
     })
 
-    // #2: Return platform flags so the client can route to the right dashboard.
+    // Return platform flags and approval_status so the client can route to the
+    // right dashboard (e.g. pending/rejected teachers go straight to the
+    // application status page instead of bouncing through /academy/teacher).
     const response = NextResponse.json({
       user: {
         id: user.id,
@@ -225,6 +227,7 @@ export async function POST(req: NextRequest) {
         role: activeRole,
         has_academy_access: user.has_academy_access,
         has_quran_access: user.has_quran_access,
+        approval_status: user.approval_status,
       },
     })
 
