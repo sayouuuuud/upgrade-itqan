@@ -56,11 +56,16 @@ export default function PendingApplicationPage() {
     const [success, setSuccess] = useState<string | null>(null)
 
     const load = async () => {
+        setError(null)
         try {
             const res = await fetch("/api/auth/application/me")
             if (!res.ok) {
-                if (res.status === 401) { router.push("/login"); return }
-                throw new Error("فشل التحميل")
+                if (res.status === 401) {
+                    // Hard navigation so we drop any stale auth state cleanly.
+                    window.location.replace("/login")
+                    return
+                }
+                throw new Error("فشل تحميل بيانات الطلب")
             }
             const json = (await res.json()) as ApplicationData
             setData(json)
@@ -73,9 +78,9 @@ export default function PendingApplicationPage() {
             )
             // If approved, redirect to the right dashboard
             if (json.user.approval_status === "approved") {
-                if (json.user.role === "teacher") router.push("/academy/teacher")
-                else if (json.user.role === "reader") router.push("/reader")
-                else router.push("/")
+                if (json.user.role === "teacher") window.location.replace("/academy/teacher")
+                else if (json.user.role === "reader") window.location.replace("/reader")
+                else window.location.replace("/")
             }
         } catch (err: any) {
             setError(err?.message || "خطأ غير متوقع")
@@ -156,7 +161,7 @@ export default function PendingApplicationPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         )
@@ -164,8 +169,35 @@ export default function PendingApplicationPage() {
 
     if (!data) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-red-600">{error || "خطأ غير متوقع"}</p>
+            <div
+                dir="rtl"
+                className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900"
+            >
+                <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-sm p-6 space-y-4 text-center">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                        <AlertCircle className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                        <h1 className="text-lg font-bold text-foreground">تعذّر تحميل بيانات طلبك</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            {error || "حدث خطأ غير متوقع. حاول مرة أخرى أو سجّل الخروج وادخل مجددًا."}
+                        </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <button
+                            onClick={() => { setLoading(true); load() }}
+                            className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold rounded-xl flex items-center justify-center gap-2"
+                        >
+                            <RefreshCcw className="w-4 h-4" /> إعادة المحاولة
+                        </button>
+                        <button
+                            onClick={logout}
+                            className="flex-1 px-4 py-2.5 bg-muted hover:bg-muted/70 text-foreground font-bold rounded-xl flex items-center justify-center gap-2"
+                        >
+                            <LogOut className="w-4 h-4" /> تسجيل الخروج
+                        </button>
+                    </div>
+                </div>
             </div>
         )
     }
