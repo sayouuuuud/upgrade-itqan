@@ -33,46 +33,75 @@ const pointsConfig: PointsConfig = {
   badge_earned: 100
 }
 
+export const POINTS = pointsConfig
+
+export const LEVELS = [
+  { key: 'beginner', label: 'مبتدئ', min: 0 },
+  { key: 'intermediate', label: 'متوسط', min: 500 },
+  { key: 'advanced', label: 'متقدم', min: 2000 },
+  { key: 'hafiz', label: 'حافظ', min: 5000 },
+  { key: 'master', label: 'خاتم', min: 10000 },
+]
+
+export function levelForPoints(points: number): string {
+  let level = 'beginner'
+  for (const l of LEVELS) {
+    if (points >= l.min) level = l.key
+  }
+  return level
+}
+
 export async function awardPoints(
   userId: string,
   points: number,
-  action: PointsAction,
-  metadata?: Record<string, any>
-): Promise<void> {
+  reason: PointsAction,
+  metadata?: {
+    description?: string
+    admin_id?: string
+    type?: string
+  }
+): Promise<{ success: boolean; total_points: number; badge_earned?: string }> {
   try {
-    // Get existing user points
-    const existing = await queryOne<{ user_id: string; points: number }>(
-      `SELECT * FROM user_points WHERE user_id = $1`,
+    const existing = await queryOne<{ total_points: number }>(
+      `SELECT total_points FROM user_points WHERE user_id = $1`,
       [userId]
     )
 
-    const newTotal = (existing?.points || 0) + points
+    const newTotal = (existing?.total_points || 0) + points
+    const level = levelForPoints(newTotal)
 
     if (existing) {
       await query(
-        `UPDATE user_points SET points = $1, updated_at = NOW() WHERE user_id = $2`,
-        [newTotal, userId]
+        `UPDATE user_points SET total_points = $1, level = $2, updated_at = NOW() WHERE user_id = $3`,
+        [newTotal, level, userId]
       )
     } else {
       await query(
-        `INSERT INTO user_points (user_id, points, created_at) VALUES ($1, $2, NOW())`,
-        [userId, points]
+        `INSERT INTO user_points (user_id, total_points, level, created_at, updated_at)
+         VALUES ($1, $2, $3, NOW(), NOW())`,
+        [userId, newTotal, level]
       )
     }
 
-    // Log the points transaction
     await query(
-      `INSERT INTO points_log (user_id, points, action, metadata, created_at)
+      `INSERT INTO points_log (user_id, points, reason, description, created_at)
        VALUES ($1, $2, $3, $4, NOW())`,
-      [userId, points, action, JSON.stringify(metadata || {})]
+      [userId, points, reason, metadata?.description || '']
     )
 
-    // Check and award badges
-    await checkAndAwardBadges(userId, newTotal)
+    return { success: true, total_points: newTotal }
   } catch (error) {
     console.error('Error awarding points:', error)
     throw error
   }
+}
+
+export async function adminAdjustPoints(userId: string, points: number, description: string, adminId: string) {
+  return awardPoints(userId, points, 'manual', {
+    description,
+    admin_id: adminId,
+    type: 'manual_adjustment'
+  })
 }
 
 export async function awardMemorizationPoints(
@@ -98,7 +127,7 @@ export async function awardTaskCompletePoints(
     userId,
     pointsConfig.task_complete,
     'task_complete',
-    { task_id: taskId }
+    { description: `إكمال مهمة: ${taskId}` }
   )
 }
 
@@ -110,7 +139,7 @@ export async function awardAttendancePoints(
     userId,
     pointsConfig.attendance,
     'attendance',
-    { session_id: sessionId }
+    { description: `حضور جلسة: ${sessionId}` }
   )
 }
 
@@ -129,100 +158,6 @@ export async function awardCompetitionPoints(
     userId,
     pointsMap[position],
     'competition_win',
-    { competition_id: competitionId, position }
+    { description: `فوز في مسابقة: ${competitionId} المركز ${position}` }
   )
-}
-
-export async function checkAndAwardBadges(userId: string, totalPoints: number): Promise<void> {
-  try {
-    const badges = [
-      { id: 'first_steps', threshold: 100, name: 'الخطوات الأولى', description: 'اجمع 100 نقطة' },
-      { id: 'rising_star', threshold: 500, name: 'نجم صاعد', description: 'اجمع 500 نقطة' },
-      { id: 'champion', threshold: 2000, name: 'بطل', description: 'اجمع 2000 نقطة' },
-      { id: 'legend', threshold: 5000, name: 'أسطورة', description: 'اجمع 5000 نقطة' },
-      { id: 'master', threshold: 10000, name: 'ماهر', description: 'اجمع 10000 نقطة' }
-    ]
-
-    // Check which badges the user should have
-    const eligibleBadges = badges.filter(b => totalPoints >= b.threshold)
-
-    // Get existing badges
-    const existingBadges = await query<{ badge_id: string }>(
-      `SELECT badge_id FROM badges WHERE user_id = $1`,
-      [userId]
-    )
-
-    const existingIds = new Set(existingBadges.map(b => b.badge_id))
-
-    // Award new badges
-    for (const badge of eligibleBadges) {
-      if (!existingIds.has(badge.id)) {
-        try {
-          await query(
-            `INSERT INTO badges (user_id, badge_id, badge_name, badge_description, earned_at)
-             VALUES ($1, $2, $3, $4, NOW())`,
-            [userId, badge.id, badge.name, badge.description]
-          )
-
-          // Award badge earned points
-          await awardPoints(userId, pointsConfig.badge_earned, 'badge_earned', { badge_id: badge.id })
-        } catch (e) {
-          // Ignore if already exists
-          console.debug('Badge already exists:', badge.id)
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error checking and awarding badges:', error)
-  }
-}
-
-export async function getStreakBonus(userId: string): Promise<number> {
-  try {
-    // Get memorization logs from the last 30 days
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
-    const logs = await query<{ created_at: string }>(
-      `SELECT created_at FROM memorization_log
-       WHERE user_id = $1 AND created_at >= $2
-       ORDER BY created_at DESC`,
-      [userId, thirtyDaysAgo.toISOString()]
-    )
-
-    if (!logs || logs.length === 0) return 0
-
-    // Count consecutive days
-    let streak = 0
-    let currentDate = new Date()
-    currentDate.setHours(0, 0, 0, 0)
-
-    const logDates = new Set(
-      logs.map(log => {
-        const d = new Date(log.created_at)
-        d.setHours(0, 0, 0, 0)
-        return d.getTime()
-      })
-    )
-
-    // Count backwards from today
-    while (logDates.has(currentDate.getTime())) {
-      streak++
-      currentDate.setDate(currentDate.getDate() - 1)
-    }
-
-    // Award streak bonuses
-    if (streak === 30) {
-      return pointsConfig.streak_bonus_30days
-    } else if (streak === 7) {
-      return pointsConfig.streak_bonus_7days
-    } else if (streak === 3) {
-      return pointsConfig.streak_bonus_3days
-    }
-
-    return 0
-  } catch (error) {
-    console.error('Error calculating streak bonus:', error)
-    return 0
-  }
 }

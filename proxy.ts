@@ -6,7 +6,7 @@ const apiPublicPaths = ["/api/auth", "/api/admin/homepage", "/api/admin/analytic
 // Academy public paths (for public lessons and invitations)
 const academyPublicPaths = ["/academy/public", "/academy/invite", "/academy/lesson"]
 
-export async function middleware(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
 
     // Skip static assets early
