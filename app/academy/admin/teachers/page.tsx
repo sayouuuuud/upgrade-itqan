@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Plus, Trash2, Edit2, GraduationCap, X, Loader2, Search, CheckCircle2, Clock, XCircle } from 'lucide-react'
+import { Plus, Trash2, Edit2, GraduationCap, X, Loader2, Search, CheckCircle2, Clock, XCircle, AlertCircle, RefreshCcw } from 'lucide-react'
 
 type ApprovalStatus = 'approved' | 'pending_approval' | 'rejected' | null
 
@@ -71,16 +71,25 @@ export default function AdminTeachersPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   const fetchTeachers = async () => {
+    setFetchError(null)
     try {
       const res = await fetch('/api/academy/admin/teachers')
-      if (res.ok) {
-        const data = await res.json()
-        setTeachers(Array.isArray(data) ? data : data.data || [])
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        const msg =
+          (data && (data.error || data.detail)) ||
+          `فشل تحميل بيانات المدرسين (${res.status})`
+        setFetchError(typeof msg === 'string' ? msg : 'فشل تحميل بيانات المدرسين')
+        setTeachers([])
+        return
       }
-    } catch (error) {
+      setTeachers(Array.isArray(data) ? data : data?.data || [])
+    } catch (error: any) {
       console.error('Failed to fetch teachers:', error)
+      setFetchError(error?.message || 'تعذّر الاتصال بالخادم')
     } finally {
       setLoading(false)
     }
@@ -236,14 +245,37 @@ export default function AdminTeachersPage() {
         </div>
       </div>
 
+      {/* Error banner */}
+      {fetchError && (
+        <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-red-900 dark:text-red-200">تعذّر تحميل قائمة المدرسين</p>
+            <p className="text-sm text-red-800 dark:text-red-300 mt-1 break-words" dir="ltr">
+              {fetchError}
+            </p>
+          </div>
+          <button
+            onClick={() => { setLoading(true); fetchTeachers() }}
+            className="shrink-0 inline-flex items-center gap-2 px-3 py-1.5 text-sm font-bold text-red-700 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg border border-red-300 dark:border-red-700"
+          >
+            <RefreshCcw className="w-4 h-4" /> إعادة المحاولة
+          </button>
+        </div>
+      )}
+
       {/* Grid */}
       {teachers.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-16 text-center">
           <GraduationCap className="w-14 h-14 mx-auto mb-4 text-muted-foreground opacity-30" />
-          <p className="text-muted-foreground font-medium mb-4">لا يوجد مدرسون بعد</p>
-          <button onClick={openAdd} className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700 transition-colors">
-            <Plus className="w-4 h-4 inline ml-1" /> أضف أول مدرس
-          </button>
+          <p className="text-muted-foreground font-medium mb-4">
+            {fetchError ? 'لا توجد بيانات لعرضها — راجع الخطأ بالأعلى' : 'لا يوجد مدرسون بعد'}
+          </p>
+          {!fetchError && (
+            <button onClick={openAdd} className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700 transition-colors">
+              <Plus className="w-4 h-4 inline ml-1" /> أضف أول مدرس
+            </button>
+          )}
         </div>
       ) : filteredTeachers.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">

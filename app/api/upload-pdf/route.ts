@@ -2,7 +2,16 @@ import { NextRequest, NextResponse } from "next/server"
 import { UTApi } from "uploadthing/server"
 import { getSession } from "@/lib/auth"
 
-const utapi = new UTApi()
+// Same reasoning as /api/upload-audio: avoid evaluating UploadThing at build
+// time so a missing UPLOADTHING_TOKEN doesn't break `next build`.
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
+let _utapi: UTApi | null = null
+function getUtApi(): UTApi {
+    if (!_utapi) _utapi = new UTApi()
+    return _utapi
+}
 
 /**
  * Server-side PDF upload helper used by the applicant PDF uploader.
@@ -27,7 +36,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "الحد الأقصى 8 ميجا" }, { status: 400 })
         }
 
-        const res = await utapi.uploadFiles(file)
+        const res = await getUtApi().uploadFiles(file)
         if (res.error || !res.data) {
             return NextResponse.json({ error: res.error?.message || "فشل الرفع" }, { status: 500 })
         }
