@@ -45,6 +45,11 @@ type Path = {
 }
 
 type ManagerCandidate = { id: string; name: string; email: string; role: string }
+type SchemaNotice = {
+  notice: "migration_not_applied" | "schema_update_required"
+  migration?: string
+  missing_column?: string
+}
 
 export default function AcademyAdminLearningPathsPage() {
   const { t } = useI18n()
@@ -54,7 +59,7 @@ export default function AcademyAdminLearningPathsPage() {
   const [loading, setLoading] = useState(true)
   const [openCreate, setOpenCreate] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [migrationMissing, setMigrationMissing] = useState(false)
+  const [schemaNotice, setSchemaNotice] = useState<SchemaNotice | null>(null)
   const [subjectTab, setSubjectTab] = useState<"all" | Subject>("all")
   const [managers, setManagers] = useState<ManagerCandidate[]>([])
 
@@ -75,7 +80,11 @@ export default function AcademyAdminLearningPathsPage() {
     try {
       const res = await fetch("/api/admin/tajweed-paths?include_stats=1&scope=academy")
       const data = await res.json()
-      if (data.notice === "migration_not_applied") setMigrationMissing(true)
+      if (data.notice === "migration_not_applied" || data.notice === "schema_update_required") {
+        setSchemaNotice({ notice: data.notice, migration: data.migration, missing_column: data.missing_column })
+      } else {
+        setSchemaNotice(null)
+      }
       setPaths(data.paths || [])
     } finally {
       setLoading(false)
@@ -164,10 +173,13 @@ export default function AcademyAdminLearningPathsPage() {
         </Button>
       </div>
 
-      {migrationMissing && (
+      {schemaNotice && (
         <Card className="p-4 bg-amber-50 border-amber-200 text-sm text-amber-900">
-          <strong>{tp.migrationMissing}</strong> {tp.migrationMissingAction}
-          <code className="bg-amber-100 px-2 py-0.5 mx-1 rounded">scripts/023-tajweed-paths.sql</code>
+          <strong>{schemaNotice.notice === "schema_update_required" ? "تحديث مسارات التعلم لسه ما اشتغلش" : tp.migrationMissing}</strong>{" "}
+          {schemaNotice.notice === "schema_update_required" ? "شغّل تحديث قاعدة البيانات التالي ثم أعد تحميل الصفحة:" : tp.migrationMissingAction}
+          <code className="bg-amber-100 px-2 py-0.5 mx-1 rounded">
+            {schemaNotice.migration || (schemaNotice.notice === "schema_update_required" ? "scripts/024-learning-paths.sql" : "scripts/023-tajweed-paths.sql")}
+          </code>
         </Card>
       )}
 

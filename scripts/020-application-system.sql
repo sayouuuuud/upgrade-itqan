@@ -3,7 +3,7 @@
 -- Teacher / Reader application system enhancements
 -- - Admin-configurable questions per role (application_questions)
 -- - Audio test url + free-form responses on each applicant table
--- - Reader rejection_reason column (parity with teacher)
+-- - Teacher/reader rejection metadata and uploaded document columns
 -- - Seeds the default question set for both roles
 -- ---------------------------------------------------------------------------
 -- This file is NOT executed automatically. Apply with:
@@ -13,9 +13,18 @@
 BEGIN;
 
 -- ----- teacher_applications additions -------------------------------------
-ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS audio_url     TEXT;
-ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS responses     JSONB DEFAULT '{}'::jsonb;
-ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS submitted_at  TIMESTAMPTZ;
+ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS audio_url            TEXT;
+ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS responses            JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS submitted_at         TIMESTAMPTZ;
+ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS cv_file_url          TEXT;
+ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS certificate_file_url TEXT;
+ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS rejection_reason     TEXT;
+ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS rejection_count      INT DEFAULT 0;
+ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS reviewed_at          TIMESTAMPTZ;
+ALTER TABLE teacher_applications ADD COLUMN IF NOT EXISTS reviewed_by          UUID REFERENCES users(id) ON DELETE SET NULL;
+
+-- ----- users additions -----------------------------------------------------
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reapply_blocked BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- ----- reader_profiles additions ------------------------------------------
 ALTER TABLE reader_profiles ADD COLUMN IF NOT EXISTS audio_url        TEXT;
@@ -69,7 +78,7 @@ COMMIT;
 -- Verification:
 --   SELECT column_name FROM information_schema.columns
 --    WHERE table_name = 'teacher_applications'
---      AND column_name IN ('audio_url','responses','submitted_at');
+--      AND column_name IN ('audio_url','responses','submitted_at','cv_file_url','certificate_file_url','rejection_reason','rejection_count','reviewed_at','reviewed_by');
 --   SELECT column_name FROM information_schema.columns
 --    WHERE table_name = 'reader_profiles'
 --      AND column_name IN ('audio_url','pdf_url','responses','submitted_at','rejection_reason','rejection_count');

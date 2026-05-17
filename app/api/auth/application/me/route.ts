@@ -2,6 +2,29 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 
+type ColumnRow = { column_name: string }
+
+async function getTableColumns(tableName: string) {
+    const rows = await query<ColumnRow>(
+        `SELECT column_name
+           FROM information_schema.columns
+          WHERE table_schema = 'public' AND table_name = $1`,
+        [tableName]
+    )
+    return new Set(rows.map(row => row.column_name))
+}
+
+function optionalColumn(columns: Set<string>, columnName: string, fallback: string, alias = columnName) {
+    return columns.has(columnName) ? columnName : `${fallback} AS ${alias}`
+}
+
+function teacherDocumentColumn(columns: Set<string>) {
+    if (columns.has("cv_file_url") && columns.has("cv_url")) return "COALESCE(cv_file_url, cv_url) AS cv_file_url"
+    if (columns.has("cv_file_url")) return "cv_file_url"
+    if (columns.has("cv_url")) return "cv_url AS cv_file_url"
+    return "NULL::text AS cv_file_url"
+}
+
 /**
  * Returns the current applicant's application state plus the admin-defined
  * questions for their role. Used by the pending dashboard.
@@ -41,18 +64,31 @@ export async function GET() {
         [roleTarget]
     )
 
-    let application: any = null
+    let application: Record<string, unknown> | null = null
     if (roleTarget === "teacher") {
-        application = await queryOne<any>(
-            `SELECT id, status, responses, audio_url, cv_url, cv_file_url, certificate_file_url,
-                    rejection_reason, rejection_count, created_at, submitted_at, reviewed_at
+        const teacherColumns = await getTableColumns("teacher_applications")
+        const selectColumns = [
+            optionalColumn(teacherColumns, "status", "'draft'::text"),
+            optionalColumn(teacherColumns, "responses", "'{}'::jsonb"),
+            optionalColumn(teacherColumns, "audio_url", "NULL::text"),
+            teacherDocumentColumn(teacherColumns),
+            "NULL::text AS pdf_url",
+            optionalColumn(teacherColumns, "certificate_file_url", "NULL::text"),
+            optionalColumn(teacherColumns, "rejection_reason", "NULL::text"),
+            optionalColumn(teacherColumns, "rejection_count", "0::int"),
+            optionalColumn(teacherColumns, "created_at", "NULL::timestamptz"),
+            optionalColumn(teacherColumns, "submitted_at", "NULL::timestamptz"),
+            optionalColumn(teacherColumns, "reviewed_at", "NULL::timestamptz"),
+        ]
+        application = await queryOne<Record<string, unknown>>(
+            `SELECT ${selectColumns.join(",\n                    ")}
                FROM teacher_applications
               WHERE user_id = $1
               ORDER BY created_at DESC LIMIT 1`,
             [session.sub]
         )
     } else {
-        application = await queryOne<any>(
+        application = await queryOne<Record<string, unknown>>(
             `SELECT id, responses, audio_url, pdf_url, certificate_file_url,
                     rejection_reason, rejection_count, submitted_at,
                     full_name_triple, phone, qualification, years_of_experience
