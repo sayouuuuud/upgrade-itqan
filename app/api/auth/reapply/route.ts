@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 
+type ColumnRow = { column_name: string }
+
+async function hasColumn(tableName: string, columnName: string) {
+  const rows = await query<ColumnRow>(
+    `SELECT column_name
+       FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = $1 AND column_name = $2`,
+    [tableName, columnName]
+  )
+  return rows.length > 0
+}
+
 /**
  * POST /api/auth/reapply
  * Allows a rejected user to reapply (reset their approval_status to pending).
@@ -14,8 +26,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const hasReapplyBlocked = await hasColumn('users', 'reapply_blocked')
     const user = await query<{ approval_status: string; role: string; reapply_blocked: boolean }>(
-      `SELECT approval_status, role, reapply_blocked FROM users WHERE id = $1`,
+      `SELECT approval_status, role, ${hasReapplyBlocked ? 'reapply_blocked' : 'FALSE AS reapply_blocked'} FROM users WHERE id = $1`,
       [session.sub]
     )
 

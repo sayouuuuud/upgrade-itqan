@@ -5,6 +5,31 @@ import { seedDefaultStages, SUBJECTS, type Subject } from "@/lib/tajweed-paths"
 
 const ADMIN_ROLES = ["admin", "student_supervisor", "reciter_supervisor", "teacher", "academy_admin"] as const
 
+type PgError = { code?: string; message?: string }
+
+function getPgError(err: unknown): PgError {
+  if (typeof err !== "object" || err === null) return {}
+  const record = err as Record<string, unknown>
+  return {
+    code: typeof record.code === "string" ? record.code : undefined,
+    message: typeof record.message === "string" ? record.message : undefined,
+  }
+}
+
+function schemaNoticeFromError(err: unknown) {
+  const { code, message = "" } = getPgError(err)
+  if (code === "42P01") {
+    return { notice: "migration_not_applied", migration: "scripts/023-tajweed-paths.sql" }
+  }
+  if (code === "42703") {
+    const missingColumn = ["subject", "manager_id"].find(column => message.includes(column))
+    if (missingColumn) {
+      return { notice: "schema_update_required", migration: "scripts/024-learning-paths.sql", missing_column: missingColumn }
+    }
+  }
+  return null
+}
+
 export const dynamic = "force-dynamic"
 
 // GET /api/admin/tajweed-paths
@@ -38,10 +63,9 @@ export async function GET(req: NextRequest) {
           ORDER BY p.is_published DESC, p.created_at DESC`,
         [subjectFilter, scopeSubjects],
       )) as any[]
-    } catch (err: any) {
-      if (err?.code === "42P01") {
-        return NextResponse.json({ paths: [], notice: "migration_not_applied" })
-      }
+    } catch (err: unknown) {
+      const schemaNotice = schemaNoticeFromError(err)
+      if (schemaNotice) return NextResponse.json({ paths: [], ...schemaNotice })
       throw err
     }
 
@@ -118,8 +142,9 @@ export async function POST(req: NextRequest) {
         ],
       )) as any[]
       pathRow = inserted[0]
-    } catch (err: any) {
-      if (err?.code === "42P01") return NextResponse.json({ error: "migration_not_applied" }, { status: 409 })
+    } catch (err: unknown) {
+      const schemaNotice = schemaNoticeFromError(err)
+      if (schemaNotice) return NextResponse.json({ error: schemaNotice.notice, ...schemaNotice }, { status: 409 })
       throw err
     }
 
