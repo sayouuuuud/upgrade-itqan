@@ -25,6 +25,62 @@ function teacherDocumentColumn(columns: Set<string>) {
     return "NULL::text AS cv_file_url"
 }
 
+function latestApplicationOrder(columns: Set<string>) {
+    if (columns.has("created_at")) return "ORDER BY created_at DESC"
+    if (columns.has("updated_at")) return "ORDER BY updated_at DESC"
+    if (columns.has("id")) return "ORDER BY id DESC"
+    return ""
+}
+
+async function getTeacherApplication(userId: string) {
+    const teacherColumns = await getTableColumns("teacher_applications")
+    if (teacherColumns.size === 0) return null
+
+    const selectColumns = [
+        optionalColumn(teacherColumns, "status", "'draft'::text"),
+        optionalColumn(teacherColumns, "responses", "'{}'::jsonb"),
+        optionalColumn(teacherColumns, "audio_url", "NULL::text"),
+        teacherDocumentColumn(teacherColumns),
+        "NULL::text AS pdf_url",
+        optionalColumn(teacherColumns, "certificate_file_url", "NULL::text"),
+        optionalColumn(teacherColumns, "rejection_reason", "NULL::text"),
+        optionalColumn(teacherColumns, "rejection_count", "0::int"),
+        optionalColumn(teacherColumns, "created_at", "NULL::timestamptz"),
+        optionalColumn(teacherColumns, "submitted_at", "NULL::timestamptz"),
+        optionalColumn(teacherColumns, "reviewed_at", "NULL::timestamptz"),
+    ]
+
+    return queryOne<Record<string, unknown>>(
+        `SELECT ${selectColumns.join(",\n                    ")}
+           FROM teacher_applications
+          WHERE user_id = $1
+          ${latestApplicationOrder(teacherColumns)}
+          LIMIT 1`,
+        [userId]
+    )
+}
+
+async function getApplicationQuestions(roleTarget: string) {
+    const questionColumns = await getTableColumns("application_questions")
+    if (questionColumns.size === 0) return []
+
+    return query<{
+        id: string
+        label: string
+        description: string | null
+        type: string
+        options: unknown
+        is_required: boolean
+        sort_order: number
+    }>(
+        `SELECT id, label, description, type, options, is_required, sort_order
+           FROM application_questions
+          WHERE role_target = $1 AND is_active = TRUE
+          ORDER BY sort_order ASC, created_at ASC`,
+        [roleTarget]
+    )
+}
+
 /**
  * Returns the current applicant's application state plus the admin-defined
  * questions for their role. Used by the pending dashboard.
@@ -48,45 +104,9 @@ export async function GET() {
         })
     }
 
-    const questions = await query<{
-        id: string
-        label: string
-        description: string | null
-        type: string
-        options: any
-        is_required: boolean
-        sort_order: number
-    }>(
-        `SELECT id, label, description, type, options, is_required, sort_order
-           FROM application_questions
-          WHERE role_target = $1 AND is_active = TRUE
-          ORDER BY sort_order ASC, created_at ASC`,
-        [roleTarget]
-    )
-
     let application: Record<string, unknown> | null = null
     if (roleTarget === "teacher") {
-        const teacherColumns = await getTableColumns("teacher_applications")
-        const selectColumns = [
-            optionalColumn(teacherColumns, "status", "'draft'::text"),
-            optionalColumn(teacherColumns, "responses", "'{}'::jsonb"),
-            optionalColumn(teacherColumns, "audio_url", "NULL::text"),
-            teacherDocumentColumn(teacherColumns),
-            "NULL::text AS pdf_url",
-            optionalColumn(teacherColumns, "certificate_file_url", "NULL::text"),
-            optionalColumn(teacherColumns, "rejection_reason", "NULL::text"),
-            optionalColumn(teacherColumns, "rejection_count", "0::int"),
-            optionalColumn(teacherColumns, "created_at", "NULL::timestamptz"),
-            optionalColumn(teacherColumns, "submitted_at", "NULL::timestamptz"),
-            optionalColumn(teacherColumns, "reviewed_at", "NULL::timestamptz"),
-        ]
-        application = await queryOne<Record<string, unknown>>(
-            `SELECT ${selectColumns.join(",\n                    ")}
-               FROM teacher_applications
-              WHERE user_id = $1
-              ORDER BY created_at DESC LIMIT 1`,
-            [session.sub]
-        )
+        application = await getTeacherApplication(session.sub)
     } else {
         application = await queryOne<Record<string, unknown>>(
             `SELECT id, responses, audio_url, pdf_url, certificate_file_url,
@@ -98,6 +118,8 @@ export async function GET() {
         )
         if (application) application.status = user.approval_status
     }
+
+    const questions = user.approval_status === "rejected" ? [] : await getApplicationQuestions(roleTarget)
 
     return NextResponse.json({
         user: { role: user.role, approval_status: user.approval_status },
