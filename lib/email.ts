@@ -19,6 +19,7 @@ interface EmailOptions {
 
 import nodemailer from 'nodemailer'
 import { getSmtpUrl, getSmtpFromEmail } from './settings'
+import { queryOne } from '@/lib/db'
 
 let cachedTransporter: nodemailer.Transporter | null = null
 let cachedSmtpUrl: string | undefined = undefined
@@ -88,54 +89,106 @@ export function sendVerificationEmail(to: string, userName: string, code: string
   })
 }
 
-// Helper to fetch and render dynamic templates
-import { queryOne } from '@/lib/db'
-
 async function sendDynamicEmail(templateKey: string, to: string, variables: Record<string, string>, attachments?: Attachment[]) {
+  let template: { subject_ar: string; body_ar: string; is_active: boolean } | null = null
+
   try {
-    const template = await queryOne<{ subject_ar: string; body_ar: string; is_active: boolean }>(
+    template = await queryOne<{ subject_ar: string; body_ar: string; is_active: boolean }>(
       `SELECT subject_ar, body_ar, is_active FROM email_templates WHERE template_key = $1`,
       [templateKey]
     )
+  } catch (error) {
+    console.error(`[Email] Failed to load template ${templateKey}; using fallback if available:`, error)
+  }
 
-    if (!template) {
+  if (!template) {
+    const fallback = DEFAULT_DYNAMIC_EMAILS[templateKey]
+    if (!fallback) {
       console.warn(`[Email] Template ${templateKey} not found in DB.`)
       return false
     }
 
-    if (!template.is_active) {
-      console.log(`[Email] Template ${templateKey} is disabled. Skipping.`)
-      return true
-    }
+    return renderAndSendEmail(to, fallback.subject, fallback.body, variables, attachments)
+  }
 
-    let subject = template.subject_ar
-    let body = template.body_ar
+  if (!template.is_active) {
+    console.log(`[Email] Template ${templateKey} is disabled. Skipping.`)
+    return true
+  }
 
-    // Replace variables (e.g., {{studentName}})
-    for (const [key, value] of Object.entries(variables)) {
-      const regex = new RegExp(`{{${key}}}`, 'g')
-      subject = subject.replace(regex, value)
-      body = body.replace(regex, value)
-    }
+  let body = template.body_ar
+  if (
+    templateKey === "reader_rejected" &&
+    variables.rejectionReason &&
+    !body.includes("{{rejectionReason}}") &&
+    !body.includes(variables.rejectionReason)
+  ) {
+    body = `${body}\n\nسبب الرفض:\n{{rejectionReason}}`
+  }
 
-    // Convert newlines to HTML lines (simple rendering)
-    const htmlBody = `
+  return renderAndSendEmail(to, template.subject_ar, body, variables, attachments)
+}
+
+const DEFAULT_DYNAMIC_EMAILS: Record<string, { subject: string; body: string }> = {
+  welcome_email: {
+    subject: "أهلاً بك في منصة إتقان الفاتحة",
+    body: "مرحباً بك {{userName}} في منصتنا.\nنسأل الله لك التوفيق في رحلة إتقان سورة الفاتحة.\n\nفريق العمل",
+  },
+  recitation_mastered: {
+    subject: "تهانينا! قراءتك متقنة - منصة إتقان",
+    body: "السلام عليكم {{studentName}}،\n\nتهانينا! تمت مراجعة قراءتك لسورة الفاتحة وهي متقنة ما شاء الله.\nسيتم إشعارك بموعد الحفل الختامي لاحقاً.\n\nبارك الله فيك،\nفريق إتقان",
+  },
+  recitation_needs_session: {
+    subject: "تحتاج إلى جلسة تصحيح - منصة إتقان",
+    body: "السلام عليكم {{studentName}}،\n\nتمت مراجعة قراءتك لسورة الفاتحة. تحتاج إلى جلسة تصحيح بسيطة.\nيمكنك حجز الموعد الآن من خلال حسابك.\n\nبارك الله فيك،\nفريق إتقان",
+  },
+  reader_approved: {
+    subject: "تم اعتماد حسابك كمقرئ - منصة إتقان",
+    body: "السلام عليكم {{readerName}}،\n\nتم اعتماد حسابك كمقرئ في منصة إتقان.\nيمكنك الآن تسجيل الدخول والبدء بمراجعة التسجيلات.\n\nبارك الله فيك،\nفريق إتقان",
+  },
+  reader_rejected: {
+    subject: "بخصوص طلب التسجيل كمقرئ - منصة إتقان",
+    body: "السلام عليكم {{readerName}}،\n\nنعتذر، لم يتم اعتماد طلبك كمقرئ حالياً.\n\nسبب الرفض:\n{{rejectionReason}}\n\nيمكنك مراجعة السبب والمحاولة مرة أخرى عند استيفاء المطلوب.\n\nبارك الله فيك،\nفريق إتقان",
+  },
+  teacher_approved: {
+    subject: "تم اعتماد حسابك كأستاذ - منصة إتقان",
+    body: "السلام عليكم {{teacherName}}،\n\nتم اعتماد طلب انضمامك كأستاذ في الأكاديمية.\nيمكنك الآن تسجيل الدخول والبدء بإنشاء الدورات.\n\nبارك الله فيك،\nفريق إتقان",
+  },
+  teacher_rejected: {
+    subject: "بخصوص طلب الانضمام كأستاذ - منصة إتقان",
+    body: "السلام عليكم {{teacherName}}،\n\nنعتذر، لم يتم اعتماد طلب انضمامك كأستاذ في الوقت الحالي.\nللمزيد من المعلومات يرجى التواصل مع الإدارة.\n\nبارك الله فيك،\nفريق إتقان",
+  },
+}
+
+function renderAndSendEmail(
+  to: string,
+  templateSubject: string,
+  templateBody: string,
+  variables: Record<string, string>,
+  attachments?: Attachment[]
+) {
+  let subject = templateSubject
+  let body = templateBody
+
+  for (const [key, value] of Object.entries(variables)) {
+    const regex = new RegExp(`{{${key}}}`, 'g')
+    subject = subject.replace(regex, value)
+    body = body.replace(regex, value)
+  }
+
+  const htmlBody = `
       <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
         ${body.split('\\n').map((line: string) => `<p>${line}</p>`).join('')}
       </div>
     `
 
-    return sendEmail({
-      to,
-      subject,
-      body,
-      html: htmlBody,
-      attachments
-    })
-  } catch (error) {
-    console.error(`[Email] Error sending dynamic template ${templateKey}:`, error)
-    return false
-  }
+  return sendEmail({
+    to,
+    subject,
+    body,
+    html: htmlBody,
+    attachments
+  })
 }
 
 // Pre-built email templates mapping
@@ -409,4 +462,3 @@ export function sendStudentCreatedByTeacherEmail(to: string, studentName: string
     html,
   })
 }
-

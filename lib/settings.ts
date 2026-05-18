@@ -39,6 +39,10 @@ export function clearSettingCache(key?: string) {
 
 // Specific helper for SMTP to build the connection string
 export async function getSmtpUrl(): Promise<string | undefined> {
+    if (process.env.SMTP_CONNECTION_URL) {
+        return process.env.SMTP_CONNECTION_URL
+    }
+
     // First check dynamic settings
     const smtpConfig = await getSetting<any>("smtp_config", null)
 
@@ -50,8 +54,7 @@ export async function getSmtpUrl(): Promise<string | undefined> {
         return `${protocol}://${encodedUser}:${encodedPass}@${smtpConfig.host}:${smtpConfig.port}`
     }
 
-    // Fallback to environment variable
-    return process.env.SMTP_CONNECTION_URL
+    return undefined
 }
 
 export async function getSmtpFromEmail(): Promise<string> {
@@ -82,4 +85,3 @@ export async function getStorageConfig() {
         appId: process.env.UPLOADTHING_APP_ID,
     }
 }
-

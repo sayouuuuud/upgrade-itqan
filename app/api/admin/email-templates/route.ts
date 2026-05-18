@@ -40,9 +40,9 @@ const DEFAULT_TEMPLATES = [
         template_name_en: "Reader Rejected",
         subject_ar: "بخصوص طلب التسجيل - منصة إتقان",
         subject_en: "Regarding your reader application",
-        body_ar: "السلام عليكم {{readerName}}،\\n\\nنعتذر، لم يتم اعتماد طلبك حالياً.\\nللمزيد من المعلومات يرجى التواصل مع الإدارة.\\n\\nبارك الله فيك،\\nفريق إتقان",
-        body_en: "Hello {{readerName}},\\n\\nWe apologize, your application has not been approved at this time.\\nFor more information, please contact administration.\\n\\nBest regards,\\nItqaan Team",
-        variables: ["readerName"]
+        body_ar: "السلام عليكم {{readerName}}،\\n\\nنعتذر، لم يتم اعتماد طلبك حالياً.\\n\\nسبب الرفض:\\n{{rejectionReason}}\\n\\nيمكنك مراجعة السبب والمحاولة مرة أخرى عند استيفاء المطلوب.\\n\\nبارك الله فيك،\\nفريق إتقان",
+        body_en: "Hello {{readerName}},\\n\\nWe apologize, your application has not been approved at this time.\\n\\nRejection reason:\\n{{rejectionReason}}\\n\\nYou can review the reason and apply again after meeting the requirements.\\n\\nBest regards,\\nItqaan Team",
+        variables: ["readerName", "rejectionReason"]
     },
     {
         template_key: "certificate_issued",
