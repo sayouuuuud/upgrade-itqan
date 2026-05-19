@@ -1,7 +1,3 @@
-// Email helper - placeholder ready to be connected to any email service
-// Supported services: Resend, Nodemailer, SendGrid
-// Set EMAIL_SERVICE and relevant API keys in environment variables
-
 interface Attachment {
   filename: string
   path?: string
@@ -23,15 +19,24 @@ import { queryOne } from '@/lib/db'
 
 let cachedTransporter: nodemailer.Transporter | null = null
 let cachedSmtpUrl: string | undefined = undefined
+let lastEmailError: string | null = null
+
+export function getLastEmailError() {
+  return lastEmailError
+}
+
+function getEmailErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) return error.message
+  return String(error)
+}
 
 export async function sendEmail({ to, subject, body, html, attachments }: EmailOptions): Promise<boolean> {
   const smtpUrl = await getSmtpUrl()
 
   if (!smtpUrl) {
-    console.log(`[Email DEV MODE] Sending to: ${to}, Subject: ${subject}`)
-    console.log(`[Email] HTML/Body:`, html || body)
-    if (attachments?.length) console.log(`[Email] Attachments:`, attachments.map(a => a.filename))
-    return true
+    lastEmailError = "SMTP is not configured"
+    console.error("[Email] SMTP is not configured. Set SMTP_CONNECTION_URL, SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASSWORD, or admin SMTP settings.")
+    return false
   }
 
   try {
@@ -56,8 +61,10 @@ export async function sendEmail({ to, subject, body, html, attachments }: EmailO
       attachments: attachments || [],
     })
 
+    lastEmailError = null
     return true
   } catch (error) {
+    lastEmailError = getEmailErrorMessage(error)
     console.error("[Email] Failed to send:", error)
     // Clear cache on error to ensure we try fresh on next attempt
     cachedTransporter = null

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession, requireRole } from "@/lib/auth"
 import { query } from "@/lib/db"
-import { sendReaderApprovedEmail, sendReaderRejectedEmail } from "@/lib/email"
+import { getLastEmailError, sendReaderApprovedEmail, sendReaderRejectedEmail } from "@/lib/email"
 import { logAdminAction } from "@/lib/activity-log"
 import { createNotification } from "@/lib/notifications"
 
@@ -132,9 +132,16 @@ export async function PUT(req: NextRequest) {
     [userId]
   )
 
+  let emailSent: boolean | null = null
+  let emailError: string | null = null
+
   if (reader[0]) {
     if (action === "approve") {
-      await sendReaderApprovedEmail(reader[0].email, reader[0].name)
+      emailSent = await sendReaderApprovedEmail(reader[0].email, reader[0].name)
+      if (!emailSent) {
+        emailError = getLastEmailError() || "Email delivery failed"
+        console.error(`[Reader Applications] Failed to send approval email to ${reader[0].email}: ${emailError}`)
+      }
       await createNotification({
         userId,
         type: 'reader_approved',
@@ -144,9 +151,10 @@ export async function PUT(req: NextRequest) {
         link: '/reader'
       })
     } else {
-      const emailSent = await sendReaderRejectedEmail(reader[0].email, reader[0].name, rejectionReasonForEmail)
+      emailSent = await sendReaderRejectedEmail(reader[0].email, reader[0].name, rejectionReasonForEmail)
       if (!emailSent) {
-        console.error(`[Reader Applications] Failed to send rejection email to ${reader[0].email}`)
+        emailError = getLastEmailError() || "Email delivery failed"
+        console.error(`[Reader Applications] Failed to send rejection email to ${reader[0].email}: ${emailError}`)
       }
       const notifMessage = `نأسف لإبلاغك بأنه لم يتم اعتماد طلب انضمامك. السبب: ${rejectionReasonForEmail}`
       await createNotification({
@@ -167,7 +175,7 @@ export async function PUT(req: NextRequest) {
     description: `Admin ${action}d reader application for ${reader[0]?.name ?? userId}`,
   })
 
-  return NextResponse.json({ success: true, status: newStatus })
+  return NextResponse.json({ success: true, status: newStatus, emailSent, emailError })
 }
 
 // A-6: DELETE /api/admin/reader-applications - delete rejected reader application

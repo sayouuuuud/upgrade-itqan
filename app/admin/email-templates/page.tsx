@@ -29,8 +29,8 @@ export default function AdminEmailTemplatesPage() {
         setLoading(true)
         try {
             const res = await fetch('/api/admin/email-templates')
-            if (res.ok) {
-                const data = await res.json()
+            const data = await res.json().catch(() => null)
+            if (res.ok && data) {
                 setTemplates(data.templates || [])
             }
         } finally {
@@ -38,6 +38,7 @@ export default function AdminEmailTemplatesPage() {
         }
     }, [])
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { fetchTemplates() }, [fetchTemplates])
 
     const openEdit = (tmpl: any) => {
@@ -81,8 +82,15 @@ export default function AdminEmailTemplatesPage() {
                     variables: { userName: 'تجربة', studentName: 'تجربة', readerName: 'تجربة', certificateLink: '#' }
                 }),
             })
-            if (res.ok) {
+            const data = await res.json().catch(() => null)
+            if (res.ok && data?.success) {
                 alert(t.admin.testEmailSent)
+            } else {
+                alert(
+                    isAr
+                        ? `لم يتم إرسال البريد التجريبي. السبب: ${data?.error || "إعدادات البريد غير مكتملة"}`
+                        : `Test email was not sent. Reason: ${data?.error || "Email settings are incomplete"}`
+                )
             }
         } finally {
             setSendingTest(false)
@@ -389,4 +397,3 @@ export default function AdminEmailTemplatesPage() {
         </div>
     )
 }
-

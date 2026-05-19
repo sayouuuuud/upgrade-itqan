@@ -96,10 +96,8 @@ export default function ReaderApplicationsPage() {
     }
   }
 
-  useEffect(() => {
-    loadApps()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+  useEffect(() => { loadApps() }, [])
 
   const filtered = applications.filter((app) => {
     const matchesFilter = filter === "all" ||
@@ -130,6 +128,13 @@ export default function ReaderApplicationsPage() {
       if (res.ok) {
         const data = await res.json()
         setApplications(prev => prev.map(a => a.id === userId ? { ...a, approval_status: data.status } : a))
+        if (data.emailSent === false) {
+          alert(
+            isAr
+              ? `تم تحديث الطلب، لكن لم يتم إرسال البريد الإلكتروني. السبب: ${data.emailError || "إعدادات البريد غير مكتملة"}`
+              : `Application updated, but email was not sent. Reason: ${data.emailError || "Email settings are incomplete"}`
+          )
+        }
         setRejectionDialogOpen(false)
         setRejectionReason("")
         setRejectingUserId(null)

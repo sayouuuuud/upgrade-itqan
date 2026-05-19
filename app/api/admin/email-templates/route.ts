@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        const { sendEmail } = await import("@/lib/email")
+        const { getLastEmailError, sendEmail } = await import("@/lib/email")
         const success = await sendEmail({
             to,
             subject: `[تجربة] ${finalSubject}`,
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
                    </div>`
         })
 
-        return NextResponse.json({ success })
+        return NextResponse.json({ success, error: success ? null : getLastEmailError() })
     } catch (error) {
         console.error("Send test email error:", error)
         return NextResponse.json({ error: "حدث خطأ في الخادم" }, { status: 500 })
