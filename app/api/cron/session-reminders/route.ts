@@ -23,7 +23,7 @@ export async function GET() {
         COALESCE(smi.meeting_link, cs.meeting_link) as meeting_link
       FROM course_sessions cs
       JOIN courses c ON c.id = cs.course_id
-      JOIN enrollments e ON e.course_id = cs.course_id AND e.status = 'active'
+      JOIN enrollments e ON e.course_id = cs.course_id AND LOWER(e.status) IN ('active', 'accepted')
       LEFT JOIN session_meeting_invites smi ON smi.session_id = cs.id AND smi.student_id = e.student_id
       WHERE cs.status = 'scheduled'
         AND cs.scheduled_at > NOW()
@@ -65,7 +65,7 @@ export async function GET() {
         COALESCE(smi.meeting_link, cs.meeting_link) as meeting_link
       FROM course_sessions cs
       JOIN courses c ON c.id = cs.course_id
-      JOIN enrollments e ON e.course_id = cs.course_id AND e.status = 'active'
+      JOIN enrollments e ON e.course_id = cs.course_id AND LOWER(e.status) IN ('active', 'accepted')
       LEFT JOIN session_meeting_invites smi ON smi.session_id = cs.id AND smi.student_id = e.student_id
       WHERE cs.status = 'scheduled'
         AND cs.scheduled_at > NOW()

@@ -90,7 +90,7 @@ async function runSessionReminders(window: "60" | "10"): Promise<{ created: numb
      FROM course_sessions cs
      JOIN courses c       ON c.id = cs.course_id
      JOIN enrollments e   ON e.course_id = cs.course_id
-                          AND e.status IN ('active','enrolled','completed')
+                          AND LOWER(e.status) IN ('active', 'completed', 'accepted')
      WHERE cs.status IS DISTINCT FROM 'cancelled'
        AND cs.scheduled_at >= NOW() + ($1 || ' minutes')::interval
        AND cs.scheduled_at <  NOW() + ($2 || ' minutes')::interval`,
@@ -154,7 +154,7 @@ async function runMorningTaskReminder(): Promise<{ created: number; errors: numb
          FROM due_today dt
          JOIN enrollments e
            ON e.course_id = dt.course_id
-          AND e.status IN ('active','enrolled')
+          AND LOWER(e.status) IN ('active', 'completed', 'accepted')
         WHERE dt.assigned_to IS NULL
        UNION
        SELECT dt.id, dt.title, dt.assigned_to AS student_id
@@ -231,7 +231,7 @@ async function runOverdueTaskAlerts(): Promise<{ created: number; errors: number
          FROM overdue o
          JOIN enrollments e
            ON e.course_id = o.course_id
-          AND e.status IN ('active','enrolled')
+          AND LOWER(e.status) IN ('active', 'completed', 'accepted')
         WHERE o.assigned_to IS NULL
        UNION
        SELECT o.id, o.title, o.due_date, o.course_id, o.assigned_to AS student_id

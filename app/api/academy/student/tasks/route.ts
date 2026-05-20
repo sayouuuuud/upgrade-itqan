@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
               FROM enrollments e
               WHERE e.course_id = t.course_id
                 AND e.student_id = $1
-                AND e.status IN ('active', 'completed')
+                AND LOWER(e.status) IN ('active', 'completed', 'accepted')
             )
           )
       ),

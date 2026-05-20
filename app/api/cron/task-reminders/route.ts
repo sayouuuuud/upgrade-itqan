@@ -22,7 +22,7 @@ export async function GET() {
         t.due_date
       FROM tasks t
       JOIN courses c ON c.id = t.course_id
-      JOIN enrollments e ON e.course_id = t.course_id AND e.status = 'active'
+      JOIN enrollments e ON e.course_id = t.course_id AND LOWER(e.status) IN ('active', 'accepted')
       LEFT JOIN task_submissions ts ON ts.task_id = t.id AND ts.student_id = e.student_id
       WHERE t.status = 'pending'
         AND DATE(t.due_date) = CURRENT_DATE
@@ -64,7 +64,7 @@ export async function GET() {
         t.due_date
       FROM tasks t
       JOIN courses c ON c.id = t.course_id
-      JOIN enrollments e ON e.course_id = t.course_id AND e.status = 'active'
+      JOIN enrollments e ON e.course_id = t.course_id AND LOWER(e.status) IN ('active', 'accepted')
       LEFT JOIN task_submissions ts ON ts.task_id = t.id AND ts.student_id = e.student_id
       WHERE t.status = 'pending'
         AND t.due_date < NOW()

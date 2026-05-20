@@ -116,7 +116,7 @@ export async function PATCH(
          OR ($1::uuid IS NULL AND EXISTS (
            SELECT 1 FROM enrollments e
            WHERE e.course_id = $3 AND e.student_id = $2
-             AND e.status IN ('active','completed')
+             AND LOWER(e.status) IN ('active', 'completed', 'accepted')
          ))
        ) AS ok`,
       [task.assigned_to, session.sub, task.course_id],

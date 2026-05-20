@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
       SELECT cs.id, cs.title, cs.scheduled_at, cs.duration_minutes, cs.meeting_link, cs.status, c.title AS course_title
       FROM course_sessions cs
       JOIN courses c ON c.id = cs.course_id
-      JOIN enrollments e ON e.course_id = c.id AND e.student_id = $1 AND e.status IN ('active','completed')
+      JOIN enrollments e ON e.course_id = c.id AND e.student_id = $1 AND LOWER(e.status) IN ('active', 'completed', 'accepted')
       WHERE cs.scheduled_at IS NOT NULL
         AND ($2::timestamptz IS NULL OR cs.scheduled_at >= $2::timestamptz)
         AND ($3::timestamptz IS NULL OR cs.scheduled_at <= $3::timestamptz)
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
             t.assigned_to IS NULL
             AND EXISTS (
               SELECT 1 FROM enrollments e
-              WHERE e.course_id = t.course_id AND e.student_id = $1 AND e.status IN ('active','completed')
+              WHERE e.course_id = t.course_id AND e.student_id = $1 AND LOWER(e.status) IN ('active', 'completed', 'accepted')
             )
           )
         )
