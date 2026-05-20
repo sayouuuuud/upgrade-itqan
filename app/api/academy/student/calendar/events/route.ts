@@ -5,15 +5,31 @@ import { query } from '@/lib/db'
 interface CalendarEvent {
   id: string
   title: string
-  date: string
-  time: string
-  type: 'live_session' | 'assignment_deadline' | 'review' | 'lesson' | 'memorization_goal'
+  date: string   // YYYY-MM-DD in Asia/Riyadh timezone
+  time: string   // HH:mm in Asia/Riyadh timezone
+  type: 'live_session' | 'assignment_deadline' | 'lesson' | 'memorization_goal'
   course: string
   course_id: string
   link?: string
   status?: string
-  scheduled_at?: string
+  scheduled_at?: string  // raw UTC ISO string for client-side conversion
   meta?: Record<string, any>
+}
+
+// Format a JS Date into YYYY-MM-DD using Riyadh timezone (academy official tz)
+function toRiyadhDate(d: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Riyadh',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(d)
+}
+
+// Format a JS Date into HH:mm using Riyadh timezone
+function toRiyadhTime(d: Date): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Riyadh',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(d)
 }
 
 export async function GET(req: NextRequest) {
@@ -24,198 +40,159 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url)
-    const month = searchParams.get('month') // Format: YYYY-MM
-    const year = month ? parseInt(month.split('-')[0]) : new Date().getFullYear()
-    const monthNum = month ? parseInt(month.split('-')[1]) : new Date().getMonth() + 1
+    const month = searchParams.get('month') // YYYY-MM
+    const year  = month ? parseInt(month.split('-')[0]) : new Date().getFullYear()
+    const mon   = month ? parseInt(month.split('-')[1]) : new Date().getMonth() + 1
 
-    // Calculate start and end of month, extended by 1 day on each side
-    // to account for timezone offsets (e.g. a session at 23:00 UTC is next day in UTC+3)
-    const startDate = new Date(year, monthNum - 1, 1)
-    startDate.setDate(startDate.getDate() - 1) // 1 day before start of month
-    const endDate = new Date(year, monthNum, 0, 23, 59, 59)
-    endDate.setDate(endDate.getDate() + 1) // 1 day after end of month
-
-    // Render the date/time stamps shown in the calendar in a fixed academy
-    // timezone so a 23:00 Cairo session on Friday never silently appears on
-    // Saturday because the server happens to be in UTC.
-    const ACADEMY_TZ = 'Asia/Riyadh'
-    const fmtDate = new Intl.DateTimeFormat('en-CA', {
-      timeZone: ACADEMY_TZ,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
-    const fmtTime = new Intl.DateTimeFormat('en-GB', {
-      timeZone: ACADEMY_TZ,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    })
-    const formatDate = (d: Date) => fmtDate.format(d) // YYYY-MM-DD
-    const formatTime = (d: Date) => fmtTime.format(d) // HH:mm
+    // Extend range by 1 day on each side to catch UTC midnight edge cases
+    const startDate = new Date(Date.UTC(year, mon - 1, 1))
+    startDate.setUTCDate(startDate.getUTCDate() - 1)
+    const endDate = new Date(Date.UTC(year, mon, 0, 23, 59, 59))
+    endDate.setUTCDate(endDate.getUTCDate() + 1)
 
     const events: CalendarEvent[] = []
 
-    // 1. Get enrolled courses for this student
-    const enrollments = await query<any>(`
-      SELECT 
-        ce.course_id,
-        c.title as course_title
-      FROM enrollments ce
-      JOIN courses c ON c.id = ce.course_id
-      WHERE ce.student_id = $1 
-        AND LOWER(ce.status) NOT IN ('rejected', 'dropped')
-    `, [session.sub])
-
-    const courseIds = enrollments.map((e: any) => e.course_id)
-    const courseMap = new Map(enrollments.map((e: any) => [e.course_id, e.course_title]))
-
-    if (courseIds.length === 0) {
-      return NextResponse.json({ events: [] })
-    }
-
-    // 2. Get live sessions (from course_sessions table)
+    // ─── 1. LIVE SESSIONS ────────────────────────────────────────────────────
+    // Exact same JOIN pattern as /api/academy/student/sessions/route.ts
     const liveSessions = await query<any>(`
-      SELECT 
+      SELECT
         cs.id,
         cs.title,
         cs.course_id,
         cs.scheduled_at,
         cs.meeting_link,
-        cs.duration_minutes
+        cs.duration_minutes,
+        c.title AS course_title
       FROM course_sessions cs
-      WHERE cs.course_id = ANY($1)
-        AND cs.scheduled_at >= $2
+      JOIN courses c ON c.id = cs.course_id
+      JOIN enrollments e ON e.course_id = cs.course_id AND e.student_id = $1
+      WHERE cs.scheduled_at >= $2
         AND cs.scheduled_at <= $3
         AND cs.status != 'cancelled'
       ORDER BY cs.scheduled_at ASC
-    `, [courseIds, startDate.toISOString(), endDate.toISOString()])
+    `, [session.sub, startDate.toISOString(), endDate.toISOString()])
 
-    for (const session of liveSessions) {
-      const schedDate = new Date(session.scheduled_at)
+    for (const s of liveSessions) {
+      const d = new Date(s.scheduled_at)
       events.push({
-        id: `session-${session.id}`,
-        title: session.title || 'جلسة حية',
-        date: formatDate(schedDate),
-        scheduled_at: session.scheduled_at,
-        time: formatTime(schedDate),
+        id: `session-${s.id}`,
+        title: s.title || 'جلسة حية',
+        date: toRiyadhDate(d),
+        time: toRiyadhTime(d),
         type: 'live_session',
-        course: courseMap.get(session.course_id) || 'دورة',
-        course_id: session.course_id,
-        link: session.meeting_link
+        course: s.course_title || 'دورة',
+        course_id: s.course_id,
+        link: s.meeting_link,
+        scheduled_at: s.scheduled_at,
       })
     }
 
-    // 3. Get task deadlines
+    // ─── 2. TASK DEADLINES ────────────────────────────────────────────────────
     const tasks = await query<any>(`
-      SELECT 
+      SELECT
         t.id,
         t.title,
         t.course_id,
-        t.due_date
+        t.due_date,
+        c.title AS course_title
       FROM tasks t
-      WHERE t.course_id = ANY($1)
-        AND t.due_date >= $2
+      JOIN courses c ON c.id = t.course_id
+      JOIN enrollments e ON e.course_id = t.course_id AND e.student_id = $1
+      WHERE t.due_date >= $2
         AND t.due_date <= $3
         AND t.status IN ('pending', 'active')
       ORDER BY t.due_date ASC
-    `, [courseIds, startDate.toISOString(), endDate.toISOString()])
+    `, [session.sub, startDate.toISOString(), endDate.toISOString()])
 
-    for (const task of tasks) {
-      const dueDate = new Date(task.due_date)
+    for (const t of tasks) {
+      const d = new Date(t.due_date)
       events.push({
-        id: `task-${task.id}`,
-        title: `تسليم: ${task.title}`,
-        date: formatDate(dueDate),
-        scheduled_at: task.due_date,
-        time: formatTime(dueDate),
+        id: `task-${t.id}`,
+        title: `تسليم: ${t.title}`,
+        date: toRiyadhDate(d),
+        time: toRiyadhTime(d),
         type: 'assignment_deadline',
-        course: courseMap.get(task.course_id) || 'دورة',
-        course_id: task.course_id
+        course: t.course_title || 'دورة',
+        course_id: t.course_id,
+        scheduled_at: t.due_date,
       })
     }
 
-    // 3b. Mark assignment deadlines as already-submitted when the student
-    //     has a non-pending submission, so the calendar can grey them out.
-    if (events.length > 0) {
-      const taskEventIds = events
+    // Mark tasks that the student already submitted
+    if (events.some(e => e.type === 'assignment_deadline')) {
+      const taskIds = events
         .filter(e => e.type === 'assignment_deadline')
         .map(e => e.id.replace(/^task-/, ''))
-      if (taskEventIds.length > 0) {
-        const submissions = await query<any>(`
-          SELECT task_id, status
-            FROM task_submissions
-           WHERE student_id = $1
-             AND task_id = ANY($2)
-        `, [session.sub, taskEventIds])
-        const subMap = new Map(submissions.map(s => [s.task_id, s.status]))
-        for (const ev of events) {
-          if (ev.type === 'assignment_deadline') {
-            const taskId = ev.id.replace(/^task-/, '')
-            const status = subMap.get(taskId)
-            if (status) ev.status = status
-          }
+      const subs = await query<any>(`
+        SELECT task_id, status FROM task_submissions
+        WHERE student_id = $1 AND task_id = ANY($2)
+      `, [session.sub, taskIds])
+      const subMap = new Map(subs.map((s: any) => [s.task_id, s.status]))
+      for (const ev of events) {
+        if (ev.type === 'assignment_deadline') {
+          const st = subMap.get(ev.id.replace(/^task-/, ''))
+          if (st) ev.status = st
         }
       }
     }
 
-    // 4. Get scheduled lessons (if they have a scheduled_at date)
+    // ─── 3. SCHEDULED LESSONS ─────────────────────────────────────────────────
     const lessons = await query<any>(`
-      SELECT 
+      SELECT
         l.id,
         l.title,
         l.course_id,
-        l.scheduled_at
+        l.scheduled_at,
+        c.title AS course_title
       FROM lessons l
-      WHERE l.course_id = ANY($1)
-        AND l.scheduled_at IS NOT NULL
+      JOIN courses c ON c.id = l.course_id
+      JOIN enrollments e ON e.course_id = l.course_id AND e.student_id = $1
+      WHERE l.scheduled_at IS NOT NULL
         AND l.scheduled_at >= $2
         AND l.scheduled_at <= $3
         AND l.status = 'published'
       ORDER BY l.scheduled_at ASC
-    `, [courseIds, startDate.toISOString(), endDate.toISOString()])
+    `, [session.sub, startDate.toISOString(), endDate.toISOString()])
 
-    for (const lesson of lessons) {
-      const schedDate = new Date(lesson.scheduled_at)
+    for (const l of lessons) {
+      const d = new Date(l.scheduled_at)
       events.push({
-        id: `lesson-${lesson.id}`,
-        title: lesson.title,
-        date: formatDate(schedDate),
-        scheduled_at: lesson.scheduled_at,
-        time: formatTime(schedDate),
+        id: `lesson-${l.id}`,
+        title: l.title,
+        date: toRiyadhDate(d),
+        time: toRiyadhTime(d),
         type: 'lesson',
-        course: courseMap.get(lesson.course_id) || 'دورة',
-        course_id: lesson.course_id
+        course: l.course_title || 'دورة',
+        course_id: l.course_id,
+        scheduled_at: l.scheduled_at,
       })
     }
 
-    // 5. Memorization goals — surface this week's goal as a Saturday event
-    //    plus a "review reminder" each day until completed.  Goals whose
-    //    week_start lies inside the requested month are returned.
+    // ─── 4. MEMORIZATION GOALS ────────────────────────────────────────────────
     try {
       const goals = await query<any>(`
         SELECT id, week_start, surah_from, ayah_from, surah_to, ayah_to,
-               target_verses, notes, status, completed_at, set_by
+               target_verses, notes, status, completed_at
           FROM memorization_goals
          WHERE student_id = $1
            AND week_start >= $2::date - INTERVAL '7 days'
            AND week_start <= $3::date
-      `, [session.sub, startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]])
+      `, [session.sub,
+          startDate.toISOString().split('T')[0],
+          endDate.toISOString().split('T')[0]])
 
       for (const g of goals) {
         const weekStart = new Date(g.week_start)
-        // Show on each day of the week that falls inside the requested month
         for (let i = 0; i < 7; i++) {
           const day = new Date(weekStart)
           day.setUTCDate(day.getUTCDate() + i)
           if (day < startDate || day > endDate) continue
-          const dateStr = formatDate(day)
           events.push({
             id: `goal-${g.id}-${i}`,
             title: g.target_verses
               ? `هدف الحفظ: ${g.target_verses} آية`
               : 'هدف الحفظ الأسبوعي',
-            date: dateStr,
+            date: toRiyadhDate(day),
             time: '07:00',
             type: 'memorization_goal',
             course: 'الحفظ والمراجعة',
@@ -234,22 +211,19 @@ export async function GET(req: NextRequest) {
           })
         }
       }
-    } catch (goalErr) {
-      // Table may not exist yet (migration 021 not run).  Calendar should
-      // still work without goals.
-      console.warn('[API] memorization_goals not available:', (goalErr as any)?.message)
+    } catch {
+      // memorization_goals table may not exist yet — ignore
     }
 
-    // Sort all events by date and time
+    // Sort by date then time
     events.sort((a, b) => {
-      const dateCompare = a.date.localeCompare(b.date)
-      if (dateCompare !== 0) return dateCompare
-      return a.time.localeCompare(b.time)
+      const dc = a.date.localeCompare(b.date)
+      return dc !== 0 ? dc : a.time.localeCompare(b.time)
     })
 
     return NextResponse.json({ events })
   } catch (error) {
-    console.error('[API] Error fetching calendar events:', error)
+    console.error('[calendar/events] error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
