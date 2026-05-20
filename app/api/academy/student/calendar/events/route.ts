@@ -59,16 +59,16 @@ export async function GET(req: NextRequest) {
     // 1. Get enrolled courses for this student
     const enrollments = await query<any>(`
       SELECT 
-        e.course_id,
+        ce.course_id,
         c.title as course_title
       FROM enrollments ce
       JOIN courses c ON c.id = ce.course_id
       WHERE ce.student_id = $1 
-        AND LOWER(ce.status) IN ('active', 'completed', 'accepted')
+        AND LOWER(ce.status) NOT IN ('rejected', 'dropped')
     `, [session.sub])
 
-    const courseIds = enrollments.map(e => e.course_id)
-    const courseMap = new Map(enrollments.map(e => [e.course_id, e.course_title]))
+    const courseIds = enrollments.map((e: any) => e.course_id)
+    const courseMap = new Map(enrollments.map((e: any) => [e.course_id, e.course_title]))
 
     if (courseIds.length === 0) {
       return NextResponse.json({ events: [] })
