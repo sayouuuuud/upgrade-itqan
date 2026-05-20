@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Send, User, Loader2, ArrowRight } from 'lucide-react'
+import { Search, Send, User, Loader2, ArrowRight, MessageSquarePlus, X, BookOpen } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
 
 interface Conversation {
@@ -24,9 +25,27 @@ interface Message {
   created_at: string
 }
 
+interface TeacherOption {
+  id: string
+  name: string
+  avatar_url: string | null
+  bio: string | null
+  courses: string[] | null
+}
+
 export default function StudentChatPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
+      <StudentChatPageInner />
+    </Suspense>
+  )
+}
+
+function StudentChatPageInner() {
   const { locale } = useI18n()
   const isAr = locale === 'ar'
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConv, setActiveConv] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -34,13 +53,16 @@ export default function StudentChatPage() {
   const [loadingConv, setLoadingConv] = useState(true)
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const [sending, setSending] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // "New conversation" dialog state
+  const [showNew, setShowNew] = useState(false)
+  const [teachers, setTeachers] = useState<TeacherOption[]>([])
+  const [teachersLoading, setTeachersLoading] = useState(false)
+  const [startingChatWith, setStartingChatWith] = useState<string | null>(null)
+  const [newSearch, setNewSearch] = useState('')
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  // Fetch conversations
-  useEffect(() => {
-    fetchConversations()
-  }, [])
 
   const fetchConversations = async () => {
     try {
@@ -53,6 +75,99 @@ export default function StudentChatPage() {
       // ignore
     } finally {
       setLoadingConv(false)
+    }
+  }
+
+  // Fetch conversations
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchConversations()
+  }, [])
+
+  // Allow other pages to deep-link via ?teacherId=... to start / open a chat.
+  useEffect(() => {
+    const teacherId = searchParams.get('teacherId')
+    if (!teacherId) return
+    ;(async () => {
+      try {
+        const res = await fetch('/api/academy/conversations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otherUserId: teacherId }),
+        })
+        const data = await res.json()
+        if (res.ok && data.conversationId) {
+          await fetchConversations()
+          setConversations(prev => {
+            const conv = prev.find(c => c.id === data.conversationId)
+            if (conv) setActiveConv(conv)
+            return prev
+          })
+        }
+      } catch {
+        // ignore
+      } finally {
+        // Strip the param so refreshes don't trigger again.
+        router.replace('/academy/student/chat')
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
+  const openNewChatDialog = async () => {
+    setShowNew(true)
+    if (teachers.length > 0) return
+    setTeachersLoading(true)
+    try {
+      const res = await fetch('/api/academy/student/teachers')
+      if (res.ok) {
+        const data = await res.json()
+        setTeachers(data.teachers || [])
+      }
+    } finally {
+      setTeachersLoading(false)
+    }
+  }
+
+  const startConversation = async (teacherId: string) => {
+    setStartingChatWith(teacherId)
+    try {
+      const res = await fetch('/api/academy/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otherUserId: teacherId }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data?.error || (isAr ? 'تعذر فتح المحادثة' : 'Could not start conversation'))
+        return
+      }
+      setShowNew(false)
+      await fetchConversations()
+      // Open the new conversation immediately.
+      setConversations(prev => {
+        const found = prev.find(c => c.id === data.conversationId)
+        if (found) setActiveConv(found)
+        return prev
+      })
+      // If the freshly fetched list didn't include the new conv yet (race),
+      // construct a placeholder so the chat panel opens right away.
+      setActiveConv(prev => {
+        if (prev) return prev
+        const teacher = teachers.find(tch => tch.id === teacherId)
+        if (!teacher) return prev
+        return {
+          id: data.conversationId,
+          other_user_id: teacher.id,
+          other_user_name: teacher.name,
+          other_user_avatar: teacher.avatar_url,
+          last_message: null,
+          last_message_at: null,
+          unread_count: 0,
+        }
+      })
+    } finally {
+      setStartingChatWith(null)
     }
   }
 
@@ -144,10 +259,19 @@ export default function StudentChatPage() {
 
         {/* Sidebar (Conversations) */}
         <div className={`w-full md:w-80 border-${isAr ? 'l' : 'r'} border-border/50 flex flex-col min-h-0 ${activeConv ? 'hidden md:flex' : 'flex'}`}>
-          <div className="p-4 border-b border-border/50">
+          <div className="p-4 border-b border-border/50 space-y-3">
+            <Button
+              onClick={openNewChatDialog}
+              className="w-full justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <MessageSquarePlus className="w-4 h-4" />
+              {isAr ? 'بدء محادثة جديدة' : 'New conversation'}
+            </Button>
             <div className="relative">
               <Search className={`absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
               <Input
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
                 placeholder={isAr ? "ابحث عن أستاذ..." : "Search teacher..."}
                 className={`pl-9 pr-9 h-10 rounded-xl bg-muted/30 border-border/50 focus:bg-card`}
               />
@@ -158,11 +282,17 @@ export default function StudentChatPage() {
             {loadingConv ? (
               <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
             ) : conversations.length === 0 ? (
-              <div className="text-center p-8 text-muted-foreground text-sm font-medium">
-                {isAr ? "لا توجد أي محادثات حالياً" : "No conversations yet"}
+              <div className="text-center p-8 text-muted-foreground text-sm font-medium space-y-3">
+                <p>{isAr ? "لا توجد أي محادثات حالياً" : "No conversations yet"}</p>
+                <Button onClick={openNewChatDialog} variant="outline" className="gap-2">
+                  <MessageSquarePlus className="w-4 h-4" />
+                  {isAr ? 'ابدأ محادثة مع المدرس' : 'Message a teacher'}
+                </Button>
               </div>
             ) : (
-              conversations.map(conv => (
+              conversations
+                .filter(c => !searchTerm.trim() || c.other_user_name.toLowerCase().includes(searchTerm.toLowerCase().trim()))
+                .map(conv => (
                 <button
                   key={conv.id}
                   onClick={() => setActiveConv(conv)}
@@ -189,8 +319,8 @@ export default function StudentChatPage() {
                     </p>
                   </div>
                 </button>
-              ))
-            )}
+              )))
+            }
           </div>
         </div>
 
@@ -270,6 +400,88 @@ export default function StudentChatPage() {
         </div>
 
       </div>
+
+      {showNew && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowNew(false)}
+        >
+          <div
+            className="bg-card rounded-3xl border border-border shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-5 border-b border-border/50 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold">{isAr ? 'بدء محادثة مع المدرس' : 'Message a teacher'}</h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {isAr ? 'يمكنك التواصل مع مدرسي الدورات التي التحقت بها.' : 'You can chat with the teachers of any course you are enrolled in.'}
+                </p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setShowNew(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="p-4 border-b border-border/50">
+              <div className="relative">
+                <Search className={`absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`} />
+                <Input
+                  value={newSearch}
+                  onChange={e => setNewSearch(e.target.value)}
+                  placeholder={isAr ? 'ابحث عن مدرّس...' : 'Search a teacher...'}
+                  className="pl-9 pr-9 h-10 rounded-xl bg-muted/30"
+                />
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {teachersLoading ? (
+                <div className="flex justify-center p-6"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+              ) : teachers.length === 0 ? (
+                <div className="text-center p-6 text-muted-foreground text-sm">
+                  {isAr
+                    ? 'لا يوجد مدرسون متاحون للمحادثة. سجّل في دورة أولاً لتظهر هنا.'
+                    : 'No teachers available yet. Enroll in a course first to message its teacher.'}
+                </div>
+              ) : (
+                teachers
+                  .filter(tch => !newSearch.trim() || tch.name.toLowerCase().includes(newSearch.toLowerCase().trim()))
+                  .map(tch => (
+                    <button
+                      key={tch.id}
+                      onClick={() => startConversation(tch.id)}
+                      disabled={startingChatWith === tch.id}
+                      className="w-full text-start p-3 rounded-2xl border border-border hover:border-blue-500/40 hover:bg-blue-500/5 transition-colors flex items-center gap-3"
+                    >
+                      <div className="w-11 h-11 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20 overflow-hidden">
+                        {tch.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={tch.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-5 h-5 text-blue-500" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-sm text-foreground truncate">{tch.name}</h4>
+                        {tch.courses && tch.courses.length > 0 && (
+                          <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                            <BookOpen className="w-3 h-3" />
+                            {tch.courses.join(' • ')}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-xs font-bold text-blue-600 shrink-0">
+                        {startingChatWith === tch.id
+                          ? <Loader2 className="w-4 h-4 animate-spin" />
+                          : (isAr ? 'مراسلة' : 'Message')}
+                      </span>
+                    </button>
+                  ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -48,6 +48,7 @@ interface PatchBody {
   meeting_password?: string | null
   status?: 'scheduled' | 'live' | 'completed' | 'cancelled'
   is_published?: boolean
+  category_id?: string | null
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -83,7 +84,23 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   if (body.meeting_password !== undefined) push('meeting_password', body.meeting_password)
   if (body.status !== undefined) push('status', body.status)
-  if (body.is_published !== undefined) push('is_published', !!body.is_published)
+  if (body.category_id !== undefined) push('category_id', body.category_id || null)
+  // Only admins can flip the public visibility flag directly. When a teacher
+  // edits a previously-approved lesson we keep it approved; if they're
+  // trying to "publish" a still-pending lesson they're routed back to the
+  // review queue instead.
+  if (body.is_published !== undefined) {
+    const isAdmin = ['academy_admin', 'admin'].includes(session.role)
+    if (isAdmin) {
+      push('is_published', !!body.is_published)
+      if (!body.is_published) push('review_status', 'pending_review')
+    } else if (body.is_published === false) {
+      push('is_published', false)
+      push('review_status', 'pending_review')
+    }
+    // Teacher passing is_published = true is silently ignored \u2014 they must wait
+    // for an admin to approve via /api/academy/admin/public-lessons/:id/review.
+  }
   sets.push('updated_at = NOW()')
 
   if (sets.length === 1) {

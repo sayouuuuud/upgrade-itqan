@@ -31,6 +31,25 @@ export async function GET(req: NextRequest) {
     const startDate = new Date(year, monthNum - 1, 1)
     const endDate = new Date(year, monthNum, 0, 23, 59, 59)
 
+    // Render the date/time stamps shown in the calendar in a fixed academy
+    // timezone so a 23:00 Cairo session on Friday never silently appears on
+    // Saturday because the server happens to be in UTC.
+    const ACADEMY_TZ = 'Asia/Riyadh'
+    const fmtDate = new Intl.DateTimeFormat('en-CA', {
+      timeZone: ACADEMY_TZ,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    const fmtTime = new Intl.DateTimeFormat('en-GB', {
+      timeZone: ACADEMY_TZ,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })
+    const formatDate = (d: Date) => fmtDate.format(d) // YYYY-MM-DD
+    const formatTime = (d: Date) => fmtTime.format(d) // HH:mm
+
     const events: CalendarEvent[] = []
 
     // 1. Get enrolled courses for this student
@@ -73,8 +92,8 @@ export async function GET(req: NextRequest) {
       events.push({
         id: `session-${session.id}`,
         title: session.title || 'جلسة حية',
-        date: schedDate.toISOString().split('T')[0],
-        time: schedDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        date: formatDate(schedDate),
+        time: formatTime(schedDate),
         type: 'live_session',
         course: courseMap.get(session.course_id) || 'دورة',
         course_id: session.course_id,
@@ -102,8 +121,8 @@ export async function GET(req: NextRequest) {
       events.push({
         id: `task-${task.id}`,
         title: `تسليم: ${task.title}`,
-        date: dueDate.toISOString().split('T')[0],
-        time: dueDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        date: formatDate(dueDate),
+        time: formatTime(dueDate),
         type: 'assignment_deadline',
         course: courseMap.get(task.course_id) || 'دورة',
         course_id: task.course_id
@@ -155,8 +174,8 @@ export async function GET(req: NextRequest) {
       events.push({
         id: `lesson-${lesson.id}`,
         title: lesson.title,
-        date: schedDate.toISOString().split('T')[0],
-        time: schedDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        date: formatDate(schedDate),
+        time: formatTime(schedDate),
         type: 'lesson',
         course: courseMap.get(lesson.course_id) || 'دورة',
         course_id: lesson.course_id
@@ -183,7 +202,7 @@ export async function GET(req: NextRequest) {
           const day = new Date(weekStart)
           day.setUTCDate(day.getUTCDate() + i)
           if (day < startDate || day > endDate) continue
-          const dateStr = day.toISOString().split('T')[0]
+          const dateStr = formatDate(day)
           events.push({
             id: `goal-${g.id}-${i}`,
             title: g.target_verses
