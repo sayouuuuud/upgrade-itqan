@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
         cs.title,
         cs.course_id,
         cs.scheduled_at,
-        cs.meeting_url,
+        cs.meeting_link,
         cs.duration_minutes
       FROM course_sessions cs
       WHERE cs.course_id = ANY($1)
@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
         type: 'live_session',
         course: courseMap.get(session.course_id) || 'دورة',
         course_id: session.course_id,
-        link: session.meeting_url
+        link: session.meeting_link
       })
     }
 
