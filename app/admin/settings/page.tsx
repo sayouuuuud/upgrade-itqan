@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import { Save, User, Settings2, Loader2, CheckCircle, Mail, Image as ImageIcon, Phone } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
 
@@ -153,10 +154,15 @@ export default function AdminSettingsPage() {
     const handleSmtpSave = async () => {
         setSmtpSaving(true)
         try {
+            const smtpPayload = {
+                ...smtp,
+                port: smtp.port ? Number(smtp.port) : "",
+                secure: Boolean(smtp.secure),
+            }
             const res = await fetch("/api/admin/settings", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ settings: { smtp_config: smtp } }),
+                body: JSON.stringify({ settings: { smtp_config: smtpPayload } }),
             })
             if (res.ok) {
                 setSmtpSaved(true)
@@ -510,6 +516,22 @@ export default function AdminSettingsPage() {
                                 placeholder="noreply@example.com"
                                 className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
                             />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                            <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 p-4">
+                                <Switch
+                                    checked={smtp.secure}
+                                    onCheckedChange={(checked) => setSmtp({ ...smtp, secure: checked })}
+                                />
+                                <div>
+                                    <Label className="font-bold text-sm text-foreground">
+                                        {isAr ? "اتصال SMTP آمن (SSL/TLS)" : "Secure SMTP connection (SSL/TLS)"}
+                                    </Label>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {isAr ? "فعّلها عادةً مع المنفذ 465، وأوقفها عادةً مع 587." : "Usually enabled for port 465 and disabled for port 587."}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

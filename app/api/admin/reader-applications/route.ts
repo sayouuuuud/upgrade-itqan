@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession, requireRole } from "@/lib/auth"
 import { query } from "@/lib/db"
-import { sendReaderApprovedEmail, sendReaderRejectedEmail } from "@/lib/email"
+import { getLastEmailError, sendReaderApprovedEmail, sendReaderRejectedEmail } from "@/lib/email"
 import { logAdminAction } from "@/lib/activity-log"
 import { createNotification } from "@/lib/notifications"
+
+async function hasReaderProfileColumn(columnName: "rejection_reason" | "rejection_count") {
+  const rows = await query(
+    `SELECT 1
+     FROM information_schema.columns
+     WHERE table_schema = current_schema()
+       AND table_name = 'reader_profiles'
+       AND column_name = $1
+     LIMIT 1`,
+    [columnName]
+  )
+  return rows.length > 0
+}
 
 // GET /api/admin/reader-applications
 export async function GET() {
@@ -81,11 +94,37 @@ export async function PUT(req: NextRequest) {
   }
 
   const newStatus = action === "approve" ? "approved" : "rejected"
+  const rejectionReason = typeof rejection_reason === "string"
+    ? rejection_reason.trim()
+    : ""
+  const rejectionReasonForEmail = rejectionReason || "لم يتم توضيح سبب محدد. يرجى التواصل مع الإدارة لمزيد من التفاصيل."
 
   await query(
     `UPDATE users SET approval_status = $1 WHERE id = $2 AND role = 'reader'`,
     [newStatus, userId]
   )
+
+  if (action === "reject") {
+    if (await hasReaderProfileColumn("rejection_reason")) {
+      await query(
+        `UPDATE reader_profiles SET rejection_reason = $1 WHERE user_id = $2`,
+        [rejectionReasonForEmail, userId]
+      )
+    }
+    if (await hasReaderProfileColumn("rejection_count")) {
+      await query(
+        `UPDATE reader_profiles
+         SET rejection_count = COALESCE(rejection_count, 0) + 1
+         WHERE user_id = $1`,
+        [userId]
+      )
+    }
+  } else if (await hasReaderProfileColumn("rejection_reason")) {
+    await query(
+      `UPDATE reader_profiles SET rejection_reason = NULL WHERE user_id = $1`,
+      [userId]
+    )
+  }
 
   // Get reader info for email
   const reader = await query<{ name: string; email: string }>(
@@ -93,9 +132,16 @@ export async function PUT(req: NextRequest) {
     [userId]
   )
 
+  let emailSent: boolean | null = null
+  let emailError: string | null = null
+
   if (reader[0]) {
     if (action === "approve") {
-      await sendReaderApprovedEmail(reader[0].email, reader[0].name)
+      emailSent = await sendReaderApprovedEmail(reader[0].email, reader[0].name)
+      if (!emailSent) {
+        emailError = getLastEmailError() || "Email delivery failed"
+        console.error(`[Reader Applications] Failed to send approval email to ${reader[0].email}: ${emailError}`)
+      }
       await createNotification({
         userId,
         type: 'reader_approved',
@@ -105,10 +151,12 @@ export async function PUT(req: NextRequest) {
         link: '/reader'
       })
     } else {
-      await sendReaderRejectedEmail(reader[0].email, reader[0].name, rejection_reason)
-      const notifMessage = rejection_reason 
-        ? `نأسف لإبلاغك بأنه لم يتم اعتماد طلب انضمامك. السبب: ${rejection_reason}`
-        : 'نأسف لإبلاغك بأنه لم يتم اعتماد طلب انضمامك في الوقت الحالي.'
+      emailSent = await sendReaderRejectedEmail(reader[0].email, reader[0].name, rejectionReasonForEmail)
+      if (!emailSent) {
+        emailError = getLastEmailError() || "Email delivery failed"
+        console.error(`[Reader Applications] Failed to send rejection email to ${reader[0].email}: ${emailError}`)
+      }
+      const notifMessage = `نأسف لإبلاغك بأنه لم يتم اعتماد طلب انضمامك. السبب: ${rejectionReasonForEmail}`
       await createNotification({
         userId,
         type: 'reader_rejected',
@@ -127,7 +175,7 @@ export async function PUT(req: NextRequest) {
     description: `Admin ${action}d reader application for ${reader[0]?.name ?? userId}`,
   })
 
-  return NextResponse.json({ success: true, status: newStatus })
+  return NextResponse.json({ success: true, status: newStatus, emailSent, emailError })
 }
 
 // A-6: DELETE /api/admin/reader-applications - delete rejected reader application

@@ -1,5 +1,75 @@
 import { query } from "./db"
 
+type SmtpConfig = {
+    host?: string
+    port?: string | number
+    secure?: boolean | string
+    user?: string
+    password?: string
+    pass?: string
+    fromEmail?: string
+    from_email?: string
+    fromName?: string
+    from_name?: string
+}
+
+function asString(value: string | number | undefined) {
+    return value === undefined ? "" : String(value).trim()
+}
+
+function asBoolean(value: boolean | string | undefined, defaultValue: boolean) {
+    if (typeof value === "boolean") return value
+    if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase()
+        if (["true", "1", "yes", "on"].includes(normalized)) return true
+        if (["false", "0", "no", "off"].includes(normalized)) return false
+    }
+    return defaultValue
+}
+
+function getSmtpEnvConfig(): SmtpConfig | null {
+    if (!process.env.SMTP_HOST) return null
+
+    return {
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        secure: process.env.SMTP_SECURE,
+        user: process.env.SMTP_USER,
+        password: process.env.SMTP_PASSWORD || process.env.SMTP_PASS,
+        fromEmail: process.env.SMTP_FROM_EMAIL,
+        fromName: process.env.SMTP_FROM_NAME,
+    }
+}
+
+function getSmtpUrlFromConfig(config: SmtpConfig | null) {
+    if (!config) return undefined
+
+    const host = asString(config.host)
+    const port = asString(config.port)
+    const user = asString(config.user)
+    const password = asString(config.password || config.pass)
+
+    if (!host || !port || !user || !password) {
+        return undefined
+    }
+
+    const secure = asBoolean(config.secure, port === "465")
+    const protocol = secure ? "smtps" : "smtp"
+    const encodedUser = encodeURIComponent(user)
+    const encodedPass = encodeURIComponent(password)
+    return `${protocol}://${encodedUser}:${encodedPass}@${host}:${port}`
+}
+
+function getFromEmail(config: SmtpConfig | null) {
+    if (!config) return undefined
+
+    const fromEmail = asString(config.fromEmail || config.from_email)
+    const fromName = asString(config.fromName || config.from_name)
+
+    if (!fromEmail) return undefined
+    return fromName ? `"${fromName}" <${fromEmail}>` : fromEmail
+}
+
 // Simple in-memory cache for settings
 const settingsCache: Record<string, { value: any; expiry: number }> = {}
 const CACHE_TTL = 60 * 1000 // 1 minute cache to balance performance and freshness
@@ -39,27 +109,40 @@ export function clearSettingCache(key?: string) {
 
 // Specific helper for SMTP to build the connection string
 export async function getSmtpUrl(): Promise<string | undefined> {
-    // First check dynamic settings
-    const smtpConfig = await getSetting<any>("smtp_config", null)
-
-    if (smtpConfig && smtpConfig.host && smtpConfig.port && smtpConfig.user && smtpConfig.password) {
-        // Format: smtps://user:pass@smtp.gmail.com
-        const protocol = smtpConfig.secure ? 'smtps' : 'smtp'
-        const encodedUser = encodeURIComponent(smtpConfig.user)
-        const encodedPass = encodeURIComponent(smtpConfig.password)
-        return `${protocol}://${encodedUser}:${encodedPass}@${smtpConfig.host}:${smtpConfig.port}`
+    if (process.env.SMTP_CONNECTION_URL) {
+        return process.env.SMTP_CONNECTION_URL
     }
 
-    // Fallback to environment variable
-    return process.env.SMTP_CONNECTION_URL
+    const envSmtpUrl = getSmtpUrlFromConfig(getSmtpEnvConfig())
+    if (envSmtpUrl) {
+        return envSmtpUrl
+    }
+
+    // First check dynamic settings
+    const smtpConfig = await getSetting<SmtpConfig | null>("smtp_config", null)
+
+    const settingsSmtpUrl = getSmtpUrlFromConfig(smtpConfig)
+    if (settingsSmtpUrl) {
+        return settingsSmtpUrl
+    }
+
+    return undefined
 }
 
 export async function getSmtpFromEmail(): Promise<string> {
-    const smtpConfig = await getSetting<any>("smtp_config", null)
-    if (smtpConfig && smtpConfig.fromEmail) {
-        return smtpConfig.fromName
-            ? `"${smtpConfig.fromName}" <${smtpConfig.fromEmail}>`
-            : smtpConfig.fromEmail
+    if (process.env.SMTP_FROM) {
+        return process.env.SMTP_FROM
+    }
+
+    const envFrom = getFromEmail(getSmtpEnvConfig())
+    if (envFrom) {
+        return envFrom
+    }
+
+    const smtpConfig = await getSetting<SmtpConfig | null>("smtp_config", null)
+    const settingsFrom = getFromEmail(smtpConfig)
+    if (settingsFrom) {
+        return settingsFrom
     }
 
     return '"إتقان التعليمية" <itqaan69@gmail.com>' // New default fallback
@@ -82,4 +165,3 @@ export async function getStorageConfig() {
         appId: process.env.UPLOADTHING_APP_ID,
     }
 }
-

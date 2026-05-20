@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const params: Array<string | number> = []
-    const conditions = ["u.role IN ('student', 'reader')", 'COALESCE(u.is_active, TRUE) = TRUE']
+    const conditions = ["u.role IN ('student', 'reader')", 'COALESCE(u.is_active, TRUE) = TRUE', 'u.has_academy_access = TRUE']
 
     if (scope === 'halaqa' && halqaId) {
       params.push(halqaId)

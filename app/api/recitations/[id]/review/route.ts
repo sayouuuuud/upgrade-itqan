@@ -152,7 +152,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       )
       if (student) {
         if (verdict === "mastered") {
-          sendMasteredEmail(student.email, student.name)
+          const emailSent = await sendMasteredEmail(student.email, student.name)
+          if (!emailSent) {
+            console.error(`[Recitation Review] Failed to send mastered email to ${student.email}`)
+          }
           await createNotification({
             userId: recitation.student_id,
             type: 'mastered',
@@ -163,7 +166,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             relatedRecitationId: id,
           })
         } else {
-          sendNeedsSessionEmail(student.email, student.name)
+          const emailSent = await sendNeedsSessionEmail(student.email, student.name)
+          if (!emailSent) {
+            console.error(`[Recitation Review] Failed to send needs-session email to ${student.email}`)
+          }
           await createNotification({
             userId: recitation.student_id,
             type: 'needs_session',

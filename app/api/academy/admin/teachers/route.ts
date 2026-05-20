@@ -33,8 +33,7 @@ export async function GET(req: NextRequest) {
         latest_app.rejection_reason,
         latest_app.app_submitted_at AS submitted_at,
         rejection_stats.rejection_count,
-        rejection_stats.last_rejected_at,
-        rejection_stats.rejection_dates
+        rejection_stats.last_rejected_at
       FROM users u
       LEFT JOIN courses c ON u.id = c.teacher_id
       LEFT JOIN enrollments e ON c.id = e.course_id AND e.status = 'active'
@@ -49,20 +48,44 @@ export async function GET(req: NextRequest) {
       LEFT JOIN LATERAL (
         SELECT
           COUNT(*)::int AS rejection_count,
-          MAX(COALESCE(ta2.rejected_at, ta2.reviewed_at)) AS last_rejected_at,
-          JSON_AGG(
-            COALESCE(ta2.rejected_at, ta2.reviewed_at)
-            ORDER BY COALESCE(ta2.rejected_at, ta2.reviewed_at) DESC
-          ) FILTER (WHERE COALESCE(ta2.rejected_at, ta2.reviewed_at) IS NOT NULL) AS rejection_dates
+          MAX(COALESCE(ta2.rejected_at, ta2.reviewed_at)) AS last_rejected_at
         FROM teacher_applications ta2
         WHERE ta2.user_id = u.id AND ta2.status = 'rejected'
       ) rejection_stats ON TRUE
       WHERE u.role = 'teacher'
       GROUP BY u.id, latest_app.status, latest_app.rejection_reason, latest_app.app_submitted_at,
-               rejection_stats.rejection_count, rejection_stats.last_rejected_at, rejection_stats.rejection_dates
+               rejection_stats.rejection_count, rejection_stats.last_rejected_at
       ORDER BY u.created_at DESC
     `)
-    return NextResponse.json({ data: rows })
+
+    // Fetch rejection dates separately for each teacher
+    const teacherIds = rows.map((r: any) => r.id)
+    const rejectionDatesMap = new Map<string, string[]>()
+    
+    if (teacherIds.length > 0) {
+      const rejectionDates = await query(`
+        SELECT user_id,
+               JSON_AGG(
+                 COALESCE(rejected_at, reviewed_at)
+                 ORDER BY COALESCE(rejected_at, reviewed_at) DESC
+               ) FILTER (WHERE COALESCE(rejected_at, reviewed_at) IS NOT NULL) AS dates
+        FROM teacher_applications
+        WHERE user_id = ANY($1) AND status = 'rejected'
+        GROUP BY user_id
+      `, [teacherIds])
+      
+      for (const rd of rejectionDates) {
+        rejectionDatesMap.set((rd as any).user_id, (rd as any).dates || [])
+      }
+    }
+
+    // Add rejection_dates to each teacher record
+    const rowsWithDates = rows.map((r: any) => ({
+      ...r,
+      rejection_dates: rejectionDatesMap.get(r.id) || []
+    }))
+
+    return NextResponse.json({ data: rowsWithDates })
   } catch (error: any) {
     // Surface the underlying DB error message in development / preview builds
     // so the admin UI can show something useful when something goes wrong.
@@ -95,11 +118,11 @@ export async function POST(req: NextRequest) {
     const salt = await bcrypt.genSalt(10)
     const password_hash = await bcrypt.hash(password, salt)
 
-    // Create user with teacher role
+    // Create user with teacher role – auto-approve since an admin is adding them
     const result = await query(`
-      INSERT INTO users (name, email, password_hash, role, gender, is_active, has_academy_access, created_at)
-      VALUES ($1, $2, $3, 'teacher', $4, true, true, NOW())
-      RETURNING id, name, email, role, gender, is_active, has_academy_access, created_at
+      INSERT INTO users (name, email, password_hash, role, gender, is_active, has_academy_access, approval_status, created_at)
+      VALUES ($1, $2, $3, 'teacher', $4, true, true, 'approved', NOW())
+      RETURNING id, name, email, role, gender, is_active, has_academy_access, approval_status, created_at
     `, [name, email.toLowerCase().trim(), password_hash, gender || 'male'])
 
     // Save specialization if provided

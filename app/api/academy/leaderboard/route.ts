@@ -74,7 +74,7 @@ async function getUserHalaqaId(userId: string) {
 
 async function fetchLeaderboardRows(period: Period, limit: number, halaqaId: string | null) {
   const params: Array<string | number> = []
-  const where = ["u.role IN ('student', 'reader')", 'COALESCE(u.is_active, TRUE) = TRUE']
+  const where = ["u.role IN ('student', 'reader')", 'COALESCE(u.is_active, TRUE) = TRUE', 'u.has_academy_access = TRUE']
   if (halaqaId) {
     params.push(halaqaId)
     where.push(`u.halaqah_id = $${params.length}`)
@@ -113,7 +113,7 @@ async function fetchLeaderboardRows(period: Period, limit: number, halaqaId: str
 
 async function fetchCurrentUserRank(userId: string, period: Period, halaqaId: string | null) {
   const params: Array<string | number> = []
-  const where = ["u.role IN ('student', 'reader')", 'COALESCE(u.is_active, TRUE) = TRUE']
+  const where = ["u.role IN ('student', 'reader')", 'COALESCE(u.is_active, TRUE) = TRUE', 'u.has_academy_access = TRUE']
   if (halaqaId) {
     params.push(halaqaId)
     where.push(`u.halaqah_id = $${params.length}`)

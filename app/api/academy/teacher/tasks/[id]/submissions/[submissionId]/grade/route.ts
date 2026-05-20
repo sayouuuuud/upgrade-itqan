@@ -5,10 +5,47 @@ import { createNotification } from '@/lib/notifications'
 import { awardTaskPoints } from '@/lib/academy/gamification'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function createSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return null
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
+
+async function createSubmissionFileSignedUrl(fileUrl: string) {
+  const supabase = createSupabaseClient()
+  if (!supabase) {
+    console.warn('[C-6] Supabase credentials missing; signed URL skipped')
+    return null
+  }
+
+  try {
+    const urlObj = new URL(fileUrl)
+    const pathParts = urlObj.pathname.split('/storage/v1/object/public/')
+    if (pathParts.length <= 1) {
+      return null
+    }
+
+    const [bucket, ...rest] = pathParts[1].split('/')
+    const filePath = rest.join('/')
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .createSignedUrl(filePath, 3600)
+
+    if (error || !data) {
+      return null
+    }
+
+    return data.signedUrl
+  } catch (urlErr) {
+    console.error('[C-6] Failed to create signed URL:', urlErr)
+    return null
+  }
+}
 
 export async function PUT(
   req: NextRequest,
@@ -123,24 +160,7 @@ export async function PUT(
     // C-6: إنشاء signed URL لملف التسليم إذا موجود
     let fileSignedUrl: string | null = null
     if (submission.file_url) {
-      try {
-        // استخرج الـ path من الـ URL
-        const urlObj = new URL(submission.file_url)
-        // الـ path بعد /storage/v1/object/public/
-        const pathParts = urlObj.pathname.split('/storage/v1/object/public/')
-        if (pathParts.length > 1) {
-          const [bucket, ...rest] = pathParts[1].split('/')
-          const filePath = rest.join('/')
-          const { data, error } = await supabase.storage
-            .from(bucket)
-            .createSignedUrl(filePath, 3600) // ساعة
-          if (!error && data) {
-            fileSignedUrl = data.signedUrl
-          }
-        }
-      } catch (urlErr) {
-        console.error('[C-6] Failed to create signed URL:', urlErr)
-      }
+      fileSignedUrl = await createSubmissionFileSignedUrl(submission.file_url)
     }
 
     return NextResponse.json({
@@ -186,20 +206,7 @@ export async function GET(
     // C-6: توليد signed URL
     let fileSignedUrl: string | null = null
     if (sub.file_url) {
-      try {
-        const urlObj = new URL(sub.file_url)
-        const pathParts = urlObj.pathname.split('/storage/v1/object/public/')
-        if (pathParts.length > 1) {
-          const [bucket, ...rest] = pathParts[1].split('/')
-          const filePath = rest.join('/')
-          const { data, error } = await supabase.storage
-            .from(bucket)
-            .createSignedUrl(filePath, 3600)
-          if (!error && data) {
-            fileSignedUrl = data.signedUrl
-          }
-        }
-      } catch { }
+      fileSignedUrl = await createSubmissionFileSignedUrl(sub.file_url)
     }
 
     return NextResponse.json({

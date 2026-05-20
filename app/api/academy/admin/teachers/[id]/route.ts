@@ -10,26 +10,36 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params
   try {
     const body = await req.json()
-    const { name, email, gender, is_active, reapply_blocked } = body
+    const { name, email, gender, is_active, reapply_blocked, approval_status } = body
+
+    const VALID_STATUSES = ['pending_approval', 'approved', 'rejected']
+
+    // Build SET clauses dynamically so we only touch fields that were sent
+    const setClauses: string[] = []
+    const params: unknown[] = []
+    let idx = 1
+
+    if (name) { setClauses.push(`name = $${idx++}`); params.push(name) }
+    if (email) { setClauses.push(`email = $${idx++}`); params.push(email.toLowerCase().trim()) }
+    if (gender) { setClauses.push(`gender = $${idx++}`); params.push(gender) }
+    if (typeof is_active === 'boolean') { setClauses.push(`is_active = $${idx++}`); params.push(is_active) }
+    if (typeof reapply_blocked === 'boolean') { setClauses.push(`reapply_blocked = $${idx++}`); params.push(reapply_blocked) }
+    if (approval_status && VALID_STATUSES.includes(approval_status)) {
+      setClauses.push(`approval_status = $${idx++}`); params.push(approval_status)
+    }
+
+    if (setClauses.length === 0) {
+      return NextResponse.json({ error: 'لا توجد بيانات للتحديث' }, { status: 400 })
+    }
+
+    setClauses.push(`updated_at = NOW()`)
+    params.push(id)
 
     const result = await query(`
-      UPDATE users SET 
-        name = COALESCE($1, name),
-        email = COALESCE($2, email),
-        gender = COALESCE($3, gender),
-        is_active = CASE WHEN $4::boolean IS NOT NULL THEN $4 ELSE is_active END,
-        reapply_blocked = CASE WHEN $5::boolean IS NOT NULL THEN $5 ELSE reapply_blocked END,
-        updated_at = NOW()
-      WHERE id = $6 AND role = 'teacher'
-      RETURNING id, name, email, role, gender, is_active, reapply_blocked, created_at
-    `, [
-      name || null,
-      email ? email.toLowerCase().trim() : null,
-      gender || null,
-      is_active !== undefined ? is_active : null,
-      reapply_blocked !== undefined ? reapply_blocked : null,
-      id
-    ])
+      UPDATE users SET ${setClauses.join(', ')}
+      WHERE id = $${idx} AND role = 'teacher'
+      RETURNING id, name, email, role, gender, is_active, reapply_blocked, approval_status, created_at
+    `, params)
 
     if (result.length === 0) {
       return NextResponse.json({ error: 'المدرس غير موجود' }, { status: 404 })
