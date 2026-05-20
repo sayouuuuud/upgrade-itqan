@@ -5,12 +5,12 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
-import { GraduationCap, PlayCircle, Clock, Users, BookOpen, Lock, BookMarked, ArrowRight } from 'lucide-react'
+import { GraduationCap, PlayCircle, Clock, Users, BookOpen, Lock, BookMarked, ArrowRight, MessageSquare } from 'lucide-react'
 
 interface CourseDetail {
   course: {
     id: string; title: string; description?: string; thumbnail_url?: string
-    level: string; teacher_name: string; category_name?: string
+    level: string; teacher_id?: string; teacher_name: string; category_name?: string
     total_enrolled: number
   }
   lessons: { id: string; title: string; order_index: number; duration_minutes?: number }[]
@@ -49,6 +49,7 @@ export default function CourseDetailPage() {
     if (courseId) {
       fetchCourse()
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false)
     }
   }, [courseId])
@@ -186,6 +187,17 @@ export default function CourseDetailPage() {
               >
                 <PlayCircle className="w-5 h-5" />
                 {t.academy?.continueLearning || 'متابعة الدورة'}
+              </Link>
+            )}
+
+            {enrollment_status === 'active' && course.teacher_id && (
+              <Link
+                href={`/academy/student/chat?teacherId=${course.teacher_id}`}
+                className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white text-base font-bold rounded-xl transition-all border border-white/20 backdrop-blur-sm flex items-center gap-2"
+                title={t.academy?.messageTeacher || 'مراسلة المدرس'}
+              >
+                <MessageSquare className="w-5 h-5" />
+                {t.academy?.messageTeacher || 'مراسلة المدرس'}
               </Link>
             )}
           </div>

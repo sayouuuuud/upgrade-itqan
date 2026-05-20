@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 import { generatePublicSlug } from '@/lib/public-lessons'
 import { sendNewLessonNotificationEmail } from '@/lib/lesson-mailing-list'
+import { createNotification } from '@/lib/notifications'
 
 export async function GET(_req: NextRequest) {
   const session = await getSession()
@@ -17,6 +18,7 @@ export async function GET(_req: NextRequest) {
     `SELECT id, teacher_id, title, description, cover_image_url, public_slug,
             meeting_link, meeting_provider, meeting_password,
             scheduled_at, duration_minutes, status, is_published,
+            review_status, review_notes,
             view_count, signup_count, created_at, updated_at
        FROM public_lessons ${where}
        ORDER BY scheduled_at DESC`,
@@ -34,6 +36,7 @@ interface CreateBody {
   meeting_link?: string | null
   meeting_provider?: 'zoom' | 'google_meet' | 'other' | null
   meeting_password?: string | null
+  category_id?: string | null
 }
 
 export async function POST(req: NextRequest) {
@@ -62,15 +65,22 @@ export async function POST(req: NextRequest) {
   const provider = body.meeting_provider && ['zoom', 'google_meet', 'other'].includes(body.meeting_provider)
     ? body.meeting_provider : null
 
+  // Teachers must wait for admin / supervisor approval; admins create
+  // already-approved lessons so they aren't blocked by themselves.
+  const isAdmin = ['admin', 'academy_admin'].includes(session.role)
+  const initialPublished = isAdmin
+  const initialReviewStatus = isAdmin ? 'approved' : 'pending_review'
+
   const result = await query<{
     id: string; teacher_id: string; title: string; description: string | null;
-    public_slug: string; scheduled_at: string;
+    public_slug: string; scheduled_at: string; review_status: string;
   }>(
     `INSERT INTO public_lessons
        (teacher_id, title, description, cover_image_url, public_slug,
         meeting_link, meeting_provider, meeting_password,
-        scheduled_at, duration_minutes, status, is_published)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'scheduled', true)
+        scheduled_at, duration_minutes, status, is_published,
+        review_status, category_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'scheduled', $11, $12, $13)
      RETURNING *`,
     [
       session.sub,
@@ -83,19 +93,51 @@ export async function POST(req: NextRequest) {
       body.meeting_password?.trim() || null,
       body.scheduled_at,
       body.duration_minutes || 60,
+      initialPublished,
+      initialReviewStatus,
+      body.category_id || null,
     ]
   )
 
-  // Notify the teacher's mailing list subscribers and platform followers
-  // (fire-and-forget; we don't block the response on delivery).
-  notifyMailingList(result[0]).catch(err => {
-    console.error('[public-lessons] failed to notify mailing list:', err)
-  })
-  notifyTeacherFollowers(result[0]).catch(err => {
-    console.error('[public-lessons] failed to notify followers:', err)
-  })
+  if (isAdmin) {
+    // Admins publish straight away — fan out the usual notifications.
+    notifyMailingList(result[0]).catch(err => {
+      console.error('[public-lessons] failed to notify mailing list:', err)
+    })
+    notifyTeacherFollowers(result[0]).catch(err => {
+      console.error('[public-lessons] failed to notify followers:', err)
+    })
+  } else {
+    // Teacher submitted for review — ping the admins / supervisors.
+    notifyReviewers(result[0]).catch(err => {
+      console.error('[public-lessons] failed to notify reviewers:', err)
+    })
+  }
 
   return NextResponse.json({ data: result[0] }, { status: 201 })
+}
+
+async function notifyReviewers(lesson: {
+  id: string; teacher_id: string; title: string; public_slug: string;
+}) {
+  const reviewers = await query<{ id: string; role: string }>(
+    `SELECT id, role FROM users
+       WHERE is_active = true
+         AND (
+           role IN ('content_supervisor', 'supervisor', 'admin', 'academy_admin')
+           OR academy_roles && ARRAY['content_supervisor','supervisor']::varchar[]
+         )`,
+  )
+  for (const r of reviewers) {
+    await createNotification({
+      userId: r.id,
+      type: 'general',
+      category: 'course',
+      title: 'حلقة جديدة تنتظر المراجعة',
+      message: `رفع المدرس حلقة عامة "${lesson.title}" وتنتظر موافقتك قبل أن تصبح مرئية للعامة.`,
+      link: '/academy/admin/public-lessons',
+    }).catch(() => {})
+  }
 }
 
 async function notifyTeacherFollowers(lesson: {

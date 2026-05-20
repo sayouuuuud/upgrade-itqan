@@ -115,10 +115,46 @@ export const BADGE_CATALOGUE: BadgeDefinition[] = [
   { badge_type: 'night_owl',       name: 'الساهر',     description: 'تلوت بعد منتصف الليل 7 ليالي',   category: 'تكريم', criteria_type: 'custom', criteria_value: 7, points_reward: 50 },
 ]
 
+const MAQRAA_BADGE_TYPES = new Set([
+  'first_recitation',
+  'hundred_recitations',
+  'tajweed_master',
+  'hafiz_juz_amma',
+  'full_quran',
+  'ramadan_badge',
+])
+
+const MAQRAA_BADGE_CATEGORIES = new Set([
+  'التلاوة',
+  'الحفظ',
+  'التجويد',
+  'القرآن',
+  'recitation',
+  'memorization',
+  'mastery',
+])
+
+function isAcademyBadgeDefinition(def: BadgeDefinition): boolean {
+  if (MAQRAA_BADGE_TYPES.has(def.badge_type)) return false
+  if (MAQRAA_BADGE_CATEGORIES.has(def.category.trim().toLowerCase())) return false
+  if (def.criteria_type === 'recitation' || def.criteria_type === 'memorization') return false
+  if (def.criteria_type === 'custom' && !def.criteria_value) return false
+  return true
+}
+
+export const ACADEMY_BADGE_CATALOGUE: BadgeDefinition[] = BADGE_CATALOGUE.filter(isAcademyBadgeDefinition)
+
 export async function getBadgeCatalogue(): Promise<BadgeDefinition[]> {
   try {
     const rows = await query<BadgeDefinition>(
-      `SELECT badge_type, name, description, category, criteria_type, criteria_value, points_reward, icon
+      `SELECT COALESCE(badge_type, badge_key) AS badge_type,
+              COALESCE(name, badge_name) AS name,
+              COALESCE(description, badge_description, name, badge_name) AS description,
+              category,
+              criteria_type,
+              criteria_value,
+              COALESCE(points_reward, points_awarded, 0) AS points_reward,
+              COALESCE(icon, badge_icon) AS icon
          FROM badge_definitions
         WHERE COALESCE(is_active, true) = true
         ORDER BY display_order ASC, created_at ASC`
@@ -128,6 +164,12 @@ export async function getBadgeCatalogue(): Promise<BadgeDefinition[]> {
     console.warn('[gamification] badge_definitions unavailable, using fallback catalogue:', (error as Error).message)
     return BADGE_CATALOGUE
   }
+}
+
+export async function getAcademyBadgeCatalogue(): Promise<BadgeDefinition[]> {
+  const catalogue = await getBadgeCatalogue()
+  const academyCatalogue = catalogue.filter(isAcademyBadgeDefinition)
+  return academyCatalogue.length > 0 ? academyCatalogue : ACADEMY_BADGE_CATALOGUE
 }
 
 // ---------------------------------------------------------------------------
@@ -313,7 +355,10 @@ async function fetchBadgeStats(userId: string): Promise<BadgeStatsRow> {
       (SELECT COUNT(*)::int FROM task_submissions ts
          WHERE ts.student_id = $1 AND ts.status = 'graded')     AS task_count,
       (SELECT COUNT(*)::int FROM enrollments e
-         WHERE e.student_id = $1 AND e.status = 'completed')    AS course_count,
+         WHERE e.student_id = $1
+           AND (LOWER(e.status) = 'completed'
+                OR e.completed_at IS NOT NULL
+                OR COALESCE(e.progress_percentage, 0) >= 100))  AS course_count,
       (SELECT COUNT(*)::int FROM recitations r
          WHERE r.student_id = $1)                                AS recitation_count,
       (SELECT COUNT(DISTINCT r.surah_number)::int
@@ -331,7 +376,9 @@ async function fetchBadgeStats(userId: string): Promise<BadgeStatsRow> {
       (SELECT COUNT(*)::int FROM enrollments e
          JOIN courses c ON c.id = e.course_id
         WHERE e.student_id = $1
-          AND e.status = 'completed'
+          AND (LOWER(e.status) = 'completed'
+               OR e.completed_at IS NOT NULL
+               OR COALESCE(e.progress_percentage, 0) >= 100)
           AND (LOWER(COALESCE(c.subject, '')) = 'tajweed'
                OR c.title ILIKE '%تجويد%'))                     AS tajweed_completed_count
     FROM (SELECT 1) _

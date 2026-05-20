@@ -57,7 +57,9 @@ export async function GET(
          cs.attachments
        FROM course_sessions cs
        JOIN courses c ON cs.course_id = c.id
-       JOIN enrollments e ON c.id = e.course_id AND e.student_id = $2
+       JOIN enrollments e ON c.id = e.course_id
+         AND e.student_id = $2
+         AND LOWER(e.status) IN ('active', 'completed', 'accepted')
        LEFT JOIN users u ON c.teacher_id = u.id
        WHERE cs.id = $1`,
       [id, session.sub]
@@ -79,20 +81,30 @@ export async function GET(
       [id, session.sub]
     )
 
-    // Get related materials from the course lessons
-    const materials = await query<{
+    // Get related materials from the course lessons.
+    // `lessons` table holds the canonical lesson rows; we surface video/audio
+    // links and PDF attachments as "materials" for the session detail page.
+    const lessonRows = await query<{
       id: string
       title: string
-      type: string
-      content_url: string | null
+      video_url: string | null
+      audio_url: string | null
     }>(
-      `SELECT id, title, type, content_url 
-       FROM academy_lessons 
-       WHERE course_id = $1 AND status = 'published'
-       ORDER BY "order" ASC
+      `SELECT id, title, video_url, audio_url
+       FROM lessons
+       WHERE course_id = $1
+         AND COALESCE(status, 'published') = 'published'
+       ORDER BY COALESCE(order_index, lesson_order, 0) ASC
        LIMIT 5`,
       [sessionData.course_id]
     )
+
+    const materials: Array<{ id: string; title: string; type: string; content_url: string | null }> = lessonRows.map((l) => ({
+      id: l.id,
+      title: l.title,
+      type: l.video_url ? 'video' : (l.audio_url ? 'audio' : 'lesson'),
+      content_url: l.video_url || l.audio_url || null,
+    }))
 
     return NextResponse.json({
       session: {
@@ -129,7 +141,9 @@ export async function POST(
       `SELECT cs.id, cs.status, cs.title
        FROM course_sessions cs
        JOIN courses c ON cs.course_id = c.id
-       JOIN enrollments e ON c.id = e.course_id AND e.student_id = $2
+       JOIN enrollments e ON c.id = e.course_id
+         AND e.student_id = $2
+         AND LOWER(e.status) IN ('active', 'completed', 'accepted')
        WHERE cs.id = $1`,
       [id, session.sub]
     )

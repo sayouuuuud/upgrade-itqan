@@ -25,20 +25,18 @@ export default function AcademyCalendarPage() {
   const { t, locale } = useI18n()
   const isAr = locale === 'ar'
 
-  // Helper: convert a UTC ISO string to a local YYYY-MM-DD date string
-  const toLocalDateStr = (isoStr: string): string => {
-    const d = new Date(isoStr)
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+  // Local-date helper. Calendar columns and "today" must be expressed in the
+  // *user's* timezone, not UTC. Using toISOString().split('T')[0] drops the
+  // time component but keeps the date in UTC, which means a 11pm event in
+  // Cairo silently jumps to the next day on the grid.
+  const toLocalISODate = (d: Date) => {
+    const tz = d.getTimezoneOffset() * 60_000
+    return new Date(d.getTime() - tz).toISOString().split('T')[0]
   }
 
-  // Helper: get local YYYY-MM-DD for today
-  const getLocalToday = (): string => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  }
-  
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [selectedDate, setSelectedDate] = useState<string | null>(getLocalToday())
+  const [selectedDate, setSelectedDate] = useState<string | null>(toLocalISODate(new Date()))
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -51,13 +49,12 @@ export default function AcademyCalendarPage() {
         const res = await fetch(`/api/academy/student/calendar/events?month=${month}`)
         if (res.ok) {
           const data = await res.json()
-          // Convert UTC timestamps to local dates for correct timezone display
           const processed = (data.events || []).map((ev: CalendarEvent) => {
             if (ev.scheduled_at) {
               const d = new Date(ev.scheduled_at)
               return {
                 ...ev,
-                date: toLocalDateStr(ev.scheduled_at),
+                date: toLocalISODate(d),
                 time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
               }
             }
@@ -76,7 +73,7 @@ export default function AcademyCalendarPage() {
   }, [currentDate.getFullYear(), currentDate.getMonth()])
 
   // Today's events split out of `events` for the side panel
-  const todayStr = getLocalToday()
+  const todayStr = toLocalISODate(new Date())
   const todayEvents = events.filter(e => e.date === todayStr)
   const todaySessions = todayEvents.filter(e => e.type === 'live_session' || e.type === 'lesson')
   const todayTasks = todayEvents.filter(e => e.type === 'assignment_deadline')
@@ -176,19 +173,27 @@ export default function AcademyCalendarPage() {
               </p>
             ) : (
               <ul className="space-y-2">
-                {todaySessions.map(ev => (
-                  <li key={ev.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/40">
-                    <Clock className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                    <span dir="ltr" className="text-xs font-bold text-blue-500">{ev.time}</span>
-                    <span className="text-xs text-foreground truncate flex-1">{ev.title}</span>
-                    {ev.link && (
-                      <a href={ev.link} target="_blank" rel="noreferrer"
-                         className="text-[11px] font-bold text-blue-600 hover:underline shrink-0">
-                        {isAr ? 'انضمام' : 'Join'}
-                      </a>
-                    )}
-                  </li>
-                ))}
+                {todaySessions.map(ev => {
+                  const sessionId = ev.id.replace(/^session-/, '').replace(/^lesson-/, '')
+                  return (
+                    <li key={ev.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/40">
+                      <Clock className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                      <span dir="ltr" className="text-xs font-bold text-blue-500">{ev.time}</span>
+                      <Link
+                        href={ev.id.startsWith('session-') ? `/academy/student/sessions/${sessionId}` : '#'}
+                        className="text-xs text-foreground truncate flex-1 hover:text-blue-600"
+                      >
+                        {ev.title}
+                      </Link>
+                      {ev.link && (
+                        <a href={ev.link} target="_blank" rel="noreferrer"
+                           className="text-[11px] font-bold text-blue-600 hover:underline shrink-0">
+                          {isAr ? 'انضمام' : 'Join'}
+                        </a>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
             )}
           </CardContent>
@@ -336,7 +341,7 @@ export default function AcademyCalendarPage() {
                 <div className="divide-y divide-border/50">
                   {monthEvents.map((ev) => {
                     const evDate = new Date(ev.date)
-                    const isToday = ev.date === getLocalToday()
+                    const isToday = ev.date === todayStr
                     return (
                       <button
                         key={ev.id}
@@ -429,7 +434,7 @@ export default function AcademyCalendarPage() {
                   const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                   const dayEvents = getEventsForDate(dateStr)
                   const isSelected = selectedDate === dateStr
-                  const isToday = dateStr === getLocalToday()
+                  const isToday = dateStr === todayStr
 
                   return (
                     <button
@@ -495,7 +500,8 @@ export default function AcademyCalendarPage() {
               ) : (
                 <div className="divide-y divide-border/50">
                   {selectedEvents.map(ev => {
-                    const isToday = selectedDate === getLocalToday()
+                    const isToday = selectedDate === todayStr
+                    const sessionId = ev.id.replace(/^session-/, '').replace(/^lesson-/, '')
                     return (
                       <div key={ev.id} className="p-6 transition-colors hover:bg-muted/20">
                         <div className="flex items-start gap-4">
@@ -521,19 +527,53 @@ export default function AcademyCalendarPage() {
                           </div>
                         </div>
 
-                        {ev.type === 'live_session' && ev.link && (
-                          <div className="mt-5">
-                            <Button className="w-full font-bold shadow-md transform transition-all hover:scale-[1.02] active:scale-95 bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12" disabled={!isToday}>
-                              <Video className={`w-4 h-4 ${isAr ? "ml-2" : "mr-2"}`} />
-                              {isToday ? (isAr ? "انضمام للجلسة الآن" : "Join Session Now") : (isAr ? "الرابط سيتاح في موعد الجلسة" : "Link available at session time")}
+                        {ev.type === 'live_session' && (
+                          <div className="mt-5 flex flex-col sm:flex-row gap-2">
+                            {ev.link && isToday ? (
+                              <a
+                                href={ev.link}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex-1 inline-flex items-center justify-center font-bold shadow-md transition-all hover:scale-[1.02] active:scale-95 bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 px-4"
+                              >
+                                <Video className={`w-4 h-4 ${isAr ? "ml-2" : "mr-2"}`} />
+                                {isAr ? "انضمام للجلسة الآن" : "Join Session Now"}
+                              </a>
+                            ) : (
+                              <Button
+                                disabled
+                                className="flex-1 font-bold rounded-xl h-12 bg-muted text-muted-foreground"
+                              >
+                                <Video className={`w-4 h-4 ${isAr ? "ml-2" : "mr-2"}`} />
+                                {ev.link
+                                  ? (isAr ? "الرابط متاح في يوم الجلسة" : "Link available on session day")
+                                  : (isAr ? "لم يضف المدرّس الرابط بعد" : "Meeting link not added yet")}
+                              </Button>
+                            )}
+                            <Button asChild variant="outline" className="font-bold rounded-xl h-12">
+                              <Link href={`/academy/student/sessions/${sessionId}`}>
+                                {isAr ? "تفاصيل" : "Details"}
+                              </Link>
                             </Button>
                           </div>
                         )}
                         {ev.type === 'assignment_deadline' && (
                           <div className="mt-5">
-                            <Button variant="outline" className="w-full font-bold rounded-xl h-12 border-red-500/20 text-red-600 hover:bg-red-500/10">
-                              <FileText className={`w-4 h-4 ${isAr ? "ml-2" : "mr-2"}`} />
-                              {isAr ? "تسليم الواجب" : "Submit Assignment"}
+                            <Button asChild variant="outline" className="w-full font-bold rounded-xl h-12 border-red-500/20 text-red-600 hover:bg-red-500/10">
+                              <Link href={`/academy/student/tasks/${ev.id.replace(/^task-/, '')}/submit`}>
+                                <FileText className={`w-4 h-4 ${isAr ? "ml-2" : "mr-2"}`} />
+                                {isAr ? "تسليم الواجب" : "Submit Assignment"}
+                              </Link>
+                            </Button>
+                          </div>
+                        )}
+                        {ev.type === 'lesson' && (
+                          <div className="mt-5">
+                            <Button asChild variant="outline" className="w-full font-bold rounded-xl h-12">
+                              <Link href={`/academy/student/courses/${ev.course_id}/lesson/${ev.id.replace(/^lesson-/, '')}`}>
+                                <BookOpen className={`w-4 h-4 ${isAr ? "ml-2" : "mr-2"}`} />
+                                {isAr ? "فتح الدرس" : "Open Lesson"}
+                              </Link>
                             </Button>
                           </div>
                         )}

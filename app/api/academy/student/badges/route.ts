@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
-import { BadgeType, getBadgeCatalogue } from '@/lib/academy/gamification'
+import { getAcademyBadgeCatalogue } from '@/lib/academy/gamification'
 
 /**
  * GET /api/academy/student/badges
@@ -26,17 +26,28 @@ export async function GET(_req: NextRequest) {
   }
 
   try {
-    const earnedRows = await query<{
-      badge_type: BadgeType
-      awarded_at: string
-      points_awarded: number
-    }>(
-      `SELECT badge_type, awarded_at, points_awarded
-         FROM badges
-        WHERE user_id = $1`,
-      [session.sub]
-    )
-    const earnedMap = new Map(earnedRows.map(r => [r.badge_type, r]))
+    const [completedCourseCountRow, completedTaskCountRow, catalogue] = await Promise.all([
+      query<{ count: number }>(
+        `SELECT COUNT(*)::int AS count
+           FROM enrollments
+          WHERE student_id = $1
+            AND (LOWER(status) = 'completed'
+                 OR completed_at IS NOT NULL
+                 OR COALESCE(progress_percentage, 0) >= 100)`,
+        [session.sub]
+      ),
+      query<{ count: number }>(
+        `SELECT COUNT(*)::int AS count
+           FROM task_submissions
+          WHERE student_id = $1
+            AND status = 'graded'`,
+        [session.sub]
+      ),
+      getAcademyBadgeCatalogue(),
+    ])
+
+    const completedCourseCount = completedCourseCountRow[0]?.count ?? 0
+    const completedTaskCount = completedTaskCountRow[0]?.count ?? 0
 
     // Group by category
     const categoriesMap = new Map<
@@ -54,10 +65,14 @@ export async function GET(_req: NextRequest) {
       }>
     >()
 
-    const catalogue = await getBadgeCatalogue()
-
     for (const def of catalogue) {
-      const earned = earnedMap.get(def.badge_type)
+      const actualCriteriaEarned =
+        (def.criteria_type === 'courses' &&
+          def.criteria_value != null &&
+          completedCourseCount >= def.criteria_value) ||
+        (def.criteria_type === 'tasks' &&
+          def.criteria_value != null &&
+          completedTaskCount >= def.criteria_value)
       const list = categoriesMap.get(def.category) ?? []
       list.push({
         id: def.badge_type,
@@ -68,8 +83,7 @@ export async function GET(_req: NextRequest) {
         icon: def.icon ?? null,
         points_required:
           def.criteria_type === 'points' ? def.criteria_value : undefined,
-        is_earned: !!earned,
-        earned_at: earned?.awarded_at,
+        is_earned: actualCriteriaEarned,
       })
       categoriesMap.set(def.category, list)
     }
@@ -80,7 +94,10 @@ export async function GET(_req: NextRequest) {
     }))
 
     const total = catalogue.length
-    const earnedCount = earnedRows.length
+    const earnedCount = categories.reduce(
+      (sum, category) => sum + category.badges.filter(badge => badge.is_earned).length,
+      0
+    )
 
     return NextResponse.json({
       categories,
