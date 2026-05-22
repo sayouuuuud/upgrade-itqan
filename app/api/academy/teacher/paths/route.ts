@@ -4,12 +4,19 @@ import { query } from '@/lib/db'
 
 export async function GET() {
   const session = await getSession()
-  if (!session || session.role !== 'teacher') {
+  const isAuthorized = session && (session.role === 'teacher' || session.role === 'reader' || session.role === 'admin')
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
     const rows = await query(`
-      SELECT * FROM learning_paths WHERE created_by = $1 ORDER BY created_at DESC
+      SELECT 
+        id, title, description, subject, level, is_published,
+        total_stages as total_courses,
+        estimated_days as estimated_hours
+      FROM tajweed_paths 
+      WHERE created_by = $1 OR manager_id = $1 
+      ORDER BY created_at DESC
     `, [session.sub])
     return NextResponse.json({ data: rows })
   } catch (error) {
@@ -20,7 +27,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!session || session.role !== 'teacher') {
+  const isAuthorized = session && (session.role === 'teacher' || session.role === 'reader' || session.role === 'admin')
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
@@ -28,9 +36,9 @@ export async function POST(req: NextRequest) {
     if (!title) return NextResponse.json({ error: 'Title required' }, { status: 400 })
 
     const result = await query(`
-      INSERT INTO learning_paths (title, description, subject, level, estimated_hours, created_by, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW())
-      RETURNING *
+      INSERT INTO tajweed_paths (title, description, subject, level, estimated_days, created_by, manager_id, total_stages, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $6, 0, NOW())
+      RETURNING id, title, description, subject, level, is_published, total_stages as total_courses, estimated_days as estimated_hours
     `, [title, description || null, subject || 'quran', level || 'beginner', estimated_hours || 0, session.sub])
 
     return NextResponse.json({ data: result[0] }, { status: 201 })

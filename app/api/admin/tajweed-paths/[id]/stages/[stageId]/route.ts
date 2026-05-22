@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     const owned = await authorizePath(id, session!.sub, isReaderOnly)
     if (!owned) return NextResponse.json({ error: "غير موجود" }, { status: 404 })
 
-    const allowed = ["title", "description", "content", "video_url", "pdf_url", "passage_text", "estimated_minutes", "position"] as const
+    const allowed = ["title", "description", "content", "video_url", "pdf_url", "passage_text", "estimated_minutes", "position", "course_id"] as const
     const sets: string[] = []
     const params: any[] = []
     let i = 1

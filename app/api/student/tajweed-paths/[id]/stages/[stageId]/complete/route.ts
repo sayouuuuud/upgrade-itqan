@@ -41,6 +41,36 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       return NextResponse.json({ ok: true, status: "completed", already: true })
     }
 
+    // Check if the stage has a course_id associated with it
+    const stageInfoRows = (await query<any>(
+      `SELECT course_id FROM tajweed_path_stages WHERE id = $1 LIMIT 1`,
+      [stageId]
+    )) as any[]
+    const stageInfo = stageInfoRows[0]
+    if (!stageInfo) {
+      return NextResponse.json({ error: "المرحلة غير موجودة" }, { status: 404 })
+    }
+
+    if (stageInfo.course_id) {
+      // Check if student completed this course
+      const courseEnrollRows = (await query<any>(
+        `SELECT progress_percentage, status FROM enrollments 
+          WHERE student_id = $1 AND course_id = $2 LIMIT 1`,
+        [session!.sub, stageInfo.course_id]
+      )) as any[]
+      const courseEnroll = courseEnrollRows[0]
+      const isCompleted = courseEnroll && (
+        Number(courseEnroll.progress_percentage) === 100 || 
+        courseEnroll.status === 'completed'
+      )
+      if (!isCompleted) {
+        return NextResponse.json({ 
+          error: "يجب إكمال الدورة المرتبطة بهذه المرحلة أولاً قبل إكمال المرحلة",
+          course_id: stageInfo.course_id 
+        }, { status: 400 })
+      }
+    }
+
     const audioUrl = body.audio_url || progress.audio_url || null
     const recitationId = body.recitation_id || progress.recitation_id || null
 

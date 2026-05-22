@@ -49,8 +49,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     const inserted = (await query<any>(
       `INSERT INTO tajweed_path_stages (
           path_id, position, title, description, content,
-          video_url, pdf_url, passage_text, estimated_minutes
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+          video_url, pdf_url, passage_text, estimated_minutes, course_id
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
       [
         id, position, title,
         body.description || null,
@@ -59,6 +59,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         body.pdf_url || null,
         body.passage_text || null,
         body.estimated_minutes || 30,
+        body.course_id || null,
       ],
     )) as any[]
 

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, BookOpen, X, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { Plus, Trash2, Edit2, BookOpen, X, Loader2, BarChart3 } from 'lucide-react'
 
 interface Path {
   id: string
@@ -15,14 +16,11 @@ interface Path {
 }
 
 const SUBJECTS = [
-  { value: 'quran', label: 'القرآن الكريم' },
-  { value: 'tajweed', label: 'التجويد' },
-  { value: 'fiqh', label: 'الفقه' },
-  { value: 'aqeedah', label: 'العقيدة' },
+  { value: 'tajweed', label: 'التجويد والمقرأة' },
+  { value: 'fiqh', label: 'الفقه الإسلامي' },
+  { value: 'aqeedah', label: 'العقيدة الإسلامية' },
   { value: 'seerah', label: 'السيرة النبوية' },
-  { value: 'tafseer', label: 'التفسير' },
-  { value: 'arabic', label: 'اللغة العربية' },
-  { value: 'general', label: 'عام' },
+  { value: 'tafsir', label: 'التفسير وعلوم القرآن' },
 ]
 const LEVELS = [
   { value: 'beginner', label: 'مبتدئ' },
@@ -30,7 +28,7 @@ const LEVELS = [
   { value: 'advanced', label: 'متقدم' },
 ]
 
-const emptyForm = { title: '', description: '', subject: 'quran', level: 'beginner', estimated_hours: 0 }
+const emptyForm = { title: '', description: '', subject: 'tajweed', level: 'beginner', estimated_hours: 0 }
 
 export default function TeacherPathsPage() {
   const [paths, setPaths] = useState<Path[]>([])
@@ -65,7 +63,7 @@ export default function TeacherPathsPage() {
 
   const openEdit = (path: Path) => {
     setEditItem(path)
-    setForm({ title: path.title, description: path.description || '', subject: path.subject || 'quran', level: path.level || 'beginner', estimated_hours: path.estimated_hours || 0 })
+    setForm({ title: path.title, description: path.description || '', subject: path.subject || 'tajweed', level: path.level || 'beginner', estimated_hours: path.estimated_hours || 0 })
     setShowModal(true)
   }
 
@@ -116,18 +114,18 @@ export default function TeacherPathsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <BookOpen className="w-7 h-7 text-emerald-600" />
-            المسارات التعليمية
+            المسارات التعليمية المسؤولة
           </h1>
-          <p className="text-muted-foreground mt-1">إجمالي: {paths.length} مسار</p>
+          <p className="text-muted-foreground mt-1">تتم إدارة ومتابعة إحصائيات هذه المسارات من قبلك.</p>
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors shadow-sm self-start sm:self-auto"
         >
           <Plus className="w-5 h-5" />
           مسار جديد
@@ -143,31 +141,46 @@ export default function TeacherPathsPage() {
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {paths.map((path) => (
-            <div key={path.id} className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-bold text-lg flex-1 ml-2">{path.title}</h3>
-                <span className="text-xs px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full font-medium shrink-0">
-                  {getLevelLabel(path.level)}
-                </span>
+            <div key={path.id} className="bg-card border border-border rounded-2xl p-5 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+              <div>
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <h3 className="font-bold text-lg leading-snug line-clamp-1">{path.title}</h3>
+                  <span className="text-xs px-2.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full font-medium shrink-0 border border-emerald-500/20">
+                    {getLevelLabel(path.level)}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">{path.description}</p>
+                
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-5">
+                  <span className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded">{getSubjectLabel(path.subject)}</span>
+                  <span className="bg-muted px-2 py-0.5 rounded">{path.total_courses || 0} دورة</span>
+                  {path.estimated_hours > 0 && <span className="bg-muted px-2 py-0.5 rounded">{path.estimated_hours} ساعة</span>}
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{path.description}</p>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
-                <span className="bg-muted px-2 py-0.5 rounded-full">{getSubjectLabel(path.subject)}</span>
-                <span>{path.total_courses || 0} دورة</span>
-                {path.estimated_hours > 0 && <span>{path.estimated_hours} ساعة</span>}
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => openEdit(path)} className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-border rounded-lg text-sm font-medium hover:bg-muted transition-colors">
-                  <Edit2 className="w-3.5 h-3.5" /> تعديل
+
+              <div className="flex gap-2 pt-3 border-t border-border/50">
+                <Link 
+                  href={`/academy/teacher/paths/${path.id}`} 
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors shadow-sm"
+                >
+                  <BarChart3 className="w-4 h-4" /> عرض الإحصائيات
+                </Link>
+                <button 
+                  onClick={() => openEdit(path)} 
+                  className="flex items-center justify-center p-2 border border-border hover:bg-accent hover:text-accent-foreground rounded-xl transition-colors"
+                  title="تعديل المسار"
+                >
+                  <Edit2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDelete(path.id)}
                   disabled={deletingId === path.id}
-                  className="flex items-center justify-center py-2 px-3 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="flex items-center justify-center p-2 border border-rose-200 dark:border-rose-900 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl transition-colors disabled:opacity-50"
+                  title="حذف المسار"
                 >
-                  {deletingId === path.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  {deletingId === path.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -178,9 +191,9 @@ export default function TeacherPathsPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-border">
-              <h3 className="text-lg font-bold">{editItem ? 'تعديل المسار' : 'إضافة مسار جديد'}</h3>
+              <h3 className="text-lg font-bold">{editItem ? 'تعديل المسار الأكاديمي' : 'إضافة مسار أكاديمي جديد'}</h3>
               <button onClick={() => setShowModal(false)} className="p-2 hover:bg-muted rounded-lg transition-colors">
                 <X className="w-5 h-5" />
               </button>
@@ -193,7 +206,7 @@ export default function TeacherPathsPage() {
                   type="text"
                   value={form.title}
                   onChange={e => setForm({ ...form, title: e.target.value })}
-                  placeholder="مثال: مسار تعلم التجويد من الصفر"
+                  placeholder="مثال: مسار الفقه المالكي للمبتدئين"
                   className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -203,7 +216,7 @@ export default function TeacherPathsPage() {
                   rows={3}
                   value={form.description}
                   onChange={e => setForm({ ...form, description: e.target.value })}
-                  placeholder="وصف مختصر للمسار..."
+                  placeholder="وصف مختصر لأهداف المسار ومحتواه..."
                   className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
                 />
               </div>
@@ -230,7 +243,7 @@ export default function TeacherPathsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-bold block mb-1.5">الساعات التقديرية</label>
+                <label className="text-sm font-bold block mb-1.5">الساعات التقديرية للدراسة</label>
                 <input
                   type="number"
                   min={0}
