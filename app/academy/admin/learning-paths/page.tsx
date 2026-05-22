@@ -314,9 +314,10 @@ export default function AcademyAdminLearningPathsPage() {
       const fd = new FormData()
       fd.append("file", file)
       const res = await fetch("/api/upload", { method: "POST", body: fd })
-      const json = await readJson<{ url?: string; error?: string }>(res)
+      const json = await readJson<{ url?: string; error?: string; details?: string }>(res)
       if (!res.ok || !json.url) {
-        toast.error(json.error || "فشل رفع الصورة")
+        const errMsg = json.details ? `${json.error || "فشل رفع الصورة"}: ${json.details}` : (json.error || "فشل رفع الصورة")
+        toast.error(errMsg)
         return
       }
       setForm(prev => ({ ...prev, thumbnail_url: json.url || "" }))

@@ -241,7 +241,8 @@ export default function AdminTajweedPathsPage() {
       const res = await fetch("/api/upload", { method: "POST", body: fd })
       const json = await res.json()
       if (!res.ok || !json.url) {
-        toast.error(json.error || "فشل رفع الصورة")
+        const errMsg = json.details ? `${json.error || "فشل رفع الصورة"}: ${json.details}` : (json.error || "فشل رفع الصورة")
+        toast.error(errMsg)
         return
       }
       setForm(prev => ({ ...prev, thumbnail_url: json.url || "" }))
