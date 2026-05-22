@@ -115,18 +115,11 @@ export async function PUT(
       }
     }
 
-    const updateQuery = `
-      UPDATE courses SET
-        title = COALESCE($1, title),
-        description = COALESCE($2, description),
-        thumbnail_url = COALESCE($3, thumbnail_url),
-        level = COALESCE($4, level),
-        category_id = COALESCE($5, category_id),
-        status = COALESCE($6, status),
-        updated_at = NOW()
-      WHERE id = $7 ${session.role === 'teacher' ? 'AND teacher_id = $8' : ''}
-      RETURNING *
-    `
+    // When a course moves into pending_review (teacher submitting or
+    // resubmitting), clear the previous rejection_reason and stamp the
+    // submission timestamp so the admin sees a fresh review state.
+    const isSubmittingForReview = statusToSet === 'pending_review'
+
     const updateParams: unknown[] = [
       title,
       description,
@@ -137,6 +130,23 @@ export async function PUT(
       courseId,
     ]
     if (session.role === 'teacher') updateParams.push(session.sub)
+    const submitFlagIdx = updateParams.length + 1
+    updateParams.push(isSubmittingForReview)
+
+    const updateQuery = `
+      UPDATE courses SET
+        title = COALESCE($1, title),
+        description = COALESCE($2, description),
+        thumbnail_url = COALESCE($3, thumbnail_url),
+        level = COALESCE($4, level),
+        category_id = COALESCE($5, category_id),
+        status = COALESCE($6, status),
+        rejection_reason = CASE WHEN $${submitFlagIdx}::boolean THEN NULL ELSE rejection_reason END,
+        submitted_for_review_at = CASE WHEN $${submitFlagIdx}::boolean THEN NOW() ELSE submitted_for_review_at END,
+        updated_at = NOW()
+      WHERE id = $7 ${session.role === 'teacher' ? 'AND teacher_id = $8' : ''}
+      RETURNING *
+    `
     const result = await query<any>(updateQuery, updateParams)
 
     if (result.length === 0) {

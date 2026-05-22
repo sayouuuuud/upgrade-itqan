@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
       SELECT 
         c.id, c.title, c.description, c.thumbnail_url, c.level, c.status,
         c.category_id, COALESCE(cat.name, '') as category_name,
+        c.is_active, c.rejection_reason, c.reviewed_at, c.submitted_for_review_at,
         COUNT(DISTINCT l.id)::int as total_lessons,
         COUNT(DISTINCT e.id)::int as total_enrolled,
         COUNT(DISTINCT CASE WHEN e.status = 'pending' THEN e.id END)::int as pending_requests,
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
       LEFT JOIN lessons l ON l.course_id = c.id
       LEFT JOIN enrollments e ON e.course_id = c.id
       WHERE c.teacher_id = $1
-      GROUP BY c.id, c.title, c.description, c.thumbnail_url, c.level, c.status, c.category_id, cat.name, c.created_at
+      GROUP BY c.id, c.title, c.description, c.thumbnail_url, c.level, c.status, c.category_id, cat.name, c.is_active, c.rejection_reason, c.reviewed_at, c.submitted_for_review_at, c.created_at
       ORDER BY c.created_at DESC
     `
     const rows = await query<any>(q, [session.sub])

@@ -7,7 +7,8 @@ import { useI18n } from '@/lib/i18n/context'
 import {
   ArrowRight, PlayCircle, Settings, Users, BookOpen, Clock,
   Trash2, Plus, GripVertical, CheckCircle2, UploadCloud,
-  FileText, Video, Image as ImageIcon, FileIcon, Loader2, Save, Trash, Edit2
+  FileText, Video, Image as ImageIcon, FileIcon, Loader2, Save, Trash, Edit2,
+  XCircle, Send, AlertTriangle
 } from 'lucide-react'
 
 type Tab = 'lessons' | 'settings' | 'students'
@@ -218,8 +219,81 @@ export default function ManageCoursePage() {
 
   if (!course) return <div className="text-center p-8 bg-card rounded-xl border border-border">الدورة غير موجودة</div>
 
+  const handleResubmitForReview = async () => {
+    if (!confirm('إرسال الدورة للأدمن للمراجعة؟ تأكد أنك عدلت المحتوى والدروس بناءً على سبب الرفض.')) return
+    try {
+      const res = await fetch(`/api/academy/teacher/courses/${courseId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'pending_review' })
+      })
+      if (res.ok) {
+        await fetchCourseData()
+        alert('تم إرسال الدورة للأدمن للمراجعة.')
+      } else {
+        const json = await res.json().catch(() => ({}))
+        alert(json?.error || 'تعذر إرسال الدورة للمراجعة.')
+      }
+    } catch (e) {
+      console.error(e)
+      alert('حدث خطأ أثناء الإرسال.')
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
+      {/* Rejection banner */}
+      {course.status === 'rejected' && course.rejection_reason && (
+        <div className="bg-red-50 dark:bg-red-900/15 border border-red-300 dark:border-red-800/60 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center shrink-0">
+              <XCircle className="w-5 h-5 text-red-700 dark:text-red-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-red-900 dark:text-red-200">تم رفض الدورة من الأدمن</h3>
+              <p className="text-sm text-red-800 dark:text-red-200/90 whitespace-pre-wrap mt-1">{course.rejection_reason}</p>
+              <p className="text-xs text-red-700/70 dark:text-red-300/70 mt-2">
+                عدّل الدروس والمحتوى بناءً على السبب ثم اضغط "إعادة الإرسال للمراجعة".
+              </p>
+              <button
+                onClick={handleResubmitForReview}
+                className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-bold text-sm shadow-sm transition-colors"
+              >
+                <Send className="w-4 h-4" />
+                إعادة الإرسال للمراجعة
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {course.status === 'pending_review' && (
+        <div className="bg-amber-50 dark:bg-amber-900/15 border border-amber-300 dark:border-amber-700/60 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+          <Clock className="w-5 h-5 text-amber-700 dark:text-amber-300 shrink-0" />
+          <div className="text-sm text-amber-900 dark:text-amber-100">
+            <strong>الدورة بانتظار مراجعة الأدمن.</strong> لا تظهر للطلاب حتى تتم الموافقة عليها.
+          </div>
+        </div>
+      )}
+
+      {course.status === 'draft' && (
+        <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm flex-wrap">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-slate-600 dark:text-slate-300 shrink-0" />
+            <div className="text-sm text-slate-800 dark:text-slate-200">
+              <strong>الدورة في وضع المسودة.</strong> أرسلها للأدمن للمراجعة عندما تصبح جاهزة.
+            </div>
+          </div>
+          <button
+            onClick={handleResubmitForReview}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm shadow-sm transition-colors"
+          >
+            <Send className="w-4 h-4" />
+            إرسال للمراجعة
+          </button>
+        </div>
+      )}
+
       {/* Header Profile Card */}
       <div className="relative bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
         <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-700"></div>
