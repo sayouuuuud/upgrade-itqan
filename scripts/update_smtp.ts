@@ -5,11 +5,11 @@ async function main() {
     const newConfig = {
         host: "smtp.gmail.com",
         port: 465,
-        user: "itqaan69@gmail.com",
+        user: "sayedxiv@gmail.com",
         secure: true,
-        password: "oznmbncchjcvibrl",
-        fromName: "إتقان الفاتحة",
-        fromEmail: "itqaan69@gmail.com"
+        password: "qdjdbfsmmlqgwoqd",
+        fromName: "إتقان التعليمية",
+        fromEmail: "sayedxiv@gmail.com"
     };
 
     try {
