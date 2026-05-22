@@ -39,12 +39,13 @@ type Stage = {
   pdf_url: string | null
   passage_text: string | null
   estimated_minutes: number
+  course_id: string | null
 }
 
 const initialStageForm = {
   title: "", description: "", content: "",
   video_url: "", pdf_url: "", passage_text: "",
-  estimated_minutes: 30,
+  estimated_minutes: 30, course_id: "",
 }
 
 export default function AdminTajweedPathDetailPage() {
@@ -65,8 +66,14 @@ export default function AdminTajweedPathDetailPage() {
     subject: "tajweed" as Subject,
     manager_id: "" as string,
     estimated_days: "", require_audio: false, is_published: false,
+    target_audience: "", promo_video_url: "",
+    what_you_will_learn: [] as string[],
+    prerequisites: [] as string[],
+    certification_type: "certificate_of_completion", enrollment_type: "open", price: 0,
+    tags: [] as string[]
   })
   const [managers, setManagers] = useState<ManagerCandidate[]>([])
+  const [courses, setCourses] = useState<{id: string, title: string}[]>([])
 
   const [stageDialog, setStageDialog] = useState<{ open: boolean; stage?: Stage }>({ open: false })
   const [stageForm, setStageForm] = useState(initialStageForm)
@@ -93,6 +100,14 @@ export default function AdminTajweedPathDetailPage() {
           estimated_days: d1.path.estimated_days?.toString() || "",
           require_audio: !!d1.path.require_audio,
           is_published: !!d1.path.is_published,
+          target_audience: d1.path.target_audience || "",
+          promo_video_url: d1.path.promo_video_url || "",
+          what_you_will_learn: d1.path.what_you_will_learn || [],
+          prerequisites: d1.path.prerequisites || [],
+          certification_type: d1.path.certification_type || "certificate_of_completion",
+          enrollment_type: d1.path.enrollment_type || "open",
+          price: d1.path.price || 0,
+          tags: d1.path.tags || [],
         })
       }
       if (r2.ok) {
@@ -120,16 +135,19 @@ export default function AdminTajweedPathDetailPage() {
   useEffect(() => {
     (async () => {
       try {
-        const [readers, teachers] = await Promise.all([
+        const [readers, teachers, coursesRes] = await Promise.all([
           fetch("/api/admin/users?role=reader&limit=100").then(r => r.json()).catch(() => ({})),
           fetch("/api/admin/users?role=teacher&limit=100").then(r => r.json()).catch(() => ({})),
+          fetch("/api/academy/admin/courses").then(r => r.json()).catch(() => ({ data: [] })),
         ])
         setManagers([
           ...((readers?.users as any[]) || []),
           ...((teachers?.users as any[]) || []),
         ])
+        setCourses(coursesRes.data || [])
       } catch {
         setManagers([])
+        setCourses([])
       }
     })()
   }, [])
@@ -149,6 +167,14 @@ export default function AdminTajweedPathDetailPage() {
           estimated_days: edit.estimated_days ? parseInt(edit.estimated_days, 10) : null,
           require_audio: edit.require_audio,
           is_published: edit.is_published,
+          target_audience: edit.target_audience,
+          promo_video_url: edit.promo_video_url,
+          what_you_will_learn: edit.what_you_will_learn,
+          prerequisites: edit.prerequisites,
+          certification_type: edit.certification_type,
+          enrollment_type: edit.enrollment_type,
+          price: edit.price,
+          tags: edit.tags,
         }),
       })
       await load()
@@ -170,6 +196,7 @@ export default function AdminTajweedPathDetailPage() {
       pdf_url: stage.pdf_url || "",
       passage_text: stage.passage_text || "",
       estimated_minutes: stage.estimated_minutes || 30,
+      course_id: stage.course_id || "",
     })
     setStageDialog({ open: true, stage })
   }
@@ -186,6 +213,7 @@ export default function AdminTajweedPathDetailPage() {
         pdf_url: stageForm.pdf_url || null,
         passage_text: stageForm.passage_text || null,
         estimated_minutes: stageForm.estimated_minutes,
+        course_id: stageForm.course_id || null,
       }
       if (stageDialog.stage) {
         await fetch(`/api/admin/tajweed-paths/${pathId}/stages/${stageDialog.stage.id}`, {
@@ -274,6 +302,7 @@ export default function AdminTajweedPathDetailPage() {
       <Tabs defaultValue="stages" className="space-y-4">
         <TabsList>
           <TabsTrigger value="stages">{tp.tabs.stages} ({stages.length})</TabsTrigger>
+          <TabsTrigger value="landing">صفحة الهبوط (Landing)</TabsTrigger>
           <TabsTrigger value="funnel">{tp.tabs.funnel}</TabsTrigger>
           <TabsTrigger value="settings">{tp.tabs.settings}</TabsTrigger>
         </TabsList>
@@ -299,6 +328,7 @@ export default function AdminTajweedPathDetailPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold">{s.title}</h3>
                       <Badge variant="outline" className="text-xs">{s.estimated_minutes} {tp.metadata.minutesShort}</Badge>
+                      {s.course_id && <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 border-blue-200">دورة تدريبية</Badge>}
                       {s.video_url && <Badge variant="secondary" className="text-xs">{tp.metadata.videoBadge}</Badge>}
                       {s.pdf_url && <Badge variant="secondary" className="text-xs">{tp.metadata.pdfBadge}</Badge>}
                     </div>
@@ -491,6 +521,60 @@ export default function AdminTajweedPathDetailPage() {
             </Button>
           </Card>
         </TabsContent>
+
+        <TabsContent value="landing">
+          <Card className="p-6 max-w-2xl space-y-4">
+            <h3 className="font-semibold text-lg border-b pb-2">إعدادات صفحة الهبوط</h3>
+            <div className="space-y-1">
+              <Label>الفيديو التعريفي (Promo Video URL)</Label>
+              <Input value={edit.promo_video_url} onChange={e => setEdit({ ...edit, promo_video_url: e.target.value })} placeholder="رابط يوتيوب أو فيديو تعريفي..." />
+            </div>
+            <div className="space-y-1">
+              <Label>الفئة المستهدفة (Target Audience)</Label>
+              <Textarea rows={2} value={edit.target_audience} onChange={e => setEdit({ ...edit, target_audience: e.target.value })} placeholder="لمن هذا المسار؟" />
+            </div>
+            <div className="space-y-1">
+              <Label>ماذا ستتعلم؟ (What you will learn) - افصل بينها بفاصلة</Label>
+              <Textarea rows={3} value={edit.what_you_will_learn.join(', ')} onChange={e => setEdit({ ...edit, what_you_will_learn: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })} placeholder="إتقان مخارج الحروف، التلاوة الصحيحة..." />
+            </div>
+            <div className="space-y-1">
+              <Label>المتطلبات السابقة (Prerequisites) - افصل بينها بفاصلة</Label>
+              <Textarea rows={2} value={edit.prerequisites.join(', ')} onChange={e => setEdit({ ...edit, prerequisites: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })} placeholder="القدرة على قراءة الحروف العربية..." />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>نوع التسجيل</Label>
+                <Select value={edit.enrollment_type} onValueChange={v => setEdit({ ...edit, enrollment_type: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="open">مفتوح للجميع</SelectItem>
+                    <SelectItem value="cohort">نظام دفعات (Cohorts)</SelectItem>
+                    <SelectItem value="invite_only">بدعوة فقط</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label>نوع الشهادة</Label>
+                <Select value={edit.certification_type} onValueChange={v => setEdit({ ...edit, certification_type: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="certificate_of_completion">شهادة إتمام</SelectItem>
+                    <SelectItem value="ijazah">إجازة</SelectItem>
+                    <SelectItem value="none">بدون شهادة</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label>سعر المسار (إذا كان مدفوعاً، 0 للمجاني)</Label>
+              <Input type="number" min="0" value={edit.price} onChange={e => setEdit({ ...edit, price: parseFloat(e.target.value) || 0 })} />
+            </div>
+            <Button onClick={savePath} disabled={saving} className="gap-2 mt-4">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              حفظ بيانات صفحة الهبوط
+            </Button>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       <Dialog open={stageDialog.open} onOpenChange={o => setStageDialog({ open: o })}>
@@ -520,6 +604,18 @@ export default function AdminTajweedPathDetailPage() {
             <div className="space-y-1">
               <Label>{tp.stageForm.pdfUrl}</Label>
               <Input value={stageForm.pdf_url} onChange={e => setStageForm({ ...stageForm, pdf_url: e.target.value })} placeholder="https://..." />
+            </div>
+            <div className="md:col-span-2 space-y-1">
+              <Label>الدورة المرتبطة (اختياري)</Label>
+              <Select value={stageForm.course_id || "none"} onValueChange={v => setStageForm({ ...stageForm, course_id: v === "none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="اختر دورة من المنصة لربطها بهذه المرحلة" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">بدون دورة</SelectItem>
+                  {courses.map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="md:col-span-2 space-y-1">
               <Label>{tp.stageForm.passageText}</Label>

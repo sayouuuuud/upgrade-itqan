@@ -459,6 +459,25 @@ export async function POST(req: NextRequest) {
       values.push(typeof body.manager_id === "string" && body.manager_id ? body.manager_id : null)
     }
 
+    const simpleFields = ["target_audience", "promo_video_url", "certification_type", "enrollment_type"]
+    for (const key of simpleFields) {
+      if (source.columns.has(key)) {
+        insertColumns.push(key)
+        values.push(typeof body[key] === "string" ? body[key] : null)
+      }
+    }
+    if (source.columns.has("price")) {
+      insertColumns.push("price")
+      values.push(typeof body.price === "number" ? body.price : 0)
+    }
+    const jsonbFields = ["what_you_will_learn", "prerequisites", "tags"]
+    for (const key of jsonbFields) {
+      if (source.columns.has(key)) {
+        insertColumns.push(key)
+        values.push(JSON.stringify(Array.isArray(body[key]) ? body[key] : []))
+      }
+    }
+
     const placeholders = values.map((_, index) => `$${index + 1}`)
     const inserted = await query<LearningPathRow>(
       `INSERT INTO ${source.table} (${insertColumns.join(", ")})
