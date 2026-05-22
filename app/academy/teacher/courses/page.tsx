@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useI18n } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { BookOpen, Plus, GraduationCap, PlayCircle, Users, Edit, FileText, Bell, Archive, Loader2, Trash2, Clock, XCircle } from 'lucide-react'
+import { BookOpen, Plus, GraduationCap, PlayCircle, Users, Edit, FileText, Bell, Archive, Loader2, Trash2, Clock, XCircle, AlertTriangle, Send } from 'lucide-react'
 
 type CourseStatus = 'draft' | 'pending_review' | 'published' | 'rejected' | 'archived'
 
@@ -20,6 +20,9 @@ interface Course {
   total_lessons: number
   total_enrolled: number
   pending_requests: number
+  rejection_reason?: string | null
+  reviewed_at?: string | null
+  submitted_for_review_at?: string | null
   created_at: string
 }
 
@@ -29,6 +32,7 @@ export default function TeacherCoursesPage() {
   const [loading, setLoading] = useState(true)
   const [archivingId, setArchivingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [resubmittingId, setResubmittingId] = useState<string | null>(null)
 
   const fetchCourses = async () => {
     try {
@@ -74,6 +78,27 @@ export default function TeacherCoursesPage() {
       }
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  const handleResubmit = async (course: Course) => {
+    if (!confirm(`إعادة إرسال الدورة "${course.title}" للأدمن للمراجعة؟ تأكد أنك عدّلت المحتوى بناءً على سبب الرفض.`)) return
+    setResubmittingId(course.id)
+    try {
+      const res = await fetch(`/api/academy/teacher/courses/${course.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'pending_review' }),
+      })
+      if (res.ok) {
+        alert('تم إرسال الدورة للأدمن للمراجعة.')
+        fetchCourses()
+      } else {
+        const json = await res.json().catch(() => ({}))
+        alert(json?.error || 'تعذر إرسال الدورة للمراجعة.')
+      }
+    } finally {
+      setResubmittingId(null)
     }
   }
 
@@ -187,9 +212,11 @@ export default function TeacherCoursesPage() {
         </div>
       </div>
       {rejectedCount > 0 && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
-          <XCircle className="w-4 h-4 shrink-0" />
-          <span>{rejectedCount} دورة مرفوضة تحتاج للمراجعة وإعادة التقديم.</span>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            لديك {rejectedCount} دورة مرفوضة — راجع سبب الرفض على بطاقة الدورة، عدّل المحتوى، ثم اضغط <strong>&quot;إعادة الإرسال للمراجعة&quot;</strong>.
+          </span>
         </div>
       )}
 
@@ -254,6 +281,20 @@ export default function TeacherCoursesPage() {
                 </div>
                 
                 <h3 className="font-bold text-lg text-foreground mb-3 truncate">{course.title}</h3>
+
+                {course.status === 'rejected' && course.rejection_reason && (
+                  <div className="mb-3 bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-800/60 rounded-lg p-2.5 text-xs text-red-700 dark:text-red-300">
+                    <div className="font-bold mb-0.5 flex items-center gap-1"><XCircle className="w-3.5 h-3.5" /> سبب رفض الأدمن:</div>
+                    <p className="line-clamp-3 leading-relaxed">{course.rejection_reason}</p>
+                  </div>
+                )}
+
+                {course.status === 'pending_review' && (
+                  <div className="mb-3 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800/60 rounded-lg p-2.5 text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 shrink-0" />
+                    <span>الدورة بانتظار مراجعة الأدمن ولا تظهر للطلاب حتى تتم الموافقة.</span>
+                  </div>
+                )}
                 
                 <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground mt-auto mb-4">
                   <span className="flex items-center gap-1.5">
@@ -265,13 +306,33 @@ export default function TeacherCoursesPage() {
                 </div>
 
                 <div className="flex items-center gap-2 mt-auto">
-                  <Link 
-                    href={`/academy/teacher/courses/${course.id}`}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 text-sm font-bold transition-colors"
-                  >
-                    <Edit className="w-4 h-4" />
-                    إدارة الدورة
-                  </Link>
+                  {course.status === 'rejected' ? (
+                    <button
+                      onClick={() => handleResubmit(course)}
+                      disabled={resubmittingId === course.id}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm font-bold transition-colors shadow-sm disabled:opacity-60"
+                    >
+                      {resubmittingId === course.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      إعادة الإرسال للمراجعة
+                    </button>
+                  ) : (
+                    <Link 
+                      href={`/academy/teacher/courses/${course.id}`}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 text-sm font-bold transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                      إدارة الدورة
+                    </Link>
+                  )}
+                  {course.status === 'rejected' && (
+                    <Link 
+                      href={`/academy/teacher/courses/${course.id}`}
+                      className="shrink-0 flex items-center justify-center w-10 h-10 border border-border bg-card rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-muted-foreground hover:text-blue-600 transition-colors"
+                      title="تعديل الدورة"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Link>
+                  )}
                   <button
                     onClick={() => handleToggleArchive(course)}
                     disabled={archivingId === course.id}

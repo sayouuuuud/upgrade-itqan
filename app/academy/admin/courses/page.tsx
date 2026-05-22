@@ -6,6 +6,7 @@ import {
   Plus, Edit2, Trash2, BookOpen, X, Loader2, Users, Archive,
   Search, Filter, GraduationCap, Clock, FileText, XCircle,
   ImageIcon, UploadCloud, Tag, PlayCircle, Settings, ExternalLink, CheckCircle2,
+  Eye, ShieldCheck,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -29,6 +30,9 @@ interface Course {
   total_lessons: number
   total_enrolled: number
   pending_requests: number
+  rejection_reason: string | null
+  reviewed_at: string | null
+  submitted_for_review_at: string | null
   created_at: string
 }
 
@@ -396,10 +400,17 @@ export default function AdminCoursesPage() {
         <StatCard icon={<Users className="w-5 h-5 text-purple-500" />} value={stats.students} label="إجمالي الطلاب" />
       </div>
 
+      {stats.pending > 0 && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3 flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300">
+          <ShieldCheck className="w-4 h-4 shrink-0" />
+          <span>{stats.pending} دورة بانتظار مراجعتك — اضغط &quot;مراجعة&quot; على البطاقة للموافقة أو الرفض.</span>
+        </div>
+      )}
+
       {stats.rejected > 0 && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
           <XCircle className="w-4 h-4 shrink-0" />
-          <span>{stats.rejected} دورة مرفوضة بحاجة لمراجعة.</span>
+          <span>{stats.rejected} دورة مرفوضة — في انتظار أن يعدّلها المدرس ويعيد إرسالها.</span>
         </div>
       )}
 
@@ -815,23 +826,40 @@ function CourseCard({
           </div>
         </div>
 
+        {status === 'rejected' && course.rejection_reason && (
+          <div className="mb-3 -mt-1 bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-800/60 rounded-lg p-2 text-[11px] text-red-700 dark:text-red-300">
+            <div className="font-bold mb-0.5 flex items-center gap-1"><XCircle className="w-3 h-3" /> سبب رفضك السابق:</div>
+            <p className="line-clamp-2">{course.rejection_reason}</p>
+          </div>
+        )}
+
         <div className="mt-auto pt-3 border-t border-border flex items-center gap-1.5">
-          <button
-            onClick={onEdit}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 text-xs font-bold transition-colors"
-            title="تعديل بيانات الدورة"
-          >
-            <Edit2 className="w-3.5 h-3.5" />
-            تعديل
-          </button>
+          {status === 'pending_review' ? (
+            <Link
+              href={`/academy/admin/courses/${course.id}`}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-xs font-bold transition-colors shadow-sm"
+              title="مراجعة الدورة من الداخل"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              مراجعة
+            </Link>
+          ) : (
+            <button
+              onClick={onEdit}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 text-xs font-bold transition-colors"
+              title="تعديل بيانات الدورة"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+              تعديل
+            </button>
+          )}
           <Link
-            href={`/academy/teacher/courses/${course.id}`}
+            href={`/academy/admin/courses/${course.id}`}
             className="flex items-center justify-center gap-1 px-3 py-2 border border-border bg-card hover:bg-muted text-xs font-bold rounded-lg transition-colors"
-            title="إدارة الدروس والمحتوى"
+            title="عرض وإدارة دروس ومحتوى الدورة"
           >
-            <Settings className="w-3.5 h-3.5" />
-            الدروس
-            <ExternalLink className="w-3 h-3 opacity-60" />
+            <Eye className="w-3.5 h-3.5" />
+            المحتوى
           </Link>
           <button
             onClick={onArchive}
