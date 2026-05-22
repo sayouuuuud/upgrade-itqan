@@ -249,14 +249,10 @@ export default function AcademyAdminLearningPathsPage() {
 
   const loadManagers = useCallback(async () => {
     try {
-      const [readersResponse, teachersResponse] = await Promise.all([
-        fetch("/api/admin/users?role=reader&limit=100"),
-        fetch("/api/admin/users?role=teacher&limit=100"),
-      ])
-      const readers = await readJson<UsersPayload>(readersResponse)
-      const teachers = await readJson<UsersPayload>(teachersResponse)
+      const response = await fetch("/api/admin/users?role=teacher&limit=100")
+      const payload = await readJson<UsersPayload>(response)
       const unique = new Map<string, ManagerCandidate>()
-      for (const manager of [...(readers.users || []), ...(teachers.users || [])]) {
+      for (const manager of (payload.users || [])) {
         if (manager.id) unique.set(manager.id, manager)
       }
       setManagers([...unique.values()])
