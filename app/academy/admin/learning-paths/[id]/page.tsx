@@ -120,14 +120,8 @@ export default function AcademyAdminLearningPathDetailPage() {
   useEffect(() => {
     (async () => {
       try {
-        const [readers, teachers] = await Promise.all([
-          fetch("/api/admin/users?role=reader&limit=100").then(r => r.json()).catch(() => ({})),
-          fetch("/api/admin/users?role=teacher&limit=100").then(r => r.json()).catch(() => ({})),
-        ])
-        setManagers([
-          ...((readers?.users as any[]) || []),
-          ...((teachers?.users as any[]) || []),
-        ])
+        const teachers = await fetch("/api/admin/users?role=teacher&limit=100").then(r => r.json()).catch(() => ({}))
+        setManagers((teachers?.users as any[]) || [])
       } catch {
         setManagers([])
       }
