@@ -83,7 +83,7 @@ export default function AdminUsersPage() {
         activeTab === "parents" ? "parent" :
         activeTab === "supervisors" ? "supervisors" : "admin"
       const searchParam = search ? `&search=${encodeURIComponent(search)}` : ""
-      const res = await fetch(`/api/admin/users?role=${role}&page=${page}&limit=10${searchParam}`)
+      const res = await fetch(`/api/admin/users?role=${role}&platform=academy&page=${page}&limit=10${searchParam}`)
       if (res.ok) {
         const data = await res.json()
         setUsers(data.users || [])

@@ -16,12 +16,20 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const role = searchParams.get("role")
     const search = searchParams.get("search")
+    const platform = searchParams.get("platform")
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "10")
     const offset = (page - 1) * limit
 
     let whereClause = "WHERE 1=1"
     const params: unknown[] = []
+
+    // Filter by platform (academy vs quran)
+    if (platform === "academy") {
+      whereClause += ` AND u.has_academy_access = true`
+    } else if (platform === "quran") {
+      whereClause += ` AND u.has_quran_access = true`
+    }
 
     // Enforce role restrictions for supervisors
     if (session!.role === 'student_supervisor') {
