@@ -139,6 +139,8 @@ export async function GET(req: NextRequest) {
     }
 
     // ─── 3. SCHEDULED LESSONS ─────────────────────────────────────────────────
+    // The lessons table does not have a scheduled_at column.
+    /*
     const lessons = await query<any>(`
       SELECT
         l.id,
@@ -169,6 +171,7 @@ export async function GET(req: NextRequest) {
         scheduled_at: l.scheduled_at,
       })
     }
+    */
 
     // ─── 4. MEMORIZATION GOALS ────────────────────────────────────────────────
     try {
