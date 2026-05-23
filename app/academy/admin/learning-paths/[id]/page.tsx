@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import {
   ArrowRight, GraduationCap, Eye, EyeOff, Loader2, Plus, Save, Trash2,
   Users, CheckCircle2, Clock, ChevronUp, ChevronDown, BarChart3, UploadCloud,
-  Image as ImageIcon,
+  FileText, PlaySquare, LayoutTemplate, Link2 as LinkIcon, Image as ImageIcon,
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
@@ -700,84 +700,121 @@ export default function AcademyAdminLearningPathDetailPage() {
       <Dialog open={stageDialog.open} onOpenChange={o => setStageDialog({ open: o })}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{stageDialog.stage ? tp.actions.editStage : tp.actions.addNewStage}</DialogTitle>
-            <DialogDescription>{tp.stageForm.dialogDescription}</DialogDescription>
+            <DialogTitle className="text-xl font-bold">{stageDialog.stage ? tp.actions.editStage : tp.actions.addNewStage}</DialogTitle>
+            <DialogDescription className="text-sm opacity-90">{tp.stageForm.dialogDescription}</DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
-            <div className="md:col-span-2 space-y-1">
-              <Label>{tp.stageForm.title}</Label>
-              <Input value={stageForm.title} onChange={e => setStageForm({ ...stageForm, title: e.target.value })} placeholder={tp.stageForm.titlePlaceholder} />
-            </div>
-            <div className="md:col-span-2 space-y-1">
-              <Label>{tp.stageForm.description}</Label>
-              <Textarea rows={2} value={stageForm.description} onChange={e => setStageForm({ ...stageForm, description: e.target.value })} />
-            </div>
-            <div className="md:col-span-2 space-y-1">
-              <Label>{tp.stageForm.content}</Label>
-              <Textarea rows={5} value={stageForm.content} onChange={e => setStageForm({ ...stageForm, content: e.target.value })} placeholder={tp.stageForm.contentPlaceholder} />
-            </div>
-            <div className="space-y-1">
-              <Label>{tp.stageForm.videoUrl}</Label>
-              <div className="flex gap-2">
-                <Input value={stageForm.video_url} onChange={e => setStageForm({ ...stageForm, video_url: e.target.value })} placeholder="https://... أو قم بالرفع" />
-                <div className="relative shrink-0">
-                  <input
-                    type="file"
-                    accept="video/*,audio/*"
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    onChange={e => {
-                      const file = e.target.files?.[0]
-                      if (file) handleStageFileUpload(file, "video")
-                      e.target.value = ""
-                    }}
-                  />
-                  <Button type="button" variant="outline" className="gap-2">
-                    <UploadCloud className="h-4 w-4" /> رفع
-                  </Button>
+          <div className="space-y-6 py-2 max-h-[65vh] overflow-y-auto px-1 -mx-1 custom-scrollbar">
+            {/* الأساسيات */}
+            <div className="space-y-4 rounded-xl border border-border/50 bg-card/50 p-5">
+              <h4 className="text-sm font-semibold flex items-center gap-2 text-primary">
+                <LayoutTemplate className="h-4 w-4" />
+                المعلومات الأساسية
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2 space-y-1.5">
+                  <Label className="text-muted-foreground font-medium">{tp.stageForm.title}</Label>
+                  <Input className="bg-background shadow-sm border-input/50" value={stageForm.title} onChange={e => setStageForm({ ...stageForm, title: e.target.value })} placeholder={tp.stageForm.titlePlaceholder} />
+                </div>
+                <div className="md:col-span-2 space-y-1.5">
+                  <Label className="text-muted-foreground font-medium">{tp.stageForm.description}</Label>
+                  <Textarea className="bg-background shadow-sm border-input/50 resize-none" rows={2} value={stageForm.description} onChange={e => setStageForm({ ...stageForm, description: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-muted-foreground font-medium">{tp.stageForm.estimatedMinutes}</Label>
+                  <Input className="bg-background shadow-sm border-input/50" type="number" min="1" value={stageForm.estimated_minutes} onChange={e => setStageForm({ ...stageForm, estimated_minutes: parseInt(e.target.value, 10) || 30 })} />
                 </div>
               </div>
             </div>
-            <div className="space-y-1">
-              <Label>{tp.stageForm.pdfUrl}</Label>
-              <div className="flex gap-2">
-                <Input value={stageForm.pdf_url} onChange={e => setStageForm({ ...stageForm, pdf_url: e.target.value })} placeholder="https://... أو قم بالرفع" />
-                <div className="relative shrink-0">
-                  <input
-                    type="file"
-                    accept="application/pdf,image/*"
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    onChange={e => {
-                      const file = e.target.files?.[0]
-                      if (file) handleStageFileUpload(file, "pdf")
-                      e.target.value = ""
-                    }}
-                  />
-                  <Button type="button" variant="outline" className="gap-2">
-                    <UploadCloud className="h-4 w-4" /> رفع
-                  </Button>
+
+            {/* المحتوى والوسائط */}
+            <div className="space-y-4 rounded-xl border border-border/50 bg-card/50 p-5">
+              <h4 className="text-sm font-semibold flex items-center gap-2 text-primary">
+                <FileText className="h-4 w-4" />
+                المحتوى والوسائط
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2 space-y-1.5">
+                  <Label className="text-muted-foreground font-medium">{tp.stageForm.content}</Label>
+                  <Textarea className="bg-background shadow-sm border-input/50 resize-y" rows={4} value={stageForm.content} onChange={e => setStageForm({ ...stageForm, content: e.target.value })} placeholder={tp.stageForm.contentPlaceholder} />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label className="text-muted-foreground font-medium flex items-center gap-1.5">
+                    <PlaySquare className="h-3.5 w-3.5 text-blue-500" />
+                    {tp.stageForm.videoUrl}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input className="bg-background shadow-sm border-input/50 text-left font-mono text-xs" dir="ltr" value={stageForm.video_url} onChange={e => setStageForm({ ...stageForm, video_url: e.target.value })} placeholder="رابط خارجي أو قم بالرفع..." />
+                    <div className="relative shrink-0">
+                      <input
+                        type="file"
+                        accept="video/*,audio/*"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        onChange={e => {
+                          const file = e.target.files?.[0]
+                          if (file) handleStageFileUpload(file, "video")
+                          e.target.value = ""
+                        }}
+                      />
+                      <Button type="button" variant="secondary" className="gap-2 w-full hover:bg-secondary/80">
+                        <UploadCloud className="h-4 w-4" /> رفع
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-muted-foreground font-medium flex items-center gap-1.5">
+                    <FileText className="h-3.5 w-3.5 text-rose-500" />
+                    {tp.stageForm.pdfUrl}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input className="bg-background shadow-sm border-input/50 text-left font-mono text-xs" dir="ltr" value={stageForm.pdf_url} onChange={e => setStageForm({ ...stageForm, pdf_url: e.target.value })} placeholder="رابط خارجي أو قم بالرفع..." />
+                    <div className="relative shrink-0">
+                      <input
+                        type="file"
+                        accept="application/pdf,image/*"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        onChange={e => {
+                          const file = e.target.files?.[0]
+                          if (file) handleStageFileUpload(file, "pdf")
+                          e.target.value = ""
+                        }}
+                      />
+                      <Button type="button" variant="secondary" className="gap-2 w-full hover:bg-secondary/80">
+                        <UploadCloud className="h-4 w-4" /> رفع
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="md:col-span-2 space-y-1">
-              <Label>الدورة المرتبطة (اختياري)</Label>
-              <Select value={stageForm.course_id || "none"} onValueChange={v => setStageForm({ ...stageForm, course_id: v === "none" ? "" : v })}>
-                <SelectTrigger><SelectValue placeholder="اختر دورة من المنصة لربطها بهذه المرحلة" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">بدون دورة</SelectItem>
-                  {courses.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="md:col-span-2 space-y-1">
-              <Label>{tp.stageForm.passageText}</Label>
-              <Textarea rows={3} value={stageForm.passage_text} onChange={e => setStageForm({ ...stageForm, passage_text: e.target.value })} placeholder={tp.stageForm.passagePlaceholder} />
-            </div>
-            <div className="space-y-1">
-              <Label>{tp.stageForm.estimatedMinutes}</Label>
-              <Input type="number" min="1" value={stageForm.estimated_minutes} onChange={e => setStageForm({ ...stageForm, estimated_minutes: parseInt(e.target.value, 10) || 30 })} />
+
+            {/* التطبيق والربط */}
+            <div className="space-y-4 rounded-xl border border-border/50 bg-card/50 p-5">
+              <h4 className="text-sm font-semibold flex items-center gap-2 text-primary">
+                <LinkIcon className="h-4 w-4" />
+                التطبيق المتقدم والربط
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2 space-y-1.5">
+                  <Label className="text-muted-foreground font-medium">الدورة المرتبطة (اختياري)</Label>
+                  <Select value={stageForm.course_id || "none"} onValueChange={v => setStageForm({ ...stageForm, course_id: v === "none" ? "" : v })}>
+                    <SelectTrigger className="bg-background shadow-sm border-input/50"><SelectValue placeholder="اختر دورة من المنصة لربطها بهذه المرحلة" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">بدون دورة</SelectItem>
+                      {courses.map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-2 space-y-1.5">
+                  <Label className="text-muted-foreground font-medium">{tp.stageForm.passageText}</Label>
+                  <Textarea className="bg-background shadow-sm border-input/50 resize-none" rows={3} value={stageForm.passage_text} onChange={e => setStageForm({ ...stageForm, passage_text: e.target.value })} placeholder={tp.stageForm.passagePlaceholder} />
+                </div>
+              </div>
             </div>
           </div>
 
