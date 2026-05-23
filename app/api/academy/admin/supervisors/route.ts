@@ -62,6 +62,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'الاسم والبريد وكلمة المرور مطلوبة' }, { status: 400 })
   }
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    return NextResponse.json({ error: 'صيغة البريد الإلكتروني غير صحيحة' }, { status: 400 })
+  }
+
   const supervisorRole =
     type === 'content' ? 'content_supervisor' :
     type === 'fiqh'    ? 'fiqh_supervisor'    :

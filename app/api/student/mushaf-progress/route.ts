@@ -51,13 +51,8 @@ export async function GET() {
     [studentId]
   )
 
-  // Fetch memorization log
-  const memLog = await query<MemLogRow>(
-    `SELECT surah_number, 0 as juz_number, verses_count as new_verses, 0 as revised_verses
-     FROM maqraa_memorization_logs
-     WHERE student_id = $1 AND status = 'approved'`,
-    [studentId]
-  )
+  // Removed memorization_log as it is deprecated in favor of recitations.
+  const memLog: MemLogRow[] = []
 
   // Build per-page status: 'mastered' | 'reviewing' | 'none'
   // Priority: mastered > reviewing > none

@@ -17,7 +17,7 @@ interface CalendarEvent {
   title: string
   date: string          // YYYY-MM-DD (Riyadh TZ from server, converted to local on client)
   time: string          // HH:mm
-  type: 'live_session' | 'assignment_deadline' | 'lesson' | 'memorization_goal'
+  type: 'live_session' | 'assignment_deadline' | 'lesson'
   course: string
   course_id?: string
   link?: string
@@ -96,8 +96,6 @@ export default function AcademyCalendarPage() {
   const todayEvents      = getEventsForDate(today)
   const todaySessions    = todayEvents.filter(e => e.type === 'live_session' || e.type === 'lesson')
   const todayTasks       = todayEvents.filter(e => e.type === 'assignment_deadline')
-  const weekGoalEvent    = events.find(e => e.type === 'memorization_goal')
-  const weekGoalMeta     = weekGoalEvent?.meta as any
 
   // ── Calendar grid data ─────────────────────────────────────────────────────
   const year = currentDate.getFullYear()
@@ -131,29 +129,14 @@ export default function AcademyCalendarPage() {
     }
   }
 
-  const completeGoal = async () => {
-    if (!weekGoalEvent) return
-    const goalId = weekGoalEvent.id.replace(/^goal-/, '').replace(/-\d+$/, '')
-    const res = await fetch(`/api/academy/student/memorization-goals/${goalId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'completed' }),
-    }).catch(() => null)
-    if (res?.ok) {
-      setEvents(prev => prev.map(ev => ev.id.startsWith('goal-') ? { ...ev, status: 'completed' } : ev))
-    }
-  }
-
   // ── Event dot colour ───────────────────────────────────────────────────────
   const dotColour = (type: CalendarEvent['type']) =>
     type === 'live_session'         ? 'bg-blue-500'   :
-    type === 'lesson'               ? 'bg-purple-500' :
-    type === 'memorization_goal'    ? 'bg-amber-500'  : 'bg-red-500'
+    type === 'lesson'               ? 'bg-purple-500' : 'bg-red-500'
 
   const iconBg = (type: CalendarEvent['type']) =>
     type === 'live_session'         ? 'bg-blue-500/10 text-blue-500'    :
-    type === 'lesson'               ? 'bg-purple-500/10 text-purple-500':
-    type === 'memorization_goal'    ? 'bg-amber-500/10 text-amber-500'  : 'bg-red-500/10 text-red-500'
+    type === 'lesson'               ? 'bg-purple-500/10 text-purple-500': 'bg-red-500/10 text-red-500'
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -259,59 +242,6 @@ export default function AcademyCalendarPage() {
           </CardContent>
         </Card>
 
-        {/* Weekly memorization goal */}
-        <Card className="border border-border/50 shadow-sm rounded-2xl overflow-hidden bg-card">
-          <div className="p-4 border-b border-border/50 flex items-center gap-2 bg-purple-500/5">
-            <BookMarked className="w-4 h-4 text-purple-500" />
-            <h3 className="font-bold text-sm">{isAr ? 'هدف الحفظ الأسبوعي' : 'Weekly memorization goal'}</h3>
-          </div>
-          <CardContent className="p-4">
-            {!weekGoalEvent ? (
-              <div className="text-center py-2">
-                <p className="text-xs text-muted-foreground mb-2">
-                  {isAr ? 'لم يُحدَّد هدف لهذا الأسبوع' : 'No goal set for this week'}
-                </p>
-                <Link href="/academy/student/memorization/goal"
-                      className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 hover:underline">
-                  <Target className="w-3.5 h-3.5" />
-                  {isAr ? 'تحديد هدف' : 'Set a goal'}
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-xs font-bold text-foreground">
-                  {weekGoalMeta?.target_verses
-                    ? (isAr ? `${weekGoalMeta.target_verses} آية` : `${weekGoalMeta.target_verses} verses`)
-                    : (isAr ? 'هدف الحفظ الأسبوعي' : 'Weekly goal')}
-                </p>
-                {weekGoalMeta?.surah_from && (
-                  <p className="text-[11px] text-muted-foreground">
-                    {isAr ? 'من سورة ' : 'From surah '}{weekGoalMeta.surah_from}
-                    {weekGoalMeta.ayah_from ? `:${weekGoalMeta.ayah_from}` : ''}
-                    {weekGoalMeta.surah_to ? (isAr ? ' إلى سورة ' : ' to surah ') + weekGoalMeta.surah_to : ''}
-                    {weekGoalMeta.ayah_to ? `:${weekGoalMeta.ayah_to}` : ''}
-                  </p>
-                )}
-                {weekGoalEvent.status === 'completed' ? (
-                  <p className="text-[11px] font-bold text-emerald-500">
-                    <CheckCircle className="w-3 h-3 inline-block me-1" />
-                    {isAr ? 'تم الإنجاز' : 'Completed'}
-                  </p>
-                ) : (
-                  <Button size="sm" variant="outline" onClick={completeGoal}
-                          className="w-full h-8 text-xs rounded-lg border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10">
-                    <CheckCircle className="w-3.5 h-3.5 me-1" />
-                    {isAr ? 'تأشير كمنجَز' : 'Mark complete'}
-                  </Button>
-                )}
-                <Link href="/academy/student/memorization/goal"
-                      className="block text-center text-[11px] text-purple-600 hover:underline">
-                  {isAr ? 'تعديل الهدف' : 'Edit goal'}
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
 
       {/* ── Mobile list view ── */}
@@ -371,7 +301,6 @@ export default function AcademyCalendarPage() {
                                 {ev.type === 'live_session'      && <Video className="w-3.5 h-3.5" />}
                                 {ev.type === 'assignment_deadline' && <FileText className="w-3.5 h-3.5" />}
                                 {ev.type === 'lesson'            && <BookOpen className="w-3.5 h-3.5" />}
-                                {ev.type === 'memorization_goal' && <BookMarked className="w-3.5 h-3.5" />}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-bold text-foreground text-sm leading-tight truncate">{ev.title}</h4>
@@ -505,7 +434,6 @@ export default function AcademyCalendarPage() {
                             {ev.type === 'live_session'        && <Video className="w-5 h-5" />}
                             {ev.type === 'assignment_deadline' && <FileText className="w-5 h-5" />}
                             {ev.type === 'lesson'              && <BookOpen className="w-5 h-5" />}
-                            {ev.type === 'memorization_goal'   && <BookMarked className="w-5 h-5" />}
                           </div>
                           <div className="space-y-1.5 flex-1">
                             <h4 className="font-bold text-foreground text-lg leading-tight">{ev.title}</h4>

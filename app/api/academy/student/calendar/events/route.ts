@@ -142,52 +142,6 @@ export async function GET(req: NextRequest) {
     // Lessons do not have a scheduled_at column in the database.
     // They are self-paced and don't belong in the calendar query directly.
 
-    // ─── 4. MEMORIZATION GOALS ────────────────────────────────────────────────
-    try {
-      const goals = await query<any>(`
-        SELECT id, week_start, surah_from, ayah_from, surah_to, ayah_to,
-               target_verses, notes, status, completed_at
-          FROM memorization_goals
-         WHERE student_id = $1
-           AND week_start >= $2::date - INTERVAL '7 days'
-           AND week_start <= $3::date
-      `, [session.sub,
-          startDate.toISOString().split('T')[0],
-          endDate.toISOString().split('T')[0]])
-
-      for (const g of goals) {
-        const weekStart = new Date(g.week_start)
-        for (let i = 0; i < 7; i++) {
-          const day = new Date(weekStart)
-          day.setUTCDate(day.getUTCDate() + i)
-          if (day < startDate || day > endDate) continue
-          events.push({
-            id: `goal-${g.id}-${i}`,
-            title: g.target_verses
-              ? `هدف الحفظ: ${g.target_verses} آية`
-              : 'هدف الحفظ الأسبوعي',
-            date: toRiyadhDate(day),
-            time: '07:00',
-            type: 'memorization_goal',
-            course: 'الحفظ والمراجعة',
-            course_id: '',
-            link: '/academy/student/memorization/goal',
-            status: g.status,
-            meta: {
-              surah_from: g.surah_from,
-              ayah_from: g.ayah_from,
-              surah_to: g.surah_to,
-              ayah_to: g.ayah_to,
-              target_verses: g.target_verses,
-              notes: g.notes,
-              week_start: g.week_start,
-            },
-          })
-        }
-      }
-    } catch {
-      // memorization_goals table may not exist yet — ignore
-    }
 
     // Sort by date then time
     events.sort((a, b) => {

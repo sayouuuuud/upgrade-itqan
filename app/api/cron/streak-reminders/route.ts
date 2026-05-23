@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
         title: 'لا تكسر الـ Streak!',
         message: `عندك ${student.streak_days} يوم متواصل! سجّل نشاطك اليوم عشان تحافظ على الـ Streak.`,
         category: 'general',
-        link: '/academy/student/memorization',
+        link: '/student/recitations',
       })
 
       sent++
