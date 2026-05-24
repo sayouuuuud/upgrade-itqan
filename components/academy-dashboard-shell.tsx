@@ -47,6 +47,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
           title: t.academy?.achievements || 'الإنجازات',
           items: [
             { href: '/academy/student/progress', label: t.academy?.progress || 'تقدمي', icon: Target },
+            { href: '/academy/student/competitions', label: t.academy?.competitions || 'المسابقات', icon: Trophy },
             { href: '/academy/student/leaderboard', label: t.academy?.leaderboard || 'لوحة المتصدرين', icon: Trophy },
             { href: '/academy/student/badges', label: t.academy?.badges || 'الشارات', icon: Award },
             { href: '/academy/student/certificates', label: t.academy?.certificates || 'الشهادات', icon: GraduationCap },

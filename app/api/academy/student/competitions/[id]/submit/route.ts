@@ -12,16 +12,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   try {
     const body = await req.json()
-    const result = await submitEntry(id, session.sub, {
-      submissionUrl: body.submission_url,
-      recitationId: body.recitation_id,
-      notes: body.notes,
-      versesCount: body.verses_count,
+    await submitEntry(id, session.sub, {
+      submission_url: body.submission_url || null,
+      notes: body.notes || null,
+      verses_count: body.verses_count || 0,
     })
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 })
-    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -29,3 +24,4 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
