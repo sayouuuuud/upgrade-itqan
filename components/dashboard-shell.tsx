@@ -15,7 +15,7 @@ import {
   Menu, X, Users, Settings, BarChart3, ClipboardList, Clock, MessageSquare,
   Search, Plus, BookOpen, Award, UserCheck, CalendarCheck, CalendarDays,
   MessagesSquare, Megaphone, ScrollText, PieChart, Star, ShieldCheck,
-  Globe, Home, Archive, Shield, Phone, BookMarked, FileEdit, Route, Target, GraduationCap
+  Globe, Home, Archive, Shield, Phone, BookMarked, FileEdit, Route, Target, GraduationCap, Trophy
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 
@@ -34,6 +34,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/student/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },
           { href: '/student/mushaf', label: t.student.mushaf || "مصحفي", icon: BookOpen },
           { href: '/student/mushaf-progress', label: 'خريطة مصحفي', icon: Target },
+          { href: '/student/competitions', label: 'المسابقات', icon: Trophy },
           { href: '/student/sessions', label: t.student.sessions, icon: CalendarCheck },
           { href: '/student/chat', label: t.student.chat, icon: MessageSquare },
           { href: '/student/certificates', label: t.student.certificates || t.student.certificate, icon: Award },
@@ -58,6 +59,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/reader/recitations', label: t.reader.reviewList, icon: ClipboardList },
           { href: '/reader/memorization-paths', label: t.reader.memorizationPaths || 'مسارات الحفظ', icon: Route },
           { href: '/reader/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },
+          { href: '/reader/competitions', label: 'تحكيم المسابقات', icon: Trophy },
           { href: '/reader/sessions', label: t.reader.sessions || "الجلسات", icon: Calendar },
           { href: '/reader/schedule', label: t.reader.schedule, icon: Clock },
           { href: '/reader/chat', label: t.reader.chat, icon: MessageSquare },
@@ -84,6 +86,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin/memorization-paths', label: t.admin.memorizationPaths || 'مسارات الحفظ', icon: Route },
           { href: '/admin/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },
           { href: '/admin/bookings', label: t.admin.bookings, icon: CalendarDays },
+          { href: '/admin/competitions', label: 'مسابقات المقرأة', icon: Trophy },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
           { href: '/admin/certificates', label: t.admin.certificates.title, icon: Award },
         ]
