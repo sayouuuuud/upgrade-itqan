@@ -15,7 +15,7 @@ import {
   Menu, X, Users, Settings, BarChart3, ClipboardList, Clock, MessageSquare,
   Search, Plus, BookOpen, Award, UserCheck, CalendarCheck, CalendarDays,
   MessagesSquare, Megaphone, ScrollText, PieChart, Star, ShieldCheck,
-  Globe, Home, Archive, Shield, Phone, BookMarked, FileEdit, Route, Target, GraduationCap
+  Globe, Home, Archive, Shield, Phone, BookMarked, FileEdit, Route, Target, GraduationCap, Mail
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 
