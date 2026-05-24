@@ -2,15 +2,30 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 
+const ADMIN_ROLES = new Set([
+  "admin",
+  "academy_admin",
+  "supervisor",
+  "student_supervisor",
+])
+
 async function canAccessConversation(conversationId: string, userId: string, role: string) {
+  if (ADMIN_ROLES.has(role)) {
+    return queryOne<{ id: string }>(
+      `SELECT id FROM academy_conversations WHERE id = $1`,
+      [conversationId]
+    )
+  }
+
   if (role === "parent") {
     return queryOne<{ id: string, student_id: string, teacher_id: string, admin_id: string | null }>(
       `SELECT c.id, c.student_id, c.teacher_id, c.admin_id
          FROM academy_conversations c
-         JOIN parent_children pc ON pc.child_id = c.student_id
+         LEFT JOIN parent_children pc
+           ON pc.child_id = c.student_id
+          AND pc.status IN ('active', 'approved')
         WHERE c.id = $1
-          AND pc.parent_id = $2
-          AND pc.status IN ('active', 'approved')`,
+          AND (c.parent_id = $2 OR pc.parent_id = $2)`,
       [conversationId, userId]
     )
   }
@@ -39,18 +54,31 @@ export async function GET(
       return NextResponse.json({ error: "محادثة غير موجودة أو غير مصرح بها" }, { status: 404 })
     }
 
-    // Get messages
     const messages = await query<{
       id: string
       sender_id: string
       content: string
+      message_text: string
       is_read: boolean
       created_at: string
+      sender_name: string | null
+      sender_role: string | null
+      sender_avatar: string | null
     }>(
-      `SELECT id, sender_id, content, is_read, created_at
-       FROM academy_messages
-       WHERE conversation_id = $1
-       ORDER BY created_at ASC`,
+      `SELECT
+         m.id,
+         m.sender_id,
+         m.content,
+         m.content AS message_text,
+         m.is_read,
+         m.created_at,
+         u.name AS sender_name,
+         u.role AS sender_role,
+         u.avatar_url AS sender_avatar
+       FROM academy_messages m
+       LEFT JOIN users u ON m.sender_id = u.id
+       WHERE m.conversation_id = $1
+       ORDER BY m.created_at ASC`,
       [conv.id]
     )
 
@@ -79,9 +107,11 @@ export async function POST(
   }
 
   try {
-    const { content } = await req.json()
+    const body = await req.json()
+    const raw = body?.content ?? body?.text ?? body?.message_text
+    const content = typeof raw === "string" ? raw.trim() : ""
 
-    if (!content || typeof content !== "string" || !content.trim()) {
+    if (!content) {
       return NextResponse.json({ error: "الرسالة فارغة" }, { status: 400 })
     }
 
@@ -91,7 +121,6 @@ export async function POST(
       return NextResponse.json({ error: "محادثة غير موجودة أو غير مصرح بها" }, { status: 404 })
     }
 
-    // Insert message
     const newMsg = await query<{
       id: string
       sender_id: string
@@ -101,7 +130,7 @@ export async function POST(
       `INSERT INTO academy_messages (conversation_id, sender_id, content)
        VALUES ($1, $2, $3)
        RETURNING id, sender_id, content, created_at`,
-      [conv.id, session.sub, content.trim()]
+      [conv.id, session.sub, content]
     )
 
     // Update conversation last_message
@@ -109,7 +138,7 @@ export async function POST(
       `UPDATE academy_conversations 
        SET last_message = $1, last_message_at = NOW(), updated_at = NOW()
        WHERE id = $2`,
-      [content.trim(), conv.id]
+      [content, conv.id]
     )
 
     // Notify recipient
@@ -141,7 +170,12 @@ export async function POST(
         })
     }
 
-    return NextResponse.json({ message: newMsg[0] })
+    const enriched = {
+      ...newMsg[0],
+      message_text: newMsg[0].content,
+    }
+
+    return NextResponse.json({ message: enriched })
   } catch (error) {
     console.error("Message POST error:", error)
     return NextResponse.json({ error: "حدث خطأ داخلي" }, { status: 500 })
