@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { CheckCircle, Clock, XCircle, BookOpen, UserCheck, Loader2 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { CheckCircle, Clock, XCircle, BookOpen, UserCheck, Loader2, Eye, EyeOff, Mail, Lock, User, ChevronDown } from 'lucide-react'
 
 interface InvitationInfo {
   email: string
@@ -34,14 +36,31 @@ export default function InvitationPage({
   const [invitation, setInvitation] = useState<InvitationInfo | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'invalid' | 'expired' | 'accepted' | 'accepting'>('loading')
   const [errorMsg, setErrorMsg] = useState('')
-  const [enrolledPlan, setEnrolledPlan] = useState<{ id: string; title: string } | null>(null)
+  const [enrolledPlan, setEnrolledPlan] = useState<{ id: string; title: string; redirect: string } | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  
+  // Form fields
+  const [name, setName] = useState('')
+  const [password, setPassword] = useState('')
+  const [gender, setGender] = useState('')
+  const [showPw, setShowPw] = useState(false)
 
   useEffect(() => {
     params.then(({ inviteCode: code }) => {
       setInviteCode(code)
-      fetchInvitation(code)
+      checkAuthAndFetch(code)
     })
   }, [])
+
+  async function checkAuthAndFetch(code: string) {
+    try {
+      const authRes = await fetch('/api/auth/me')
+      if (authRes.ok) {
+        setIsLoggedIn(true)
+      }
+    } catch {}
+    fetchInvitation(code)
+  }
 
   async function fetchInvitation(code: string) {
     try {
@@ -55,17 +74,39 @@ export default function InvitationPage({
       if (data.status === 'ACCEPTED') { setStatus('accepted'); return }
       if (data.status === 'CANCELLED') { setStatus('invalid'); return }
       setInvitation(data)
+      if (data.invited_name) setName(data.invited_name)
       setStatus('ready')
     } catch {
       setStatus('invalid')
     }
   }
 
-  async function handleAccept() {
+  async function handleAccept(e?: React.FormEvent) {
+    if (e) e.preventDefault()
+    
+    if (!isLoggedIn) {
+      if (!name || !password || !gender) {
+        setErrorMsg('يرجى تعبئة جميع الحقول')
+        return
+      }
+      if (password.length < 6) {
+        setErrorMsg('كلمة المرور يجب أن تكون 6 أحرف على الأقل')
+        return
+      }
+    }
+
     setStatus('accepting')
+    setErrorMsg('')
+    
     try {
-      const res = await fetch(`/api/academy/invitations/${inviteCode}/accept`, {
+      const endpoint = isLoggedIn 
+        ? `/api/academy/invitations/${inviteCode}/accept` 
+        : `/api/academy/invitations/${inviteCode}/register`
+        
+      const res = await fetch(endpoint, {
         method: 'POST',
+        headers: isLoggedIn ? undefined : { 'Content-Type': 'application/json' },
+        body: isLoggedIn ? undefined : JSON.stringify({ name, password, gender })
       })
       const data = await res.json()
       if (!res.ok) {
@@ -73,8 +114,12 @@ export default function InvitationPage({
         setStatus('ready')
         return
       }
-      if (data.enrolledPlanId) {
-        setEnrolledPlan({ id: data.enrolledPlanId, title: data.planTitle || '' })
+      if (data.enrolledPlanId || data.redirect) {
+        setEnrolledPlan({ 
+          id: data.enrolledPlanId || '', 
+          title: data.planTitle || '',
+          redirect: data.redirect || '/academy/student'
+        })
       }
       setStatus('accepted')
     } catch {
@@ -133,21 +178,15 @@ export default function InvitationPage({
           <p className="text-muted-foreground text-sm mt-2">مرحباً بك في منصة إتقان التعليمية.</p>
         )}
         <div className="flex flex-col gap-3 mt-6 w-full max-w-xs">
-          {enrolledPlan && (
-            <Button
-              className="rounded-2xl"
-              onClick={() => router.push(`/academy/student/courses/${enrolledPlan.id}`)}
-            >
-              <BookOpen className="w-4 h-4 me-2" />
-              انتقل إلى الخطة التعليمية
-            </Button>
-          )}
           <Button
-            variant={enrolledPlan ? 'outline' : 'default'}
             className="rounded-2xl"
-            onClick={() => router.push('/academy/student')}
+            onClick={() => router.push(enrolledPlan?.redirect || '/academy/student')}
           >
-            لوحة الطالب
+            {enrolledPlan?.id ? (
+              <><BookOpen className="w-4 h-4 me-2" /> انتقل إلى الخطة التعليمية</>
+            ) : (
+              'دخول المنصة'
+            )}
           </Button>
         </div>
       </Screen>
@@ -221,27 +260,107 @@ export default function InvitationPage({
           </div>
 
           {errorMsg && (
-            <p className="text-center text-sm text-destructive font-medium">{errorMsg}</p>
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm font-bold p-3 rounded-2xl text-center">
+              {errorMsg}
+            </div>
           )}
 
-          {/* Actions */}
-          <div className="flex flex-col gap-3 pt-2">
-            <Button
-              className="w-full h-12 rounded-2xl text-base font-bold"
-              disabled={status === 'accepting' || !!isExpired}
-              onClick={handleAccept}
-            >
-              {status === 'accepting'
-                ? <><Loader2 className="w-4 h-4 me-2 animate-spin" />جاري القبول...</>
-                : 'قبول الدعوة'}
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full rounded-2xl text-muted-foreground"
-              onClick={() => router.push('/')}
-            >
-              رفض
-            </Button>
+          {/* Form / Actions */}
+          <div className="pt-2">
+            {isLoggedIn ? (
+              <div className="flex flex-col gap-3">
+                <Button
+                  className="w-full h-12 rounded-2xl text-base font-bold"
+                  disabled={status === 'accepting' || !!isExpired}
+                  onClick={() => handleAccept()}
+                >
+                  {status === 'accepting'
+                    ? <><Loader2 className="w-4 h-4 me-2 animate-spin" />جاري القبول...</>
+                    : 'قبول الدعوة'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full rounded-2xl text-muted-foreground"
+                  onClick={() => router.push('/')}
+                >
+                  رفض
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleAccept} className="space-y-4 text-start">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-muted-foreground">البريد الإلكتروني</Label>
+                  <div className="relative">
+                    <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input disabled value={inv.email} dir="ltr" className="rounded-xl pr-9 bg-muted text-muted-foreground" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-foreground">الاسم الكامل</Label>
+                  <div className="relative">
+                    <User className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input 
+                      required 
+                      value={name} 
+                      onChange={e => setName(e.target.value)} 
+                      placeholder="الاسم الثلاثي" 
+                      className="rounded-xl pr-9" 
+                      disabled={status === 'accepting' || !!isExpired}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-foreground">كلمة المرور</Label>
+                  <div className="relative">
+                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input 
+                      required 
+                      type={showPw ? 'text' : 'password'}
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)} 
+                      placeholder="6 أحرف على الأقل" 
+                      dir="ltr"
+                      minLength={6}
+                      className="rounded-xl pr-9 pl-9" 
+                      disabled={status === 'accepting' || !!isExpired}
+                    />
+                    <button type="button" onClick={() => setShowPw(!showPw)} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-foreground">الجنس</Label>
+                  <div className="relative">
+                    <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />
+                    <select 
+                      required
+                      value={gender} 
+                      onChange={e => setGender(e.target.value)} 
+                      className="w-full h-10 pr-3 pl-9 rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background appearance-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={status === 'accepting' || !!isExpired}
+                    >
+                      <option value="">اختر الجنس</option>
+                      <option value="male">ذكر</option>
+                      <option value="female">أنثى</option>
+                    </select>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full h-12 rounded-2xl text-base font-bold mt-2"
+                  disabled={status === 'accepting' || !!isExpired}
+                >
+                  {status === 'accepting'
+                    ? <><Loader2 className="w-4 h-4 me-2 animate-spin" />جاري إنشاء الحساب...</>
+                    : 'تسجيل الدخول وقبول الدعوة'}
+                </Button>
+              </form>
+            )}
           </div>
         </CardContent>
       </Card>

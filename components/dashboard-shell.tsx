@@ -80,6 +80,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin/users', label: t.admin.users, icon: Users },
           { href: '/admin/readers', label: t.admin.readers, icon: BookOpen },
           { href: '/admin/reader-applications', label: t.admin.readerApplications, icon: UserCheck },
+          { href: '/admin/invitations', label: t.admin.invitations || 'الدعوات', icon: Mail },
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/memorization-paths', label: t.admin.memorizationPaths || 'مسارات الحفظ', icon: Route },
           { href: '/admin/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },
@@ -119,6 +120,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
         items: [
           { href: '/admin', label: t.admin.dashboard, icon: LayoutDashboard },
           { href: '/admin/users', label: t.admin.users, icon: Users },
+          { href: '/admin/invitations', label: t.admin.invitations || 'الدعوات', icon: Mail },
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
         ]
@@ -139,6 +141,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin', label: t.admin.dashboard, icon: LayoutDashboard },
           { href: '/admin/readers', label: t.admin.readers, icon: BookOpen },
           { href: '/admin/reader-applications', label: t.admin.readerApplications, icon: UserCheck },
+          { href: '/admin/invitations', label: t.admin.invitations || 'الدعوات', icon: Mail },
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
         ]
