@@ -4,7 +4,7 @@ import { query } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
 import crypto from 'crypto'
 
-const ADMIN_ROLES = ['academy_admin', 'admin']
+const ADMIN_ROLES = ['admin', 'student_supervisor', 'reciter_supervisor']
 const EXPIRE_DAYS = 7
 
 function buildInviteEmail(opts: {
@@ -33,7 +33,7 @@ function buildInviteEmail(opts: {
 
   const planBlock = planTitle
     ? `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin:16px 0;text-align:center;">
-        <p style="margin:0;font-size:13px;color:#16a34a;font-weight:bold;">الخطة التعليمية المرفقة</p>
+        <p style="margin:0;font-size:13px;color:#16a34a;font-weight:bold;">المسار التعليمي المرفق</p>
         <p style="margin:6px 0 0;font-size:16px;color:#0B3D2E;font-weight:bold;">${planTitle}</p>
        </div>`
     : ''
@@ -43,12 +43,12 @@ function buildInviteEmail(opts: {
          border:1px solid #e2e8f0;border-radius:14px;color:#333;">
       <div style="text-align:center;margin-bottom:24px;">
         <h1 style="color:#0B3D2E;font-size:26px;margin:0 0 4px;">إتقان التعليمية</h1>
-        <p style="color:#64748b;font-size:13px;margin:0;">دعوة للانضمام إلى المنصة</p>
+        <p style="color:#64748b;font-size:13px;margin:0;">دعوة للانضمام إلى المقرأة</p>
       </div>
 
       <h2 style="color:#0B3D2E;font-size:18px;">${greeting}</h2>
       <p style="color:#475569;line-height:1.7;">
-        يدعوك <strong>${inviterName}</strong> للانضمام إلى منصة <strong>إتقان التعليمية</strong>
+        يدعوك <strong>${inviterName}</strong> للانضمام إلى مقرأة <strong>إتقان التعليمية</strong>
         بصفة <strong>${roleLabel}</strong>.
       </p>
 
@@ -75,9 +75,9 @@ function buildInviteEmail(opts: {
   `
 
   return {
-    subject: `دعوة للانضمام إلى إتقان التعليمية — ${roleLabel}`,
+    subject: `دعوة للانضمام إلى مقرأة إتقان — ${roleLabel}`,
     html,
-    body: `أهلاً، تمت دعوتك للانضمام إلى منصة إتقان التعليمية. رابط الدعوة: ${inviteUrl} (صالحة حتى ${expireStr})`,
+    body: `أهلاً، تمت دعوتك للانضمام إلى مقرأة إتقان التعليمية. رابط الدعوة: ${inviteUrl} (صالحة حتى ${expireStr})`,
   }
 }
 
@@ -106,6 +106,9 @@ export async function GET(req: NextRequest) {
      WHERE status = 'PENDING' AND expires_at < NOW()`
   )
 
+  // Filter ONLY Maqraa roles
+  conditions.push(`i.role_to_assign IN ('student', 'reader', 'student_supervisor', 'reciter_supervisor')`)
+
   if (status !== 'all') {
     params.push(status.toUpperCase())
     conditions.push(`i.status = $${params.length}`)
@@ -125,10 +128,10 @@ export async function GET(req: NextRequest) {
   }>(
     `SELECT i.*,
             u.name  AS inviter_name,
-            c.title AS plan_title
+            p.title AS plan_title
      FROM invitations i
-     LEFT JOIN users   u ON u.id = i.invited_by
-     LEFT JOIN courses c ON c.id = i.plan_id
+     LEFT JOIN users u ON u.id = i.invited_by
+     LEFT JOIN memorization_paths p ON p.id::text = i.plan_id::text
      ${where}
      ORDER BY i.created_at DESC
      LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
@@ -137,7 +140,7 @@ export async function GET(req: NextRequest) {
 
   // Counts per status for tabs
   const counts = await query<{ status: string; count: string }>(
-    `SELECT status, COUNT(*)::int AS count FROM invitations GROUP BY status`
+    `SELECT status, COUNT(*)::int AS count FROM invitations WHERE role_to_assign IN ('student', 'reader', 'student_supervisor', 'reciter_supervisor') GROUP BY status`
   )
   const statusCounts = { PENDING: 0, ACCEPTED: 0, EXPIRED: 0, CANCELLED: 0, ALL: 0 }
   for (const r of counts) {
@@ -151,8 +154,6 @@ export async function GET(req: NextRequest) {
 
 // ------------------------------------------------------------------
 // POST — single invite OR CSV batch
-// Body (single): { email, role, plan_id?, invited_name? }
-// Body (batch):  { entries: [{email, role, plan_id?, invited_name?}][] }
 // ------------------------------------------------------------------
 export async function POST(req: NextRequest) {
   const session = await getSession()
@@ -167,7 +168,6 @@ export async function POST(req: NextRequest) {
   const inviterRows = await query<{ name: string }>(`SELECT name FROM users WHERE id = $1`, [session.sub])
   const inviterName = inviterRows[0]?.name || 'الأدمن'
 
-  // Determine if batch or single
   const entries: Array<{ email: string; role?: string; plan_id?: string; invited_name?: string }> =
     Array.isArray(body.entries) ? body.entries : [body]
 
@@ -186,9 +186,8 @@ export async function POST(req: NextRequest) {
       continue
     }
 
-    // Skip if pending invite exists
     const existing = await query(
-      `SELECT id FROM invitations WHERE email = $1 AND status = 'PENDING'`,
+      `SELECT id FROM invitations WHERE email = $1 AND status = 'PENDING' AND role_to_assign IN ('student', 'reader', 'student_supervisor', 'reciter_supervisor')`,
       [email]
     )
     if (existing.length > 0) {
@@ -196,11 +195,10 @@ export async function POST(req: NextRequest) {
       continue
     }
 
-    // Fetch plan title if provided
     let planTitle: string | null = null
     if (entry.plan_id) {
       const planRows = await query<{ title: string }>(
-        `SELECT title FROM courses WHERE id = $1`, [entry.plan_id]
+        `SELECT title FROM memorization_paths WHERE id = $1`, [entry.plan_id]
       )
       planTitle = planRows[0]?.title || null
     }

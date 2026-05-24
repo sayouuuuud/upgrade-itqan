@@ -42,7 +42,7 @@ interface Counts {
 }
 
 const ROLES = [
-  { value: 'student',            label: 'طالب (المقرأة)' },
+  { value: 'student',            label: 'طالب' },
   { value: 'reader',             label: 'مقرئ' },
   { value: 'student_supervisor', label: 'مشرف طلاب' },
   { value: 'reciter_supervisor', label: 'مشرف مقرئين' },
@@ -83,8 +83,8 @@ export default function AdminInvitationsPage() {
   // ---- per-row loading ----
   const [actionId, setActionId] = useState<string | null>(null)
 
-  // ---- paths ----
-  const { data: plansData } = useSWR('/api/admin/tajweed-paths', fetcher)
+  // ---- plans ----
+  const { data: plansData } = useSWR('/api/admin/memorization-paths', fetcher)
   const plans: Array<{ id: string; title: string }> = plansData?.paths || []
 
   // ---- invitations list ----
@@ -218,7 +218,7 @@ export default function AdminInvitationsPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-foreground">الدعوات</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">إرسال وتتبع دعوات الانضمام إلى الأكاديمية</p>
+          <p className="text-muted-foreground text-sm mt-0.5">إرسال وتتبع دعوات الانضمام إلى المقرأة</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="rounded-2xl gap-2 h-10" onClick={() => setShowCsv(true)}>
@@ -299,7 +299,7 @@ export default function AdminInvitationsPage() {
             <table className="w-full text-sm">
               <thead className="border-b border-border/50 bg-muted/30">
                 <tr className="text-right">
-                  {['البريد الإلكتروني', 'الاسم', 'الدور', 'الخطة', 'الحالة', 'التواريخ', 'إجراءات'].map(h => (
+                  {['البريد الإلكتروني', 'الاسم', 'الدور', 'المسار', 'الحالة', 'التواريخ', 'إجراءات'].map(h => (
                     <th key={h} className="px-4 py-3 text-xs font-bold text-muted-foreground whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -457,7 +457,7 @@ export default function AdminInvitationsPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-muted-foreground">مسار التجويد (اختياري)</Label>
+                <Label className="text-xs font-bold text-muted-foreground">المسار (اختياري)</Label>
                 <Select value={formPlan} onValueChange={setFormPlan}>
                   <SelectTrigger className="rounded-2xl">
                     <SelectValue placeholder="بدون مسار" />
@@ -546,7 +546,7 @@ export default function AdminInvitationsPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-muted-foreground">مسار التجويد (اختياري)</Label>
+                <Label className="text-xs font-bold text-muted-foreground">المسار (اختياري)</Label>
                 <Select value={csvPlan} onValueChange={setCsvPlan}>
                   <SelectTrigger className="rounded-2xl">
                     <SelectValue placeholder="بدون مسار" />

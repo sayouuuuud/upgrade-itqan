@@ -4,7 +4,7 @@ import { query } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
 import crypto from 'crypto'
 
-const ADMIN_ROLES = ['academy_admin', 'admin']
+const ADMIN_ROLES = ['admin', 'student_supervisor', 'reciter_supervisor']
 const EXPIRE_DAYS = 7
 
 type Params = { params: Promise<{ id: string }> }
@@ -22,10 +22,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { action } = await req.json()
 
   const rows = await query<any>(
-    `SELECT i.*, u.name AS inviter_name, c.title AS plan_title
+    `SELECT i.*, u.name AS inviter_name, p.title AS plan_title
      FROM invitations i
-     LEFT JOIN users u   ON u.id = i.invited_by
-     LEFT JOIN courses c ON c.id = i.plan_id
+     LEFT JOIN users u ON u.id = i.invited_by
+     LEFT JOIN memorization_paths p ON p.id::text = i.plan_id::text
      WHERE i.id = $1`,
     [id]
   )
@@ -82,9 +82,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         <p style="color:#64748b;font-size:13px;text-align:center;margin-top:0;">تجديد دعوة الانضمام</p>
         <h2 style="color:#0B3D2E;font-size:18px;">${inv.invited_name ? `أهلاً ${inv.invited_name}،` : 'أهلاً بك،'}</h2>
         <p style="color:#475569;line-height:1.7;">
-          تم تجديد دعوتك للانضمام إلى منصة <strong>إتقان التعليمية</strong>
+          تم تجديد دعوتك للانضمام إلى <strong>مقرأة إتقان التعليمية</strong>
           بصفة <strong>${roleLabels[inv.role_to_assign] || inv.role_to_assign}</strong>.
-          ${inv.plan_title ? `<br/>الخطة التعليمية: <strong>${inv.plan_title}</strong>` : ''}
+          ${inv.plan_title ? `<br/>المسار التعليمي: <strong>${inv.plan_title}</strong>` : ''}
         </p>
         <div style="margin:28px 0;text-align:center;">
           <a href="${inviteUrl}" target="_blank"
@@ -103,7 +103,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     await sendEmail({
       to: inv.email,
-      subject: 'تجديد دعوتك — إتقان التعليمية',
+      subject: 'تجديد دعوتك — مقرأة إتقان',
       body: `تجديد الدعوة. رابط: ${inviteUrl} (صالحة حتى ${expireStr})`,
       html,
     }).catch(() => {})

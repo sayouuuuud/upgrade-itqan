@@ -469,3 +469,40 @@ export function sendStudentCreatedByTeacherEmail(to: string, studentName: string
     html,
   })
 }
+
+export function sendInvitationWelcomeEmail(to: string, userName: string, roleName: string) {
+  const html = `
+    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333; border: 1px solid #e2e8f0; border-radius: 12px;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h1 style="color: #0B3D2E; font-size: 24px; margin-bottom: 4px;">إتقان التعليمية</h1>
+        <p style="color: #64748b; font-size: 13px;">تم تسجيل حسابك بنجاح</p>
+      </div>
+
+      <h2 style="color: #0B3D2E; font-size: 18px;">أهلاً بك ${userName} 👋</h2>
+      <p style="color: #475569; line-height: 1.7;">
+        يسعدنا انضمامك إلى منصة <strong>إتقان التعليمية</strong> بدور <strong>${roleName}</strong>.
+      </p>
+
+      <div style="margin: 24px 0; text-align: center;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://itqan.app'}/login" target="_blank"
+           style="display: inline-block; background-color: #0B3D2E; color: white; text-decoration: none;
+                  padding: 14px 36px; border-radius: 10px; font-weight: bold; font-size: 16px;">
+          🔗 الدخول إلى المنصة
+        </a>
+      </div>
+
+      <p style="color: #64748b; font-size: 13px; text-align: center;">
+        نتمنى لك تجربة ممتعة ومفيدة معنا! 🌟
+      </p>
+
+      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+      <p style="font-size: 12px; color: #94a3b8; text-align: center;">منصة إتقان التعليمية — جميع الحقوق محفوظة</p>
+    </div>
+  `
+  return sendEmail({
+    to,
+    subject: `🎉 أهلاً بك ${userName} في منصة إتقان التعليمية`,
+    body: `مرحباً ${userName}، يسعدنا انضمامك إلى منصة إتقان بدور ${roleName}. يمكنك الآن الدخول إلى حسابك ومتابعة نشاطك.`,
+    html,
+  })
+}

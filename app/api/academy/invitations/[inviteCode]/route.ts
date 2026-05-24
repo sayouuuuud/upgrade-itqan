@@ -19,10 +19,11 @@ export async function GET(
          i.email, i.invited_name, i.role_to_assign, i.status,
          i.expires_at, i.plan_id,
          u.name  AS inviter_name,
-         p.title AS plan_title
+         COALESCE(c.title, mp.title) AS plan_title
        FROM invitations i
-       LEFT JOIN users   u ON u.id = i.invited_by
-       LEFT JOIN courses p ON p.id = i.plan_id
+       LEFT JOIN users u ON u.id = i.invited_by
+       LEFT JOIN courses c ON c.id = i.plan_id
+       LEFT JOIN memorization_paths mp ON mp.id::text = i.plan_id::text
        WHERE i.token = $1`,
       [inviteCode]
     )

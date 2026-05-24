@@ -14,9 +14,14 @@ export async function POST(
   }
 
   const invitations = await query<any>(
-    `SELECT i.*, c.title AS plan_title
+    `SELECT i.*, 
+            COALESCE(c.title, mp.title) AS plan_title,
+            CASE WHEN c.id IS NOT NULL THEN 'course'
+                 WHEN mp.id IS NOT NULL THEN 'path'
+                 ELSE NULL END as plan_type
      FROM invitations i
      LEFT JOIN courses c ON c.id = i.plan_id
+     LEFT JOIN memorization_paths mp ON mp.id::text = i.plan_id::text
      WHERE i.token = $1`,
     [inviteCode]
   )
@@ -46,33 +51,34 @@ export async function POST(
     )
   }
 
-  // Enroll in plan (plan_id is a course/plan in the courses table)
+  // Enroll in plan (course or memorization path)
   let enrolledPlanId: string | null = null
-  if (inv.plan_id) {
-    try {
-      await query(
-        `INSERT INTO enrollments (student_id, course_id, status, enrolled_at)
-         VALUES ($1, $2, 'active', NOW())
-         ON CONFLICT (student_id, course_id) DO UPDATE SET status = 'active'`,
-        [session.sub, inv.plan_id]
-      )
-      enrolledPlanId = inv.plan_id
-    } catch (e: any) {
-      if (e.code !== '23505') throw e
-    }
-  }
-
-  // Legacy: also enroll in target_course_id if present
-  if (inv.target_course_id && inv.target_course_id !== inv.plan_id) {
-    try {
-      await query(
-        `INSERT INTO enrollments (student_id, course_id, status, enrolled_at)
-         VALUES ($1, $2, 'active', NOW())
-         ON CONFLICT (student_id, course_id) DO UPDATE SET status = 'active'`,
-        [session.sub, inv.target_course_id]
-      )
-    } catch (e: any) {
-      if (e.code !== '23505') throw e
+  const targetCourseId = inv.plan_id || inv.target_course_id
+  if (targetCourseId) {
+    if (inv.plan_type === 'course') {
+      try {
+        await query(
+          `INSERT INTO enrollments (student_id, course_id, status, enrolled_at)
+           VALUES ($1, $2, 'active', NOW())
+           ON CONFLICT (student_id, course_id) DO UPDATE SET status = 'active'`,
+          [session.sub, targetCourseId]
+        )
+        enrolledPlanId = targetCourseId
+      } catch (e: any) {
+        if (e.code !== '23505') throw e
+      }
+    } else if (inv.plan_type === 'path') {
+      try {
+        await query(
+          `INSERT INTO memorization_path_enrollments (student_id, path_id, status, enrolled_at)
+           VALUES ($1, $2, 'active', NOW())
+           ON CONFLICT (student_id, path_id) DO UPDATE SET status = 'active'`,
+          [session.sub, targetCourseId]
+        )
+        enrolledPlanId = targetCourseId
+      } catch (e: any) {
+        if (e.code !== '23505') throw e
+      }
     }
   }
 
@@ -91,14 +97,20 @@ export async function POST(
     [inv.id, inv.status, session.sub]
   ).catch(() => {})
 
+  let redirectUrl = '/academy/student'
+  if (inv.role_to_assign === 'parent') redirectUrl = '/academy/parent'
+  else if (inv.role_to_assign === 'student' || inv.role_to_assign === 'reader') redirectUrl = `/${inv.role_to_assign}`
+
+  if (enrolledPlanId) {
+    if (inv.plan_type === 'course') redirectUrl = `/academy/student/courses/${enrolledPlanId}`
+    else if (inv.plan_type === 'path' && inv.role_to_assign === 'student') redirectUrl = `/student/memorization-paths`
+  }
+
   return NextResponse.json({
     success: true,
     enrolledPlanId,
     planTitle: inv.plan_title || null,
     role: inv.role_to_assign,
-    // Frontend uses this to redirect appropriately
-    redirect: enrolledPlanId
-      ? `/academy/student/courses/${enrolledPlanId}`
-      : '/academy/student',
+    redirect: redirectUrl,
   })
 }
