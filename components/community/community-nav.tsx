@@ -55,9 +55,13 @@ export function CommunityNav({
     },
   ]
 
+  // The dashboard shell already supplies its own sticky top header (with
+  // logout/notifications/theme), so this sub-nav is rendered inline and
+  // scrolls away with the page content — that avoids the double-stacked
+  // sticky-bar look users reported on the forum.
   return (
     <div
-      className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border"
+      className="bg-background/95 backdrop-blur border-b border-border"
       dir={isAr ? "rtl" : "ltr"}
     >
       <div className="container mx-auto px-3 py-2 flex items-center gap-2 overflow-x-auto">
