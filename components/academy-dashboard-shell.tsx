@@ -43,6 +43,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/student/path', label: t.academy?.learningPath || 'المسار التعليمي', icon: Route },
             { href: '/academy/student/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
             { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
+            { href: '/library', label: t.academy?.booksLibrary || 'مكتبة الكتب', icon: BookOpen },
             { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: MessageSquare },
           ]
         },
@@ -83,6 +84,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/teacher/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
             { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: FileText },
             { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
+            { href: '/library', label: t.academy?.booksLibrary || 'مكتبة الكتب', icon: BookOpen },
           ]
         },
         {
@@ -145,6 +147,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/community/academy/admin/manage', label: 'إدارة المنتدى', icon: Shield },
             { href: '/academy/admin/fiqh', label: t.academy?.fiqhQuestions || 'صندوق الأسئلة الفقهية', icon: HelpCircle },
             { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
+            { href: '/admin/library/books', label: t.academy?.booksLibrary || 'مكتبة الكتب', icon: BookOpen },
             { href: '/academy/admin/announcements', label: t.admin?.announcements || 'الإعلانات', icon: Megaphone },
             { href: '/academy/admin/conversations', label: t.admin?.conversations || 'مركز المحادثات', icon: MessageSquare },
           ]
@@ -173,6 +176,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/parent/messages', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
             { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
             { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
+            { href: '/library', label: t.academy?.booksLibrary || 'مكتبة الكتب', icon: BookOpen },
             { href: '/academy/parent/restrictions', label: t.academy?.accessControl || 'تقييد المحتوى', icon: Shield },
           ]
         },

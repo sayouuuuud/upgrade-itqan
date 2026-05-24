@@ -44,6 +44,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/student/wird', label: 'الورد اليومي', icon: BookMarked },
           { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
           { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
+          { href: '/library', label: 'مكتبة الكتب', icon: BookOpen },
         ]
       },
       {
@@ -70,6 +71,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/reader/chat', label: t.reader.chat, icon: MessageSquare },
           { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
           { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
+          { href: '/library', label: 'مكتبة الكتب', icon: BookOpen },
           { href: '/reader/notifications', label: t.student.notifications, icon: Bell },
           { href: '/reader/profile', label: t.reader.profile, icon: User },
         ]
@@ -100,6 +102,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/community/maqraa/admin', label: 'منتدى المقرأة', icon: MessagesSquare },
           { href: '/community/maqraa/admin/manage', label: 'إدارة المنتدى', icon: Shield },
           { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
+          { href: '/admin/library/books', label: 'مكتبة الكتب', icon: BookOpen },
         ]
       },
       {
