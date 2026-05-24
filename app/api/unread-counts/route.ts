@@ -36,6 +36,18 @@ export async function GET(req: NextRequest) {
             messageCount = parseInt(msgRes[0]?.sum || "0")
         }
 
+        // 3. Unread academy messages
+        const academyMsgRes = await query<{ sum: string }>(
+            `SELECT COUNT(*) as sum FROM academy_messages m
+             JOIN academy_conversations c ON c.id = m.conversation_id
+             WHERE m.is_read = false 
+               AND m.sender_id != $1
+               AND (c.student_id = $1 OR c.teacher_id = $1 OR c.parent_id = $1 OR c.admin_id = $1)`,
+            [session.sub]
+        )
+        const academyMessages = parseInt(academyMsgRes[0]?.sum || "0")
+        messageCount += academyMessages
+
         return NextResponse.json({
             notifications,
             messages: messageCount

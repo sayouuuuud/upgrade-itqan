@@ -291,6 +291,7 @@ export function AcademyDashboardShell({
     approval_status?: string;
   } | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [unreadMessages, setUnreadMessages] = useState(0)
   const [avatarError, setAvatarError] = useState(false)
   const { branding } = usePublicSettings()
 
@@ -312,6 +313,7 @@ export function AcademyDashboardShell({
         if (res.ok) {
           const data = await res.json()
           setUnreadCount(data.notifications || 0)
+          setUnreadMessages(data.messages || 0)
         }
       } catch { }
     }
@@ -347,6 +349,21 @@ export function AcademyDashboardShell({
         ] as NavSection[],
       }
     : { ...rawConfig, name: userName }
+
+  // Inject unread direct message counts into the sidebar items
+  const sectionsWithBadges = config.sections.map(section => ({
+    ...section,
+    items: section.items.map(item => {
+      // For chat or messages pages
+      const isChat = item.href.endsWith('/chat') || item.href.endsWith('/conversations') || item.href.endsWith('/messages')
+      if (isChat && unreadMessages > 0) {
+        return { ...item, badge: unreadMessages }
+      }
+      return item
+    })
+  }))
+
+  const finalConfig = { ...config, sections: sectionsWithBadges }
 
   const isActive = (href: string) => {
     const basePaths: Record<string, string> = {
@@ -433,7 +450,7 @@ export function AcademyDashboardShell({
 
         {/* Navigation */}
         <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-6 space-y-1', collapsed ? 'lg:px-2 px-4' : 'px-4')}>
-          {config.sections.map((section, si) => (
+          {finalConfig.sections.map((section, si) => (
             <div key={si}>
               {section.title && (
                 <div className={cn(

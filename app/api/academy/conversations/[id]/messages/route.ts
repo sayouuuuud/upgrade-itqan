@@ -4,8 +4,8 @@ import { query, queryOne } from "@/lib/db"
 
 async function canAccessConversation(conversationId: string, userId: string, role: string) {
   if (role === "parent") {
-    return queryOne<{ id: string }>(
-      `SELECT c.id
+    return queryOne<{ id: string, student_id: string, teacher_id: string, admin_id: string | null }>(
+      `SELECT c.id, c.student_id, c.teacher_id, c.admin_id
          FROM academy_conversations c
          JOIN parent_children pc ON pc.child_id = c.student_id
         WHERE c.id = $1
@@ -15,9 +15,9 @@ async function canAccessConversation(conversationId: string, userId: string, rol
     )
   }
 
-  return queryOne<{ id: string }>(
-    `SELECT id FROM academy_conversations 
-     WHERE id = $1 AND (student_id = $2 OR teacher_id = $2)`,
+  return queryOne<{ id: string, student_id: string, teacher_id: string, admin_id: string | null }>(
+    `SELECT id, student_id, teacher_id, admin_id FROM academy_conversations 
+     WHERE id = $1 AND (student_id = $2 OR teacher_id = $2 OR admin_id = $2)`,
     [conversationId, userId]
   )
 }
@@ -111,6 +111,35 @@ export async function POST(
        WHERE id = $2`,
       [content.trim(), conv.id]
     )
+
+    // Notify recipient
+    let recipientId = null;
+    let link = '/academy/chat';
+
+    if (session.sub === conv.student_id) {
+        recipientId = conv.teacher_id || conv.admin_id;
+        link = recipientId === conv.teacher_id ? '/academy/teacher/chat' : '/academy/admin/conversations';
+    } else if (session.sub === conv.teacher_id) {
+        recipientId = conv.student_id || conv.admin_id;
+        link = recipientId === conv.student_id ? '/academy/student/chat' : '/academy/admin/conversations';
+    } else if (session.sub === conv.admin_id) {
+        recipientId = conv.student_id || conv.teacher_id;
+        link = recipientId === conv.student_id ? '/academy/student/chat' : '/academy/teacher/chat';
+    }
+
+    if (recipientId) {
+        const { createNotification } = await import('@/lib/notifications')
+        const sender = await queryOne<{ name: string }>(`SELECT name FROM users WHERE id = $1`, [session.sub])
+        
+        await createNotification({
+            userId: recipientId,
+            type: "new_message",
+            title: "رسالة جديدة",
+            message: `لديك رسالة جديدة من ${sender?.name || "مستخدم"} في الأكاديمية`,
+            category: "message",
+            link
+        })
+    }
 
     return NextResponse.json({ message: newMsg[0] })
   } catch (error) {
