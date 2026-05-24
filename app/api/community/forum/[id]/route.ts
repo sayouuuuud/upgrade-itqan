@@ -29,17 +29,22 @@ interface PostRow {
   updated_at: string
 }
 
-async function loadPost(id: string) {
+async function loadPost(id: string, meId?: string) {
   return queryOne<PostRow & {
     author_name: string
     author_avatar: string | null
     author_role: string
+    liked_by_me?: boolean
   }>(
-    `SELECT p.*, u.name AS author_name, u.avatar_url AS author_avatar, u.role AS author_role
+    `SELECT p.*, u.name AS author_name, u.avatar_url AS author_avatar, u.role AS author_role,
+            EXISTS (
+              SELECT 1 FROM forum_post_likes l
+              WHERE l.post_id = p.id AND l.user_id = $2
+            ) AS liked_by_me
      FROM forum_posts p
      JOIN users u ON u.id = p.author_id
      WHERE p.id = $1`,
-    [id]
+    [id, meId ?? ""]
   )
 }
 
@@ -53,7 +58,7 @@ export async function GET(
   }
 
   const { id } = await params
-  const post = await loadPost(id)
+  const post = await loadPost(id, session.sub)
   if (!post) {
     return NextResponse.json({ error: "المنشور غير موجود" }, { status: 404 })
   }

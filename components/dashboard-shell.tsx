@@ -39,6 +39,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/student/chat', label: t.student.chat, icon: MessageSquare },
           { href: '/student/certificates', label: t.student.certificates || t.student.certificate, icon: Award },
           { href: '/student/wird', label: 'الورد اليومي', icon: BookMarked },
+          { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
         ]
       },
       {
@@ -63,6 +64,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/reader/sessions', label: t.reader.sessions || "الجلسات", icon: Calendar },
           { href: '/reader/schedule', label: t.reader.schedule, icon: Clock },
           { href: '/reader/chat', label: t.reader.chat, icon: MessageSquare },
+          { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
           { href: '/reader/notifications', label: t.student.notifications, icon: Bell },
           { href: '/reader/profile', label: t.reader.profile, icon: User },
         ]
@@ -90,6 +92,8 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin/competitions', label: 'مسابقات المقرأة', icon: Trophy },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
           { href: '/admin/certificates', label: t.admin.certificates.title, icon: Award },
+          { href: '/community/maqraa/admin', label: 'منتدى المقرأة', icon: MessagesSquare },
+          { href: '/community/maqraa/admin/manage', label: 'إدارة المنتدى', icon: Shield },
         ]
       },
       {
@@ -125,6 +129,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin/users', label: t.admin.users, icon: Users },
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
+          { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
         ]
       },
       {
@@ -145,6 +150,8 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin/reader-applications', label: t.admin.readerApplications, icon: UserCheck },
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
+          { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
+          { href: '/community/maqraa/admin/manage', label: 'إدارة المنتدى', icon: Shield },
         ]
       },
       {

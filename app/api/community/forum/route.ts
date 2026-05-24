@@ -5,10 +5,12 @@ import {
   canAccessCommunity,
   canModerate,
 } from "@/lib/community/permissions"
-import type { Community, PostType } from "@/lib/community/types"
+import { isUserBanned } from "@/lib/community/bans"
+import type { Community, PostType, SortKey } from "@/lib/community/types"
 
 const VALID_COMMUNITIES: Community[] = ["academy", "maqraa"]
 const VALID_POST_TYPES: PostType[] = ["discussion", "qna"]
+const VALID_SORTS: SortKey[] = ["hot", "new", "top", "unanswered"]
 
 /**
  * GET /api/community/forum
@@ -16,6 +18,7 @@ const VALID_POST_TYPES: PostType[] = ["discussion", "qna"]
  *   - community: 'academy' | 'maqraa' (required)
  *   - post_type: 'discussion' | 'qna'  (default: discussion)
  *   - category:  string or 'all'
+ *   - sort:      'hot' | 'new' | 'top' | 'unanswered' (default: hot)
  *   - search:    free-text search on title/content
  *   - page:      1-based page number
  *   - page_size: 1..50, default 20
@@ -51,8 +54,12 @@ export async function GET(req: NextRequest) {
     )
   }
 
+  const sortParam = (searchParams.get("sort") as SortKey | null) || "hot"
+  const sort: SortKey = VALID_SORTS.includes(sortParam) ? sortParam : "hot"
+
   const category = searchParams.get("category")
   const search = searchParams.get("search")?.trim()
+  const authorId = searchParams.get("author_id")
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10))
   const pageSize = Math.min(
     50,
@@ -72,12 +79,46 @@ export async function GET(req: NextRequest) {
     where.push(`p.category = $${params.length}`)
   }
 
+  if (authorId) {
+    params.push(authorId)
+    where.push(`p.author_id = $${params.length}`)
+  }
+
   if (search) {
     params.push(`%${search}%`)
     where.push(
       `(p.title ILIKE $${params.length} OR p.content ILIKE $${params.length})`
     )
   }
+
+  if (sort === "unanswered") {
+    where.push("p.replies_count = 0")
+  }
+
+  // Sorting:
+  //  - hot:  blend of recent activity + score (last_reply_at, then upvotes)
+  //  - new:  pure created_at
+  //  - top:  upvotes_count over the last 30 days
+  //  - unanswered: newest first
+  let orderBy = ""
+  switch (sort) {
+    case "new":
+      orderBy = "p.is_pinned DESC, p.created_at DESC"
+      break
+    case "top":
+      orderBy = "p.is_pinned DESC, p.upvotes_count DESC, p.created_at DESC"
+      break
+    case "unanswered":
+      orderBy = "p.is_pinned DESC, p.created_at DESC"
+      break
+    case "hot":
+    default:
+      orderBy =
+        "p.is_pinned DESC, COALESCE(p.last_reply_at, p.created_at) DESC, p.upvotes_count DESC"
+  }
+
+  params.push(session.sub)
+  const meIdx = params.length
 
   params.push(pageSize)
   params.push((page - 1) * pageSize)
@@ -86,12 +127,15 @@ export async function GET(req: NextRequest) {
     SELECT p.*,
            u.name        AS author_name,
            u.avatar_url  AS author_avatar,
-           u.role        AS author_role
+           u.role        AS author_role,
+           EXISTS (
+             SELECT 1 FROM forum_post_likes l
+             WHERE l.post_id = p.id AND l.user_id = $${meIdx}
+           ) AS liked_by_me
     FROM forum_posts p
     JOIN users u ON u.id = p.author_id
     WHERE ${where.join(" AND ")}
-    ORDER BY p.is_pinned DESC,
-             COALESCE(p.last_reply_at, p.created_at) DESC
+    ORDER BY ${orderBy}
     LIMIT $${params.length - 1}
     OFFSET $${params.length}
   `
@@ -147,6 +191,12 @@ export async function POST(req: NextRequest) {
   if (!canAccessCommunity(session, community)) {
     return NextResponse.json(
       { error: "لا تملك صلاحية الوصول لهذا المجتمع" },
+      { status: 403 }
+    )
+  }
+  if (await isUserBanned(session.sub, community)) {
+    return NextResponse.json(
+      { error: "أنت محظور من النشر في هذا المجتمع" },
       { status: 403 }
     )
   }

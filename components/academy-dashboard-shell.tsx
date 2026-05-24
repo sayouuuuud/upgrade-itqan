@@ -14,7 +14,7 @@ import {
   Menu, X, Users, Settings, Trophy, MessageSquare, ClipboardList,
   GraduationCap, PlayCircle, FileText, Target, Award, Star,
   HelpCircle, Megaphone, UserPlus, BarChart3, Clock, Video,
-  BookMarked, Route, Globe, Sparkles, Grid, UserCheck, Shield, Archive
+  BookMarked, Route, Globe, Sparkles, Grid, UserCheck, Shield, ShieldCheck, Archive
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 
@@ -40,7 +40,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/student/path', label: t.academy?.learningPath || 'المسار التعليمي', icon: Route },
             { href: '/academy/student/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
             { href: '/academy/student/fiqh', label: t.academy?.fiqhQuestions || 'أسئلة فقهية', icon: HelpCircle },
-            { href: '/academy/student/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: MessageSquare },
+            { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: MessageSquare },
           ]
         },
         {
@@ -78,7 +78,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/teacher/paths', label: t.academy?.learningPaths || 'المسارات التعليمية', icon: Route },
             { href: '/academy/teacher/halaqat', label: t.academy?.halaqat || 'الحلقات', icon: GraduationCap },
             { href: '/academy/teacher/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
-            { href: '/academy/teacher/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: FileText },
+            { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: FileText },
           ]
         },
         {
@@ -137,7 +137,8 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
         {
           title: t.academy?.community || 'المجتمع',
           items: [
-            { href: '/academy/admin/forum', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
+            { href: '/community/academy/admin', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
+            { href: '/community/academy/admin/manage', label: 'إدارة المنتدى', icon: Shield },
             { href: '/academy/admin/fiqh', label: t.academy?.fiqhQuestions || 'أسئلة فقهية', icon: HelpCircle },
             { href: '/academy/admin/announcements', label: t.admin?.announcements || 'الإعلانات', icon: Megaphone },
             { href: '/academy/admin/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
@@ -165,6 +166,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/parent/reports', label: t.academy?.reports || 'التقارير', icon: FileText },
             { href: '/academy/parent/progress', label: t.academy?.progress || 'التقدم', icon: Target },
             { href: '/academy/parent/messages', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
+            { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
             { href: '/academy/parent/restrictions', label: t.academy?.accessControl || 'تقييد المحتوى', icon: Shield },
           ]
         },
@@ -185,7 +187,8 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
         {
           items: [
             { href: '/academy/supervisor/content', label: t.academy?.contentReview || 'إشراف المحتوى', icon: BookOpen },
-            { href: '/academy/supervisor/forum', label: t.academy?.forumModeration || 'إشراف المنتدى', icon: MessageSquare },
+            { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
+            { href: '/community/academy/moderation', label: t.academy?.forumModeration || 'إشراف المنتدى', icon: ShieldCheck },
             { href: '/academy/supervisor/fiqh', label: t.academy?.fiqhQuestions || 'الأسئلة الفقهية', icon: HelpCircle },
             { href: '/academy/supervisor/teachers', label: t.academy?.teacherVerification || 'توثيق المدرسين', icon: UserCheck },
             { href: '/academy/supervisor/quality', label: t.academy?.qualityMonitor || 'مراقبة الجودة', icon: BarChart3 },

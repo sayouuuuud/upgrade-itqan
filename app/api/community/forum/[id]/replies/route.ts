@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 import { canAccessCommunity } from "@/lib/community/permissions"
+import { isUserBanned } from "@/lib/community/bans"
 import { createNotification } from "@/lib/notifications"
 import type { Community } from "@/lib/community/types"
 
@@ -41,8 +42,14 @@ export async function POST(
       { status: 403 }
     )
   }
+  if (await isUserBanned(session.sub, post.community)) {
+    return NextResponse.json(
+      { error: "أنت محظور من النشر في هذا المجتمع" },
+      { status: 403 }
+    )
+  }
 
-  let body: { content?: string }
+  let body: { content?: string; parent_reply_id?: string | null }
   try {
     body = await req.json()
   } catch {
@@ -53,12 +60,29 @@ export async function POST(
     return NextResponse.json({ error: "الرد فارغ" }, { status: 400 })
   }
 
+  let parentReplyId: string | null = null
+  let parentAuthorId: string | null = null
+  if (body.parent_reply_id) {
+    const parent = await queryOne<{ id: string; post_id: string; author_id: string }>(
+      `SELECT id, post_id, author_id FROM forum_replies WHERE id = $1`,
+      [body.parent_reply_id]
+    )
+    if (!parent || parent.post_id !== id) {
+      return NextResponse.json(
+        { error: "الرد الأصلي غير موجود" },
+        { status: 400 }
+      )
+    }
+    parentReplyId = parent.id
+    parentAuthorId = parent.author_id
+  }
+
   try {
     const rows = await query<{ id: string; created_at: string }>(
-      `INSERT INTO forum_replies (post_id, author_id, content, is_approved)
-       VALUES ($1, $2, $3, TRUE)
+      `INSERT INTO forum_replies (post_id, author_id, parent_reply_id, content, is_approved)
+       VALUES ($1, $2, $3, $4, TRUE)
        RETURNING *`,
-      [id, session.sub, content]
+      [id, session.sub, parentReplyId, content]
     )
 
     // Notify post owner (unless they're the one replying)
@@ -69,7 +93,19 @@ export async function POST(
         title: "رد جديد على منشورك",
         message: `${session.name} رد على: ${post.title}`,
         category: "general",
-        link: `/academy/student/forum?post=${id}`,
+        link: `/community/${post.community}/forum/${id}`,
+      })
+    }
+
+    // Notify parent reply author too (if it's a nested reply on someone else's comment)
+    if (parentAuthorId && parentAuthorId !== session.sub && parentAuthorId !== post.author_id) {
+      createNotification({
+        userId: parentAuthorId,
+        type: "general",
+        title: "رد جديد على تعليقك",
+        message: `${session.name} رد على تعليقك في: ${post.title}`,
+        category: "general",
+        link: `/community/${post.community}/forum/${id}`,
       })
     }
 

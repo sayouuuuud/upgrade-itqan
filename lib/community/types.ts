@@ -61,6 +61,7 @@ export interface ForumPost {
   best_reply_id: string | null
   views_count: number
   replies_count: number
+  upvotes_count: number
   last_reply_at: string | null
   last_reply_by: string | null
   created_at: string
@@ -69,12 +70,14 @@ export interface ForumPost {
   author_name?: string
   author_avatar?: string | null
   author_role?: string
+  liked_by_me?: boolean
 }
 
 export interface ForumReply {
   id: string
   post_id: string
   author_id: string
+  parent_reply_id: string | null
   content: string
   is_approved: boolean
   is_best_answer: boolean
@@ -86,6 +89,45 @@ export interface ForumReply {
   author_avatar?: string | null
   author_role?: string
   liked_by_me?: boolean
+}
+
+export interface CommunityBan {
+  id: string
+  community: Community
+  user_id: string
+  banned_by: string | null
+  reason: string | null
+  expires_at: string | null
+  created_at: string
+  // joined
+  user_name?: string
+  user_email?: string
+  banned_by_name?: string
+}
+
+export interface CommunityRule {
+  id: string
+  community: Community
+  position: number
+  title: string
+  body: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ForumMember {
+  user_id: string
+  name: string
+  email: string
+  role: string
+  avatar_url: string | null
+  posts_count: number
+  replies_count: number
+  is_banned: boolean
+  ban_reason?: string | null
+  ban_expires_at?: string | null
+  last_active_at: string | null
 }
 
 export interface ForumReport {
@@ -194,6 +236,39 @@ export const CATEGORY_LABELS_AR: Record<string, string> = {
   seerah: "سيرة",
   tafseer: "تفسير",
   parenting: "إرشاد أسري",
+}
+
+export const CATEGORY_LABELS_EN: Record<string, string> = {
+  general: "General",
+  tarbiya: "Tarbiya",
+  academic: "Academic",
+  announcements: "Announcements",
+  questions: "Questions",
+  advice: "Advice",
+  tajweed: "Tajweed",
+  qiraat: "Qira'at",
+  hifd: "Memorization",
+  fiqh: "Fiqh",
+  aqeedah: "Aqeedah",
+  seerah: "Seerah",
+  tafseer: "Tafsir",
+  parenting: "Parenting",
+}
+
+export type SortKey = "hot" | "new" | "top" | "unanswered"
+
+export const SORT_LABELS_AR: Record<SortKey, string> = {
+  hot: "الأكثر تفاعلًا",
+  new: "الأحدث",
+  top: "الأعلى تصويتًا",
+  unanswered: "بلا إجابة",
+}
+
+export const SORT_LABELS_EN: Record<SortKey, string> = {
+  hot: "Hot",
+  new: "New",
+  top: "Top",
+  unanswered: "Unanswered",
 }
 
 export const REPORT_REASONS: { value: string; label_ar: string }[] = [

@@ -5,6 +5,7 @@ import {
   canAccessCommunity,
   canModerate,
   canPublishArticle,
+  isCommunityAdmin,
 } from "@/lib/community/permissions"
 import { CommunityNav } from "@/components/community/community-nav"
 import type { Community } from "@/lib/community/types"
@@ -39,6 +40,7 @@ export default async function CommunityLayout({
         community={c}
         canModerate={canModerate(session, c)}
         canReview={canPublishArticle(session, c)}
+        isAdmin={isCommunityAdmin(session, c)}
         alsoHasCommunities={accessibleCommunities(session)}
       />
       <div className="container mx-auto px-3 py-6">{children}</div>

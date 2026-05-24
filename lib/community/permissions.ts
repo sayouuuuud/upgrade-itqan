@@ -178,3 +178,34 @@ export function isAuthor(
   if (!session || !authorId) return false
   return session.sub === authorId
 }
+
+// Roles that can manage the forum at the admin level — i.e. access the
+// `/community/[community]/admin/manage` page where they can ban members,
+// edit rules, bulk-action posts. This is a stricter set than `canModerate`.
+const ACADEMY_COMMUNITY_ADMIN_ROLES: AllRoles[] = ["admin", "academy_admin"]
+const ACADEMY_COMMUNITY_ADMIN_ACADEMY_ROLES = [
+  "academy_admin",
+]
+const MAQRAA_COMMUNITY_ADMIN_ROLES: AllRoles[] = [
+  "admin",
+  "reciter_supervisor",
+]
+
+/**
+ * Can this user fully administer the community (manage members, rules,
+ * bulk-action posts)?
+ */
+export function isCommunityAdmin(
+  session: JWTPayload | null,
+  community: Community
+): boolean {
+  if (!session) return false
+  if (session.role === "admin") return true
+  if (community === "academy") {
+    return (
+      ACADEMY_COMMUNITY_ADMIN_ROLES.includes(session.role) ||
+      hasAcademyRoleIn(session, ACADEMY_COMMUNITY_ADMIN_ACADEMY_ROLES)
+    )
+  }
+  return MAQRAA_COMMUNITY_ADMIN_ROLES.includes(session.role)
+}

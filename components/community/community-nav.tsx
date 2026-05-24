@@ -6,6 +6,7 @@ import {
   BookOpen,
   Home,
   MessageSquare,
+  Settings,
   ShieldCheck,
   Sparkles,
 } from "lucide-react"
@@ -16,6 +17,7 @@ interface CommunityNavProps {
   community: Community
   canModerate: boolean
   canReview: boolean
+  isAdmin?: boolean
   alsoHasCommunities: Community[]
 }
 
@@ -23,6 +25,7 @@ export function CommunityNav({
   community,
   canModerate,
   canReview,
+  isAdmin,
   alsoHasCommunities,
 }: CommunityNavProps) {
   const { locale } = useI18n()
@@ -137,6 +140,21 @@ export function CommunityNav({
               <ShieldCheck className="w-4 h-4" />
               <span className="hidden sm:inline">
                 {isAr ? "إشراف" : "Mod"}
+              </span>
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              href={`${base}/admin/manage`}
+              className={`text-sm px-3 py-1.5 rounded-md flex items-center gap-1 ${
+                pathname.startsWith(`${base}/admin`)
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              <span className="hidden sm:inline">
+                {isAr ? "إدارة" : "Admin"}
               </span>
             </Link>
           )}
