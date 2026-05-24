@@ -62,8 +62,8 @@ export async function GET(req: NextRequest) {
       }>(
         `SELECT
            c.id, c.student_id, c.teacher_id, c.parent_id, c.last_message, c.last_message_at, c.is_ticket, c.ticket_status,
-           COALESCE(u.id, a.id) as other_user_id, 
-           COALESCE(u.name, a.name) as other_user_name, 
+           COALESCE(u.id, a.id, 'admin') as other_user_id, 
+           COALESCE(u.name, a.name, 'إدارة الأكاديمية') as other_user_name, 
            COALESCE(u.avatar_url, a.avatar_url) as other_user_avatar,
            COALESCE(u.role, a.role) as other_user_role,
            (SELECT COUNT(*) FROM academy_messages m WHERE m.conversation_id = c.id AND m.sender_id != $1 AND m.is_read = FALSE) as unread_count
@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
     }>(
       `SELECT 
          c.id, c.student_id, c.teacher_id, c.last_message, c.last_message_at, c.is_ticket, c.ticket_status,
-         COALESCE(u.id, a.id) as other_user_id, 
+         COALESCE(u.id, a.id, 'admin') as other_user_id, 
          COALESCE(u.name, a.name, 'إدارة الأكاديمية') as other_user_name, 
          COALESCE(u.avatar_url, a.avatar_url) as other_user_avatar,
          (SELECT COUNT(*) FROM academy_messages m WHERE m.conversation_id = c.id AND m.sender_id != $1 AND m.is_read = FALSE) as unread_count
