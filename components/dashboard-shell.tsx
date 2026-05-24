@@ -16,9 +16,11 @@ import {
   Search, Plus, BookOpen, Award, UserCheck, CalendarCheck, CalendarDays,
   MessagesSquare, Megaphone, ScrollText, PieChart, Star, ShieldCheck,
   Globe, Home, Archive, Shield, Phone, BookMarked, FileEdit, Route, Target, GraduationCap, Mail,
-  Trophy
+  Trophy, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
+import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 type NavItem = { href: string; label: string; icon: React.ElementType; badge?: number | string | null }
 type NavSection = { title?: string; items: NavItem[] }
@@ -170,6 +172,7 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
   const pathname = usePathname()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed()
   const { t } = useI18n()
   const [user, setUser] = useState<{
     name: string;
@@ -282,19 +285,43 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
       {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* Sidebar */}
+      <TooltipProvider delayDuration={150}>
       <aside className={cn(
-        'fixed inset-y-0 right-0 z-50 w-72 flex flex-col transition-transform duration-200 lg:translate-x-0 lg:static shadow-sm',
+        'fixed inset-y-0 right-0 z-50 flex flex-col transition-[width,transform] duration-200 lg:translate-x-0 lg:static shadow-sm',
         sidebarOpen ? 'translate-x-0' : 'translate-x-full',
-        'bg-card border-l border-border'
+        'bg-card border-l border-border',
+        // On mobile we keep the full-width drawer; collapse only affects lg+.
+        collapsed ? 'w-72 lg:w-20' : 'w-72'
       )}>
-        <div className={cn('py-1 flex items-center justify-center border-b border-border relative overflow-hidden', isReader ? 'bg-primary/5' : 'bg-card')}>
-          <Link href="/" className="w-full block px-4">
+        <div className={cn(
+          'py-1 flex items-center border-b border-border relative overflow-hidden',
+          isReader ? 'bg-primary/5' : 'bg-card',
+          collapsed ? 'lg:justify-center lg:px-2' : 'justify-center'
+        )}>
+          <Link href="/" className={cn('block', collapsed ? 'w-full lg:w-12 lg:px-0 px-4' : 'w-full px-4')}>
             <img
               src={branding.dashboardLogoUrl || "/branding/dashboard-logo.png"}
               alt={t.appName}
-              className="w-full h-auto min-h-[40px] max-h-[100px] object-contain dark:brightness-150 dark:contrast-125 transition-all"
+              className={cn(
+                'w-full h-auto object-contain dark:brightness-150 dark:contrast-125 transition-all',
+                collapsed ? 'min-h-[36px] max-h-[48px]' : 'min-h-[40px] max-h-[100px]'
+              )}
             />
           </Link>
+
+          {/* Desktop collapse toggle */}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className={cn(
+              'hidden lg:flex items-center justify-center p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
+              collapsed ? 'absolute top-2 left-1/2 -translate-x-1/2' : 'absolute top-2 left-2'
+            )}
+            aria-label={collapsed ? (t.shell?.expandSidebar || 'Expand sidebar') : (t.shell?.collapseSidebar || 'Collapse sidebar')}
+            title={collapsed ? (t.shell?.expandSidebar || 'Expand sidebar') : (t.shell?.collapseSidebar || 'Collapse sidebar')}
+          >
+            {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+          </button>
 
           <button className="lg:hidden p-1" onClick={() => setSidebarOpen(false)} aria-label="close">
             <X className="w-5 h-5 text-muted-foreground" />
@@ -302,47 +329,73 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+        <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-6 space-y-1', collapsed ? 'lg:px-2 px-4' : 'px-4')}>
           {config.sections.map((section, si) => (
             <div key={si}>
               {section.title && (
-                <div className={cn('text-[10px] font-bold uppercase tracking-widest mb-4 px-3 text-muted-foreground/60', si > 0 && 'mt-8')}>
+                <div className={cn(
+                  'text-[10px] font-bold uppercase tracking-widest mb-4 px-3 text-muted-foreground/60',
+                  si > 0 && 'mt-8',
+                  collapsed && 'lg:hidden'
+                )}>
                   {section.title}
                 </div>
               )}
               {section.items.map((item) => {
                 const active = isActive(item.href)
-                return (
+                const badgeNode = item.badge ? (
+                  <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">{item.badge}</span>
+                ) : (item.label === t.student.notifications || item.label === t.notifications.title || item.href.includes('notifications')) ? (
+                  unreadCount > 0 && (
+                    <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )
+                ) : null
+                const collapsedDot = item.badge
+                  ? item.badge
+                  : ((item.label === t.student.notifications || item.label === t.notifications.title || item.href.includes('notifications')) && unreadCount > 0)
+                    ? (unreadCount > 99 ? '99+' : unreadCount)
+                    : null
+                const linkEl = (
                   <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm group relative',
+                      'flex items-center gap-3 rounded-xl transition-all text-sm group relative',
+                      collapsed ? 'lg:justify-center lg:px-0 lg:py-3 px-4 py-3' : 'px-4 py-3',
                       active
                         ? 'bg-primary/10 text-primary font-bold shadow-sm'
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     )}
                   >
                     <item.icon className={cn("w-5 h-5 shrink-0 transition-transform duration-200", active && "scale-110")} />
-                    <span className="font-medium">{item.label}</span>
-                    {item.badge ? (
-                      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">{item.badge}</span>
-                    ) : (item.label === t.student.notifications || item.label === t.notifications.title || item.href.includes('notifications')) ? (
-                      unreadCount > 0 && (
-                        <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">
-                          {unreadCount > 99 ? '99+' : unreadCount}
-                        </span>
-                      )
-                    ) : null}
-                    {active && <div className="absolute right-0 w-1 h-6 bg-primary rounded-l-full" />}
+                    <span className={cn('font-medium', collapsed && 'lg:hidden')}>{item.label}</span>
+                    {!collapsed && badgeNode}
+                    {collapsed && collapsedDot != null && (
+                      <span className="hidden lg:flex absolute -top-1 -left-1 bg-destructive text-destructive-foreground text-[9px] leading-none px-1 py-0.5 rounded-full min-w-[16px] h-[16px] items-center justify-center font-bold">{collapsedDot}</span>
+                    )}
+                    {active && <div className={cn('absolute right-0 w-1 h-6 bg-primary rounded-l-full', collapsed && 'lg:hidden')} />}
                   </Link>
                 )
+                if (collapsed) {
+                  return (
+                    <Tooltip key={item.href}>
+                      <TooltipTrigger asChild>{linkEl}</TooltipTrigger>
+                      <TooltipContent side="left" className="hidden lg:block">{item.label}</TooltipContent>
+                    </Tooltip>
+                  )
+                }
+                return linkEl
               })}
             </div>
           ))}
         </nav>
 
         {/* Bottom section */}
-        <div className="p-4 border-t border-border mt-auto">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl mb-2 bg-muted/30 border border-border transition-colors">
+        <div className={cn('border-t border-border mt-auto', collapsed ? 'lg:p-2 p-4' : 'p-4')}>
+          <div className={cn(
+            'flex items-center rounded-xl mb-2 bg-muted/30 border border-border transition-colors',
+            collapsed ? 'lg:justify-center lg:p-2 gap-3 px-4 py-3' : 'gap-3 px-4 py-3'
+          )}>
             <div className="w-10 h-10 rounded-full overflow-hidden bg-primary/10 text-primary flex items-center justify-center font-bold text-sm ring-2 ring-background shadow-sm shrink-0">
               {user?.avatar_url && !avatarError ? (
                 <img src={user.avatar_url} alt={config.name} className="w-full h-full object-cover" onError={() => setAvatarError(true)} />
@@ -350,18 +403,32 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
                 <span>{(config.name || t.userFallbackLetter || 'U')[0]}</span>
               )}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className={cn('flex-1 min-w-0', collapsed && 'lg:hidden')}>
               <p className="text-sm font-bold text-foreground truncate">{config.name}</p>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">{config.sublabel}</p>
             </div>
           </div>
 
-          <Link href="/" className="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm text-muted-foreground hover:text-primary">
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/" className="hidden lg:flex items-center justify-center px-4 py-2 rounded-lg transition-colors text-sm text-muted-foreground hover:text-primary">
+                  <Globe className="w-4 h-4" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="left">{t.shell.viewSite}</TooltipContent>
+            </Tooltip>
+          ) : null}
+          <Link href="/" className={cn(
+            'flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm text-muted-foreground hover:text-primary',
+            collapsed && 'lg:hidden'
+          )}>
             <Globe className="w-4 h-4" />
             <span className="font-medium">{t.shell.viewSite}</span>
           </Link>
         </div>
       </aside>
+      </TooltipProvider>
 
       {/* Main */}
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">

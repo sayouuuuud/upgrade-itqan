@@ -84,6 +84,8 @@ export const en = {
     sidebarTitle: 'ITQAAN',
     contact: 'Contact',
     viewSite: 'View Site',
+    collapseSidebar: 'Collapse sidebar',
+    expandSidebar: 'Expand sidebar',
   },
 
   // Landing

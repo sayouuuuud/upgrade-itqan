@@ -84,6 +84,8 @@ export const ar = {
     sidebarTitle: 'إتقان الفاتحة',
     contact: 'تواصل',
     viewSite: 'عرض الموقع',
+    collapseSidebar: 'طي القائمة',
+    expandSidebar: 'فتح القائمة',
   },
 
   // Landing
