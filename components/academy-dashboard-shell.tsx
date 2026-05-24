@@ -140,7 +140,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/admin/forum', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
             { href: '/academy/admin/fiqh', label: t.academy?.fiqhQuestions || 'أسئلة فقهية', icon: HelpCircle },
             { href: '/academy/admin/announcements', label: t.admin?.announcements || 'الإعلانات', icon: Megaphone },
-            { href: '/academy/admin/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
+            { href: '/academy/admin/conversations', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
           ]
         },
         {

@@ -204,7 +204,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                         variant="outline"
                         size="sm"
                         className="gap-2 font-bold px-4 rounded-xl h-9 border-primary/20 hover:bg-primary/5 hover:border-primary/50 text-foreground transition-all active:scale-95 shadow-sm"
-                        onClick={() => router.push(`/academy/admin/chat?startWith=${id}`)}
+                        onClick={() => router.push(`/academy/admin/conversations?userId=${id}&userRole=${user.role}`)}
                     >
                         <MessageSquare className="w-4 h-4 text-primary" />
                         {t.admin.messageUser || "Message User"}
@@ -270,7 +270,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                             <Button
                                 variant="outline"
                                 className="gap-2 font-bold px-6 rounded-2xl h-11 border-primary/20 hover:bg-primary/5 hover:border-primary/50 text-foreground transition-all active:scale-95 shadow-md"
-                                onClick={() => router.push(`/academy/admin/chat?startWith=${id}`)}
+                                onClick={() => router.push(`/academy/admin/conversations?userId=${id}&userRole=${user.role}`)}
                             >
                                 <MessageSquare className="w-5 h-5 text-primary" />
                                 {t.admin.messageUser || "Message User"}
