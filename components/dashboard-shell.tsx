@@ -16,7 +16,7 @@ import {
   Search, Plus, BookOpen, Award, UserCheck, CalendarCheck, CalendarDays,
   MessagesSquare, Megaphone, ScrollText, PieChart, Star, ShieldCheck,
   Globe, Home, Archive, Shield, Phone, BookMarked, FileEdit, Route, Target, GraduationCap, Mail,
-  Trophy, PanelLeftClose, PanelLeftOpen
+  Trophy, PanelLeftClose, PanelLeftOpen, Library
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed'
@@ -43,6 +43,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/student/certificates', label: t.student.certificates || t.student.certificate, icon: Award },
           { href: '/student/wird', label: 'الورد اليومي', icon: BookMarked },
           { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
+          { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
         ]
       },
       {
@@ -68,6 +69,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/reader/schedule', label: t.reader.schedule, icon: Clock },
           { href: '/reader/chat', label: t.reader.chat, icon: MessageSquare },
           { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
+          { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
           { href: '/reader/notifications', label: t.student.notifications, icon: Bell },
           { href: '/reader/profile', label: t.reader.profile, icon: User },
         ]
@@ -97,6 +99,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin/certificates', label: t.admin.certificates.title, icon: Award },
           { href: '/community/maqraa/admin', label: 'منتدى المقرأة', icon: MessagesSquare },
           { href: '/community/maqraa/admin/manage', label: 'إدارة المنتدى', icon: Shield },
+          { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
         ]
       },
       {
@@ -133,6 +136,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
           { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
+          { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
         ]
       },
       {
@@ -155,6 +159,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
           { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
           { href: '/community/maqraa/admin/manage', label: 'إدارة المنتدى', icon: Shield },
+          { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
         ]
       },
       {

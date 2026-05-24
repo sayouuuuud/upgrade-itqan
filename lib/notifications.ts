@@ -39,7 +39,7 @@ export interface CreateNotificationInput {
     category?:
         | "recitation" | "session" | "account" | "general" | "message"
         | "announcement" | "booking" | "course" | "task" | "reminder"
-        | "goal" | "system" | "review"
+        | "goal" | "system" | "review" | "fiqh"
     link?: string                 // optional navigation link
     relatedRecitationId?: string
     relatedBookingId?: string

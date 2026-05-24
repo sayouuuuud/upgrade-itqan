@@ -38,11 +38,15 @@ export async function GET(req: NextRequest) {
       conditions.push(`fq.is_published = TRUE`)
     } else if (status === 'unpublished') {
       conditions.push(`fq.is_published = FALSE AND fq.answer IS NOT NULL`)
+    } else if (status === 'awaiting_consent') {
+      conditions.push(`fq.status = 'awaiting_consent'`)
+    } else if (status === 'closed') {
+      conditions.push(`fq.status IN ('declined','closed')`)
     }
 
     if (category) {
       params.push(category)
-      conditions.push(`fq.category = $${params.length}`)
+      conditions.push(`(cat.slug = $${params.length} OR fq.category = $${params.length})`)
     }
 
     if (search) {
@@ -58,21 +62,33 @@ export async function GET(req: NextRequest) {
     const rows = await query<any>(
       `
       SELECT fq.id,
+             fq.title,
              fq.question,
              fq.answer,
              fq.category,
+             fq.status,
+             fq.publish_consent,
              fq.is_published,
              fq.is_anonymous,
              fq.views_count,
              fq.asked_at,
              fq.answered_at,
+             fq.published_at,
              fq.asked_by,
+             fq.assigned_to,
+             cat.id     AS category_id,
+             cat.slug   AS category_slug,
+             cat.name_ar AS category_name_ar,
+             cat.name_en AS category_name_en,
              asker.name           AS asker_name,
              asker.avatar_url     AS asker_avatar,
+             assignee.name        AS assigned_to_name,
              fq.answered_by,
              answerer.name        AS answerer_name
         FROM fiqh_questions fq
+        LEFT JOIN fiqh_categories cat ON cat.id = fq.category_id
         LEFT JOIN users asker    ON asker.id    = fq.asked_by
+        LEFT JOIN users assignee ON assignee.id = fq.assigned_to
         LEFT JOIN users answerer ON answerer.id = fq.answered_by
         ${where}
         ORDER BY
@@ -92,7 +108,11 @@ export async function GET(req: NextRequest) {
       UNION ALL
       SELECT 'answered', COUNT(*)::int FROM fiqh_questions WHERE answer IS NOT NULL
       UNION ALL
+      SELECT 'awaiting_consent', COUNT(*)::int FROM fiqh_questions WHERE status = 'awaiting_consent'
+      UNION ALL
       SELECT 'published', COUNT(*)::int FROM fiqh_questions WHERE is_published = TRUE
+      UNION ALL
+      SELECT 'closed', COUNT(*)::int FROM fiqh_questions WHERE status IN ('declined','closed')
       `,
     )
     const countMap: Record<string, number> = {}

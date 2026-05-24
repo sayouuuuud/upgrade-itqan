@@ -15,7 +15,7 @@ import {
   GraduationCap, PlayCircle, FileText, Target, Award, Star,
   HelpCircle, Megaphone, UserPlus, BarChart3, Clock, Video,
   BookMarked, Route, Globe, Sparkles, Grid, UserCheck, Shield, ShieldCheck, Archive,
-  PanelLeftClose, PanelLeftOpen
+  PanelLeftClose, PanelLeftOpen, Library
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed'
@@ -42,7 +42,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/student/sessions', label: t.academy?.liveSessions || 'الجلسات الحية', icon: Video },
             { href: '/academy/student/path', label: t.academy?.learningPath || 'المسار التعليمي', icon: Route },
             { href: '/academy/student/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
-            { href: '/academy/student/fiqh', label: t.academy?.fiqhQuestions || 'أسئلة فقهية', icon: HelpCircle },
+            { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
             { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: MessageSquare },
           ]
         },
@@ -82,6 +82,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/teacher/halaqat', label: t.academy?.halaqat || 'الحلقات', icon: GraduationCap },
             { href: '/academy/teacher/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
             { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: FileText },
+            { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
           ]
         },
         {
@@ -142,7 +143,9 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
           items: [
             { href: '/community/academy/admin', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
             { href: '/community/academy/admin/manage', label: 'إدارة المنتدى', icon: Shield },
-            { href: '/academy/admin/fiqh', label: t.academy?.fiqhQuestions || 'أسئلة فقهية', icon: HelpCircle },
+            { href: '/academy/admin/fiqh', label: t.academy?.fiqhQuestions || 'صندوق الأسئلة الفقهية', icon: HelpCircle },
+            { href: '/academy/admin/fiqh/settings', label: 'إعدادات الفقه', icon: Settings },
+            { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
             { href: '/academy/admin/announcements', label: t.admin?.announcements || 'الإعلانات', icon: Megaphone },
             { href: '/academy/admin/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
           ]
@@ -170,6 +173,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/parent/progress', label: t.academy?.progress || 'التقدم', icon: Target },
             { href: '/academy/parent/messages', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
             { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
+            { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
             { href: '/academy/parent/restrictions', label: t.academy?.accessControl || 'تقييد المحتوى', icon: Shield },
           ]
         },
@@ -192,7 +196,8 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/supervisor/content', label: t.academy?.contentReview || 'إشراف المحتوى', icon: BookOpen },
             { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
             { href: '/community/academy/moderation', label: t.academy?.forumModeration || 'إشراف المنتدى', icon: ShieldCheck },
-            { href: '/academy/supervisor/fiqh', label: t.academy?.fiqhQuestions || 'الأسئلة الفقهية', icon: HelpCircle },
+            { href: '/academy/fiqh-supervisor/questions', label: t.academy?.fiqhQuestions || 'الأسئلة الفقهية', icon: HelpCircle },
+            { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
             { href: '/academy/supervisor/teachers', label: t.academy?.teacherVerification || 'توثيق المدرسين', icon: UserCheck },
             { href: '/academy/supervisor/quality', label: t.academy?.qualityMonitor || 'مراقبة الجودة', icon: BarChart3 },
           ]
@@ -214,7 +219,8 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
         {
           items: [
             { href: '/academy/fiqh-supervisor', label: 'لوحة التحكم', icon: LayoutDashboard },
-            { href: '/academy/fiqh-supervisor/questions', label: 'الأسئلة والإجابات', icon: HelpCircle },
+            { href: '/academy/fiqh-supervisor/questions', label: 'صندوق الأسئلة', icon: HelpCircle },
+            { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
             { href: '/academy/fiqh-supervisor/messages', label: 'الرسائل', icon: MessageSquare },
           ]
         },

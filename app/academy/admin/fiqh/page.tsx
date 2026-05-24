@@ -1,16 +1,21 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect, useMemo } from 'react'
 import {
   MessageSquare, Plus, Trash2, Edit2, CheckCircle, X, Loader2, Clock,
-  Search, Filter, User as UserIcon, Eye, EyeOff,
+  Search, Filter, User as UserIcon, Eye, EyeOff, Settings, ShieldCheck,
 } from 'lucide-react'
 
 interface FiqhQuestion {
   id: string
+  title?: string | null
   question: string
   answer: string | null
   category: string
+  category_slug?: string | null
+  category_name_ar?: string | null
+  status?: string
   is_published: boolean
   is_anonymous?: boolean
   views_count?: number
@@ -18,6 +23,7 @@ interface FiqhQuestion {
   answered_at: string | null
   asker_name?: string | null
   asker_avatar?: string | null
+  assigned_to_name?: string | null
   answerer_name?: string | null
 }
 
@@ -25,35 +31,37 @@ interface CountMap {
   all: number
   pending: number
   answered: number
+  awaiting_consent: number
   published: number
+  closed: number
 }
 
-const CATEGORIES = [
-  { value: 'taharah',  label: 'الطهارة' },
-  { value: 'salah',    label: 'الصلاة' },
-  { value: 'sawm',     label: 'الصيام' },
-  { value: 'zakat',    label: 'الزكاة' },
-  { value: 'hajj',     label: 'الحج' },
-  { value: 'muamalat', label: 'المعاملات' },
-  { value: 'nikah',    label: 'النكاح' },
-  { value: 'general',  label: 'عام' },
-  { value: 'other',    label: 'أخرى' },
-]
+interface Category {
+  id: string
+  slug: string
+  name_ar: string
+  name_en: string | null
+}
 
-type TabKey = 'pending' | 'answered' | 'published' | 'all'
+type TabKey = 'pending' | 'answered' | 'awaiting_consent' | 'published' | 'closed' | 'all'
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: 'pending',   label: 'بانتظار الإجابة' },
-  { key: 'answered',  label: 'مُجابة' },
-  { key: 'published', label: 'منشورة' },
-  { key: 'all',       label: 'الكل' },
+  { key: 'pending',          label: 'بانتظار الإجابة' },
+  { key: 'awaiting_consent', label: 'بانتظار موافقة السائل' },
+  { key: 'answered',         label: 'مُجابة' },
+  { key: 'published',        label: 'منشورة' },
+  { key: 'closed',           label: 'مغلقة' },
+  { key: 'all',              label: 'الكل' },
 ]
 
-const emptyForm = { question: '', answer: '', category: 'general', is_published: false }
+const emptyForm = { question: '', answer: '', category: '', is_published: false }
 
 export default function AdminFiqhPage() {
   const [questions, setQuestions] = useState<FiqhQuestion[]>([])
-  const [counts, setCounts] = useState<CountMap>({ all: 0, pending: 0, answered: 0, published: 0 })
+  const [counts, setCounts] = useState<CountMap>({
+    all: 0, pending: 0, answered: 0, awaiting_consent: 0, published: 0, closed: 0,
+  })
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<TabKey>('pending')
   const [search, setSearch] = useState('')
@@ -73,6 +81,14 @@ export default function AdminFiqhPage() {
     return () => clearTimeout(t)
   }, [search])
 
+  // Load fiqh categories once for filter dropdown + form select.
+  useEffect(() => {
+    fetch('/api/academy/fiqh/categories')
+      .then((r) => (r.ok ? r.json() : { categories: [] }))
+      .then((d) => setCategories(d.categories || []))
+      .catch(() => {})
+  }, [])
+
   const fetchQuestions = async () => {
     setLoading(true)
     try {
@@ -83,7 +99,16 @@ export default function AdminFiqhPage() {
       if (res.ok) {
         const data = await res.json()
         setQuestions(data.data || [])
-        if (data.counts) setCounts({ all: 0, pending: 0, answered: 0, published: 0, ...data.counts })
+        if (data.counts)
+          setCounts({
+            all: 0,
+            pending: 0,
+            answered: 0,
+            awaiting_consent: 0,
+            published: 0,
+            closed: 0,
+            ...data.counts,
+          })
       }
     } catch (error) {
       console.error('Failed to fetch fiqh questions:', error)
@@ -161,8 +186,11 @@ export default function AdminFiqhPage() {
     } catch {}
   }
 
-  const categoryLabel = (v: string) =>
-    CATEGORIES.find(c => c.value === v)?.label || v
+  const categoryLabel = (q: FiqhQuestion) => {
+    if (q.category_name_ar) return q.category_name_ar
+    const matched = categories.find((c) => c.slug === q.category || c.slug === q.category_slug)
+    return matched?.name_ar || q.category || 'غير مصنف'
+  }
 
   const formatDate = useMemo(
     () => (d: string) => new Date(d).toLocaleDateString('ar-EG', {
@@ -184,22 +212,40 @@ export default function AdminFiqhPage() {
             إدارة الأسئلة الفقهية والإجابة عليها ونشرها للطلاب
           </p>
         </div>
-        <button
-          onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-colors shadow-sm"
-        >
-          <Plus className="w-5 h-5" />
-          إضافة سؤال
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/academy/admin/fiqh/settings"
+            className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border hover:border-teal-300 text-foreground rounded-xl font-bold transition-colors shadow-sm"
+          >
+            <Settings className="w-4 h-4" />
+            إعدادات الفقه
+          </Link>
+          <Link
+            href="/academy/admin/fiqh/officers"
+            className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border hover:border-teal-300 text-foreground rounded-xl font-bold transition-colors shadow-sm"
+          >
+            <ShieldCheck className="w-4 h-4" />
+            مسؤولو الفقه
+          </Link>
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-colors shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            إضافة سؤال
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { key: 'pending',   label: 'بانتظار الإجابة', value: counts.pending,   color: 'text-yellow-600' },
-          { key: 'answered',  label: 'مُجابة',          value: counts.answered,  color: 'text-blue-600'   },
-          { key: 'published', label: 'منشورة',          value: counts.published, color: 'text-green-600'  },
-          { key: 'all',       label: 'الإجمالي',        value: counts.all,       color: 'text-foreground' },
+          { key: 'pending',          label: 'بانتظار الإجابة',     value: counts.pending,          color: 'text-yellow-600' },
+          { key: 'awaiting_consent', label: 'بانتظار الموافقة',    value: counts.awaiting_consent, color: 'text-orange-600' },
+          { key: 'answered',         label: 'مُجابة',                 value: counts.answered,         color: 'text-blue-600'   },
+          { key: 'published',        label: 'منشورة',                 value: counts.published,        color: 'text-green-600'  },
+          { key: 'closed',           label: 'مغلقة',                  value: counts.closed,           color: 'text-muted-foreground'  },
+          { key: 'all',              label: 'الإجمالي',               value: counts.all,              color: 'text-foreground' },
         ].map(stat => (
           <div key={stat.key} className="bg-card border border-border rounded-xl p-4 text-center">
             <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
@@ -256,8 +302,8 @@ export default function AdminFiqhPage() {
             className="pr-10 pl-3 py-2.5 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-[160px]"
           >
             <option value="">كل التصنيفات</option>
-            {CATEGORIES.map(c => (
-              <option key={c.value} value={c.value}>{c.label}</option>
+            {categories.map(c => (
+              <option key={c.id} value={c.slug}>{c.name_ar}</option>
             ))}
           </select>
         </div>
@@ -300,7 +346,7 @@ export default function AdminFiqhPage() {
                     {/* Badges row */}
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className="text-xs px-2 py-0.5 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-full font-medium">
-                        {categoryLabel(q.category)}
+                        {categoryLabel(q)}
                       </span>
                       {!hasAnswer && (
                         <span className="text-xs px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full font-medium flex items-center gap-1">
@@ -334,6 +380,12 @@ export default function AdminFiqhPage() {
                         <Clock className="w-3 h-3" />
                         {formatDate(q.asked_at)}
                       </span>
+                      {q.assigned_to_name && (
+                        <span className="flex items-center gap-1">
+                          <ShieldCheck className="w-3 h-3 text-sky-600" />
+                          مُسند: {q.assigned_to_name}
+                        </span>
+                      )}
                       {q.answerer_name && (
                         <span className="flex items-center gap-1">
                           <CheckCircle className="w-3 h-3 text-green-600" />
@@ -462,8 +514,9 @@ export default function AdminFiqhPage() {
                   onChange={e => setForm({ ...form, category: e.target.value })}
                   className="w-full px-3 py-2.5 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
-                  {CATEGORIES.map(c => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
+                  <option value="">اختر تصنيفاً</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.slug}>{c.name_ar}</option>
                   ))}
                 </select>
               </div>

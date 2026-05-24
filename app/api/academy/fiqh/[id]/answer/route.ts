@@ -51,7 +51,7 @@ export async function POST(
       title: 'تمت الإجابة على سؤالك',
       message:
         'استلمت إجابة المسؤول على سؤالك الفقهي. الرجاء إبداء موافقتك على نشر السؤال والإجابة في المكتبة العامة.',
-      link: `/academy/student/fiqh/${id}`,
+      link: `/academy/fiqh/${id}`,
     })
 
     const asker = await queryOne<{ name: string; email: string }>(
