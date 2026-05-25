@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession, requireRole, type AllRoles } from "@/lib/auth"
+import { getSession, hasAcademyRole, type AllRoles } from "@/lib/auth"
 import { query } from "@/lib/db"
 
-const ADMIN_ROLES: AllRoles[] = ["admin", "academy_admin"]
+const ADMIN_ROLES: string[] = ["admin", "academy_admin"]
 
 // GET /api/admin/library/books
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  if (!requireRole(session, ADMIN_ROLES)) {
+  if (!hasAcademyRole(session, ADMIN_ROLES)) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
   }
 
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
 // POST /api/admin/library/books
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!requireRole(session, ADMIN_ROLES)) {
+  if (!hasAcademyRole(session, ADMIN_ROLES)) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
   }
 

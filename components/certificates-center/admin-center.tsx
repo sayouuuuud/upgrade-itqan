@@ -157,49 +157,54 @@ export default function CertificatesAdminCenter({
 
   return (
     <CenterCtx.Provider value={{ apiBase, scope }}>
-    <div className="space-y-6 pb-12" dir={isAr ? "rtl" : "ltr"}>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
-            <Award className="w-7 h-7 text-primary" />
-            {isAr ? title_ar : title_en}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {isAr ? subtitle_ar : subtitle_en}
-          </p>
+    <div className="space-y-8 pb-12" dir={isAr ? "rtl" : "ltr"}>
+      {/* Modern Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-card border border-border/40 p-6 sm:p-8 rounded-[2rem] shadow-sm">
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+            <Award className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-foreground">
+              {isAr ? title_ar : title_en}
+            </h1>
+            <p className="text-base text-muted-foreground mt-1.5 font-medium">
+              {isAr ? subtitle_ar : subtitle_en}
+            </p>
+          </div>
         </div>
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-          <TabsTrigger value="requests" className="gap-2">
+        <TabsList className="bg-muted/40 p-1.5 rounded-2xl grid w-full grid-cols-2 md:grid-cols-4 gap-1.5 h-auto">
+          <TabsTrigger value="requests" className="gap-2 rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
             <FileText className="w-4 h-4" />
             {isAr ? "الطلبات" : "Requests"}
           </TabsTrigger>
-          <TabsTrigger value="issued" className="gap-2">
+          <TabsTrigger value="issued" className="gap-2 rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
             <CheckCircle2 className="w-4 h-4" />
             {isAr ? "الصادرة" : "Issued"}
           </TabsTrigger>
-          <TabsTrigger value="templates" className="gap-2">
+          <TabsTrigger value="templates" className="gap-2 rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
             <Sparkles className="w-4 h-4" />
             {isAr ? "القوالب" : "Templates"}
           </TabsTrigger>
-          <TabsTrigger value="settings" className="gap-2">
+          <TabsTrigger value="settings" className="gap-2 rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
             <Settings className="w-4 h-4" />
             {isAr ? "الإعدادات" : "Settings"}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="requests" className="mt-6">
+        <TabsContent value="requests" className="mt-8">
           <RequestsTab isAr={isAr} kindLabel={(k) => lbl(KINDS.find((x) => x.value === k) || KINDS[0])} />
         </TabsContent>
-        <TabsContent value="issued" className="mt-6">
+        <TabsContent value="issued" className="mt-8">
           <IssuedTab isAr={isAr} kindLabel={(k) => lbl(KINDS.find((x) => x.value === k) || KINDS[0])} />
         </TabsContent>
-        <TabsContent value="templates" className="mt-6">
+        <TabsContent value="templates" className="mt-8">
           <TemplatesTab isAr={isAr} lbl={lbl} langLbl={langLbl} />
         </TabsContent>
-        <TabsContent value="settings" className="mt-6">
+        <TabsContent value="settings" className="mt-8">
           <SettingsTab isAr={isAr} />
         </TabsContent>
       </Tabs>
@@ -286,26 +291,27 @@ function RequestsTab({
 
   const statusBadge = (s: string) => {
     const map: Record<string, { ar: string; en: string; cls: string }> = {
-      data_required: { ar: "بانتظار بيانات الطالب", en: "Awaiting student data", cls: "bg-orange-100 text-orange-700" },
-      submitted: { ar: "بانتظار المراجعة", en: "Awaiting review", cls: "bg-blue-100 text-blue-700" },
-      approved: { ar: "معتمد", en: "Approved", cls: "bg-green-100 text-green-700" },
-      issued: { ar: "تم الإصدار", en: "Issued", cls: "bg-emerald-100 text-emerald-700" },
-      rejected: { ar: "مرفوض", en: "Rejected", cls: "bg-red-100 text-red-700" },
+      data_required: { ar: "بانتظار بيانات الطالب", en: "Awaiting student data", cls: "bg-orange-100 text-orange-800 border-orange-200" },
+      submitted: { ar: "بانتظار المراجعة", en: "Awaiting review", cls: "bg-blue-100 text-blue-800 border-blue-200" },
+      approved: { ar: "معتمد", en: "Approved", cls: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+      issued: { ar: "تم الإصدار", en: "Issued", cls: "bg-purple-100 text-purple-800 border-purple-200" },
+      rejected: { ar: "مرفوض", en: "Rejected", cls: "bg-red-100 text-red-800 border-red-200" },
     }
-    const v = map[s] || { ar: s, en: s, cls: "bg-muted text-foreground" }
-    return <Badge className={v.cls}>{isAr ? v.ar : v.en}</Badge>
+    const v = map[s] || { ar: s, en: s, cls: "bg-muted text-foreground border-border" }
+    return <Badge className={`${v.cls} font-bold rounded-lg border shadow-sm`}>{isAr ? v.ar : v.en}</Badge>
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 items-end">
-        <div className="space-y-1">
-          <Label className="text-xs">{isAr ? "الحالة" : "Status"}</Label>
+    <div className="space-y-6">
+      {/* Sleek Filters */}
+      <div className="flex flex-wrap gap-4 items-center bg-card border border-border/40 p-4 rounded-3xl shadow-sm">
+        <div className="space-y-1.5 flex-1 min-w-[200px]">
+          <Label className="text-xs font-bold text-muted-foreground px-1">{isAr ? "الحالة" : "Status"}</Label>
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full h-11 bg-muted/30 border-0 rounded-2xl hover:bg-muted/50 transition-colors">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl">
               <SelectItem value="all">{isAr ? "الكل" : "All"}</SelectItem>
               <SelectItem value="submitted">{isAr ? "بانتظار المراجعة" : "Submitted"}</SelectItem>
               <SelectItem value="data_required">{isAr ? "بانتظار البيانات" : "Awaiting data"}</SelectItem>
@@ -315,13 +321,13 @@ function RequestsTab({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-1">
-          <Label className="text-xs">{isAr ? "النوع" : "Kind"}</Label>
+        <div className="space-y-1.5 flex-1 min-w-[200px]">
+          <Label className="text-xs font-bold text-muted-foreground px-1">{isAr ? "النوع" : "Kind"}</Label>
           <Select value={kind} onValueChange={setKind}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full h-11 bg-muted/30 border-0 rounded-2xl hover:bg-muted/50 transition-colors">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl">
               <SelectItem value="all">{isAr ? "الكل" : "All"}</SelectItem>
               {KINDS.map((k) => (
                 <SelectItem key={k.value} value={k.value}>
@@ -331,171 +337,198 @@ function RequestsTab({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex flex-wrap gap-2 ms-auto text-xs">
+        <div className="flex flex-wrap gap-2 w-full lg:w-auto lg:ms-auto text-xs bg-muted/30 p-2 rounded-2xl">
           {(["submitted", "data_required", "approved", "issued", "rejected"] as const).map((s) => (
-            <Badge key={s} variant="outline" className="font-normal">
-              {statusBadge(s)} <span className="mx-1 font-bold">{counts[s] || 0}</span>
+            <Badge key={s} variant="outline" className="font-bold py-1.5 px-3 rounded-xl border-border/50 bg-background/50 shadow-sm">
+              {statusBadge(s)} <span className="mx-2 text-muted-foreground">{counts[s] || 0}</span>
             </Badge>
           ))}
         </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-10 h-10 animate-spin text-primary/50" />
         </div>
       ) : items.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center text-muted-foreground">
-            <FileText className="w-12 h-12 mx-auto mb-4 opacity-30" />
-            <p>{isAr ? "لا توجد طلبات في هذا التصفية" : "No requests match this filter"}</p>
+        <Card className="border-dashed border-2 border-border/60 bg-muted/10 rounded-[2rem]">
+          <CardContent className="p-16 flex flex-col items-center text-center text-muted-foreground">
+            <div className="w-20 h-20 bg-primary/5 text-primary/40 rounded-full flex items-center justify-center mb-6">
+              <FileText className="w-10 h-10" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2">{isAr ? "لا توجد طلبات" : "No requests"}</h3>
+            <p>{isAr ? "لم نعثر على أي طلبات تطابق الفلاتر المحددة." : "No requests match this filter."}</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {items.map((r) => (
-            <Card key={r.id} className="border-border/60">
-              <CardContent className="p-4 flex flex-col md:flex-row gap-4 md:items-center">
-                <div className="flex-1 space-y-1">
+            <Card key={r.id} className="border-border/40 shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl overflow-hidden group">
+              <CardContent className="p-0">
+                <div className="bg-muted/20 border-b border-border/40 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors group-hover:bg-muted/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black shrink-0">
+                      {r.student_name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-base leading-none">{r.student_name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{r.student_email}</p>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold">{r.student_name}</span>
-                    <span className="text-xs text-muted-foreground">{r.student_email}</span>
                     {statusBadge(r.status)}
-                    <Badge variant="secondary">{kindLabel(r.kind)}</Badge>
-                    <Badge variant="outline" className="gap-1">
+                    <Badge variant="secondary" className="rounded-lg">{kindLabel(r.kind)}</Badge>
+                    <Badge variant="outline" className="gap-1 rounded-lg">
                       <Globe className="w-3 h-3" />
                       {r.language.toUpperCase()}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {r.source_label || r.reason || (isAr ? "بدون مصدر محدد" : "No source")}
-                  </p>
-                  {r.rank ? (
-                    <p className="text-xs">
-                      {isAr ? `المركز: ${r.rank}` : `Rank: ${r.rank}`}
-                    </p>
-                  ) : null}
-                  {r.certificate_number && (
-                    <p className="text-xs font-mono text-primary">{r.certificate_number}</p>
-                  )}
                 </div>
+                <div className="px-6 py-5 flex flex-col md:flex-row gap-6 md:items-center justify-between">
+                  <div className="space-y-2 flex-1">
+                    <p className="text-sm text-foreground/80 flex items-center gap-2 font-medium">
+                      <Layout className="w-4 h-4 text-muted-foreground" />
+                      {r.source_label || r.reason || (isAr ? "بدون مصدر محدد" : "No source")}
+                    </p>
+                    <div className="flex flex-wrap gap-4 text-xs">
+                      {r.rank ? (
+                        <span className="flex items-center gap-1.5 text-orange-600 bg-orange-50 px-2 py-1 rounded-md font-bold">
+                          <Award className="w-3.5 h-3.5" />
+                          {isAr ? `المركز: ${r.rank}` : `Rank: ${r.rank}`}
+                        </span>
+                      ) : null}
+                      {r.certificate_number && (
+                        <span className="flex items-center gap-1.5 text-primary bg-primary/5 px-2 py-1 rounded-md font-mono font-bold">
+                          # {r.certificate_number}
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-                <div className="flex flex-wrap gap-2 justify-end">
-                  {r.status === "submitted" && (
-                    <Button
-                      size="sm"
-                      disabled={busy === r.id}
-                      onClick={() => doAction(r.id, { action: "approve" })}
-                    >
-                      {busy === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                      {isAr ? "اعتماد" : "Approve"}
-                    </Button>
-                  )}
-                  {(r.status === "approved" || r.status === "submitted") && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="secondary" onClick={() => setActiveReq(r)}>
-                          <Award className="w-4 h-4" />
-                          {isAr ? "إصدار" : "Issue"}
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>{isAr ? "إصدار الشهادة" : "Issue Certificate"}</DialogTitle>
-                          <DialogDescription>
-                            {isAr
-                              ? "اختر القالب واللغة قبل الإصدار. (توليد PDF التلقائي يأتي في التحديث القادم)"
-                              : "Pick template & language before issuing. (Auto PDF generation in next update.)"}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-3">
-                          <div className="space-y-1">
-                            <Label>{isAr ? "القالب" : "Template"}</Label>
-                            <Select
-                              value={activeReq?.template_id || ""}
-                              onValueChange={async (v) => {
+                  <div className="flex flex-wrap gap-2 justify-end shrink-0">
+                    {r.status === "submitted" && (
+                      <Button
+                        className="rounded-xl font-bold"
+                        disabled={busy === r.id}
+                        onClick={() => doAction(r.id, { action: "approve" })}
+                      >
+                        {busy === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                        {isAr ? "اعتماد" : "Approve"}
+                      </Button>
+                    )}
+                    {(r.status === "approved" || r.status === "submitted") && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button className="rounded-xl font-bold" variant="secondary" onClick={() => setActiveReq(r)}>
+                            <Award className="w-4 h-4" />
+                            {isAr ? "إصدار" : "Issue"}
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="rounded-3xl">
+                          <DialogHeader>
+                            <DialogTitle>{isAr ? "إصدار الشهادة" : "Issue Certificate"}</DialogTitle>
+                            <DialogDescription>
+                              {isAr
+                                ? "اختر القالب واللغة قبل الإصدار. (توليد PDF التلقائي يأتي في التحديث القادم)"
+                                : "Pick template & language before issuing. (Auto PDF generation in next update.)"}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 my-2">
+                            <div className="space-y-1.5">
+                              <Label className="font-bold">{isAr ? "القالب" : "Template"}</Label>
+                              <Select
+                                value={activeReq?.template_id || ""}
+                                onValueChange={async (v) => {
+                                  if (!activeReq) return
+                                  await doAction(activeReq.id, {
+                                    action: "assign_template",
+                                    template_id: v,
+                                  })
+                                }}
+                              >
+                                <SelectTrigger className="rounded-xl h-12">
+                                  <SelectValue placeholder={isAr ? "اختر القالب" : "Choose template"} />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl">
+                                  {templates
+                                    .filter((tpl) => tpl.kind === (activeReq?.kind || "course"))
+                                    .map((tpl) => (
+                                      <SelectItem key={tpl.id} value={tpl.id}>
+                                        {tpl.name} · {tpl.language.toUpperCase()}
+                                        {tpl.is_default ? " · ★" : ""}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="font-bold">{isAr ? "رابط PDF (اختياري)" : "PDF URL (optional)"}</Label>
+                              <Input
+                                placeholder="https://…"
+                                id="cert-issue-url"
+                                className="rounded-xl h-12"
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button
+                              className="rounded-xl font-bold px-8"
+                              disabled={busy === activeReq?.id}
+                              onClick={async () => {
+                                if (!activeReq) return
+                                const input = document.getElementById("cert-issue-url") as HTMLInputElement
+                                const pdfUrl = input?.value?.trim() || undefined
+                                await doAction(activeReq.id, { action: "issue", pdf_url: pdfUrl })
+                              }}
+                            >
+                              {isAr ? "تأكيد الإصدار" : "Confirm issue"}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                    {r.status !== "rejected" && r.status !== "issued" && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button className="rounded-xl font-bold bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700" variant="ghost" onClick={() => setActiveReq(r)}>
+                            <XCircle className="w-4 h-4" />
+                            {isAr ? "رفض" : "Reject"}
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="rounded-3xl">
+                          <DialogHeader>
+                            <DialogTitle>{isAr ? "رفض الطلب" : "Reject request"}</DialogTitle>
+                          </DialogHeader>
+                          <div className="my-2 space-y-2">
+                            <Label className="font-bold">{isAr ? "سبب الرفض" : "Reason"}</Label>
+                            <Textarea
+                              rows={4}
+                              value={rejectReason}
+                              onChange={(e) => setRejectReason(e.target.value)}
+                              placeholder={isAr ? "اكتب سبب الرفض" : "Reason for rejection"}
+                              className="rounded-xl resize-none"
+                            />
+                          </div>
+                          <DialogFooter>
+                            <Button
+                              variant="destructive"
+                              className="rounded-xl font-bold"
+                              disabled={busy === activeReq?.id}
+                              onClick={async () => {
                                 if (!activeReq) return
                                 await doAction(activeReq.id, {
-                                  action: "assign_template",
-                                  template_id: v,
+                                  action: "reject",
+                                  reason: rejectReason,
                                 })
                               }}
                             >
-                              <SelectTrigger>
-                                <SelectValue placeholder={isAr ? "اختر القالب" : "Choose template"} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {templates
-                                  .filter((tpl) => tpl.kind === (activeReq?.kind || "course"))
-                                  .map((tpl) => (
-                                    <SelectItem key={tpl.id} value={tpl.id}>
-                                      {tpl.name} · {tpl.language.toUpperCase()}
-                                      {tpl.is_default ? " · ★" : ""}
-                                    </SelectItem>
-                                  ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-1">
-                            <Label>{isAr ? "رابط PDF (اختياري)" : "PDF URL (optional)"}</Label>
-                            <Input
-                              placeholder="https://…"
-                              id="cert-issue-url"
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button
-                            disabled={busy === activeReq?.id}
-                            onClick={async () => {
-                              if (!activeReq) return
-                              const input = document.getElementById("cert-issue-url") as HTMLInputElement
-                              const pdfUrl = input?.value?.trim() || undefined
-                              await doAction(activeReq.id, { action: "issue", pdf_url: pdfUrl })
-                            }}
-                          >
-                            {isAr ? "تأكيد الإصدار" : "Confirm issue"}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                  {r.status !== "rejected" && r.status !== "issued" && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="ghost" onClick={() => setActiveReq(r)}>
-                          <XCircle className="w-4 h-4" />
-                          {isAr ? "رفض" : "Reject"}
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>{isAr ? "رفض الطلب" : "Reject request"}</DialogTitle>
-                        </DialogHeader>
-                        <Textarea
-                          rows={4}
-                          value={rejectReason}
-                          onChange={(e) => setRejectReason(e.target.value)}
-                          placeholder={isAr ? "اكتب سبب الرفض" : "Reason for rejection"}
-                        />
-                        <DialogFooter>
-                          <Button
-                            variant="destructive"
-                            disabled={busy === activeReq?.id}
-                            onClick={async () => {
-                              if (!activeReq) return
-                              await doAction(activeReq.id, {
-                                action: "reject",
-                                reason: rejectReason,
-                              })
-                            }}
-                          >
-                            {isAr ? "تأكيد الرفض" : "Confirm reject"}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                              {isAr ? "تأكيد الرفض" : "Confirm reject"}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -540,15 +573,16 @@ function IssuedTab({
   }, [kind])
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 items-end">
-        <div className="space-y-1">
-          <Label className="text-xs">{isAr ? "النوع" : "Kind"}</Label>
+    <div className="space-y-6">
+      {/* Sleek Filters */}
+      <div className="flex flex-wrap gap-4 items-center bg-card border border-border/40 p-4 rounded-3xl shadow-sm">
+        <div className="space-y-1.5 flex-1 min-w-[200px]">
+          <Label className="text-xs font-bold text-muted-foreground px-1">{isAr ? "النوع" : "Kind"}</Label>
           <Select value={kind} onValueChange={setKind}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full h-11 bg-muted/30 border-0 rounded-2xl hover:bg-muted/50 transition-colors">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl">
               <SelectItem value="all">{isAr ? "الكل" : "All"}</SelectItem>
               {KINDS.map((k) => (
                 <SelectItem key={k.value} value={k.value}>
@@ -558,67 +592,91 @@ function IssuedTab({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-1 flex-1 min-w-60">
-          <Label className="text-xs">{isAr ? "بحث" : "Search"}</Label>
+        <div className="space-y-1.5 flex-[2] min-w-[280px]">
+          <Label className="text-xs font-bold text-muted-foreground px-1">{isAr ? "بحث" : "Search"}</Label>
           <div className="flex gap-2">
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={isAr ? "اسم، إيميل، رقم شهادة..." : "Name, email, cert#..."}
-            />
-            <Button variant="secondary" onClick={load}>
-              <Search className="w-4 h-4" />
+            <div className="relative flex-1">
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={isAr ? "ابحث بالاسم، الإيميل، رقم الشهادة..." : "Name, email, cert#..."}
+                className="w-full h-11 bg-muted/30 border-0 rounded-2xl pl-4 pr-10 hover:bg-muted/50 focus-visible:ring-primary/30 transition-colors"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") load()
+                }}
+              />
+            </div>
+            <Button className="h-11 px-6 rounded-2xl font-bold shadow-sm" onClick={load}>
+              {isAr ? "بحث" : "Search"}
             </Button>
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-10 h-10 animate-spin text-primary/50" />
         </div>
       ) : items.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center text-muted-foreground">
-            <Award className="w-12 h-12 mx-auto mb-4 opacity-30" />
-            <p>{isAr ? "لا توجد شهادات صادرة بعد" : "No issued certificates yet"}</p>
+        <Card className="border-dashed border-2 border-border/60 bg-muted/10 rounded-[2rem]">
+          <CardContent className="p-16 flex flex-col items-center text-center text-muted-foreground">
+            <div className="w-20 h-20 bg-primary/5 text-primary/40 rounded-full flex items-center justify-center mb-6">
+              <Award className="w-10 h-10" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2">{isAr ? "لا توجد شهادات" : "No certificates"}</h3>
+            <p>{isAr ? "لم نعثر على أي شهادات صادرة." : "No issued certificates found."}</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {items.map((c) => (
-            <Card key={c.id}>
-              <CardContent className="p-5 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-bold">{c.student_name}</p>
-                    <p className="text-xs text-muted-foreground">{c.student_email}</p>
+            <Card key={c.id} className="border-border/40 shadow-sm hover:shadow-lg transition-all duration-300 rounded-3xl overflow-hidden group">
+              <CardContent className="p-0 flex flex-col h-full">
+                <div className="bg-muted/20 border-b border-border/40 p-5 flex items-start justify-between gap-4 transition-colors group-hover:bg-muted/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-lg shrink-0">
+                      {c.student_name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold leading-tight line-clamp-1">{c.student_name}</p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{c.student_email}</p>
+                    </div>
                   </div>
-                  <Badge>{kindLabel(c.kind)}</Badge>
                 </div>
-                <div className="text-sm space-y-1">
-                  <p className="text-muted-foreground">
-                    {c.source_label || c.template_name || "—"}
-                  </p>
-                  {c.certificate_number && (
-                    <p className="font-mono text-xs text-primary">{c.certificate_number}</p>
+                <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary" className="rounded-lg">{kindLabel(c.kind)}</Badge>
+                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                        {new Date(c.issued_at).toLocaleDateString(isAr ? "ar-EG" : "en-US")}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 p-3 rounded-2xl bg-muted/30 border border-border/40">
+                      <p className="text-sm font-medium text-foreground line-clamp-1">
+                        {c.source_label || c.template_name || "—"}
+                      </p>
+                      {c.certificate_number && (
+                        <p className="font-mono text-xs font-bold text-primary flex items-center gap-1.5">
+                          # {c.certificate_number}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {c.pdf_url ? (
+                    <Button asChild className="w-full rounded-xl font-bold group-hover:shadow-md transition-all">
+                      <a href={c.pdf_url} target="_blank" rel="noreferrer">
+                        <ExternalLink className="w-4 h-4 me-2" />
+                        {isAr ? "عرض الشهادة (PDF)" : "View Certificate (PDF)"}
+                      </a>
+                    </Button>
+                  ) : (
+                    <div className="w-full text-center py-2.5 rounded-xl border border-dashed border-orange-200 bg-orange-50 text-orange-600 text-xs font-bold">
+                      {isAr ? "في انتظار توليد الـ PDF..." : "Generating PDF..."}
+                    </div>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(c.issued_at).toLocaleDateString(isAr ? "ar-EG" : "en-US")}
-                  </p>
                 </div>
-                {c.pdf_url ? (
-                  <Button asChild size="sm" variant="outline" className="w-full">
-                    <a href={c.pdf_url} target="_blank" rel="noreferrer">
-                      <ExternalLink className="w-4 h-4" />
-                      {isAr ? "فتح الشهادة" : "Open PDF"}
-                    </a>
-                  </Button>
-                ) : (
-                  <p className="text-xs text-orange-600">
-                    {isAr ? "في انتظار رفع PDF" : "Awaiting PDF"}
-                  </p>
-                )}
               </CardContent>
             </Card>
           ))}
@@ -761,33 +819,33 @@ function TemplatesTab({
       <div className="flex justify-end">
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4" />
+            <Button className="rounded-xl font-bold shadow-sm px-6 h-11">
+              <Plus className="w-5 h-5 me-1.5" />
               {isAr ? "قالب جديد" : "New template"}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>{isAr ? "رفع قالب شهادة" : "Upload certificate template"}</DialogTitle>
-              <DialogDescription>
+          <DialogContent className="max-w-lg rounded-[2rem] p-6 sm:p-8">
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-2xl font-black">{isAr ? "رفع قالب شهادة" : "Upload certificate template"}</DialogTitle>
+              <DialogDescription className="text-base font-medium">
                 {isAr
                   ? "ارفع صورة أو PDF عالي الجودة. ستحدد مواضع الحقول بصرياً في التحديث القادم."
                   : "Upload a high-resolution image or PDF. Field positions will be set visually in the next update."}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label>{isAr ? "اسم القالب" : "Template name"}</Label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <div className="space-y-5">
+              <div className="space-y-1.5">
+                <Label className="font-bold">{isAr ? "اسم القالب" : "Template name"}</Label>
+                <Input className="h-12 rounded-xl bg-muted/30 focus-visible:bg-background" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label>{isAr ? "النوع" : "Kind"}</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="font-bold">{isAr ? "النوع" : "Kind"}</Label>
                   <Select value={form.kind} onValueChange={(v) => setForm({ ...form, kind: v })}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 rounded-xl bg-muted/30 focus:bg-background">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-xl">
                       {KINDS.map((k) => (
                         <SelectItem key={k.value} value={k.value}>
                           {lbl(k)}
@@ -796,13 +854,13 @@ function TemplatesTab({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1">
-                  <Label>{isAr ? "اللغة" : "Language"}</Label>
+                <div className="space-y-1.5">
+                  <Label className="font-bold">{isAr ? "اللغة" : "Language"}</Label>
                   <Select value={form.language} onValueChange={(v) => setForm({ ...form, language: v })}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 rounded-xl bg-muted/30 focus:bg-background">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-xl">
                       {LANGUAGES.map((l) => (
                         <SelectItem key={l.value} value={l.value}>
                           {langLbl(l)}
@@ -812,17 +870,18 @@ function TemplatesTab({
                   </Select>
                 </div>
               </div>
-              <div className="space-y-1">
-                <Label>{isAr ? "وصف (اختياري)" : "Description (optional)"}</Label>
+              <div className="space-y-1.5">
+                <Label className="font-bold">{isAr ? "وصف (اختياري)" : "Description (optional)"}</Label>
                 <Textarea
                   rows={2}
+                  className="rounded-xl bg-muted/30 focus-visible:bg-background resize-none"
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label>{isAr ? "ملف التيمبلت" : "Template file"}</Label>
-                <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl py-8 cursor-pointer hover:border-primary transition">
+                <Label className="font-bold">{isAr ? "ملف التيمبلت" : "Template file"}</Label>
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-primary/20 bg-primary/5 rounded-2xl py-8 cursor-pointer hover:border-primary/40 hover:bg-primary/10 transition-all duration-300">
                   <input
                     type="file"
                     accept="image/*,application/pdf"
@@ -830,34 +889,42 @@ function TemplatesTab({
                     onChange={(e) => e.target.files && handleFile(e.target.files[0])}
                   />
                   {uploading ? (
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    <div className="flex flex-col items-center gap-3">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      <span className="text-sm font-bold text-primary">{isAr ? "جاري الرفع..." : "Uploading..."}</span>
+                    </div>
                   ) : form.template_url ? (
-                    <div className="flex items-center gap-2 text-primary">
-                      <CheckCircle2 className="w-5 h-5" />
-                      {isAr ? "تم رفع الملف" : "File uploaded"}
+                    <div className="flex flex-col items-center gap-2 text-primary">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-6 h-6" />
+                      </div>
+                      <span className="font-bold">{isAr ? "تم رفع الملف بنجاح" : "File uploaded successfully"}</span>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                      <UploadIcon className="w-6 h-6" />
-                      <span className="text-sm">{isAr ? "اضغط للرفع" : "Click to upload"}</span>
+                    <div className="flex flex-col items-center gap-3 text-primary/60 hover:text-primary transition-colors">
+                      <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
+                        <UploadIcon className="w-6 h-6" />
+                      </div>
+                      <span className="font-bold">{isAr ? "اضغط لرفع الملف" : "Click to upload file"}</span>
                     </div>
                   )}
                 </label>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 bg-muted/30 p-4 rounded-xl border border-border/40">
                 <Switch
                   id="def-tpl"
                   checked={form.is_default}
                   onCheckedChange={(v) => setForm({ ...form, is_default: Boolean(v) })}
+                  className="scale-110"
                 />
-                <Label htmlFor="def-tpl" className="font-normal">
-                  {isAr ? "اجعله الافتراضي لهذا النوع/اللغة" : "Make default for this kind/language"}
+                <Label htmlFor="def-tpl" className="font-bold cursor-pointer">
+                  {isAr ? "تعيين كقالب افتراضي لهذا النوع واللغة" : "Make default for this kind/language"}
                 </Label>
               </div>
             </div>
-            <DialogFooter>
-              <Button onClick={create} disabled={creating || uploading}>
-                {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : isAr ? "إنشاء" : "Create"}
+            <DialogFooter className="mt-6">
+              <Button onClick={create} disabled={creating || uploading} className="w-full h-12 rounded-xl font-bold text-base shadow-lg shadow-primary/20">
+                {creating ? <Loader2 className="w-5 h-5 animate-spin" /> : isAr ? "إنشاء القالب" : "Create Template"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -865,122 +932,130 @@ function TemplatesTab({
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-10 h-10 animate-spin text-primary/50" />
         </div>
       ) : Object.keys(grouped).length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center text-muted-foreground">
-            <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-30" />
-            <p>{isAr ? "لا توجد قوالب بعد. ابدأ بإضافة قالب." : "No templates yet — add one to get started."}</p>
+        <Card className="border-dashed border-2 border-border/60 bg-muted/10 rounded-[2rem]">
+          <CardContent className="p-16 flex flex-col items-center text-center text-muted-foreground">
+            <div className="w-20 h-20 bg-primary/5 text-primary/40 rounded-full flex items-center justify-center mb-6">
+              <Sparkles className="w-10 h-10" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2">{isAr ? "لا توجد قوالب" : "No templates"}</h3>
+            <p>{isAr ? "لم تقم بإضافة أي قوالب للشهادات بعد." : "You haven't added any certificate templates yet."}</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-12">
           {KINDS.map((k) => {
             const list = grouped[k.value] || []
             if (list.length === 0) return null
             return (
-              <div key={k.value} className="space-y-3">
-                <h3 className="font-bold text-foreground/80">{lbl(k)}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div key={k.value} className="space-y-5 bg-card/50 p-6 rounded-[2rem] border border-border/40 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-2xl font-black text-foreground">{lbl(k)}</h3>
+                  <Badge variant="secondary" className="rounded-full px-3 text-sm">{list.length}</Badge>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {list.map((tpl) => (
-                    <Card key={tpl.id} className={tpl.is_active ? "" : "opacity-50"}>
-                      <CardContent className="p-4 space-y-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold truncate">{tpl.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {tpl.language.toUpperCase()} · {new Date(tpl.created_at).toLocaleDateString(isAr ? "ar-EG" : "en-US")}
-                            </p>
-                          </div>
-                          {tpl.is_default && (
-                            <Badge className="bg-yellow-100 text-yellow-700 gap-1">
-                              <Star className="w-3 h-3" />
-                              {isAr ? "افتراضي" : "Default"}
-                            </Badge>
-                          )}
-                        </div>
-                        <a
-                          href={tpl.template_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block rounded-lg overflow-hidden bg-muted aspect-[1.4/1] flex items-center justify-center"
-                        >
+                    <Card key={tpl.id} className={`border-border/40 shadow-sm hover:shadow-xl transition-all duration-300 rounded-3xl overflow-hidden group flex flex-col h-full ${tpl.is_active ? "" : "opacity-60 grayscale-[30%]"}`}>
+                      <CardContent className="p-0 flex flex-col flex-1">
+                        {/* Image Header */}
+                        <div className="relative aspect-[1.414/1] bg-muted overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={tpl.template_url}
                             alt={tpl.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             onError={(e) => {
                               ;(e.target as HTMLImageElement).style.display = "none"
                             }}
                           />
-                        </a>
-                        <div className="flex flex-wrap gap-2 text-xs">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80" />
+                          <div className="absolute top-3 right-3 flex gap-2">
+                            {tpl.is_default && (
+                              <Badge className="bg-yellow-400 text-yellow-950 font-bold border-0 shadow-sm rounded-lg gap-1">
+                                <Star className="w-3.5 h-3.5 fill-current" />
+                                {isAr ? "الافتراضي" : "Default"}
+                              </Badge>
+                            )}
+                            <Badge variant="secondary" className="rounded-lg shadow-sm font-bold bg-white/90 text-black border-0">
+                              {tpl.language.toUpperCase()}
+                            </Badge>
+                          </div>
+                          <div className="absolute bottom-3 left-4 right-4 text-white z-10">
+                            <p className="font-bold text-lg leading-tight line-clamp-1 drop-shadow-md">{tpl.name}</p>
+                            <p className="text-xs opacity-80 mt-1 drop-shadow-sm font-medium">
+                              {new Date(tpl.created_at).toLocaleDateString(isAr ? "ar-EG" : "en-US")}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="p-4 flex-1 flex flex-col justify-end gap-2.5 bg-card">
                           <Button
-                            size="sm"
-                            variant="default"
+                            className="w-full rounded-xl font-bold bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors shadow-none"
                             onClick={() => {
                               setEditorTemplate(tpl)
                               setEditorOpen(true)
                             }}
                           >
-                            <Layout className="w-3 h-3" />
-                            {isAr ? "تحرير المواضع" : "Edit positions"}
+                            <Layout className="w-4 h-4 me-2" />
+                            {isAr ? "تعديل مواضع النصوص" : "Edit text positions"}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={previewing === tpl.id}
-                            onClick={async () => {
-                              setPreviewing(tpl.id)
-                              try {
-                                const r = await fetch(
-                                  `${apiBase}/templates/${tpl.id}/preview?format=png&t=${Date.now()}`,
-                                )
-                                if (!r.ok) {
-                                  toast({ variant: "destructive", title: isAr ? "تعذر إنشاء المعاينة" : "Preview failed" })
-                                  return
+                          <div className="grid grid-cols-2 gap-2.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="rounded-xl font-bold h-9"
+                              disabled={previewing === tpl.id}
+                              onClick={async () => {
+                                setPreviewing(tpl.id)
+                                try {
+                                  const r = await fetch(`${apiBase}/templates/${tpl.id}/preview?format=png&t=${Date.now()}`)
+                                  if (!r.ok) {
+                                    toast({ variant: "destructive", title: isAr ? "تعذر إنشاء المعاينة" : "Preview failed" })
+                                    return
+                                  }
+                                  const blob = await r.blob()
+                                  setPreviewUrls((p) => ({ ...p, [tpl.id]: URL.createObjectURL(blob) }))
+                                } finally {
+                                  setPreviewing(null)
                                 }
-                                const blob = await r.blob()
-                                setPreviewUrls((p) => ({ ...p, [tpl.id]: URL.createObjectURL(blob) }))
-                              } finally {
-                                setPreviewing(null)
-                              }
-                            }}
-                          >
-                            {previewing === tpl.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Eye className="w-3 h-3" />}
-                            {isAr ? "معاينة" : "Preview"}
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => toggleDefault(tpl)}>
-                            <Star className="w-3 h-3" />
-                            {tpl.is_default
-                              ? isAr
-                                ? "إزالة الافتراضي"
-                                : "Unset default"
-                              : isAr
-                                ? "اجعله افتراضياً"
-                                : "Set default"}
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => toggleActive(tpl)}>
-                            {tpl.is_active ? (isAr ? "تعطيل" : "Disable") : isAr ? "تفعيل" : "Enable"}
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => remove(tpl)}>
-                            <Trash2 className="w-3 h-3 text-red-500" />
-                          </Button>
+                              }}
+                            >
+                              {previewing === tpl.id ? <Loader2 className="w-4 h-4 animate-spin me-1.5" /> : <Eye className="w-4 h-4 me-1.5" />}
+                              {isAr ? "معاينة" : "Preview"}
+                            </Button>
+                            <Button size="sm" variant="outline" className="rounded-xl font-bold h-9" onClick={() => toggleActive(tpl)}>
+                              {tpl.is_active ? (isAr ? "تعطيل" : "Disable") : (isAr ? "تفعيل" : "Enable")}
+                            </Button>
+                          </div>
+                          <div className="flex gap-2.5">
+                            <Button size="sm" variant="secondary" className="rounded-xl flex-1 font-bold h-9" onClick={() => toggleDefault(tpl)}>
+                              <Star className={`w-4 h-4 me-1.5 ${tpl.is_default ? "text-yellow-500 fill-current" : ""}`} />
+                              {tpl.is_default ? (isAr ? "إزالة الافتراضي" : "Unset default") : (isAr ? "تعيين كافتراضي" : "Set default")}
+                            </Button>
+                            <Button size="sm" variant="ghost" className="rounded-xl bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 shrink-0 h-9 px-3" onClick={() => remove(tpl)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          {previewUrls[tpl.id] && (
+                            <a
+                              href={previewUrls[tpl.id]}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block mt-3 rounded-xl overflow-hidden border border-border shadow-sm group-hover:shadow-md transition-shadow relative group/preview"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={previewUrls[tpl.id]} alt="preview" className="w-full" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-sm">
+                                <ExternalLink className="w-4 h-4 me-1.5" />
+                                {isAr ? "فتح بحجم كامل" : "Open full size"}
+                              </div>
+                            </a>
+                          )}
                         </div>
-                        {previewUrls[tpl.id] && (
-                          <a
-                            href={previewUrls[tpl.id]}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="block mt-2 rounded-lg overflow-hidden bg-muted"
-                          >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={previewUrls[tpl.id]} alt="preview" className="w-full" />
-                          </a>
-                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -1083,35 +1158,35 @@ function SettingsTab({ isAr }: { isAr: boolean }) {
   }
 
   const assetField = (key: string, label: string, hint?: string) => (
-    <Card>
-      <CardContent className="p-4 space-y-3">
+    <Card className="border-border/40 shadow-sm rounded-3xl overflow-hidden">
+      <CardContent className="p-6 space-y-4">
         <div>
-          <Label className="font-bold">{label}</Label>
-          {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
+          <Label className="font-black text-lg">{label}</Label>
+          {hint && <p className="text-sm text-muted-foreground mt-1 font-medium">{hint}</p>}
         </div>
         {settings[key] ? (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-5 bg-muted/20 p-4 rounded-2xl border border-border/50">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={String(settings[key])}
               alt={label}
-              className="w-24 h-24 object-contain bg-muted rounded-lg"
+              className="w-32 h-32 object-contain bg-white rounded-xl shadow-sm border border-border/30 p-2"
             />
-            <div className="flex flex-col gap-1">
-              <Button size="sm" variant="outline" asChild>
+            <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto">
+              <Button className="rounded-xl font-bold flex-1" asChild>
                 <a href={String(settings[key])} target="_blank" rel="noreferrer">
-                  <ExternalLink className="w-3 h-3" />
-                  {isAr ? "عرض" : "Open"}
+                  <ExternalLink className="w-4 h-4 me-2" />
+                  {isAr ? "عرض الصورة" : "Open Image"}
                 </a>
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => setKey(key, null)}>
-                <Trash2 className="w-3 h-3 text-red-500" />
+              <Button variant="destructive" className="rounded-xl font-bold flex-1" onClick={() => setKey(key, null)}>
+                <Trash2 className="w-4 h-4 me-2" />
                 {isAr ? "إزالة" : "Remove"}
               </Button>
             </div>
           </div>
         ) : (
-          <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl py-6 cursor-pointer hover:border-primary transition">
+          <label className="flex flex-col items-center justify-center border-2 border-dashed border-primary/20 bg-primary/5 rounded-2xl py-10 cursor-pointer hover:border-primary/40 hover:bg-primary/10 transition-all duration-300">
             <input
               type="file"
               accept="image/*"
@@ -1119,11 +1194,16 @@ function SettingsTab({ isAr }: { isAr: boolean }) {
               onChange={(e) => e.target.files && uploadAsset(key, e.target.files[0])}
             />
             {uploading === key ? (
-              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="text-sm font-bold text-primary">{isAr ? "جاري الرفع..." : "Uploading..."}</span>
+              </div>
             ) : (
-              <div className="flex flex-col items-center gap-1 text-muted-foreground">
-                <ImageIcon className="w-5 h-5" />
-                <span className="text-xs">{isAr ? "اضغط للرفع" : "Click to upload"}</span>
+              <div className="flex flex-col items-center gap-3 text-primary/60 hover:text-primary transition-colors">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <ImageIcon className="w-8 h-8" />
+                </div>
+                <span className="text-base font-bold">{isAr ? "اضغط لرفع الصورة" : "Click to upload image"}</span>
               </div>
             )}
           </label>
@@ -1133,82 +1213,96 @@ function SettingsTab({ isAr }: { isAr: boolean }) {
   )
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <Label className="font-bold">{isAr ? "اسم المنصة (عربي)" : "Platform name (Arabic)"}</Label>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="border-border/40 shadow-sm rounded-3xl">
+          <CardContent className="p-6 space-y-4">
+            <Label className="font-black text-lg">{isAr ? "اسم المنصة (عربي)" : "Platform name (Arabic)"}</Label>
             <Input
               value={String(settings.platform_name_ar ?? "")}
               onChange={(e) => setKey("platform_name_ar", e.target.value)}
+              className="h-12 rounded-xl text-lg px-4 bg-muted/30 focus-visible:bg-background"
             />
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <Label className="font-bold">{isAr ? "اسم المنصة (إنجليزي)" : "Platform name (English)"}</Label>
+        <Card className="border-border/40 shadow-sm rounded-3xl">
+          <CardContent className="p-6 space-y-4">
+            <Label className="font-black text-lg">{isAr ? "اسم المنصة (إنجليزي)" : "Platform name (English)"}</Label>
             <Input
               value={String(settings.platform_name_en ?? "")}
               onChange={(e) => setKey("platform_name_en", e.target.value)}
+              className="h-12 rounded-xl text-lg px-4 bg-muted/30 focus-visible:bg-background"
             />
           </CardContent>
         </Card>
+        
         {assetField(
           "logo_url",
           isAr ? "شعار المنصة" : "Platform logo",
-          isAr ? "PNG بخلفية شفافة. يظهر على الشهادات." : "PNG with transparent background. Appears on certificates.",
+          isAr ? "PNG بخلفية شفافة. يظهر على الشهادات." : "PNG with transparent background. Appears on certificates."
         )}
         {assetField(
           "watermark_url",
           isAr ? "العلامة المائية" : "Watermark",
-          isAr ? "صورة شفافة تظهر خلف نص الشهادة." : "Transparent image shown behind certificate text.",
+          isAr ? "صورة شفافة تظهر خلف نص الشهادة." : "Transparent image shown behind certificate text."
         )}
         {assetField(
           "signature_url",
-          isAr ? "التوقيع الرقمي" : "Digital signature",
-          isAr ? "صورة لتوقيع المنصة الرسمي." : "Image of the official platform signature.",
+          isAr ? "التوقيع الرقمي للمدير" : "Digital signature",
+          isAr ? "صورة لتوقيع مدير المنصة الرسمي." : "Image of the official platform signature."
         )}
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <Label className="font-bold">
-              {isAr ? "اسم الموقّع الافتراضي" : "Default signer name"}
-            </Label>
-            <Input
-              value={String(settings.default_signer_name ?? "")}
-              onChange={(e) => setKey("default_signer_name", e.target.value)}
-            />
-            <Label>{isAr ? "المسمى الوظيفي" : "Signer title"}</Label>
-            <Input
-              value={String(settings.default_signer_title ?? "")}
-              onChange={(e) => setKey("default_signer_title", e.target.value)}
-            />
+        
+        <Card className="border-border/40 shadow-sm rounded-3xl">
+          <CardContent className="p-6 space-y-5">
+            <div className="space-y-3">
+              <Label className="font-black text-lg">{isAr ? "اسم الموقّع الافتراضي" : "Default signer name"}</Label>
+              <Input
+                value={String(settings.default_signer_name ?? "")}
+                onChange={(e) => setKey("default_signer_name", e.target.value)}
+                className="h-12 rounded-xl text-base px-4 bg-muted/30 focus-visible:bg-background"
+                placeholder={isAr ? "مثال: د. أحمد محمد" : "e.g. Dr. Ahmed"}
+              />
+            </div>
+            <div className="space-y-3">
+              <Label className="font-black text-lg">{isAr ? "المسمى الوظيفي" : "Signer title"}</Label>
+              <Input
+                value={String(settings.default_signer_title ?? "")}
+                onChange={(e) => setKey("default_signer_title", e.target.value)}
+                className="h-12 rounded-xl text-base px-4 bg-muted/30 focus-visible:bg-background"
+                placeholder={isAr ? "مثال: المشرف العام" : "e.g. General Manager"}
+              />
+            </div>
           </CardContent>
         </Card>
-        <Card className="md:col-span-2">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="font-bold">
-                  {isAr ? "إصدار تلقائي عند الاستحقاق" : "Auto-issue on eligibility"}
+
+        <Card className="lg:col-span-2 border-border/40 shadow-sm rounded-3xl bg-gradient-to-r from-card to-muted/20">
+          <CardContent className="p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="space-y-2 max-w-2xl">
+                <Label className="font-black text-xl flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  {isAr ? "الإصدار التلقائي للشهادات" : "Auto-issue Certificates"}
                 </Label>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-base text-muted-foreground font-medium">
                   {isAr
-                    ? "إذا فعّلت هذا الخيار سيتم إصدار الشهادات تلقائياً دون الحاجة لمراجعة الإدارة."
-                    : "If enabled, certificates are issued automatically without admin review."}
+                    ? "عند تفعيل هذا الخيار، سيتم إصدار الشهادات تلقائياً للطلاب بمجرد استيفائهم لمتطلبات النجاح دون الحاجة لموافقة يدوية من الإدارة."
+                    : "When enabled, certificates are issued automatically to students upon meeting success criteria, bypassing manual admin review."}
                 </p>
               </div>
               <Switch
                 checked={Boolean(settings.auto_issue_on_eligibility)}
                 onCheckedChange={(v) => setKey("auto_issue_on_eligibility", Boolean(v))}
+                className="scale-125 origin-right"
               />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="flex justify-end">
-        <Button onClick={save} disabled={saving}>
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : isAr ? "حفظ الإعدادات" : "Save settings"}
+      <div className="flex justify-end pt-4 border-t border-border/50">
+        <Button onClick={save} disabled={saving} size="lg" className="rounded-2xl font-black px-10 h-14 shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
+          {saving ? <Loader2 className="w-5 h-5 animate-spin me-2" /> : <CheckCircle2 className="w-5 h-5 me-2" />}
+          {isAr ? "حفظ الإعدادات بالكامل" : "Save All Settings"}
         </Button>
       </div>
     </div>

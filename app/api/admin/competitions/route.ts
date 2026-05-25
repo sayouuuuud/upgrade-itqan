@@ -70,6 +70,9 @@ export async function POST(req: NextRequest) {
       points_multiplier,
       min_verses,
       is_featured,
+      certificate_enabled,
+      award_top_n,
+      certificate_template_id,
     } = await req.json()
 
     if (!title || !start_date || !end_date) {
@@ -84,9 +87,10 @@ export async function POST(req: NextRequest) {
       INSERT INTO competitions (
         title, description, type, start_date, end_date, max_participants,
         prizes_description, rules, status, created_by, tajweed_rules,
-        badge_key, points_multiplier, min_verses, is_featured, scope, created_at
+        badge_key, points_multiplier, min_verses, is_featured, scope, created_at,
+        certificate_enabled, award_top_n, certificate_template_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 'library', NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 'library', NOW(), $16, $17, $18)
       RETURNING *
     `, [
       title,
@@ -108,6 +112,9 @@ export async function POST(req: NextRequest) {
       Number(points_multiplier) > 0 ? Number(points_multiplier) : 1,
       Number(min_verses) > 0 ? Number(min_verses) : 0,
       Boolean(is_featured),
+      Boolean(certificate_enabled),
+      award_top_n ? Number(award_top_n) : null,
+      certificate_template_id || null,
     ])
 
     return NextResponse.json({ data: result[0] }, { status: 201 })

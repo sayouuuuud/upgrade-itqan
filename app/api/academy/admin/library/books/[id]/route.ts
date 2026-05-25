@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession, requireRole, type AllRoles } from "@/lib/auth"
+import { getSession, hasAcademyRole, type AllRoles } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 import { deleteFromStorage } from "@/lib/storage"
 
-const ADMIN_ROLES: AllRoles[] = ["admin", "academy_admin"]
+const ADMIN_ROLES: string[] = ["admin", "academy_admin"]
 
 const ALLOWED_FIELDS = [
   "title",
@@ -27,7 +27,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession()
-  if (!requireRole(session, ADMIN_ROLES)) {
+  if (!hasAcademyRole(session, ADMIN_ROLES)) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
   }
 
@@ -63,7 +63,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession()
-  if (!requireRole(session, ADMIN_ROLES)) {
+  if (!hasAcademyRole(session, ADMIN_ROLES)) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
   }
 
@@ -114,7 +114,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession()
-  if (!requireRole(session, ADMIN_ROLES)) {
+  if (!hasAcademyRole(session, ADMIN_ROLES)) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
   }
 

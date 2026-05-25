@@ -35,6 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       title, description, type, start_date, end_date,
       max_participants, prizes_description, rules, tajweed_rules,
       badge_key, points_multiplier, min_verses, is_featured, status,
+      certificate_enabled, award_top_n, certificate_template_id,
     } = await req.json()
 
     const result = await query(`
@@ -53,8 +54,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         min_verses = COALESCE($12, min_verses),
         is_featured = COALESCE($13, is_featured),
         status = COALESCE($14, status),
+        certificate_enabled = COALESCE($15, certificate_enabled),
+        award_top_n = $16,
+        certificate_template_id = $17,
         updated_at = NOW()
-      WHERE id = $15 AND scope = 'library'
+      WHERE id = $18 AND scope = 'library'
       RETURNING *
     `, [
       title, description || null, type, start_date, end_date,
@@ -67,6 +71,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       min_verses !== undefined ? Number(min_verses) : null,
       is_featured !== undefined ? Boolean(is_featured) : null,
       status || null,
+      certificate_enabled !== undefined ? Boolean(certificate_enabled) : null,
+      award_top_n ? Number(award_top_n) : null,
+      certificate_template_id || null,
       id,
     ])
 

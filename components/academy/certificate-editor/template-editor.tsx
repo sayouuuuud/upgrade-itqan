@@ -237,7 +237,7 @@ export function CertificateTemplateEditor({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-[95vw] w-[95vw] h-[92vh] flex flex-col"
+        className="!max-w-[95vw] !w-[95vw] h-[92vh] flex flex-col"
         dir={isAr ? "rtl" : "ltr"}
       >
         <DialogHeader>
