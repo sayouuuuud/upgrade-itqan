@@ -16,9 +16,10 @@ type Props = {
 export default function PdfUploader({ value, onChange, label }: Props) {
     const [uploading, setUploading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [isDragging, setIsDragging] = useState(false)
     const inputRef = useRef<HTMLInputElement | null>(null)
 
-    const onPick = async (file: File) => {
+    const handleUpload = async (file: File) => {
         if (file.type !== "application/pdf") {
             setError("الملف يجب أن يكون PDF")
             return
@@ -42,6 +43,29 @@ export default function PdfUploader({ value, onChange, label }: Props) {
             setUploading(false)
             if (inputRef.current) inputRef.current.value = ""
         }
+    }
+
+    const onPick = async (file: File) => {
+        handleUpload(file)
+    }
+
+    const onDragOver = (e: React.DragEvent) => {
+        e.preventDefault()
+        if (uploading) return
+        setIsDragging(true)
+    }
+
+    const onDragLeave = (e: React.DragEvent) => {
+        e.preventDefault()
+        setIsDragging(false)
+    }
+
+    const onDrop = (e: React.DragEvent) => {
+        e.preventDefault()
+        setIsDragging(false)
+        if (uploading) return
+        const file = e.dataTransfer.files?.[0]
+        if (file) handleUpload(file)
     }
 
     return (
@@ -69,7 +93,16 @@ export default function PdfUploader({ value, onChange, label }: Props) {
                     </button>
                 </div>
             ) : (
-                <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-lg py-6 px-4 cursor-pointer hover:bg-muted/30 transition-colors">
+                <label 
+                    onDragOver={onDragOver}
+                    onDragLeave={onDragLeave}
+                    onDrop={onDrop}
+                    className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg py-6 px-4 transition-all ${
+                        uploading ? 'opacity-50 cursor-not-allowed border-border' 
+                        : isDragging ? 'border-primary bg-primary/10 scale-[1.02]' 
+                        : 'border-border cursor-pointer hover:bg-muted/30'
+                    }`}
+                >
                     <input
                         ref={inputRef}
                         type="file"
@@ -81,10 +114,10 @@ export default function PdfUploader({ value, onChange, label }: Props) {
                     {uploading ? (
                         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                     ) : (
-                        <Upload className="w-6 h-6 text-muted-foreground" />
+                        <Upload className={`w-6 h-6 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
                     )}
-                    <span className="text-sm text-muted-foreground">
-                        {uploading ? "جاري الرفع..." : "اضغط لاختيار ملف PDF"}
+                    <span className={`text-sm ${isDragging ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                        {uploading ? "جاري الرفع..." : isDragging ? "أفلت الملف هنا" : "اضغط أو اسحب لاختيار ملف PDF"}
                     </span>
                     <span className="text-xs text-muted-foreground">حد أقصى 8 ميجا</span>
                 </label>

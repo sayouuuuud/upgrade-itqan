@@ -7,7 +7,7 @@
 -- 1. Enhance competitions table
 ALTER TABLE competitions ADD COLUMN IF NOT EXISTS tajweed_rules TEXT[];
 ALTER TABLE competitions ADD COLUMN IF NOT EXISTS badge_key VARCHAR(50);
-ALTER TABLE competitions ADD COLUMN IF NOT EXISTS points_multiplier DECIMAL(3,1) DEFAULT 1.0;
+ALTER TABLE competitions ADD COLUMN IF NOT EXISTS points_multiplier DECIMAL(10,2) DEFAULT 1.0;
 ALTER TABLE competitions ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT FALSE;
 ALTER TABLE competitions ADD COLUMN IF NOT EXISTS halqa_id UUID REFERENCES halaqat(id) ON DELETE SET NULL;
 ALTER TABLE competitions ADD COLUMN IF NOT EXISTS min_verses INTEGER DEFAULT 0;
@@ -39,12 +39,12 @@ CREATE INDEX IF NOT EXISTS idx_competitions_halqa ON competitions(halqa_id);
 CREATE INDEX IF NOT EXISTS idx_competitions_featured ON competitions(is_featured) WHERE is_featured = TRUE;
 
 -- 5. Add competition-related badge definitions
-INSERT INTO badge_definitions (badge_key, badge_name, badge_description, badge_icon, badge_color, points_awarded, criteria_type, criteria_value, category, display_order)
+INSERT INTO badge_definitions (badge_key, badge_name, badge_description, badge_icon, badge_color, points_awarded, criteria_type, criteria_value, category, display_order, name, description, badge_type)
 VALUES
-  ('competition_winner', 'فائز بالمسابقة', 'فزت بالمركز الأول في مسابقة', '🏆', '#FFD700', 200, 'manual', 1, 'special', 9),
-  ('tajweed_champion', 'بطل التجويد', 'فزت في مسابقة التجويد', '⭐', '#EC4899', 250, 'manual', 1, 'mastery', 10),
-  ('ramadan_champion', 'بطل رمضان', 'فزت في مسابقة رمضان للحفظ', '🌙', '#6366F1', 300, 'manual', 1, 'special', 11),
-  ('monthly_star', 'نجم الشهر', 'فزت في المسابقة الشهرية', '🌟', '#F59E0B', 150, 'manual', 1, 'special', 12)
+  ('competition_winner', 'فائز بالمسابقة', 'فزت بالمركز الأول في مسابقة', '🏆', '#FFD700', 200, 'custom', 1, 'special', 9, 'فائز بالمسابقة', 'فزت بالمركز الأول في مسابقة', 'special'),
+  ('tajweed_champion', 'بطل التجويد', 'فزت في مسابقة التجويد', '⭐', '#EC4899', 250, 'custom', 1, 'mastery', 10, 'بطل التجويد', 'فزت في مسابقة التجويد', 'mastery'),
+  ('ramadan_champion', 'بطل رمضان', 'فزت في مسابقة رمضان للحفظ', '🌙', '#6366F1', 300, 'custom', 1, 'special', 11, 'بطل رمضان', 'فزت في مسابقة رمضان للحفظ', 'special'),
+  ('monthly_star', 'نجم الشهر', 'فزت في المسابقة الشهرية', '🌟', '#F59E0B', 150, 'custom', 1, 'special', 12, 'نجم الشهر', 'فزت في المسابقة الشهرية', 'special')
 ON CONFLICT (badge_key) DO NOTHING;
 
 -- 6. Add halqa_id to user_points for halqa-level leaderboard

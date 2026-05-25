@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession, requireRole } from "@/lib/auth"
+import { getSession, requireRole, type AllRoles } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 import { deleteFromStorage } from "@/lib/storage"
 
-const ADMIN_ROLES: ("academy_admin")[] = ["academy_admin"]
+const ADMIN_ROLES: AllRoles[] = ["admin", "academy_admin"]
 
 // DELETE /api/admin/library/books/[id]/files/[fileId]
 export async function DELETE(

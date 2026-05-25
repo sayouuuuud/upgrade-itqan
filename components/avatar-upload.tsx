@@ -14,6 +14,7 @@ export function AvatarUpload({ currentUrl, name, size = "md", onUploaded }: Avat
     const [uploading, setUploading] = useState(false)
     const [preview, setPreview] = useState<string | null>(currentUrl || null)
     const [imageError, setImageError] = useState(false)
+    const [isDragging, setIsDragging] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
 
     const sizeClasses = {
@@ -30,10 +31,7 @@ export function AvatarUpload({ currentUrl, name, size = "md", onUploaded }: Avat
             .join("")
         : "؟"
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-
+    const handleUpload = async (file: File) => {
         // Show local preview immediately
         const localUrl = URL.createObjectURL(file)
         setPreview(localUrl)
@@ -63,13 +61,50 @@ export function AvatarUpload({ currentUrl, name, size = "md", onUploaded }: Avat
         }
     }
 
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        handleUpload(file)
+    }
+
+    const onDragOver = (e: React.DragEvent) => {
+        e.preventDefault()
+        if (uploading) return
+        setIsDragging(true)
+    }
+
+    const onDragLeave = (e: React.DragEvent) => {
+        e.preventDefault()
+        setIsDragging(false)
+    }
+
+    const onDrop = (e: React.DragEvent) => {
+        e.preventDefault()
+        setIsDragging(false)
+        if (uploading) return
+        const file = e.dataTransfer.files?.[0]
+        if (file && file.type.startsWith('image/')) {
+            handleUpload(file)
+        }
+    }
+
     return (
-        <div className="relative inline-block group cursor-pointer" onClick={() => !uploading && inputRef.current?.click()}>
+        <div 
+            className="relative inline-block group cursor-pointer" 
+            onClick={() => !uploading && inputRef.current?.click()}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+        >
             <div
-                className={`${sizeClasses[size]} rounded-full overflow-hidden border-2 border-white shadow-md flex items-center justify-center bg-[#0B3D2E]/10 font-bold text-[#0B3D2E] select-none`}
+                className={`${sizeClasses[size]} rounded-full overflow-hidden border-2 transition-all shadow-md flex items-center justify-center font-bold select-none ${
+                    isDragging ? 'border-primary bg-primary/20 scale-105 text-primary' : 'border-white bg-[#0B3D2E]/10 text-[#0B3D2E]'
+                }`}
             >
-                {preview && !imageError ? (
+                {preview && !imageError && !isDragging ? (
                     <img src={preview} alt={name || "avatar"} className="w-full h-full object-cover" onError={() => setImageError(true)} />
+                ) : isDragging ? (
+                    <Camera className="w-6 h-6 animate-pulse" />
                 ) : (
                     <span>{initials}</span>
                 )}

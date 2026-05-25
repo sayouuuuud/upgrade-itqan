@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Loader2, Play, CheckCircle, Clock, Star, Send, Trophy, Award } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import MediaViewer from '@/components/media-viewer'
 
 interface Competition {
   id: string
@@ -211,10 +212,9 @@ export default function ReaderCompetitionDetailPage({ params }: { params: Promis
                   <p className="text-sm text-muted-foreground">{entry.student_email}</p>
 
                   {entry.submission_url && (
-                    <a href={entry.submission_url} target="_blank" rel="noopener noreferrer"
-                       className="inline-flex items-center gap-1 mt-2 text-sm text-emerald-600 hover:underline">
-                      <Play className="w-4 h-4" /> استمع للتلاوة
-                    </a>
+                    <div className="mt-3">
+                      <MediaViewer url={entry.submission_url} />
+                    </div>
                   )}
 
                   {entry.verses_count > 0 && (

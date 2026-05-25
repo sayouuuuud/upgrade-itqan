@@ -8,6 +8,7 @@ import {
   BookOpen, Star, Play, Send, ArrowLeft, BarChart3, Clock
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import MediaViewer from '@/components/media-viewer'
 
 interface Competition {
   id: string
@@ -289,10 +290,9 @@ export default function AdminLibraryCompetitionsPage() {
                     {entry.verses_count > 0 && <p className="text-sm text-muted-foreground mt-1">الآيات: {entry.verses_count}</p>}
                     {entry.notes && <p className="text-sm text-muted-foreground mt-1">ملاحظات: {entry.notes}</p>}
                     {entry.submission_url && (
-                      <a href={entry.submission_url} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 mt-2 text-sm text-primary hover:underline">
-                        <Play className="w-4 h-4 fill-primary" /> استمع للتلاوة
-                      </a>
+                      <div className="mt-3">
+                        <MediaViewer url={entry.submission_url} />
+                      </div>
                     )}
                     {entry.score !== null && (
                       <div className="mt-2 flex items-center gap-2">

@@ -7,6 +7,7 @@ import {
   Loader2, Send, Play, Users, BookOpen, Star, AlertCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import AudioRecorder from '@/components/academy/audio-recorder'
 
 interface Competition {
   id: string
@@ -355,17 +356,13 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
 
           <div className="space-y-1.5">
             <label className="text-sm font-bold">
-              رابط التلاوة (URL) <span className="text-red-500">*</span>
+              سجل تلاوتك <span className="text-red-500">*</span>
             </label>
-            <input
-              type="url"
-              required
+            <AudioRecorder
               value={form.submission_url}
-              onChange={e => setForm(prev => ({ ...prev, submission_url: e.target.value }))}
-              placeholder="https://..."
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:ring-2 focus:ring-primary outline-none transition"
+              onChange={url => setForm(prev => ({ ...prev, submission_url: url || '' }))}
             />
-            <p className="text-xs text-muted-foreground">ارفع تلاوتك على أي منصة (Google Drive, Dropbox...) والصق الرابط هنا</p>
+            <p className="text-xs text-muted-foreground mt-2">قم بتسجيل تلاوتك مباشرة هنا</p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">

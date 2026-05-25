@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { Trophy, Calendar, Users, Star, Clock, ArrowRight, Loader2, Upload, Mic, CheckCircle, AlertCircle, Award } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import FileUploader from '@/components/academy/file-uploader'
 
 interface Competition {
   id: string
@@ -303,16 +304,12 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">رابط التلاوة / التسجيل *</label>
-                  <input
-                    type="url"
+                  <FileUploader
+                    label="ملف المشاركة (صوت، فيديو، أو صورة) *"
                     value={form.submission_url}
-                    onChange={e => setForm(prev => ({ ...prev, submission_url: e.target.value }))}
-                    placeholder="https://..."
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background"
-                    required
+                    onChange={url => setForm(prev => ({ ...prev, submission_url: url || '' }))}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">أرفق رابط تسجيل التلاوة الخاص بالمسابقة</p>
+                  {!form.submission_url && <p className="text-xs text-muted-foreground mt-1 text-red-500">مطلوب إرفاق ملف للمشاركة</p>}
                 </div>
 
                 {(competition.type === 'ramadan' || competition.type === 'memorization') && (

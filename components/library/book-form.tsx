@@ -49,6 +49,8 @@ interface BookFormProps {
 export function BookForm({ value, onChange }: BookFormProps) {
   const [uploadingCover, setUploadingCover] = useState(false)
   const [categories, setCategories] = useState<BookCategoryOption[]>([])
+  const [isDragging, setIsDragging] = useState(false)
+
   const update = <K extends keyof BookFormValue>(k: K, v: BookFormValue[K]) =>
     onChange({ ...value, [k]: v })
 
@@ -94,6 +96,27 @@ export function BookForm({ value, onChange }: BookFormProps) {
     }
   }
 
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    if (uploadingCover) return
+    setIsDragging(true)
+  }
+
+  const onDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    if (uploadingCover) return
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      void handleCoverUpload(file)
+    }
+  }
+
   return (
     <Card>
       <CardContent className="p-5 space-y-5">
@@ -122,13 +145,23 @@ export function BookForm({ value, onChange }: BookFormProps) {
                   </button>
                 </>
               ) : (
-                <label className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/60 cursor-pointer text-xs gap-2">
+                <label 
+                  onDragOver={onDragOver}
+                  onDragLeave={onDragLeave}
+                  onDrop={onDrop}
+                  className={`absolute inset-0 flex flex-col items-center justify-center text-xs gap-2 transition-all ${
+                    uploadingCover ? 'opacity-50 cursor-not-allowed' :
+                    isDragging ? 'bg-primary/10 text-primary cursor-pointer' : 'text-muted-foreground hover:bg-muted/60 cursor-pointer'
+                  }`}
+                >
                   {uploadingCover ? (
                     <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
-                    <Upload className="w-6 h-6" />
+                    <Upload className={`w-6 h-6 ${isDragging ? 'text-primary' : ''}`} />
                   )}
-                  <span>اختر صورة</span>
+                  <span className={isDragging ? 'font-bold text-primary' : ''}>
+                    {isDragging ? 'أفلت الصورة هنا' : 'اختر صورة أو اسحبها هنا'}
+                  </span>
                   <input
                     type="file"
                     accept="image/*"

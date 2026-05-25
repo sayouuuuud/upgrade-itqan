@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession, requireRole, type AllRoles } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 
-const ADMIN_ROLES: AllRoles[] = ["academy_admin"]
+const ADMIN_ROLES: AllRoles[] = ["admin", "academy_admin"]
 
 /**
  * PATCH /api/admin/library/categories/[id]

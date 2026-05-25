@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession, requireRole } from "@/lib/auth"
+import { getSession, requireRole, type AllRoles } from "@/lib/auth"
 import { query } from "@/lib/db"
 
-const ADMIN_ROLES: ("academy_admin")[] = ["academy_admin"]
+const ADMIN_ROLES: AllRoles[] = ["admin", "academy_admin"]
 
 // GET /api/admin/library/books
 export async function GET(req: NextRequest) {

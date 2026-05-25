@@ -18,7 +18,36 @@ import {
   Trophy,
   Users,
   X,
+  Play,
+  Send,
+  ArrowLeft,
+  Clock,
 } from 'lucide-react'
+import MediaViewer from '@/components/media-viewer'
+import { cn } from '@/lib/utils'
+
+interface Entry {
+  id: string
+  student_name: string
+  student_email: string
+  submission_url: string | null
+  notes: string | null
+  verses_count: number
+  score: number | null
+  feedback: string | null
+  status: string
+  submitted_at: string
+  evaluated_at: string | null
+  tajweed_scores: Record<string, number> | null
+}
+
+const TAJWEED_RULES = [
+  { key: 'idgham', label: 'الإدغام' }, { key: 'ikhfa', label: 'الإخفاء' },
+  { key: 'iqlab', label: 'الإقلاب' }, { key: 'izhar', label: 'الإظهار' },
+  { key: 'madd', label: 'المدود' }, { key: 'qalqala', label: 'القلقلة' },
+  { key: 'ghunna', label: 'الغنة' }, { key: 'tafkhim_tarqiq', label: 'التفخيم والترقيق' },
+  { key: 'waqf', label: 'الوقف والابتداء' }, { key: 'makharij', label: 'مخارج الحروف' },
+]
 
 interface Competition {
   id: string
@@ -146,6 +175,52 @@ export default function AdminCompetitionsPage() {
   const [typeFilter, setTypeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [search, setSearch] = useState('')
+  // Entries view
+  const [selectedComp, setSelectedComp] = useState<Competition | null>(null)
+  const [entries, setEntries] = useState<Entry[]>([])
+  const [loadingEntries, setLoadingEntries] = useState(false)
+  const [evaluatingId, setEvaluatingId] = useState<string | null>(null)
+  const [evalForm, setEvalForm] = useState<{ score: number; tajweed_scores: Record<string, number>; feedback: string; mark_as_winner: boolean }>({ score: 0, tajweed_scores: {}, feedback: '', mark_as_winner: false })
+  const [submittingEval, setSubmittingEval] = useState(false)
+
+  const fetchEntries = async (comp: Competition) => {
+    setSelectedComp(comp)
+    setLoadingEntries(true)
+    try {
+      const res = await fetch(`/api/academy/competitions/${comp.id}/entries`)
+      if (res.ok) {
+        const data = await res.json()
+        setEntries(data.data || data.entries || [])
+      }
+    } catch (e) { console.error(e) } finally { setLoadingEntries(false) }
+  }
+
+  const startEval = (entry: Entry) => {
+    setEvaluatingId(entry.id)
+    const scores: Record<string, number> = {}
+    TAJWEED_RULES.forEach(r => { scores[r.key] = entry.tajweed_scores?.[r.key] || 0 })
+    setEvalForm({ score: entry.score || 0, tajweed_scores: selectedComp?.type === 'tajweed' ? scores : {}, feedback: entry.feedback || '', mark_as_winner: false })
+  }
+
+  const handleEvaluate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!evaluatingId || !selectedComp) return
+    setSubmittingEval(true)
+    try {
+      let finalScore = evalForm.score
+      if (selectedComp.type === 'tajweed') {
+        const vals = Object.values(evalForm.tajweed_scores)
+        finalScore = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 10) / 10 : 0
+      }
+      const res = await fetch(`/api/academy/admin/competitions/${selectedComp.id}/entries/${evaluatingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score: finalScore, tajweed_scores: evalForm.tajweed_scores, feedback: evalForm.feedback, mark_as_winner: evalForm.mark_as_winner }),
+      })
+      if (res.ok) { setEvaluatingId(null); fetchEntries(selectedComp); fetchCompetitions() }
+      else { const d = await res.json(); alert(d.error || 'حدث خطأ') }
+    } finally { setSubmittingEval(false) }
+  }
 
   const fetchCompetitions = async () => {
     setLoading(true)
@@ -263,6 +338,144 @@ export default function AdminCompetitionsPage() {
     } finally {
       setDeletingId(null)
     }
+  }
+
+  if (selectedComp) {
+    const pendingCount = entries.filter(e => e.status === 'pending' && e.submission_url).length
+    const evaluatedCount = entries.filter(e => e.status !== 'pending').length
+    return (
+      <div className="space-y-6">
+        <button onClick={() => setSelectedComp(null)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+          العودة لقائمة المسابقات
+        </button>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-black">{selectedComp.title}</h1>
+            <p className="text-muted-foreground mt-1">مراجعة وتحكيم مشاركات الطلاب</p>
+          </div>
+          <div className="flex gap-3">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-2 text-center">
+              <span className="text-2xl font-black text-amber-600">{pendingCount}</span>
+              <p className="text-xs text-amber-700 dark:text-amber-400">بانتظار التحكيم</p>
+            </div>
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl px-4 py-2 text-center">
+              <span className="text-2xl font-black text-emerald-600">{evaluatedCount}</span>
+              <p className="text-xs text-emerald-700 dark:text-emerald-400">تم تحكيمها</p>
+            </div>
+          </div>
+        </div>
+
+        {loadingEntries ? (
+          <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-amber-500" /></div>
+        ) : entries.length === 0 ? (
+          <div className="border-2 border-dashed border-border rounded-2xl p-16 text-center">
+            <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="font-bold text-muted-foreground">لا توجد مشاركات بعد</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {entries.map(entry => (
+              <div key={entry.id} className="bg-card border border-border rounded-2xl p-5 space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold">{entry.student_name}</h3>
+                      <span className={cn(
+                        'px-2 py-0.5 rounded-full text-xs font-medium',
+                        entry.status === 'pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                        entry.status === 'winner'  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                      )}>
+                        {entry.status === 'pending' ? 'قيد الانتظار' : entry.status === 'winner' ? 'فائز 🏆' : 'تم التحكيم'}
+                      </span>
+                    </div>
+                    {entry.student_email && <p className="text-sm text-muted-foreground">{entry.student_email}</p>}
+                    {entry.verses_count > 0 && <p className="text-sm text-muted-foreground mt-1">الآيات: {entry.verses_count}</p>}
+                    {entry.notes && <p className="text-sm text-muted-foreground mt-1">ملاحظات: {entry.notes}</p>}
+                    
+                    {entry.submission_url && (
+                      <div className="mt-3">
+                        <MediaViewer url={entry.submission_url} />
+                      </div>
+                    )}
+
+                    {entry.score !== null && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-sm font-medium">الدرجة:</span>
+                        <span className="text-xl font-black text-amber-600">{Math.round(entry.score)}/100</span>
+                      </div>
+                    )}
+                    {entry.feedback && <p className="text-sm text-muted-foreground mt-1">ملاحظات: {entry.feedback}</p>}
+                  </div>
+                  {entry.submission_url && (
+                    <button onClick={() => startEval(entry)}
+                      className="shrink-0 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors">
+                      {entry.status === 'pending' ? 'حكّم' : 'أعد التحكيم'}
+                    </button>
+                  )}
+                </div>
+
+                {evaluatingId === entry.id && (
+                  <form onSubmit={handleEvaluate} className="border-t border-border pt-4 space-y-4">
+                    {selectedComp.type === 'tajweed' ? (
+                      <div>
+                        <p className="text-sm font-bold mb-3">تقييم أحكام التجويد (من 10):</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          {TAJWEED_RULES.map(r => (
+                            <div key={r.key} className="flex items-center gap-2">
+                              <label className="text-sm flex-1">{r.label}</label>
+                              <input type="number" min={0} max={10} step={0.5}
+                                value={evalForm.tajweed_scores[r.key] || 0}
+                                onChange={e => setEvalForm(prev => ({ ...prev, tajweed_scores: { ...prev.tajweed_scores, [r.key]: parseFloat(e.target.value) || 0 } }))}
+                                className="w-20 px-2 py-1.5 rounded-lg border border-border bg-background text-center text-sm outline-none focus:ring-2 focus:ring-amber-500" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="text-sm font-bold block mb-1">الدرجة (من 100)</label>
+                        <input type="number" min={0} max={100} value={evalForm.score}
+                          onChange={e => setEvalForm(prev => ({ ...prev, score: parseFloat(e.target.value) || 0 }))}
+                          className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-amber-500" />
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="text-sm font-bold block mb-1">ملاحظات التحكيم</label>
+                      <textarea value={evalForm.feedback} onChange={e => setEvalForm(prev => ({ ...prev, feedback: e.target.value }))}
+                        rows={3} placeholder="ملاحظاتك على التلاوة..."
+                        className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm resize-none outline-none focus:ring-2 focus:ring-amber-500" />
+                    </div>
+
+                    <label className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl cursor-pointer">
+                      <input type="checkbox" checked={evalForm.mark_as_winner}
+                        onChange={e => setEvalForm(prev => ({ ...prev, mark_as_winner: e.target.checked }))}
+                        className="w-4 h-4 accent-amber-600" />
+                      <span className="text-sm font-bold text-amber-800 dark:text-amber-300">🏆 إعلان هذا الطالب فائزاً</span>
+                    </label>
+
+                    <div className="flex gap-3">
+                      <button type="submit" disabled={submittingEval}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 disabled:opacity-60 transition">
+                        {submittingEval ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        حفظ التحكيم
+                      </button>
+                      <button type="button" onClick={() => setEvaluatingId(null)}
+                        className="px-4 py-2.5 bg-muted text-foreground rounded-xl font-bold text-sm hover:bg-muted/80 transition">
+                        إلغاء
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -408,6 +621,13 @@ export default function AdminCompetitionsPage() {
                       {comp.winner_name && <span className="rounded-full bg-amber-50 px-3 py-1 font-bold text-amber-700">الفائز: {comp.winner_name}</span>}
                       {comp.min_verses ? <span className="rounded-full bg-muted px-3 py-1">حد الآيات: {comp.min_verses}</span> : null}
                     </div>
+                    <button
+                      onClick={() => fetchEntries(comp)}
+                      className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 border border-border rounded-xl text-sm font-bold hover:bg-muted/50 transition-colors"
+                    >
+                      <ClipboardCheck className="h-4 w-4" />
+                      عرض المشاركات وتحكيمها
+                    </button>
                   </div>
                 </article>
               )

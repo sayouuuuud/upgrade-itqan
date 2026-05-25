@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession, requireRole } from "@/lib/auth"
+import { getSession, requireRole, type AllRoles } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 
-const ADMIN_ROLES: ("academy_admin")[] = ["academy_admin"]
+const ADMIN_ROLES: AllRoles[] = ["admin", "academy_admin"]
 
 // POST /api/admin/library/books/[id]/files
 // Body: { language, language_label?, pdf_url, pdf_key?, file_size_bytes? }
