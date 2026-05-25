@@ -71,8 +71,9 @@ export default function PublicLibraryPage() {
       if (search) params.set("search", search)
       if (category) params.set("category", category)
       if (language) params.set("language", language)
+      params.set("domain", "academy")
       try {
-        const res = await fetch(`/api/library/books?${params.toString() + "&domain=academy"}`)
+        const res = await fetch(`/api/library/books?${params.toString()}`)
         if (!res.ok) throw new Error(await res.text())
         const data = await res.json()
         if (!cancelled) setBooks(Array.isArray(data.books) ? data.books : [])
