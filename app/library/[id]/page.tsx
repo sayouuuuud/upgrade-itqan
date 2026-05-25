@@ -8,14 +8,22 @@ import {
   BookOpen,
   Calendar,
   Download,
+  Eye,
   FileText,
   Globe,
   Loader2,
   User as UserIcon,
+  X,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import TajweedPdfViewer from "@/components/tajweed/pdf-viewer"
 import { useI18n } from "@/lib/i18n/context"
 import {
@@ -77,6 +85,7 @@ export default function BookDetailPage() {
   const [activeLanguage, setActiveLanguage] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [viewerOpen, setViewerOpen] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -252,20 +261,30 @@ export default function BookDetailPage() {
                     })}
                   </div>
                   {activeFile && (
-                    <a
-                      href={activeFile.pdf_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      download
-                    >
-                      <Button className="gap-2 font-bold">
-                        <Download className="w-4 h-4" />
-                        {lib?.downloadFile || (isAr ? "تحميل الملف" : "Download")}
-                        {" "}(
-                        {getLanguageDisplay(activeFile.language, activeFile.language_label, isAr ? "ar" : "en")}
-                        )
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        type="button"
+                        className="gap-2 font-bold"
+                        onClick={() => setViewerOpen(true)}
+                      >
+                        <Eye className="w-4 h-4" />
+                        {isAr ? "عرض الكتاب" : "View book"}
                       </Button>
-                    </a>
+                      <a
+                        href={activeFile.pdf_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                      >
+                        <Button variant="outline" className="gap-2 font-bold">
+                          <Download className="w-4 h-4" />
+                          {lib?.downloadFile || (isAr ? "تحميل الملف" : "Download")}
+                          {" "}(
+                          {getLanguageDisplay(activeFile.language, activeFile.language_label, isAr ? "ar" : "en")}
+                          )
+                        </Button>
+                      </a>
+                    </div>
                   )}
                 </div>
               )}
@@ -274,17 +293,8 @@ export default function BookDetailPage() {
         </CardContent>
       </Card>
 
-      {/* PDF Viewer */}
-      {activeFile ? (
-        <div className="space-y-2">
-          <h2 className="text-xl font-black">{lib?.preview || (isAr ? "معاينة الكتاب" : "Preview")}</h2>
-          <TajweedPdfViewer
-            src={activeFile.pdf_url}
-            label={getLanguageDisplay(activeFile.language, activeFile.language_label, isAr ? "ar" : "en")}
-            className="min-h-[60vh]"
-          />
-        </div>
-      ) : (
+      {/* PDF Viewer modal — opens when the user clicks "عرض الكتاب" */}
+      {!activeFile && (
         <Card className="border-dashed">
           <CardContent className="p-10 text-center text-muted-foreground">
             <FileText className="w-10 h-10 mx-auto mb-2 opacity-40" />
@@ -292,6 +302,39 @@ export default function BookDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      <Dialog open={viewerOpen} onOpenChange={setViewerOpen}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col">
+          <DialogHeader className="px-4 py-2 border-b shrink-0 flex flex-row items-center justify-between gap-2 space-y-0">
+            <DialogTitle className="text-base font-bold flex items-center gap-2 min-w-0">
+              <FileText className="w-4 h-4 shrink-0 text-primary" />
+              <span className="truncate">{book.title}</span>
+              {activeFile && (
+                <Badge variant="secondary" className="shrink-0">
+                  {getLanguageDisplay(activeFile.language, activeFile.language_label, isAr ? "ar" : "en")}
+                </Badge>
+              )}
+            </DialogTitle>
+            <button
+              type="button"
+              onClick={() => setViewerOpen(false)}
+              aria-label={isAr ? "إغلاق" : "Close"}
+              className="shrink-0 rounded-md p-1 hover:bg-muted transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 overflow-hidden bg-muted/30">
+            {activeFile && viewerOpen && (
+              <TajweedPdfViewer
+                src={activeFile.pdf_url}
+                label={getLanguageDisplay(activeFile.language, activeFile.language_label, isAr ? "ar" : "en")}
+                className="h-full w-full border-0 rounded-none"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Related */}
       {related.length > 0 && (

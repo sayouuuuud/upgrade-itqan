@@ -63,6 +63,11 @@ export async function GET(
       [id]
     )
 
+    // Related books: prefer same category + same author, then same category,
+    // then same author, then any other book in the same library_domain.
+    // If the current book has neither category nor author set we still
+    // surface other books in the same library so the section never goes
+    // empty when there are other books to show.
     const related = await query<{
       id: string
       title: string
@@ -79,16 +84,16 @@ export async function GET(
        FROM books b
        LEFT JOIN categories c ON c.id = b.category_id
        WHERE b.is_published = TRUE
-         AND b.library_domain = $4
          AND b.id <> $1
-         AND (
-           ($2::uuid IS NOT NULL AND b.category_id = $2)
-           OR ($3::text IS NOT NULL AND b.author = $3)
-         )
+         AND ($4::text IS NULL OR b.library_domain IS NULL OR b.library_domain = $4)
        ORDER BY
-         CASE WHEN b.category_id = $2 AND b.author = $3 THEN 0
-              WHEN b.category_id = $2 THEN 1
-              ELSE 2 END,
+         CASE
+           WHEN $2::uuid IS NOT NULL AND b.category_id = $2
+                AND $3::text IS NOT NULL AND b.author = $3 THEN 0
+           WHEN $2::uuid IS NOT NULL AND b.category_id = $2 THEN 1
+           WHEN $3::text IS NOT NULL AND b.author = $3 THEN 2
+           ELSE 3
+         END,
          b.created_at DESC
        LIMIT 6`,
       [id, book.category_id, book.author, book.library_domain]
