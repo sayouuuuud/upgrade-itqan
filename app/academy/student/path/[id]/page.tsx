@@ -605,25 +605,26 @@ export default function StudentPathDetailPage() {
                     {/* Integrated halaqa gating cards */}
                     {stage.halaqa_id && (
                       <div className="flex flex-col gap-3 mt-4 sm:mt-0 sm:max-w-[320px] w-full shrink-0">
-                        <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-3 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 shadow-sm flex flex-col gap-3">
-                          <div className="flex gap-3">
-                            <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 flex items-center justify-center">
-                              <GraduationCap className="w-6 h-6" />
+                        <div className="bg-gradient-to-br from-emerald-50 to-teal-100/50 dark:from-emerald-950/40 dark:to-teal-900/30 p-3.5 rounded-2xl border border-emerald-200/50 dark:border-emerald-800/50 shadow-sm hover:shadow-md transition-all duration-300 group/halaqa hover:border-emerald-400/50 flex flex-col gap-3 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 p-16 bg-emerald-400/10 blur-2xl rounded-full -z-10 group-hover:bg-emerald-400/20 transition-colors" />
+                          <div className="flex gap-3 relative z-10">
+                            <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-inner group/halaqa-hover:scale-105 transition-transform duration-300">
+                              <GraduationCap className="w-7 h-7" />
                             </div>
                             <div className="flex flex-col justify-center flex-1 min-w-0">
-                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider mb-0.5">حلقة مرتبطة</span>
-                              <h4 className="text-sm font-semibold text-foreground truncate" title={stage.halaqa_name}>
+                              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-extrabold uppercase tracking-widest mb-0.5">حلقة تطبيقية</span>
+                              <h4 className="text-sm font-bold text-foreground truncate" title={stage.halaqa_name}>
                                 {stage.halaqa_name}
                               </h4>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 justify-end">
+                          <div className="flex items-center gap-2 justify-end relative z-10">
                             <Link
                               href={`/academy/student/halaqat/${stage.halaqa_id}`}
-                              className="px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 text-white border border-transparent hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm flex-1 sm:flex-none"
+                              className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 transition-all duration-300 flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg flex-1 sm:flex-none group/hbtn"
                             >
                               الذهاب للحلقة
-                              <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
+                              <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180 transform group-hover/hbtn:-translate-x-1 transition-transform" />
                             </Link>
                           </div>
                         </div>

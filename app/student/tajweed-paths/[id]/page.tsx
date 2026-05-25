@@ -308,19 +308,35 @@ export default function StudentTajweedPathDetail() {
                   )}
 
                   {stage.halaqa_name && stage.halaqa_id && (
-                    <div className="bg-emerald-50/50 border border-emerald-100 rounded-lg p-4">
-                      <h4 className="text-sm font-semibold mb-2 flex items-center gap-2 text-emerald-800">
-                        <GraduationCap className="h-4 w-4" />
-                        حلقة متعلقة بهذه المرحلة
-                      </h4>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        يمكنك الانضمام إلى الحلقة المرتبطة بهذه المرحلة لتعزيز فهمك وتطبيقك العملي.
-                      </p>
-                      <Button asChild size="sm" variant="outline" className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-100">
-                        <Link href={`/student/halaqat/${stage.halaqa_id}`}>
-                          الذهاب إلى {stage.halaqa_name}
-                        </Link>
-                      </Button>
+                    <div className="relative group overflow-hidden rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-900/10 p-5 sm:p-6 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-500/30">
+                      <div className="absolute top-0 right-0 p-32 bg-emerald-500/10 blur-3xl rounded-full -z-10 group-hover:bg-emerald-500/20 transition-all duration-500" />
+                      <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
+                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-md transform group-hover:scale-105 transition-transform duration-300">
+                          <GraduationCap className="w-7 h-7" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="px-2 py-0.5 text-[10px] font-bold tracking-wider rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 uppercase">
+                              حلقة تطبيقية
+                            </span>
+                          </div>
+                          <h4 className="text-base font-bold text-foreground truncate mb-1">
+                            {stage.halaqa_name}
+                          </h4>
+                          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                            انضم إلى هذه الحلقة المباشرة لتعزيز فهمك والتطبيق العملي مع نخبة من المقرئين المعتمدين.
+                          </p>
+                        </div>
+                        <div className="w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
+                          <Link
+                            href={`/student/halaqat/${stage.halaqa_id}`}
+                            className="inline-flex items-center justify-center w-full sm:w-auto px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl shadow-md hover:shadow-lg hover:from-emerald-500 hover:to-teal-500 transition-all duration-300 group/btn"
+                          >
+                            الانضمام للحلقة
+                            <ArrowRight className="w-4 h-4 ml-0 mr-2 rtl:rotate-180 transform group-hover/btn:-translate-x-1 transition-transform" />
+                          </Link>
+                        </div>
+                      </div>
                     </div>
                   )}
 
