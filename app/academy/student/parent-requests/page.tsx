@@ -82,8 +82,8 @@ export default function ParentRequestsPage() {
     }
   }
 
-  const pendingRequests = requests.filter(r => r.status === 'pending')
-  const otherRequests = requests.filter(r => r.status !== 'pending')
+  const pendingRequests = requests.filter(r => r.status?.toLowerCase() === 'pending')
+  const otherRequests = requests.filter(r => r.status?.toLowerCase() !== 'pending')
 
   if (loading) {
     return (
@@ -127,45 +127,47 @@ export default function ParentRequestsPage() {
             {pendingRequests.map(request => (
               <div 
                 key={request.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-background rounded-lg border"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-background rounded-xl border border-amber-200/50 dark:border-amber-900/50 shadow-sm"
               >
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-14 w-14 border-2 border-primary/10">
                     <AvatarImage src={request.parent_avatar || undefined} />
-                    <AvatarFallback className="bg-primary/10 text-primary">
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
                       {request.parent_name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{request.parent_name}</p>
+                    <p className="font-bold text-lg">{request.parent_name}</p>
                     <p className="text-sm text-muted-foreground">{request.parent_email}</p>
-                    <Badge variant="outline" className="mt-1">
+                    <Badge variant="outline" className="mt-2 font-semibold">
                       {relationLabels[request.relation]?.[isAr ? 'ar' : 'en'] || request.relation}
                     </Badge>
                   </div>
                 </div>
-                <div className="flex gap-2 sm:flex-shrink-0">
+                <div className="flex gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                   <Button
-                    size="sm"
                     onClick={() => handleAction(request.id, 'approve')}
                     disabled={actionLoading === request.id}
-                    className="gap-2"
+                    className="flex-1 sm:flex-none gap-2 bg-green-600 hover:bg-green-700 text-white font-bold h-11 px-6 rounded-xl"
                   >
                     {actionLoading === request.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
-                      <Check className="w-4 h-4" />
+                      <Check className="w-5 h-5" />
                     )}
-                    {isAr ? 'قبول' : 'Approve'}
+                    {isAr ? 'قبول الطلب' : 'Approve'}
                   </Button>
                   <Button
-                    size="sm"
                     variant="outline"
                     onClick={() => handleAction(request.id, 'reject')}
                     disabled={actionLoading === request.id}
-                    className="gap-2 text-destructive hover:text-destructive"
+                    className="flex-1 sm:flex-none gap-2 text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 font-bold h-11 px-6 rounded-xl dark:border-rose-900 dark:hover:bg-rose-900/20"
                   >
-                    <X className="w-4 h-4" />
+                    {actionLoading === request.id ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <X className="w-5 h-5" />
+                    )}
                     {isAr ? 'رفض' : 'Reject'}
                   </Button>
                 </div>

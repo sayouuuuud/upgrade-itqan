@@ -538,7 +538,7 @@ export default function MushafPage() {
                       />
                     </div>
                   </div>
-                  <ScrollArea className="flex-1">
+                  <div className="flex-1 overflow-y-auto">
                     <div className="p-2">
                       {filteredSurahs.map(s => (
                         <button
@@ -566,7 +566,7 @@ export default function MushafPage() {
                         </button>
                       ))}
                     </div>
-                  </ScrollArea>
+                  </div>
                 </SheetContent>
               </Sheet>
             </div>
