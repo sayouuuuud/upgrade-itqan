@@ -254,10 +254,38 @@ function TestimonialsMarquee() {
    PAGE
    ============================================================ */
 
+// Public homepage CMS settings shape (defaults match the original hardcoded
+// strings so the page renders sensibly even before /api/homepage responds).
+type HomepageSettings = {
+  homepage_hero_title?: string
+  homepage_hero_subtitle?: string
+  homepage_hero_description?: string
+  homepage_cta_primary_text?: string
+  homepage_cta_primary_link?: string
+  homepage_cta_secondary_text?: string
+  homepage_cta_secondary_link?: string
+  homepage_show_stats?: boolean | string
+  homepage_show_features?: boolean | string
+  homepage_show_testimonials?: boolean | string
+  homepage_primary_color?: string
+  homepage_accent_color?: string
+  maintenance_mode?: boolean | string
+  maintenance_message?: string
+  maintenance_banner_color?: string
+  maintenance_full_page?: boolean | string
+}
+
+const asBool = (v: any, fallback = true) => {
+  if (v === true || v === 'true') return true
+  if (v === false || v === 'false') return false
+  return fallback
+}
+
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [settings, setSettings] = useState<HomepageSettings>({})
   const { resolvedTheme, setTheme } = useTheme()
   const heroRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] })
@@ -271,11 +299,65 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handler)
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/homepage', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : { settings: {} })
+      .then(data => { if (!cancelled && data?.settings) setSettings(data.settings) })
+      .catch(() => { /* keep defaults */ })
+    return () => { cancelled = true }
+  }, [])
+
   const isDark = mounted && resolvedTheme === "dark"
   const toggleTheme = () => setTheme(isDark ? "light" : "dark")
 
+  const heroTitle       = settings.homepage_hero_title       || 'إتقانُ التِلاوة'
+  const heroSubtitle    = settings.homepage_hero_subtitle    || 'ورحلةُ التَعَلُّم'
+  const heroDescription = settings.homepage_hero_description ||
+    'مِنبرٌ علميٌّ يجمع بين أكاديميَّةٍ راسخةٍ للدُّروسِ والشَّهادات، ومَقْرأةٍ روحانيَّةٍ للحفظِ والتَّسميعِ بإشرافِ المقرِئينَ المُجازين.'
+  const ctaPrimaryText    = settings.homepage_cta_primary_text    || 'الأكاديميَّة'
+  const ctaPrimaryLink    = settings.homepage_cta_primary_link    || '/academy/student'
+  const ctaSecondaryText  = settings.homepage_cta_secondary_text  || 'المَقْرأة'
+  const ctaSecondaryLink  = settings.homepage_cta_secondary_link  || '/student'
+  const showStats         = asBool(settings.homepage_show_stats, true)
+  const showFeatures      = asBool(settings.homepage_show_features, true)
+  const showTestimonials  = asBool(settings.homepage_show_testimonials, true)
+  const maintenanceOn     = asBool(settings.maintenance_mode, false)
+  const maintenanceFull   = asBool(settings.maintenance_full_page, false)
+  const maintenanceMsg    = settings.maintenance_message      || 'الموقع تحت الصيانة حاليًا، نعود قريبًا 🔧'
+  const maintenanceColor  = settings.maintenance_banner_color || '#f59e0b'
+  const primaryColor      = settings.homepage_primary_color   || '#0F2A44'
+  const accentColor       = settings.homepage_accent_color    || '#B08D57'
+
+  if (maintenanceOn && maintenanceFull) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center px-6 text-center text-[#1A1A1A] dark:text-[#F2EBDD] bg-[#F7F2E9] dark:bg-[#0B1217]"
+        dir="rtl"
+      >
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center mb-6 text-3xl"
+          style={{ backgroundColor: maintenanceColor + '22', color: maintenanceColor }}
+        >
+          🔧
+        </div>
+        <h1 className="text-3xl md:text-5xl font-bold mb-4" style={{ color: primaryColor }}>
+          {maintenanceMsg}
+        </h1>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#F7F2E9] text-[#1A1A1A] dark:bg-[#0B1217] dark:text-[#F2EBDD] overflow-x-hidden font-sans transition-colors duration-500" dir="rtl">
+      {maintenanceOn && (
+        <div
+          className="sticky top-0 z-[60] w-full text-center text-sm py-3 px-4 font-medium shadow-md"
+          style={{ backgroundColor: maintenanceColor, color: '#0B1217' }}
+        >
+          {maintenanceMsg}
+        </div>
+      )}
       {/* ============ HEADER ============ */}
       <motion.header
         initial={{ y: -100 }}
@@ -536,10 +618,10 @@ export default function Home() {
 
             <Reveal delay={0.15}>
               <h1
-                className="text-[14vw] sm:text-[10vw] md:text-8xl lg:text-9xl font-bold leading-[0.95] tracking-tight text-[#0F2A44] dark:text-[#F2EBDD] mb-10 md:mb-14"
-                style={{ fontFamily: "var(--font-quran)" }}
+                className="text-[14vw] sm:text-[10vw] md:text-8xl lg:text-9xl font-bold leading-[0.95] tracking-tight dark:text-[#F2EBDD] mb-10 md:mb-14"
+                style={{ fontFamily: "var(--font-quran)", color: primaryColor }}
               >
-                إتقانُ التِلاوة
+                {heroTitle}
               </h1>
             </Reveal>
 
@@ -553,10 +635,10 @@ export default function Home() {
 
             <Reveal delay={0.38}>
               <h2
-                className="text-[10vw] sm:text-[7vw] md:text-6xl lg:text-7xl font-light italic text-[#B08D57] dark:text-[#C9A962] mb-12 md:mb-14"
-                style={{ fontFamily: "var(--font-quran)" }}
+                className="text-[10vw] sm:text-[7vw] md:text-6xl lg:text-7xl font-light italic dark:text-[#C9A962] mb-12 md:mb-14"
+                style={{ fontFamily: "var(--font-quran)", color: accentColor }}
               >
-                ورحلةُ التَعَلُّم
+                {heroSubtitle}
               </h2>
             </Reveal>
 
@@ -565,35 +647,34 @@ export default function Home() {
             </Reveal>
 
             <Reveal delay={0.6}>
-              <p className="text-base md:text-lg text-[#1A1A1A]/70 dark:text-[#F2EBDD]/70 leading-loose max-w-2xl mx-auto mb-14 px-4">
-                مِنبرٌ علميٌّ يجمع بين <span className="text-[#0F2A44] dark:text-[#C9A962] font-semibold">أكاديميَّةٍ</span> راسخةٍ للدُّروسِ والشَّهادات،
-                و<span className="text-[#1B4332] dark:text-[#C9A962] font-semibold">مَقْرأةٍ</span> روحانيَّةٍ للحفظِ والتَّسميعِ بإشرافِ المقرِئينَ المُجازين.
+              <p className="text-base md:text-lg text-[#1A1A1A]/70 dark:text-[#F2EBDD]/70 leading-loose max-w-2xl mx-auto mb-14 px-4 whitespace-pre-line">
+                {heroDescription}
               </p>
             </Reveal>
 
             <Reveal delay={0.75}>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
                 <Link
-                  href="/academy/student"
+                  href={ctaPrimaryLink}
                   className="group relative h-14 px-8 inline-flex items-center gap-3 bg-[#0F2A44] text-[#F7F2E9] dark:bg-[#C9A962] dark:text-[#0B1217] rounded-full overflow-hidden transition-all duration-500 hover:gap-5 shadow-lg shadow-[#0F2A44]/20 dark:shadow-[#C9A962]/20 hover:shadow-2xl"
                 >
                   <span className="absolute inset-0 bg-[#1B4332] dark:bg-[#D4B27A] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                   <GraduationCap className="w-5 h-5 relative z-10" />
-                  <span className="relative z-10 font-medium">الأكاديميَّة</span>
+                  <span className="relative z-10 font-medium">{ctaPrimaryText}</span>
                   <ArrowLeft className="w-4 h-4 relative z-10" />
                 </Link>
                 <Link
-                  href="/student"
+                  href={ctaSecondaryLink}
                   className="group relative h-14 px-8 inline-flex items-center gap-3 border border-[#0F2A44]/25 dark:border-[#C9A962]/35 text-[#0F2A44] dark:text-[#C9A962] rounded-full hover:gap-5 transition-all duration-500 hover:border-[#1B4332] hover:bg-[#1B4332] hover:text-[#F7F2E9] dark:hover:border-[#C9A962] dark:hover:bg-[#C9A962] dark:hover:text-[#0B1217]"
                 >
                   <BookOpen className="w-5 h-5" />
-                  <span className="font-medium">المَقْرأة</span>
+                  <span className="font-medium">{ctaSecondaryText}</span>
                   <ArrowLeft className="w-4 h-4" />
                 </Link>
               </div>
             </Reveal>
 
-            <Reveal delay={0.9}>
+            {showStats && <Reveal delay={0.9}>
               <div className="grid grid-cols-2 md:grid-cols-4 max-w-4xl mx-auto border-y border-[#1A1A1A]/10 dark:border-[#F2EBDD]/10 divide-x divide-[#1A1A1A]/10 dark:divide-[#F2EBDD]/10 divide-x-reverse">
                 {[
                   { v: 12500, s: "+", l: "طالب وطالبة" },
@@ -609,7 +690,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            </Reveal>
+            </Reveal>}
 
             <motion.div
               animate={{ y: [0, 12, 0] }}
@@ -758,7 +839,7 @@ export default function Home() {
       </section>
 
       {/* ============ FEATURES ============ */}
-      <section id="features" className="relative py-32 md:py-40 bg-[#F7F2E9] dark:bg-[#0B1217] overflow-hidden transition-colors duration-500">
+      {showFeatures && <section id="features" className="relative py-32 md:py-40 bg-[#F7F2E9] dark:bg-[#0B1217] overflow-hidden transition-colors duration-500">
         <div className="absolute inset-0 pointer-events-none">
           <EightStar size={500} className="absolute -top-40 -left-40 text-[#0F2A44]/5 dark:text-[#C9A962]/8" strokeWidth={0.3} />
           <EightStar size={400} className="absolute -bottom-32 -right-32 text-[#1B4332]/5 dark:text-[#C9A962]/6" strokeWidth={0.3} />
@@ -818,7 +899,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* ============ JOURNEY ============ */}
       <section id="journey" className="relative py-32 md:py-40 bg-[#FAF6EE] dark:bg-[#0E1820] border-y border-[#0F2A44]/10 dark:border-[#C9A962]/15 overflow-hidden transition-colors duration-500">
@@ -870,7 +951,7 @@ export default function Home() {
       </section>
 
       {/* ============ TESTIMONIALS ============ */}
-      <TestimonialsMarquee />
+      {showTestimonials && <TestimonialsMarquee />}
 
       {/* ============ CTA ============ */}
       <section className="relative py-32 md:py-40 bg-[#0F2A44] text-[#F7F2E9] overflow-hidden">

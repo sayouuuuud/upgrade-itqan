@@ -13,11 +13,15 @@ export default function AdminHomepagePage() {
     const isAr = t.locale === 'ar'
 
     const [settings, setSettings] = useState<Record<string, any>>({
-        homepage_hero_title: 'أتقِن سورة الفاتحة',
-        homepage_hero_subtitle: 'سجّل تلاوتك واحصل على تقييم مفصّل من مقرئين معتمدين',
-        homepage_cta_primary_text: 'سجّل تلاوتك الآن',
-        homepage_cta_primary_link: '/register',
-        homepage_cta_secondary_text: 'تعرف على المنصة',
+        homepage_hero_title: 'إتقانُ التِلاوة',
+        homepage_hero_subtitle: 'ورحلةُ التَعَلُّم',
+        homepage_hero_description: 'مِنبرٌ علميٌّ يجمع بين أكاديميَّةٍ راسخةٍ للدُّروسِ والشَّهادات، ومَقْرأةٍ روحانيَّةٍ للحفظِ والتَّسميعِ بإشرافِ المقرِئينَ المُجازين.',
+        homepage_cta_primary_text: 'الأكاديميَّة',
+        homepage_cta_primary_link: '/academy/student',
+        homepage_cta_secondary_text: 'المَقْرأة',
+        homepage_cta_secondary_link: '/student',
+        homepage_primary_color: '#0F2A44',
+        homepage_accent_color: '#B08D57',
         homepage_show_stats: true,
         homepage_show_features: true,
         homepage_show_testimonials: true,
@@ -145,7 +149,12 @@ export default function AdminHomepagePage() {
 
                 <div className="space-y-2">
                     <Label>{t.admin.adminHomepage.heroSubtitle}</Label>
-                    <textarea value={settings.homepage_hero_subtitle} onChange={e => set('homepage_hero_subtitle', e.target.value)} rows={3} className="w-full border border-border bg-muted/30 text-foreground rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1B5E3B]/30" />
+                    <textarea value={settings.homepage_hero_subtitle} onChange={e => set('homepage_hero_subtitle', e.target.value)} rows={2} className="w-full border border-border bg-muted/30 text-foreground rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1B5E3B]/30" />
+                </div>
+
+                <div className="space-y-2">
+                    <Label>{isAr ? 'وصف البطل (تحت العنوان)' : 'Hero Description'}</Label>
+                    <textarea value={settings.homepage_hero_description || ''} onChange={e => set('homepage_hero_description', e.target.value)} rows={4} className="w-full border border-border bg-muted/30 text-foreground rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1B5E3B]/30" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -159,9 +168,32 @@ export default function AdminHomepagePage() {
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <Label>{t.admin.adminHomepage.secondaryCtaText}</Label>
-                    <Input value={settings.homepage_cta_secondary_text} onChange={e => set('homepage_cta_secondary_text', e.target.value)} className="max-w-sm bg-muted/30 border-border text-foreground" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>{t.admin.adminHomepage.secondaryCtaText}</Label>
+                        <Input value={settings.homepage_cta_secondary_text} onChange={e => set('homepage_cta_secondary_text', e.target.value)} className="bg-muted/30 border-border text-foreground" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>{isAr ? 'رابط الزر الثاني' : 'Secondary CTA Link'}</Label>
+                        <Input value={settings.homepage_cta_secondary_link || ''} onChange={e => set('homepage_cta_secondary_link', e.target.value)} className="bg-muted/30 border-border text-foreground" />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border">
+                    <div className="space-y-2">
+                        <Label>{isAr ? 'اللون الأساسي (العنوان)' : 'Primary Color (Title)'}</Label>
+                        <div className="flex items-center gap-3">
+                            <input type="color" value={settings.homepage_primary_color || '#0F2A44'} onChange={e => set('homepage_primary_color', e.target.value)} className="w-10 h-10 rounded cursor-pointer border border-border bg-transparent" />
+                            <Input value={settings.homepage_primary_color || '#0F2A44'} onChange={e => set('homepage_primary_color', e.target.value)} className="flex-1 font-mono text-sm bg-muted/30 border-border text-foreground" />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>{isAr ? 'لون التمييز (العنوان الثانوي)' : 'Accent Color (Subtitle)'}</Label>
+                        <div className="flex items-center gap-3">
+                            <input type="color" value={settings.homepage_accent_color || '#B08D57'} onChange={e => set('homepage_accent_color', e.target.value)} className="w-10 h-10 rounded cursor-pointer border border-border bg-transparent" />
+                            <Input value={settings.homepage_accent_color || '#B08D57'} onChange={e => set('homepage_accent_color', e.target.value)} className="flex-1 font-mono text-sm bg-muted/30 border-border text-foreground" />
+                        </div>
+                    </div>
                 </div>
             </div>
 
