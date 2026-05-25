@@ -165,6 +165,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
         {
           title: t.admin?.settings || 'الإعدادات',
           items: [
+            { href: '/academy/admin/certificates', label: t.academy?.certificatesCenter || t.academy?.certificates || 'مركز الشهادات', icon: Award },
             { href: '/academy/admin/access-control', label: t.academy?.accessControl || 'التحكم بالوصول', icon: Shield },
             { href: '/academy/admin/settings', label: t.admin?.systemSettings || 'إعدادات النظام', icon: Settings },
           ]
