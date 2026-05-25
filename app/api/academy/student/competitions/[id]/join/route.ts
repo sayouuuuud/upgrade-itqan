@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { joinCompetition } from '@/lib/academy/competitions'
+import { queryOne } from '@/lib/db'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession()
@@ -11,6 +12,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params
 
   try {
+    const competition = await queryOne<{ id: string }>(
+      `SELECT id FROM competitions WHERE id = $1 AND scope = 'academy'`,
+      [id]
+    )
+    if (!competition) {
+      return NextResponse.json({ error: 'المسابقة غير موجودة' }, { status: 404 })
+    }
+
     await joinCompetition(id, session.sub)
     return NextResponse.json({ success: true })
   } catch (error) {
