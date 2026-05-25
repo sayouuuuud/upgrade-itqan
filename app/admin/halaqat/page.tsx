@@ -2,13 +2,13 @@ import { HalaqatList } from '@/components/halaqat/halaqat-list'
 
 export const dynamic = 'force-dynamic'
 
-export default function AcademyAdminHalaqatPage() {
+export default function MaqraaAdminHalaqatPage() {
   return (
     <HalaqatList
-      platform="academy"
+      platform="maqraa"
       role="admin"
-      basePath="/academy/admin/halaqat"
-      teachersEndpoint="/api/academy/admin/teachers?assignable=1"
+      basePath="/admin/halaqat"
+      teachersEndpoint="/api/admin/readers"
       scope="all"
     />
   )

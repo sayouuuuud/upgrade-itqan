@@ -40,6 +40,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/student/enrollment-requests', label: t.academy?.enrollmentRequests || 'طلبات الانضمام', icon: UserPlus },
             { href: '/academy/student/tasks', label: t.academy?.tasks || 'المهام', icon: ClipboardList },
             { href: '/academy/student/sessions', label: t.academy?.liveSessions || 'الجلسات الحية', icon: Video },
+            { href: '/academy/student/halaqat', label: t.academy?.halaqat || 'حلقاتي', icon: GraduationCap },
             { href: '/academy/student/path', label: t.academy?.learningPath || 'المسار التعليمي', icon: Route },
             { href: '/academy/student/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
             { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
@@ -153,10 +154,15 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
           ]
         },
         {
+          title: 'الحلقات والبث',
+          items: [
+            { href: '/academy/admin/halaqat', label: t.academy?.halaqat || 'الحلقات', icon: GraduationCap },
+          ]
+        },
+        {
           title: t.admin?.settings || 'الإعدادات',
           items: [
             { href: '/academy/admin/access-control', label: t.academy?.accessControl || 'التحكم بالوصول', icon: Shield },
-            { href: '/academy/admin/halaqat', label: t.academy?.halaqat || 'الحلقات', icon: GraduationCap },
             { href: '/academy/admin/settings', label: t.admin?.systemSettings || 'إعدادات النظام', icon: Settings },
           ]
         }

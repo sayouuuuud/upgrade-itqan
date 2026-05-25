@@ -2,7 +2,7 @@ import { HalaqaDetail } from '@/components/halaqat/halaqa-detail'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AcademyAdminHalaqaDetailPage({
+export default async function AcademyStudentHalaqaDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
@@ -11,7 +11,7 @@ export default async function AcademyAdminHalaqaDetailPage({
   return (
     <HalaqaDetail
       halaqaId={id}
-      basePath="/academy/admin/halaqat"
+      basePath="/academy/student/halaqat"
       studentsCatalogEndpoint="/api/academy/admin/students"
       platform="academy"
     />

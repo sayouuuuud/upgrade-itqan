@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   }
   try {
     const rows = await query(`
-      SELECT * FROM halaqat ORDER BY created_at DESC
+      SELECT * FROM halaqat WHERE platform = 'academy' ORDER BY created_at DESC
     `)
     return NextResponse.json({ data: rows })
   } catch (error) {
@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await query(`
-      INSERT INTO halaqat (name, description, teacher_id, gender, max_students, meeting_link, is_active, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, true, NOW())
+      INSERT INTO halaqat (name, description, teacher_id, gender, max_students, meeting_link, is_active, platform, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, true, 'academy', NOW())
       RETURNING *
     `, [name, description || null, teacher_id || null, gender || 'both', max_students || 20, meeting_link || null])
     
