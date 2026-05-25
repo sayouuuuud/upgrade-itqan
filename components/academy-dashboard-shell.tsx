@@ -306,6 +306,7 @@ export function AcademyDashboardShell({
   } | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const [pendingCerts, setPendingCerts] = useState(0)
   const [avatarError, setAvatarError] = useState(false)
   const { branding } = usePublicSettings()
 
@@ -328,6 +329,14 @@ export function AcademyDashboardShell({
           const data = await res.json()
           setUnreadCount(data.notifications || 0)
           setUnreadMessages(data.messages || 0)
+        }
+      } catch { }
+      // Pending certificate requests for the student.
+      try {
+        const r = await fetch('/api/academy/student/certificates/pending-count')
+        if (r.ok) {
+          const d = await r.json()
+          setPendingCerts(d.count || 0)
         }
       } catch { }
     }
@@ -364,18 +373,42 @@ export function AcademyDashboardShell({
       }
     : { ...rawConfig, name: userName }
 
-  // Inject unread direct message counts into the sidebar items
-  const sectionsWithBadges = config.sections.map(section => ({
-    ...section,
-    items: section.items.map(item => {
-      // For chat or messages pages
+  // Inject unread direct message counts + pending-certificate badge
+  // into the sidebar items.  When the student has data_required
+  // certificate requests we also show a prominent "إكمال بيانات الشهادة"
+  // entry just below the existing certificates link.
+  const sectionsWithBadges = config.sections.map(section => {
+    let items = section.items.map(item => {
       const isChat = item.href.endsWith('/chat') || item.href.endsWith('/conversations') || item.href.endsWith('/messages')
       if (isChat && unreadMessages > 0) {
         return { ...item, badge: unreadMessages }
       }
+      if (item.href === '/academy/student/certificates' && pendingCerts > 0) {
+        return { ...item, badge: pendingCerts }
+      }
       return item
     })
-  }))
+
+    // Insert dedicated "complete certificate data" entry under the
+    // existing certificates link when the student has pending data.
+    if (role === 'academy_student' && pendingCerts > 0) {
+      const idx = items.findIndex(i => i.href === '/academy/student/certificates')
+      if (idx >= 0) {
+        items = [
+          ...items.slice(0, idx + 1),
+          {
+            href: '/academy/student/certificates#data-required',
+            label: t.academy?.completeCertificateData || 'إكمال بيانات الشهادة',
+            icon: Sparkles,
+            badge: pendingCerts,
+          } as NavItem,
+          ...items.slice(idx + 1),
+        ]
+      }
+    }
+
+    return { ...section, items }
+  })
 
   const finalConfig = { ...config, sections: sectionsWithBadges }
 

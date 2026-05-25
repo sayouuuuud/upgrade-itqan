@@ -198,6 +198,7 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
   } | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const [pendingCerts, setPendingCerts] = useState(0)
   const [avatarError, setAvatarError] = useState(false)
   const { branding } = usePublicSettings()
 
@@ -238,6 +239,14 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
           setUnreadMessages(data.messages || 0)
         }
       } catch { }
+      // Pending certificate requests for the maqraa student.
+      try {
+        const r = await fetch('/api/student/certificates/pending-count')
+        if (r.ok) {
+          const d = await r.json()
+          setPendingCerts(d.count || 0)
+        }
+      } catch { }
     }
     fetchUser()
     fetchCounts()
@@ -247,18 +256,38 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
 
   const rawConfig = getRoleConfig(t)[role]
 
-  // Inject unread direct message counts into the sidebar items
-  const sectionsWithBadges = rawConfig.sections.map(section => ({
-    ...section,
-    items: section.items.map(item => {
-      // For student/reader 'chat' or admin 'admin/chat' or 'conversations'
+  // Inject unread direct message counts + pending-certificate badge
+  // into the sidebar items. When the maqraa student has data_required
+  // certificate requests we also surface a dedicated
+  // "إكمال بيانات الشهادة" entry below /student/certificates.
+  const sectionsWithBadges = rawConfig.sections.map(section => {
+    let items = section.items.map(item => {
       const isChat = item.href.endsWith('/chat') || item.href.endsWith('/conversations')
       if (isChat && unreadMessages > 0) {
         return { ...item, badge: unreadMessages }
       }
+      if (item.href === '/student/certificates' && pendingCerts > 0) {
+        return { ...item, badge: pendingCerts }
+      }
       return item
     })
-  }))
+    if (role === 'student' && pendingCerts > 0) {
+      const idx = items.findIndex(i => i.href === '/student/certificates')
+      if (idx >= 0) {
+        items = [
+          ...items.slice(0, idx + 1),
+          {
+            href: '/student/certificates#data-required',
+            label: 'إكمال بيانات الشهادة',
+            icon: Award,
+            badge: pendingCerts,
+          } as NavItem,
+          ...items.slice(idx + 1),
+        ]
+      }
+    }
+    return { ...section, items }
+  })
 
   const userName = user?.name || rawConfig.name
 

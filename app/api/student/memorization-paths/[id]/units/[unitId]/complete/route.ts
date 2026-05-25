@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
-import { query } from "@/lib/db"
+import { query, queryOne } from "@/lib/db"
+import { onPathCompleted } from "@/lib/certificate/eligibility"
 
 // POST /api/student/memorization-paths/[id]/units/[unitId]/complete
 // Body: { audio_url?: string, audio_duration_seconds?: number, notes?: string, recitation_id?: string }
@@ -156,6 +157,25 @@ export async function POST(
       RETURNING *`,
       [completedCount, nextUnit?.id || null, isFinished, enrollment.id],
     )) as any[]
+
+    // Eligibility hook when the entire path is finished.
+    if (isFinished) {
+      try {
+        const pathRow = await queryOne<{ title: string }>(
+          `SELECT title FROM memorization_paths WHERE id = $1`,
+          [pathId],
+        )
+        await onPathCompleted({
+          scope: "maqraa",
+          studentId: session.sub,
+          pathId,
+          pathTitle: pathRow?.title || "",
+          pathType: "memorization_path",
+        })
+      } catch (e) {
+        console.warn("[path-complete] eligibility hook failed", e)
+      }
+    }
 
     return NextResponse.json({
       progress: updated[0],

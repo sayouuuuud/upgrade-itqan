@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query } from "@/lib/db"
+import { onCourseCompleted } from "@/lib/certificate/eligibility"
 
 export async function POST(
   req: NextRequest,
@@ -90,26 +91,33 @@ export async function POST(
       )
 
       if (existingCert.length === 0) {
-        // Issue new certificate
+        // Legacy insert — keep so older clients still see the cert in
+        // the simple list view.
         await query(
           `INSERT INTO academy_certificates (student_id, course_id, issued_at, certificate_number)
            VALUES ($1, $2, NOW(), $3)
            ON CONFLICT DO NOTHING`,
           [session.sub, courseId, `CERT-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`]
         )
+      }
 
-        // Create notification for the student
-        await query(
-          `INSERT INTO notifications (user_id, title, message, type, link, created_at)
-           VALUES ($1, $2, $3, $4, $5, NOW())`,
-          [
-            session.sub,
-            'تهانينا! حصلت على شهادة جديدة',
-            'لقد أكملت الدورة بنجاح وحصلت على شهادة إتمام. يمكنك تنزيلها من صفحة الشهادات.',
-            'certificate',
-            '/academy/student/certificates'
-          ]
-        ).catch(() => {}) // Ignore if notifications table doesn't exist
+      // Always create / refresh an issuance request in the unified
+      // pipeline so the academy admin centre can pick it up.  This is
+      // idempotent and will auto-issue when settings allow it.
+      try {
+        const courseRow = await query<{ title: string }>(
+          `SELECT title FROM courses WHERE id = $1`,
+          [courseId],
+        )
+        const courseTitle = courseRow[0]?.title || ""
+        await onCourseCompleted({
+          scope: "academy",
+          studentId: session.sub,
+          courseId,
+          courseTitle,
+        })
+      } catch (e) {
+        console.warn("[course-complete] eligibility hook failed", e)
       }
     }
 

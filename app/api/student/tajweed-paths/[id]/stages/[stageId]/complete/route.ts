@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession, requireRole } from "@/lib/auth"
-import { query } from "@/lib/db"
+import { query, queryOne } from "@/lib/db"
+import { onPathCompleted } from "@/lib/certificate/eligibility"
 
 // POST /api/student/tajweed-paths/[id]/stages/[stageId]/complete
 // Marks stage completed → unlocks next stage. Validates audio if path.require_audio.
@@ -128,6 +129,21 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
           WHERE id = $2`,
         [stagesCompleted, enrollment.id],
       )
+      try {
+        const pathRow = await queryOne<{ title: string }>(
+          `SELECT title FROM tajweed_paths WHERE id = $1`,
+          [id],
+        )
+        await onPathCompleted({
+          scope: "maqraa",
+          studentId: session!.sub,
+          pathId: id,
+          pathTitle: pathRow?.title || "",
+          pathType: "tajweed_path",
+        })
+      } catch (e) {
+        console.warn("[tajweed-path-complete] eligibility hook failed", e)
+      }
     } else {
       await query(
         `UPDATE tajweed_path_enrollments

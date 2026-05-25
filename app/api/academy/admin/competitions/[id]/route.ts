@@ -21,6 +21,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         badge_key = COALESCE($12, badge_key), points_multiplier = COALESCE($13, points_multiplier),
         halqa_id = COALESCE($14, halqa_id), min_verses = COALESCE($15, min_verses),
         is_featured = COALESCE($16, is_featured), winner_id = COALESCE($17, winner_id),
+        certificate_enabled = COALESCE($18, certificate_enabled),
+        award_top_n = COALESCE($19, award_top_n),
+        certificate_template_id = COALESCE($20, certificate_template_id),
         updated_at = NOW() WHERE id = $9 RETURNING *
     `, [
       body.title || null,
@@ -44,6 +47,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       Number(body.min_verses) > 0 ? Number(body.min_verses) : null,
       typeof body.is_featured === 'boolean' ? body.is_featured : null,
       winnerId,
+      typeof body.certificate_enabled === 'boolean' ? body.certificate_enabled : null,
+      Number(body.award_top_n) > 0 ? Number(body.award_top_n) : null,
+      body.certificate_template_id || null,
     ])
     
     if (result.length === 0) {

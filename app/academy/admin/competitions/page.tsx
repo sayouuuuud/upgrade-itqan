@@ -65,6 +65,9 @@ interface Competition {
   points_multiplier?: number | string | null
   min_verses?: number | null
   is_featured?: boolean
+  certificate_enabled?: boolean | null
+  award_top_n?: number | null
+  certificate_template_id?: string | null
   winner_name?: string | null
   entries_count?: number
   evaluated_count?: number
@@ -85,6 +88,9 @@ type CompetitionForm = {
   points_multiplier: number
   min_verses: number
   is_featured: boolean
+  certificate_enabled: boolean
+  award_top_n: number
+  certificate_template_id: string
 }
 
 const TYPE_CONFIG: Record<string, { label: string; hint: string; badge: string; color: string; icon: typeof Trophy }> = {
@@ -153,6 +159,9 @@ const emptyForm: CompetitionForm = {
   points_multiplier: 2,
   min_verses: 0,
   is_featured: false,
+  certificate_enabled: false,
+  award_top_n: 10,
+  certificate_template_id: '',
 }
 
 function formatDate(value: string) {
@@ -287,6 +296,9 @@ export default function AdminCompetitionsPage() {
       points_multiplier: Number(comp.points_multiplier || 2),
       min_verses: comp.min_verses || 0,
       is_featured: Boolean(comp.is_featured),
+      certificate_enabled: Boolean(comp.certificate_enabled),
+      award_top_n: Number(comp.award_top_n || 10),
+      certificate_template_id: comp.certificate_template_id || '',
     })
     setShowModal(true)
   }
@@ -314,6 +326,8 @@ export default function AdminCompetitionsPage() {
         body: JSON.stringify({
           ...form,
           tajweed_rules: form.tajweed_rules.split(',').map((item) => item.trim()).filter(Boolean),
+          certificate_template_id: form.certificate_template_id || null,
+          award_top_n: form.certificate_enabled ? Number(form.award_top_n) || 10 : null,
         }),
       })
       if (res.ok) {
@@ -621,13 +635,33 @@ export default function AdminCompetitionsPage() {
                       {comp.winner_name && <span className="rounded-full bg-amber-50 px-3 py-1 font-bold text-amber-700">الفائز: {comp.winner_name}</span>}
                       {comp.min_verses ? <span className="rounded-full bg-muted px-3 py-1">حد الآيات: {comp.min_verses}</span> : null}
                     </div>
-                    <button
-                      onClick={() => fetchEntries(comp)}
-                      className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 border border-border rounded-xl text-sm font-bold hover:bg-muted/50 transition-colors"
-                    >
-                      <ClipboardCheck className="h-4 w-4" />
-                      عرض المشاركات وتحكيمها
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => fetchEntries(comp)}
+                        className="flex-1 mt-4 flex items-center justify-center gap-2 py-2.5 border border-border rounded-xl text-sm font-bold hover:bg-muted/50 transition-colors"
+                      >
+                        <ClipboardCheck className="h-4 w-4" />
+                        عرض المشاركات وتحكيمها
+                      </button>
+                      {comp.certificate_enabled && (
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`إصدار شهادات لأفضل ${comp.award_top_n || 10} مشاركين؟`)) return
+                            const r = await fetch(`/api/academy/admin/competitions/${comp.id}/award-top-n`, { method: 'POST' })
+                            if (r.ok) {
+                              const d = await r.json()
+                              alert(`تم: ${d.created} طلب جديد، ${d.existing} موجود مسبقاً، ${d.skipped} متخطى`)
+                            } else {
+                              alert('فشل الإصدار')
+                            }
+                          }}
+                          className="flex-1 mt-4 flex items-center justify-center gap-2 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold transition-colors"
+                        >
+                          <Award className="h-4 w-4" />
+                          إصدار شهادات أفضل {comp.award_top_n || 10}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </article>
               )
@@ -714,6 +748,46 @@ export default function AdminCompetitionsPage() {
                 <input type="checkbox" checked={form.is_featured} onChange={(event) => setForm({ ...form, is_featured: event.target.checked })} className="h-4 w-4 accent-amber-600" />
                 إبراز المسابقة للطلاب في الواجهة
               </label>
+
+              <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+                <label className="flex items-center gap-3 text-sm font-bold">
+                  <input
+                    type="checkbox"
+                    checked={form.certificate_enabled}
+                    onChange={(event) => setForm({ ...form, certificate_enabled: event.target.checked })}
+                    className="h-4 w-4 accent-amber-600"
+                  />
+                  <Award className="h-4 w-4 text-amber-700" />
+                  إصدار شهادات للفائزين
+                </label>
+                {form.certificate_enabled && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="عدد الفائزين المستحقين للشهادة (Top N)">
+                      <input
+                        type="number"
+                        min={1}
+                        max={1000}
+                        value={form.award_top_n}
+                        onChange={(event) => setForm({ ...form, award_top_n: Number(event.target.value) })}
+                        className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-amber-500"
+                      />
+                    </Field>
+                    <Field label="قالب الشهادة (اختياري)">
+                      <input
+                        type="text"
+                        placeholder="UUID القالب — اتركه فارغًا للاستخدام الافتراضي"
+                        value={form.certificate_template_id}
+                        onChange={(event) => setForm({ ...form, certificate_template_id: event.target.value })}
+                        className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-amber-500 font-mono"
+                      />
+                    </Field>
+                  </div>
+                )}
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  عند انتهاء المسابقة، اضغط زر "إصدار شهادات أفضل N" في كرت المسابقة لتوليد طلبات شهادات
+                  للطلاب الأفضل ترتيبًا. سيصلهم إشعار لإكمال بياناتهم.
+                </p>
+              </div>
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 rounded-xl border border-border py-3 font-bold transition hover:bg-muted">إلغاء</button>
