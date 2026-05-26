@@ -299,7 +299,7 @@ export default function BookDetailPage() {
           <h2 className="text-xl font-black">{lib?.relatedBooks || (isAr ? "كتب مقترحة" : "Related books")}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {related.map((r) => (
-              <Link key={r.id} href={`/library/${r.id}`} className="group">
+              <Link key={r.id} href={`/academy/library/${r.id}`} className="group">
                 <Card className="overflow-hidden border-border hover:border-primary/50 transition-all">
                   <div className="relative aspect-[3/4] bg-gradient-to-br from-primary/10 to-emerald-500/10 overflow-hidden">
                     {r.cover_image_url ? (
