@@ -63,6 +63,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
       {
         items: [
           { href: '/reader', label: t.reader.dashboard, icon: LayoutDashboard },
+          { href: '/reader/calendar', label: t.reader.calendar || 'التقويم', icon: Calendar },
           { href: '/reader/recitations', label: t.reader.reviewList, icon: ClipboardList },
           { href: '/reader/memorization-paths', label: t.reader.memorizationPaths || 'مسارات الحفظ', icon: Route },
           { href: '/reader/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },

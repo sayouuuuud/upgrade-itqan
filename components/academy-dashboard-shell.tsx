@@ -76,6 +76,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
         {
           items: [
             { href: '/academy/teacher', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
+            { href: '/academy/teacher/calendar', label: t.academy?.calendar || 'التقويم', icon: Calendar },
             { href: '/academy/teacher/courses', label: t.academy?.myCourses || 'دوراتي', icon: BookOpen },
             { href: '/academy/teacher/enrollment-requests', label: t.academy?.enrollmentRequests || 'طلبات الانضمام', icon: Bell },
             { href: '/academy/teacher/sessions', label: t.academy?.liveSessions || 'الجلسات', icon: Calendar },
@@ -180,6 +181,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
         {
           items: [
             { href: '/academy/parent', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
+            { href: '/academy/parent/calendar', label: t.academy?.calendar || 'التقويم', icon: Calendar },
             { href: '/academy/parent/children', label: t.academy?.myChildren || 'أبنائي', icon: Users },
             { href: '/academy/parent/reports', label: t.academy?.reports || 'التقارير', icon: FileText },
             { href: '/academy/parent/progress', label: t.academy?.progress || 'التقدم', icon: Target },
