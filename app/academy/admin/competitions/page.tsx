@@ -643,24 +643,6 @@ export default function AdminCompetitionsPage() {
                         <ClipboardCheck className="h-4 w-4" />
                         عرض المشاركات وتحكيمها
                       </button>
-                      {comp.certificate_enabled && (
-                        <button
-                          onClick={async () => {
-                            if (!confirm(`إصدار شهادات لأفضل ${comp.award_top_n || 10} مشاركين؟`)) return
-                            const r = await fetch(`/api/academy/admin/competitions/${comp.id}/award-top-n`, { method: 'POST' })
-                            if (r.ok) {
-                              const d = await r.json()
-                              alert(`تم: ${d.created} طلب جديد، ${d.existing} موجود مسبقاً، ${d.skipped} متخطى`)
-                            } else {
-                              alert('فشل الإصدار')
-                            }
-                          }}
-                          className="flex-1 mt-4 flex items-center justify-center gap-2 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold transition-colors"
-                        >
-                          <Award className="h-4 w-4" />
-                          إصدار شهادات أفضل {comp.award_top_n || 10}
-                        </button>
-                      )}
                     </div>
                   </div>
                 </article>

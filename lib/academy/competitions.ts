@@ -45,14 +45,20 @@ export async function getAcademyCompetitions(filters: { status?: string; type?: 
   return getCompetitions({ ...filters, scope: 'academy' })
 }
 
-export async function getStudentEntries(studentId: string) {
-  return query(`
+export async function getStudentEntries(studentId: string, scope?: string) {
+  let sql = `
     SELECT ce.*, c.title as competition_title, c.type as competition_type, c.scope as competition_scope
     FROM competition_entries ce
     JOIN competitions c ON c.id = ce.competition_id
     WHERE ce.student_id = $1
-    ORDER BY ce.submitted_at DESC
-  `, [studentId])
+  `
+  const params: any[] = [studentId]
+  if (scope) {
+    params.push(scope)
+    sql += ` AND c.scope = $${params.length}`
+  }
+  sql += ` ORDER BY ce.submitted_at DESC`
+  return query(sql, params)
 }
 
 export async function getEntries(competitionId: string) {

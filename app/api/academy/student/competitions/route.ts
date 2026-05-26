@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   try {
     if (view === 'my_entries') {
-      const entries = await getStudentEntries(session.sub)
+      const entries = await getStudentEntries(session.sub, 'academy')
       return NextResponse.json({ data: entries })
     }
 
@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
       status,
       type,
       userId: session.sub,
+      scope: 'academy',
     })
     return NextResponse.json({ data: competitions })
   } catch (error) {
