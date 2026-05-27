@@ -1,0 +1,1706 @@
+openapi: 3.0.3
+info:
+  title: ITQ Academy API
+  description: |
+    REST API for ITQ (إتقان) — Islamic Sciences Academy platform.
+    All endpoints (except /api/auth/*) require Bearer JWT authentication.
+  version: 1.0.0
+  contact:
+    name: ITQ Platform
+servers:
+  - url: https://upgrade-itqaan.vercel.app
+    description: Production
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  - name: Student
+  - name: Teacher
+  - name: Admin
+  - name: Parent
+  - name: Supervisor
+  - name: Fiqh
+  - name: Forum
+  - name: Chat
+  - name: Certificates
+  - name: Leaderboard
+  - name: Cron
+
+paths:
+  # ==========================================================
+  # AUTH
+  # ==========================================================
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, name, role]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                name: { type: string }
+                role:
+                  type: string
+                  enum: [student, teacher, parent]
+                platform_preference:
+                  type: string
+                  enum: [academy_only, academy_plus_quran]
+                  default: academy_plus_quran
+                has_academy_access: { type: boolean, default: true }
+      responses:
+        '201': { description: User registered, content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { description: Email already exists }
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email & password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200': { description: Logged in, content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout current session
+      responses:
+        '200': { description: Logged out }
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current authenticated user
+      responses:
+        '200': { description: Current user, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ==========================================================
+  # STUDENT — Stats / Dashboard
+  # ==========================================================
+  /api/academy/student/stats:
+    get:
+      tags: [Student]
+      summary: Get student dashboard stats (courses, points, level, streak)
+      responses:
+        '200':
+          description: Student stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses_count: { type: integer }
+                  points: { type: integer }
+                  level: { type: string, enum: [beginner, intermediate, advanced, hafiz] }
+                  streak: { type: integer }
+                  upcoming_sessions: { type: array, items: { $ref: '#/components/schemas/Session' } }
+
+  /api/academy/student/calendar:
+    get:
+      tags: [Student]
+      summary: Get calendar events (sessions, lessons, tasks, deadlines)
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to,   in: query, schema: { type: string, format: date } }
+      responses:
+        '200': { description: Calendar events, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CalendarEvent' } } } } }
+
+  /api/academy/student/memorization:
+    get:
+      tags: [Student]
+      summary: Get memorization progress
+      responses:
+        '200':
+          description: Memorization progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_ayat: { type: integer, example: 6236 }
+                  memorized_ayat: { type: integer }
+                  total_juz: { type: integer, example: 30 }
+                  memorized_juz: { type: integer }
+                  pages: { type: array, items: { $ref: '#/components/schemas/MushafPage' } }
+    post:
+      tags: [Student]
+      summary: Submit memorization entry (ayat memorized today)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [surah, ayah_from, ayah_to, type]
+              properties:
+                surah: { type: integer, minimum: 1, maximum: 114 }
+                ayah_from: { type: integer }
+                ayah_to: { type: integer }
+                type: { type: string, enum: [memorize, review] }
+      responses:
+        '201': { description: Memorization recorded }
+
+  /api/academy/student/memorization/goal:
+    post:
+      tags: [Student]
+      summary: Confirm completion of weekly memorization goal
+      responses:
+        '200': { description: Goal confirmed }
+
+  /api/academy/student/badges:
+    get:
+      tags: [Student]
+      summary: Get earned and available badges with progress
+      responses:
+        '200': { description: Badges, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Badge' } } } } }
+
+  /api/academy/student/points:
+    get:
+      tags: [Student]
+      summary: Get points history with reasons
+      responses:
+        '200':
+          description: Points log
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total: { type: integer }
+                  level: { type: string }
+                  history: { type: array, items: { $ref: '#/components/schemas/PointEntry' } }
+
+  /api/academy/student/parent-requests:
+    get:
+      tags: [Student]
+      summary: List pending parent link requests
+      responses:
+        '200': { description: Parent requests, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ParentRequest' } } } } }
+    post:
+      tags: [Student]
+      summary: Accept or reject a parent link request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [request_id, action]
+              properties:
+                request_id: { type: string }
+                action: { type: string, enum: [accept, reject] }
+      responses:
+        '200': { description: Request handled }
+
+  /api/academy/student/competitions:
+    get:
+      tags: [Student]
+      summary: List open competitions
+      responses:
+        '200': { description: Competitions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Competition' } } } } }
+
+  /api/academy/student/competitions/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Student]
+      summary: Get competition details
+      responses:
+        '200': { description: Competition, content: { application/json: { schema: { $ref: '#/components/schemas/Competition' } } } }
+    post:
+      tags: [Student]
+      summary: Submit recitation entry to competition
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+                note: { type: string }
+      responses:
+        '201': { description: Entry submitted }
+
+  # ==========================================================
+  # STUDENT — Courses
+  # ==========================================================
+  /api/academy/student/courses:
+    get:
+      tags: [Student]
+      summary: List my enrolled courses with completion percentage
+      responses:
+        '200': { description: My courses, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Course' } } } } }
+
+  /api/academy/student/courses/browse:
+    get:
+      tags: [Student]
+      summary: Browse available courses
+      parameters:
+        - { name: category, in: query, schema: { type: string } }
+        - { name: level,    in: query, schema: { type: string, enum: [beginner, intermediate, advanced] } }
+      responses:
+        '200': { description: Browseable courses, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Course' } } } } }
+
+  /api/academy/student/courses/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Student]
+      summary: Get course details (with lessons list)
+      responses:
+        '200': { description: Course, content: { application/json: { schema: { $ref: '#/components/schemas/Course' } } } }
+
+  /api/academy/student/courses/{id}/enroll:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Student]
+      summary: Request to join a course
+      responses:
+        '201': { description: Enrollment request created }
+
+  /api/academy/student/courses/{id}/lessons/{lessonId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: lessonId, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Student]
+      summary: Get lesson content
+      responses:
+        '200': { description: Lesson, content: { application/json: { schema: { $ref: '#/components/schemas/Lesson' } } } }
+    patch:
+      tags: [Student]
+      summary: Update lesson progress
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                progress: { type: integer, minimum: 0, maximum: 100 }
+                completed: { type: boolean }
+      responses:
+        '200': { description: Progress updated }
+
+  /api/academy/student/enrollment-requests:
+    get:
+      tags: [Student]
+      summary: List my course enrollment requests
+      responses:
+        '200': { description: My enrollment requests, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/EnrollmentRequest' } } } } }
+
+  /api/academy/invite/{code}:
+    parameters:
+      - { name: code, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Student]
+      summary: Join course via invite code
+      responses:
+        '200': { description: Joined course }
+        '404': { description: Invalid code }
+
+  # ==========================================================
+  # STUDENT — Tasks
+  # ==========================================================
+  /api/academy/student/tasks:
+    get:
+      tags: [Student]
+      summary: List my tasks with deadlines
+      responses:
+        '200': { description: Tasks, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Task' } } } } }
+
+  /api/academy/student/tasks/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Student]
+      summary: Get task details
+      responses:
+        '200': { description: Task, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+
+  /api/academy/student/tasks/{id}/submit:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Student]
+      summary: Submit a task (file or audio)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+                note: { type: string }
+      responses:
+        '201': { description: Task submitted }
+
+  # ==========================================================
+  # STUDENT — Sessions / Path / Progress / Leaderboard / Calendar
+  # ==========================================================
+  /api/academy/student/sessions:
+    get:
+      tags: [Student]
+      summary: List live sessions and recordings
+      responses:
+        '200': { description: Sessions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Session' } } } } }
+
+  /api/academy/student/sessions/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Student]
+      summary: Get session details
+      responses:
+        '200': { description: Session, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+
+  /api/academy/student/path:
+    get:
+      tags: [Student]
+      summary: Get my learning path with progress
+      responses:
+        '200': { description: Path, content: { application/json: { schema: { $ref: '#/components/schemas/LearningPath' } } } }
+
+  /api/academy/student/progress:
+    get:
+      tags: [Student]
+      summary: Get progress charts (weekly + monthly)
+      responses:
+        '200':
+          description: Progress data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  weekly: { type: array, items: { $ref: '#/components/schemas/ProgressPoint' } }
+                  monthly: { type: array, items: { $ref: '#/components/schemas/ProgressPoint' } }
+
+  /api/academy/student/profile:
+    get:
+      tags: [Student]
+      summary: Get my profile
+      responses:
+        '200': { description: Profile, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+    patch:
+      tags: [Student]
+      summary: Update my profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User' }
+      responses:
+        '200': { description: Profile updated }
+
+  # ==========================================================
+  # TEACHER
+  # ==========================================================
+  /api/academy/teacher/stats:
+    get:
+      tags: [Teacher]
+      summary: Get teacher dashboard stats
+      responses:
+        '200': { description: Stats }
+
+  /api/academy/teacher/courses:
+    get:
+      tags: [Teacher]
+      summary: List my courses
+      responses:
+        '200': { description: Courses, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Course' } } } } }
+    post:
+      tags: [Teacher]
+      summary: Create a new course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, category, level]
+              properties:
+                title: { type: string }
+                category: { type: string }
+                level: { type: string, enum: [beginner, intermediate, advanced] }
+                description: { type: string }
+      responses:
+        '201': { description: Course created }
+
+  /api/academy/teacher/courses/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Course } }
+    patch:
+      tags: [Teacher]
+      summary: Update course
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/Course' } } }
+      responses: { '200': { description: Updated } }
+    delete:
+      tags: [Teacher]
+      responses: { '200': { description: Deleted } }
+
+  /api/academy/teacher/courses/{id}/lessons:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Lessons } }
+    post:
+      tags: [Teacher]
+      summary: Upload a lesson (video / pdf) — goes to supervisor review
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+                video: { type: string, format: binary }
+                attachments: { type: array, items: { type: string, format: binary } }
+                order: { type: integer }
+      responses: { '201': { description: Lesson submitted for review } }
+    patch:
+      tags: [Teacher]
+      summary: Reorder lessons (drag & drop)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order: { type: array, items: { type: string } }
+      responses: { '200': { description: Order updated } }
+
+  /api/academy/teacher/tasks:
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Tasks list } }
+    post:
+      tags: [Teacher]
+      summary: Create a task (single student or group)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, due_date]
+              properties:
+                title: { type: string }
+                description: { type: string }
+                due_date: { type: string, format: date-time }
+                student_ids: { type: array, items: { type: string } }
+                halaqa_id: { type: string }
+      responses: { '201': { description: Task created } }
+
+  /api/academy/teacher/tasks/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Task with submissions } }
+    patch:
+      tags: [Teacher]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } }
+      responses: { '200': { description: Updated } }
+    delete:
+      tags: [Teacher]
+      responses: { '200': { description: Deleted } }
+
+  /api/academy/teacher/tasks/{id}/grade:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Teacher]
+      summary: Grade a task submission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [submission_id, grade]
+              properties:
+                submission_id: { type: string }
+                grade: { type: number }
+                note: { type: string }
+      responses: { '200': { description: Graded } }
+
+  /api/academy/teacher/sessions:
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Sessions } }
+    post:
+      tags: [Teacher]
+      summary: Schedule a new session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, scheduled_at]
+              properties:
+                title: { type: string }
+                scheduled_at: { type: string, format: date-time }
+                duration_minutes: { type: integer }
+                meeting_link: { type: string }
+                halaqa_id: { type: string }
+                student_ids: { type: array, items: { type: string } }
+      responses: { '201': { description: Session created } }
+    patch:
+      tags: [Teacher]
+      responses: { '200': { description: Session updated } }
+    delete:
+      tags: [Teacher]
+      responses: { '200': { description: Session deleted } }
+
+  /api/academy/teacher/live-session:
+    post:
+      tags: [Teacher]
+      summary: Start a live video session (LiveKit / Zoom / Meet)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider: { type: string, enum: [livekit, zoom, google_meet] }
+                halaqa_id: { type: string }
+      responses: { '201': { description: Live session started } }
+    patch:
+      tags: [Teacher]
+      summary: End / update a live session
+      responses: { '200': { description: Updated } }
+
+  /api/academy/teacher/schedule:
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Schedule } }
+    post:
+      tags: [Teacher]
+      summary: Add available time slot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                day_of_week: { type: integer, minimum: 0, maximum: 6 }
+                start_time: { type: string }
+                end_time: { type: string }
+      responses: { '201': { description: Slot added } }
+
+  /api/academy/teacher/students:
+    get:
+      tags: [Teacher]
+      summary: List my students with progress
+      responses: { '200': { description: Students } }
+    post:
+      tags: [Teacher]
+      summary: Manually create a student account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string }
+      responses: { '201': { description: Student created } }
+
+  /api/academy/teacher/halaqat:
+    get:
+      tags: [Teacher]
+      summary: List halaqat I manage
+      responses: { '200': { description: Halaqat } }
+
+  /api/academy/teacher/enrollment-requests:
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Pending requests } }
+    post:
+      tags: [Teacher]
+      summary: Accept or reject enrollment request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [request_id, action]
+              properties:
+                request_id: { type: string }
+                action: { type: string, enum: [accept, reject] }
+                reason: { type: string }
+      responses: { '200': { description: Handled } }
+
+  /api/academy/teacher/invitations:
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Invitations } }
+    post:
+      tags: [Teacher]
+      summary: Generate an invite code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                course_id: { type: string }
+                halaqa_id: { type: string }
+                max_uses: { type: integer }
+                expires_at: { type: string, format: date-time }
+      responses: { '201': { description: Invite created, content: { application/json: { schema: { type: object, properties: { code: { type: string, example: ITQ-FIQH-2026-A1 } } } } } } }
+
+  /api/academy/teacher/memorization:
+    get:
+      tags: [Teacher]
+      summary: Track memorization progress for all my students
+      responses: { '200': { description: Students memorization } }
+
+  /api/academy/teacher/memorization-goals:
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Weekly goals list } }
+    post:
+      tags: [Teacher]
+      summary: Set weekly memorization goal for a student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [student_id, target]
+              properties:
+                student_id: { type: string }
+                target_ayat: { type: integer }
+                target_pages: { type: integer }
+                week_start: { type: string, format: date }
+      responses: { '201': { description: Goal created } }
+
+  /api/academy/teacher/recordings:
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Past session recordings } }
+
+  /api/academy/teacher/parent-messages:
+    get:
+      tags: [Teacher]
+      responses: { '200': { description: Messages from parents } }
+
+  # ==========================================================
+  # ADMIN
+  # ==========================================================
+  /api/academy/admin/stats:
+    get:
+      tags: [Admin]
+      summary: Admin dashboard stats
+      responses: { '200': { description: Stats } }
+
+  /api/academy/admin/analytics:
+    get:
+      tags: [Admin]
+      summary: Get interactive analytics data
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to,   in: query, schema: { type: string, format: date } }
+      responses: { '200': { description: Analytics } }
+
+  /api/academy/admin/announcements:
+    get:
+      tags: [Admin]
+      responses: { '200': { description: Announcements } }
+    post:
+      tags: [Admin]
+      summary: Publish announcement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, body]
+              properties:
+                title: { type: string }
+                body:  { type: string }
+                target_role: { type: string, enum: [all, students, teachers, parents] }
+      responses: { '201': { description: Created } }
+
+  /api/academy/admin/access-control:
+    get:
+      tags: [Admin]
+      summary: List access-control entries with audit log
+      responses: { '200': { description: Access list } }
+    patch:
+      tags: [Admin]
+      summary: Toggle has_academy_access for a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, has_academy_access]
+              properties:
+                user_id: { type: string }
+                has_academy_access: { type: boolean }
+      responses: { '200': { description: Updated } }
+
+  /api/academy/admin/points:
+    get:
+      tags: [Admin]
+      summary: Get configured point values per event
+      responses: { '200': { description: Point values } }
+    put:
+      tags: [Admin]
+      summary: Update point values & level thresholds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                events: { type: object, additionalProperties: { type: integer } }
+                levels:
+                  type: object
+                  properties:
+                    beginner_max: { type: integer }
+                    intermediate_max: { type: integer }
+                    advanced_max: { type: integer }
+      responses: { '200': { description: Updated } }
+
+  /api/academy/admin/badges:
+    get:
+      tags: [Admin]
+      responses: { '200': { description: Badges } }
+    post:
+      tags: [Admin]
+      summary: Create a new badge
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+                image: { type: string, format: binary }
+                points_reward: { type: integer }
+                criteria: { type: object }
+      responses: { '201': { description: Created } }
+
+  /api/academy/admin/badges/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    patch:
+      tags: [Admin]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/Badge' } } }
+      responses: { '200': { description: Updated } }
+    delete:
+      tags: [Admin]
+      responses: { '200': { description: Deleted } }
+
+  /api/academy/admin/badges/{badge_type}/award:
+    parameters:
+      - { name: badge_type, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Admin]
+      summary: Manually award a badge to a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id: { type: string }
+      responses: { '200': { description: Awarded } }
+
+  /api/academy/admin/competitions:
+    get:
+      tags: [Admin]
+      responses: { '200': { description: Competitions } }
+    post:
+      tags: [Admin]
+      summary: Create competition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Competition' }
+      responses: { '201': { description: Created } }
+
+  /api/academy/admin/competitions/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Admin]
+      responses: { '200': { description: Competition } }
+    patch:
+      tags: [Admin]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/Competition' } } }
+      responses: { '200': { description: Updated } }
+    delete:
+      tags: [Admin]
+      responses: { '200': { description: Deleted } }
+
+  /api/academy/admin/courses:
+    get:
+      tags: [Admin]
+      responses: { '200': { description: All courses } }
+    post:
+      tags: [Admin]
+      summary: Assign a teacher to a course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [course_id, teacher_id]
+              properties:
+                course_id: { type: string }
+                teacher_id: { type: string }
+      responses: { '200': { description: Assigned } }
+
+  /api/academy/admin/categories:
+    get:  { tags: [Admin], responses: { '200': { description: Categories } } }
+    post:
+      tags: [Admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+      responses: { '201': { description: Created } }
+
+  /api/academy/admin/categories/{id}:
+    parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+    patch:  { tags: [Admin], responses: { '200': { description: Updated } } }
+    delete: { tags: [Admin], responses: { '200': { description: Deleted } } }
+
+  /api/academy/admin/teachers:
+    get: { tags: [Admin], responses: { '200': { description: Teachers list } } }
+
+  /api/academy/admin/teacher-applications:
+    get: { tags: [Admin], responses: { '200': { description: Applications } } }
+    post:
+      tags: [Admin]
+      summary: Accept or reject teacher application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [application_id, action]
+              properties:
+                application_id: { type: string }
+                action: { type: string, enum: [accept, reject] }
+                reason: { type: string }
+      responses: { '200': { description: Handled } }
+
+  /api/academy/admin/students:
+    get: { tags: [Admin], responses: { '200': { description: Students } } }
+
+  /api/academy/admin/paths:
+    get:  { tags: [Admin], responses: { '200': { description: Learning paths } } }
+    post:
+      tags: [Admin]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/LearningPath' } } }
+      responses: { '201': { description: Created } }
+
+  /api/academy/admin/learning-paths:
+    get: { tags: [Admin], responses: { '200': { description: Learning paths (alias) } } }
+
+  /api/academy/admin/invitations:
+    get:  { tags: [Admin], responses: { '200': { description: Invitations } } }
+    post:
+      tags: [Admin]
+      summary: Send platform invitation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, role]
+              properties:
+                email: { type: string, format: email }
+                role: { type: string, enum: [student, teacher, parent] }
+      responses: { '201': { description: Invitation sent } }
+
+  /api/academy/admin/leaderboard:
+    get: { tags: [Admin], responses: { '200': { description: Leaderboard with full point history } } }
+
+  /api/academy/admin/forum:
+    get:  { tags: [Admin], responses: { '200': { description: Forums } } }
+    post:
+      tags: [Admin]
+      summary: Create a forum / category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+      responses: { '201': { description: Created } }
+
+  /api/academy/admin/fiqh:
+    get: { tags: [Admin], responses: { '200': { description: All fiqh questions } } }
+
+  /api/academy/admin/fiqh/officers:
+    get:  { tags: [Admin], responses: { '200': { description: Fiqh officers } } }
+    post:
+      tags: [Admin]
+      summary: Assign a fiqh officer (global / category / single question)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, scope]
+              properties:
+                user_id: { type: string }
+                scope: { type: string, enum: [global, category, question] }
+                category_id: { type: string }
+                question_id: { type: string }
+      responses: { '201': { description: Officer assigned } }
+
+  /api/academy/admin/reports:
+    get:
+      tags: [Admin]
+      summary: Reports (enrollments, completion, teachers)
+      parameters:
+        - { name: type, in: query, schema: { type: string, enum: [enrollments, completion, teachers] } }
+        - { name: format, in: query, schema: { type: string, enum: [json, csv, pdf], default: json } }
+      responses: { '200': { description: Report } }
+
+  /api/academy/admin/halaqat:
+    get: { tags: [Admin], responses: { '200': { description: Halaqat } } }
+    post:
+      tags: [Admin]
+      summary: Create halaqa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, gender, teacher_id, schedule]
+              properties:
+                name: { type: string }
+                gender: { type: string, enum: [male, female, mixed] }
+                teacher_id: { type: string }
+                schedule: { type: string }
+                category: { type: string }
+      responses: { '201': { description: Created } }
+
+  /api/academy/admin/settings:
+    get: { tags: [Admin], responses: { '200': { description: Academy settings } } }
+    put:
+      tags: [Admin]
+      summary: Update academy settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                registration_open: { type: boolean }
+                require_approval: { type: boolean }
+                forum_enabled: { type: boolean }
+      responses: { '200': { description: Updated } }
+
+  # ==========================================================
+  # PARENT
+  # ==========================================================
+  /api/academy/parent/link-child:
+    post:
+      tags: [Parent]
+      summary: Send link request to a child
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [child_email, relation]
+              properties:
+                child_email: { type: string, format: email }
+                relation: { type: string, enum: [father, mother, guardian] }
+      responses: { '201': { description: Request sent } }
+
+  /api/academy/parent/children:
+    get: { tags: [Parent], responses: { '200': { description: Linked children with progress } } }
+    delete:
+      tags: [Parent]
+      summary: Remove link with a child
+      parameters:
+        - { name: child_id, in: query, required: true, schema: { type: string } }
+      responses: { '200': { description: Unlinked } }
+
+  /api/academy/parent/progress:
+    get:
+      tags: [Parent]
+      summary: Get charts for a child (or compare)
+      parameters:
+        - { name: child_id, in: query, schema: { type: string } }
+      responses: { '200': { description: Progress data } }
+
+  /api/academy/parent/reports:
+    get:
+      tags: [Parent]
+      summary: Detailed report for a child in a period
+      parameters:
+        - { name: child_id, in: query, required: true, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to,   in: query, schema: { type: string, format: date } }
+        - { name: format, in: query, schema: { type: string, enum: [json, pdf], default: json } }
+      responses: { '200': { description: Report } }
+
+  /api/academy/parent/restrictions:
+    get:
+      tags: [Parent]
+      parameters: [ { name: child_id, in: query, required: true, schema: { type: string } } ]
+      responses: { '200': { description: Restrictions } }
+    put:
+      tags: [Parent]
+      summary: Set allowed/locked surahs/paths for a child
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [child_id]
+              properties:
+                child_id: { type: string }
+                allowed_surahs: { type: array, items: { type: integer } }
+                allowed_paths:  { type: array, items: { type: string } }
+      responses: { '200': { description: Updated } }
+
+  /api/academy/parent/reader-conversations:
+    get:  { tags: [Parent], responses: { '200': { description: Conversations with teachers/sheikhs } } }
+    post:
+      tags: [Parent]
+      summary: Send message to a sheikh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reader_id, body]
+              properties:
+                reader_id: { type: string }
+                body: { type: string }
+      responses: { '201': { description: Message sent } }
+
+  # ==========================================================
+  # SUPERVISORS
+  # ==========================================================
+  /api/academy/supervisor/content:
+    get:
+      tags: [Supervisor]
+      summary: Lessons pending review
+      parameters: [ { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } } ]
+      responses: { '200': { description: Lessons } }
+    post:
+      tags: [Supervisor]
+      summary: Approve or reject a lesson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lesson_id, action]
+              properties:
+                lesson_id: { type: string }
+                action: { type: string, enum: [approve, reject] }
+                reason: { type: string }
+      responses: { '200': { description: Handled } }
+
+  /api/academy/supervisor/forum:
+    get: { tags: [Supervisor], responses: { '200': { description: Forum moderation queue } } }
+    post:
+      tags: [Supervisor]
+      summary: Hide / delete a forum reply
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reply_id, action]
+              properties:
+                reply_id: { type: string }
+                action: { type: string, enum: [hide, delete] }
+                reason: { type: string }
+      responses: { '200': { description: Done } }
+
+  /api/academy/supervisor/quality:
+    get: { tags: [Supervisor], responses: { '200': { description: Quality stats and reviews (read-only) } } }
+    post:
+      tags: [Supervisor]
+      summary: Submit a quality report to the admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string }
+      responses: { '201': { description: Report sent } }
+
+  # ==========================================================
+  # FIQH
+  # ==========================================================
+  /api/academy/fiqh:
+    get:
+      tags: [Fiqh]
+      summary: List answered fiqh questions / my questions
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [new, in_review, answered, rejected] } }
+        - { name: category, in: query, schema: { type: string } }
+      responses: { '200': { description: Questions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/FiqhQuestion' } } } } } }
+    post:
+      tags: [Fiqh]
+      summary: Submit a fiqh question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                title: { type: string }
+                body: { type: string }
+                category_id: { type: string }
+      responses: { '201': { description: Submitted } }
+
+  /api/academy/fiqh/{id}:
+    parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+    get:
+      tags: [Fiqh]
+      responses: { '200': { description: Question with answer } }
+    patch:
+      tags: [Fiqh]
+      summary: Officer answers / updates / rejects a question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answer: { type: string }
+                status: { type: string, enum: [in_review, answered, rejected] }
+                reject_reason: { type: string }
+      responses: { '200': { description: Updated } }
+
+  /api/academy/fiqh/categories:
+    get: { tags: [Fiqh], responses: { '200': { description: Categories } } }
+
+  # ==========================================================
+  # FORUM / COMMUNITY
+  # ==========================================================
+  /api/academy/forum:
+    get:
+      tags: [Forum]
+      summary: List forum topics
+      parameters: [ { name: category, in: query, schema: { type: string } } ]
+      responses: { '200': { description: Topics, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ForumTopic' } } } } } }
+    post:
+      tags: [Forum]
+      summary: Create new forum topic
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, body]
+              properties:
+                title: { type: string }
+                body: { type: string }
+                category_id: { type: string }
+      responses: { '201': { description: Created } }
+
+  /api/academy/forum/{id}:
+    parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+    get:
+      tags: [Forum]
+      responses: { '200': { description: Topic with replies } }
+    patch:
+      tags: [Forum]
+      summary: Edit topic or add a reply
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                body: { type: string }
+                reply: { type: string }
+      responses: { '200': { description: Updated } }
+    delete:
+      tags: [Forum]
+      responses: { '200': { description: Deleted } }
+
+  /api/community/articles:
+    get:
+      tags: [Forum]
+      summary: List community articles (teacher posts)
+      responses: { '200': { description: Articles } }
+    post:
+      tags: [Forum]
+      summary: Publish a new article
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, body]
+              properties:
+                title: { type: string }
+                body: { type: string }
+                cover_url: { type: string }
+      responses: { '201': { description: Created } }
+
+  # ==========================================================
+  # CHAT / NOTIFICATIONS
+  # ==========================================================
+  /api/conversations:
+    get:
+      tags: [Chat]
+      summary: List my conversations sorted by last message
+      parameters: [ { name: q, in: query, schema: { type: string } } ]
+      responses: { '200': { description: Conversations } }
+    post:
+      tags: [Chat]
+      summary: Send a message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipient_id, body]
+              properties:
+                recipient_id: { type: string }
+                body: { type: string }
+                conversation_id: { type: string }
+      responses: { '201': { description: Sent } }
+
+  /api/unread-counts:
+    get:
+      tags: [Chat]
+      summary: Get unread chat & notification counts
+      responses:
+        '200':
+          description: Counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  unread_messages: { type: integer }
+                  unread_notifications: { type: integer }
+
+  /api/notifications:
+    get:
+      tags: [Chat]
+      summary: List my notifications
+      parameters: [ { name: unread_only, in: query, schema: { type: boolean } } ]
+      responses: { '200': { description: Notifications } }
+    patch:
+      tags: [Chat]
+      summary: Mark notification(s) as read
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids: { type: array, items: { type: string } }
+                all: { type: boolean }
+      responses: { '200': { description: Updated } }
+
+  # ==========================================================
+  # CERTIFICATES
+  # ==========================================================
+  /api/certificate:
+    get:
+      tags: [Certificates]
+      summary: List my certificates
+      responses: { '200': { description: Certificates, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Certificate' } } } } } }
+    post:
+      tags: [Certificates]
+      summary: Request / fill certificate data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [course_id, full_name]
+              properties:
+                course_id: { type: string }
+                full_name: { type: string }
+      responses: { '201': { description: Created (pending issue) } }
+
+  /api/certificate-pdf:
+    get:
+      tags: [Certificates]
+      summary: Download certificate as PDF
+      parameters: [ { name: id, in: query, required: true, schema: { type: string } } ]
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+
+  # ==========================================================
+  # LEADERBOARD
+  # ==========================================================
+  /api/academy/leaderboard:
+    get:
+      tags: [Leaderboard]
+      summary: Get leaderboard
+      parameters:
+        - { name: scope, in: query, schema: { type: string, enum: [halaqa, platform], default: platform } }
+        - { name: halaqa_id, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 50 } }
+      responses:
+        '200':
+          description: Ranked users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    rank: { type: integer }
+                    user: { $ref: '#/components/schemas/User' }
+                    points: { type: integer }
+                    level: { type: string }
+
+  # ==========================================================
+  # CRON JOBS (protected by CRON secret + Bearer)
+  # ==========================================================
+  /api/cron/session-reminders:
+    get: { tags: [Cron], summary: Send session reminders, responses: { '200': { description: OK } } }
+  /api/cron/task-reminders:
+    get: { tags: [Cron], summary: Daily task reminders + overdue alerts, responses: { '200': { description: OK } } }
+  /api/cron/streak-reminders:
+    get: { tags: [Cron], summary: Streak end-of-day warnings, responses: { '200': { description: OK } } }
+  /api/cron/parent-weekly-reports:
+    get: { tags: [Cron], summary: Weekly parent reports, responses: { '200': { description: OK } } }
+  /api/cron/admin-activity-reports:
+    get: { tags: [Cron], summary: Admin weekly + monthly reports, responses: { '200': { description: OK } } }
+  /api/cron/academy-reminders:
+    get: { tags: [Cron], summary: General academy reminders, responses: { '200': { description: OK } } }
+  /api/cron/check-expirations:
+    get: { tags: [Cron], summary: Check expirations (links, sessions, invites), responses: { '200': { description: OK } } }
+
+# ==========================================================
+# COMPONENTS
+# ==========================================================
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        message: { type: string }
+
+    AuthResponse:
+      type: object
+      properties:
+        token: { type: string }
+        user:  { $ref: '#/components/schemas/User' }
+
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        name: { type: string }
+        avatar_url: { type: string }
+        role: { type: string, enum: [student, teacher, admin, parent, supervisor, fiqh_supervisor, quality_supervisor] }
+        has_academy_access: { type: boolean }
+        platform_preference: { type: string }
+        level: { type: string }
+        points: { type: integer }
+        created_at: { type: string, format: date-time }
+
+    Course:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        category: { type: string }
+        level: { type: string, enum: [beginner, intermediate, advanced] }
+        teacher_id: { type: string }
+        cover_url: { type: string }
+        completion_percent: { type: integer }
+        lessons_count: { type: integer }
+
+    Lesson:
+      type: object
+      properties:
+        id: { type: string }
+        course_id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        video_url: { type: string }
+        attachments: { type: array, items: { type: string } }
+        order: { type: integer }
+        progress: { type: integer }
+        status: { type: string, enum: [pending_review, approved, rejected] }
+
+    Task:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        due_date: { type: string, format: date-time }
+        status: { type: string, enum: [pending, submitted, graded, overdue] }
+        grade: { type: number }
+        note: { type: string }
+
+    Session:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        scheduled_at: { type: string, format: date-time }
+        duration_minutes: { type: integer }
+        meeting_link: { type: string }
+        recording_url: { type: string }
+        status: { type: string, enum: [scheduled, live, ended] }
+
+    CalendarEvent:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [session, lesson, task, deadline] }
+        title: { type: string }
+        date: { type: string, format: date-time }
+        link: { type: string }
+
+    MushafPage:
+      type: object
+      properties:
+        page: { type: integer }
+        status: { type: string, enum: [memorized, reviewed, none] }
+
+    Badge:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        image_url: { type: string }
+        points_reward: { type: integer }
+        progress: { type: integer }
+        target: { type: integer }
+        earned: { type: boolean }
+
+    PointEntry:
+      type: object
+      properties:
+        id: { type: string }
+        amount: { type: integer }
+        reason: { type: string }
+        event: { type: string }
+        created_at: { type: string, format: date-time }
+
+    EnrollmentRequest:
+      type: object
+      properties:
+        id: { type: string }
+        course_id: { type: string }
+        course_title: { type: string }
+        status: { type: string, enum: [pending, accepted, rejected] }
+        reason: { type: string }
+        created_at: { type: string, format: date-time }
+
+    ParentRequest:
+      type: object
+      properties:
+        id: { type: string }
+        parent_id: { type: string }
+        parent_name: { type: string }
+        relation: { type: string, enum: [father, mother, guardian] }
+        status: { type: string, enum: [pending, accepted, rejected] }
+
+    LearningPath:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        type: { type: string, enum: [quran_memorization, tajweed, fiqh, aqeedah, seerah, tafsir] }
+        stages:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              title: { type: string }
+              locked: { type: boolean }
+              progress: { type: integer }
+
+    ProgressPoint:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        memorized: { type: integer }
+        reviewed: { type: integer }
+
+    Competition:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        type: { type: string, enum: [recitation, ramadan, tajweed] }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        rules: { type: string }
+        required_files: { type: array, items: { type: string } }
+
+    FiqhQuestion:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        body: { type: string }
+        category_id: { type: string }
+        status: { type: string, enum: [new, in_review, answered, rejected] }
+        answer: { type: string }
+        answered_by: { type: string }
+        answered_at: { type: string, format: date-time }
+
+    ForumTopic:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        body: { type: string }
+        category_id: { type: string }
+        author_id: { type: string }
+        replies_count: { type: integer }
+        created_at: { type: string, format: date-time }
+
+    Certificate:
+      type: object
+      properties:
+        id: { type: string }
+        course_id: { type: string }
+        full_name: { type: string }
+        issued_at: { type: string, format: date-time }
+        status: { type: string, enum: [pending, issued, revoked] }
+        pdf_url: { type: string }
