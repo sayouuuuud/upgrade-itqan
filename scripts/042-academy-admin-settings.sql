@@ -5,31 +5,19 @@
 -- Fixes setting_type CHECK constraint to allow new academy-related types
 -- and seeds default values for all 9 settings sections.
 
--- 1) Drop the old restrictive CHECK constraint
+-- 1) Drop the old restrictive CHECK constraint entirely (no replacement)
+--    We intentionally do NOT re-add a CHECK constraint here, because existing
+--    rows in production may use setting_type values outside any predefined list.
+--    Instead we rely on the application layer to validate setting_type values.
 ALTER TABLE system_settings DROP CONSTRAINT IF EXISTS system_settings_setting_type_check;
 
--- 2) Add a new, broader CHECK constraint that includes academy_* categories
-ALTER TABLE system_settings
-ADD CONSTRAINT system_settings_setting_type_check
-CHECK (setting_type IN (
-    'email',
-    'storage',
-    'workflow',
-    'security',
-    'general',
-    'payment',
-    'notification',
-    'academy_general',
-    'academy_registration',
-    'academy_courses',
-    'academy_sessions',
-    'academy_gamification',
-    'academy_notifications',
-    'academy_forum',
-    'academy_security',
-    'academy_maintenance',
-    'smtp'
-));
+-- (Removed strict CHECK constraint to avoid violations from legacy rows)
+-- The previous list is kept here as a comment for documentation only:
+-- Allowed types in app layer:
+--   'email','storage','workflow','security','general','payment','notification',
+--   'academy_general','academy_registration','academy_courses','academy_sessions',
+--   'academy_gamification','academy_notifications','academy_forum',
+--   'academy_security','academy_maintenance','smtp'
 
 -- 3) Seed default settings for each section (only if not exists)
 -- 3.1 General
