@@ -34,12 +34,35 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "الحساب مفعل بالفعل" }, { status: 400 })
         }
 
-        if (user.verification_code !== code) {
+        // QA bypass: allow a configured static code for whitelisted emails so that
+        // E2E/automation suites (Playwright, TestSprite, etc.) can complete signup
+        // without polling a real inbox. The bypass is gated by THREE conditions:
+        //   1. QA_BYPASS_CODE env var is set (acts as the magic code)
+        //   2. The user's email is in QA_TEST_EMAILS (comma-separated whitelist)
+        //   3. NODE_ENV is not 'production', OR ALLOW_QA_BYPASS_IN_PROD is 'true'
+        // If any condition is missing, the bypass is silently disabled and the
+        // normal verification_code flow is enforced.
+        const qaBypassCode = process.env.QA_BYPASS_CODE
+        const qaTestEmails = (process.env.QA_TEST_EMAILS || "")
+            .split(",")
+            .map((e) => e.trim().toLowerCase())
+            .filter(Boolean)
+        const bypassEnabled =
+            !!qaBypassCode &&
+            qaTestEmails.includes(user.email.toLowerCase()) &&
+            (process.env.NODE_ENV !== "production" || process.env.ALLOW_QA_BYPASS_IN_PROD === "true")
+        const isQaBypass = bypassEnabled && code === qaBypassCode
+
+        if (!isQaBypass && user.verification_code !== code) {
             return NextResponse.json({ error: "كود التحقق غير صحيح" }, { status: 400 })
         }
 
-        if (new Date(user.verification_expires_at) < new Date()) {
+        if (!isQaBypass && new Date(user.verification_expires_at) < new Date()) {
             return NextResponse.json({ error: "كود التحقق منتهي الصلاحية، يرجى طلب كود جديد" }, { status: 400 })
+        }
+
+        if (isQaBypass) {
+            console.log("[v0] QA bypass used for email:", user.email)
         }
 
         // Mark as verified and clear code

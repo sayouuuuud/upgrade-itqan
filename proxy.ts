@@ -176,12 +176,17 @@ export default async function middleware(req: NextRequest) {
                     ? dbUser.has_quran_access !== false
                     : sessionPayload.has_quran_access !== false
 
-                // #1: Strictly prevent teachers from accessing student pages by manual URL entry
+                // #1: Strictly prevent teachers from accessing student pages by manual URL entry.
+                // Admins are also redirected to their own dashboard rather than silently allowed
+                // to browse the student view (which can confuse RBAC tests and audits).
                 if (pathname.startsWith("/academy/student")) {
-                    const isTeacher = sessionPayload.role === 'teacher' || 
+                    if (sessionPayload.role === 'admin') {
+                        return NextResponse.redirect(new URL("/academy/admin", req.url))
+                    }
+                    const isTeacher = sessionPayload.role === 'teacher' ||
                         sessionPayload.academy_roles?.includes('teacher');
-                    
-                    if (isTeacher && sessionPayload.role !== 'admin') {
+
+                    if (isTeacher) {
                         return NextResponse.redirect(new URL("/academy/teacher", req.url))
                     }
                 }
@@ -232,8 +237,10 @@ export default async function middleware(req: NextRequest) {
 
                 // A-1: Prevent teachers / supervisors from accessing /academy/student/*
                 // by manually editing the URL. Redirect each role to its own dashboard.
+                // NOTE: admin is intentionally NOT in studentAllowedRoles — the dedicated
+                // admin guard above redirects admins to /academy/admin first.
                 if (pathname.startsWith("/academy/student")) {
-                    const studentAllowedRoles = ['student', 'admin', 'parent'];
+                    const studentAllowedRoles = ['student', 'parent'];
                     const hasStudentAccess = studentAllowedRoles.includes(sessionPayload.role) ||
                         sessionPayload.academy_roles?.some(r => studentAllowedRoles.includes(r));
 
@@ -243,7 +250,9 @@ export default async function middleware(req: NextRequest) {
                         const supervisorRoles = ['supervisor', 'content_supervisor', 'fiqh_supervisor', 'quality_supervisor', 'academy_admin']
 
                         let target = "/academy"
-                        if (role === 'teacher' || academyRoles.includes('teacher')) {
+                        if (role === 'admin') {
+                            target = "/academy/admin"
+                        } else if (role === 'teacher' || academyRoles.includes('teacher')) {
                             target = "/academy/teacher"
                         } else if (supervisorRoles.includes(role) || academyRoles.some(r => supervisorRoles.includes(r))) {
                             target = "/academy/supervisor"
