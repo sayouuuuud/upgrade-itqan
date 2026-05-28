@@ -1,5 +1,6 @@
 "use client"
 
+import useSWR from "swr"
 import { MessageSquare, BookOpen, UserCheck, AlertTriangle, RotateCcw } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -19,6 +20,14 @@ interface ForumFiqhSettingsProps {
 }
 
 export function ForumFiqhSettings({ settings, onUpdate, onReset }: ForumFiqhSettingsProps) {
+  const { data: officersData } = useSWR<{
+    officers: Array<{ user_id: string; name: string; is_active: boolean }>
+  }>("/api/academy/admin/fiqh/officers", (url: string) => fetch(url).then((r) => r.json()), {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  })
+  const activeOfficers = (officersData?.officers || []).filter((o) => o.is_active)
+
   const bannedWords = settings.academy_forum_banned_words || []
 
   const updateBannedWords = (text: string) => {
@@ -181,7 +190,11 @@ export function ForumFiqhSettings({ settings, onUpdate, onReset }: ForumFiqhSett
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">بدون مشرف افتراضي</SelectItem>
-                      {/* TODO: Fetch supervisors from API */}
+                      {activeOfficers.map((o) => (
+                        <SelectItem key={o.user_id} value={o.user_id}>
+                          {o.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <p className="text-[11px] text-muted-foreground">للأسئلة بدون تصنيف</p>

@@ -50,8 +50,14 @@ export async function GET() {
     )
 
     const settingsMap = settings.reduce((acc: Record<string, any>, row: any) => {
+      let value = row.setting_value
+      // Mask sensitive credentials in GET responses
+      if (row.setting_key === "smtp_config" && value && typeof value === "object") {
+        value = { ...value }
+        if (value.password) value.password = "********"
+      }
       acc[row.setting_key] = {
-        value: row.setting_value,
+        value,
         type: row.setting_type,
         updatedAt: row.updated_at,
         modifiedBy: row.modified_by_name,
@@ -90,6 +96,25 @@ export async function PUT(req: NextRequest) {
         continue
       }
 
+      let valueToStore: any = value
+
+      // For smtp_config: if password is the masked sentinel, preserve the existing password
+      if (key === "smtp_config" && value && typeof value === "object") {
+        const incoming: any = { ...(value as any) }
+        if (incoming.password === "********" || incoming.password === "" || incoming.password == null) {
+          const existing = await query<{ setting_value: any }>(
+            `SELECT setting_value FROM system_settings WHERE setting_key = 'smtp_config'`
+          )
+          const prevPassword = existing?.[0]?.setting_value?.password
+          if (prevPassword) {
+            incoming.password = prevPassword
+          } else {
+            delete incoming.password
+          }
+        }
+        valueToStore = incoming
+      }
+
       await query(
         `INSERT INTO system_settings (setting_key, setting_value, setting_type, updated_by, updated_at)
          VALUES ($1, $2::jsonb, $3, $4, NOW())
@@ -98,7 +123,7 @@ export async function PUT(req: NextRequest) {
                 setting_type  = EXCLUDED.setting_type,
                 updated_by    = EXCLUDED.updated_by,
                 updated_at    = NOW()`,
-        [key, JSON.stringify(value), settingType, session.sub]
+        [key, JSON.stringify(valueToStore), settingType, session.sub]
       )
       clearSettingCache(key)
     }

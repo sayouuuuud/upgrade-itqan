@@ -162,7 +162,7 @@ export const defaultSettings: AcademySettings = {
   academy_gamification_level_beginner: 500,
   academy_gamification_level_intermediate: 2000,
   academy_gamification_level_advanced: 5000,
-  academy_gamification_level_hafiz: 5000,
+  academy_gamification_level_hafiz: 10000,
   academy_gamification_points_enabled: true,
   academy_gamification_badges_enabled: true,
   academy_gamification_leaderboard_enabled: true,

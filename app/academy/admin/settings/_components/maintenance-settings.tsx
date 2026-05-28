@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Wrench, AlertTriangle, Trash2, RefreshCw, Download, Loader2, CheckCircle } from "lucide-react"
+import { Wrench, AlertTriangle, Trash2, RefreshCw, Download, Loader2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -19,7 +19,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { AcademySettings } from "../hooks/use-academy-settings"
 
@@ -30,8 +29,6 @@ interface MaintenanceSettingsProps {
 
 export function MaintenanceSettings({ settings, onUpdate }: MaintenanceSettingsProps) {
   const [clearingCache, setClearingCache] = useState(false)
-  const [reindexing, setReindexing] = useState(false)
-  const [reindexProgress, setReindexProgress] = useState(0)
   const [backingUp, setBackingUp] = useState(false)
 
   const allowedIps = settings.academy_maintenance_allowed_ips || []
@@ -47,60 +44,37 @@ export function MaintenanceSettings({ settings, onUpdate }: MaintenanceSettingsP
   const handleClearCache = async () => {
     setClearingCache(true)
     try {
-      // Simulate cache clearing
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      toast.success("تم مسح الـ Cache بنجاح")
-    } catch {
-      toast.error("فشل في مسح الـ Cache")
+      const res = await fetch("/api/academy/admin/settings/clear-cache", { method: "POST" })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "فشل")
+      toast.success(data.message || "تم مسح الـ Cache بنجاح")
+    } catch (err: any) {
+      toast.error(err.message || "فشل في مسح الـ Cache")
     } finally {
       setClearingCache(false)
-    }
-  }
-
-  const handleReindex = async () => {
-    setReindexing(true)
-    setReindexProgress(0)
-    try {
-      // Simulate reindexing with progress
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise((resolve) => setTimeout(resolve, 300))
-        setReindexProgress(i)
-      }
-      toast.success("تم إعادة فهرسة البحث بنجاح")
-    } catch {
-      toast.error("فشل في إعادة الفهرسة")
-    } finally {
-      setReindexing(false)
-      setReindexProgress(0)
     }
   }
 
   const handleBackup = async () => {
     setBackingUp(true)
     try {
-      // Simulate backup creation
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      
-      // Create a dummy JSON file for download
-      const backupData = {
-        timestamp: new Date().toISOString(),
-        settings: settings,
-        version: "1.0",
+      const res = await fetch("/api/academy/admin/settings/backup")
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "فشل في إنشاء النسخة الاحتياطية")
       }
-      
-      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" })
+      const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `itqan-backup-${new Date().toISOString().split("T")[0]}.json`
+      a.download = `itqan-settings-backup-${new Date().toISOString().split("T")[0]}.json`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      
-      toast.success("تم إنشاء النسخة الاحتياطية")
-    } catch {
-      toast.error("فشل في إنشاء النسخة الاحتياطية")
+      toast.success("تم تحميل النسخة الاحتياطية")
+    } catch (err: any) {
+      toast.error(err.message || "فشل في إنشاء النسخة الاحتياطية")
     } finally {
       setBackingUp(false)
     }
@@ -216,33 +190,6 @@ export function MaintenanceSettings({ settings, onUpdate }: MaintenanceSettingsP
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          </div>
-
-          {/* Reindex */}
-          <div className="p-4 bg-muted/50 rounded-xl space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="font-medium flex items-center gap-2">
-                  <RefreshCw className="w-4 h-4" />
-                  إعادة فهرسة البحث
-                </Label>
-                <p className="text-xs text-muted-foreground">تحديث فهرس محرك البحث الداخلي</p>
-              </div>
-              <Button variant="outline" onClick={handleReindex} disabled={reindexing}>
-                {reindexing ? (
-                  <Loader2 className="w-4 h-4 animate-spin ml-2" />
-                ) : (
-                  <RefreshCw className="w-4 h-4 ml-2" />
-                )}
-                إعادة الفهرسة
-              </Button>
-            </div>
-            {reindexing && (
-              <div className="space-y-2">
-                <Progress value={reindexProgress} className="h-2" />
-                <p className="text-xs text-muted-foreground text-center">{reindexProgress}%</p>
-              </div>
-            )}
           </div>
 
           {/* Backup */}

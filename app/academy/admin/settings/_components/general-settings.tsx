@@ -1,12 +1,14 @@
 "use client"
 
-import { Globe, Upload, Mail, Phone, Clock, Languages, ArrowLeftRight, RotateCcw } from "lucide-react"
+import { useState } from "react"
+import { Globe, Upload, Mail, Phone, Clock, Languages, ArrowLeftRight, RotateCcw, Loader2, X } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 import { AcademySettings } from "../hooks/use-academy-settings"
 
 interface GeneralSettingsProps {
@@ -29,6 +31,65 @@ const timezones = [
 ]
 
 export function GeneralSettings({ settings, metadata, onUpdate, onReset }: GeneralSettingsProps) {
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingFavicon, setUploadingFavicon] = useState(false)
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    const formData = new FormData()
+    formData.append("image", file)
+    const res = await fetch("/api/upload", { method: "POST", body: formData })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || "فشل رفع الملف")
+    }
+    const data = await res.json()
+    return data.url || data.imageUrl || null
+  }
+
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 4 * 1024 * 1024) {
+      toast.error("حجم الشعار يجب أن يكون أقل من 4MB")
+      return
+    }
+    setUploadingLogo(true)
+    try {
+      const url = await uploadFile(file)
+      if (url) {
+        onUpdate({ academy_general_logo: url })
+        toast.success("تم رفع الشعار")
+      }
+    } catch (err: any) {
+      toast.error(err.message || "فشل رفع الشعار")
+    } finally {
+      setUploadingLogo(false)
+      e.target.value = ""
+    }
+  }
+
+  const handleFaviconChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error("حجم الـ Favicon يجب أن يكون أقل من 1MB")
+      return
+    }
+    setUploadingFavicon(true)
+    try {
+      const url = await uploadFile(file)
+      if (url) {
+        onUpdate({ academy_general_favicon: url })
+        toast.success("تم رفع الـ Favicon")
+      }
+    } catch (err: any) {
+      toast.error(err.message || "فشل رفع الـ Favicon")
+    } finally {
+      setUploadingFavicon(false)
+      e.target.value = ""
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Identity Card */}
@@ -80,51 +141,77 @@ export function GeneralSettings({ settings, metadata, onUpdate, onReset }: Gener
               <Label className="font-medium text-sm">شعار الأكاديمية</Label>
               <div className="flex items-center gap-3">
                 {settings.academy_general_logo ? (
-                  <img
-                    src={settings.academy_general_logo}
-                    alt="Logo"
-                    className="w-16 h-16 object-contain rounded-lg border"
-                  />
+                  <div className="relative">
+                    <img
+                      src={settings.academy_general_logo || "/placeholder.svg"}
+                      alt="Logo"
+                      className="w-16 h-16 object-contain rounded-lg border"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => onUpdate({ academy_general_logo: "" })}
+                      className="absolute -top-2 -left-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90"
+                      aria-label="حذف الشعار"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
                 ) : (
                   <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                    <Upload className="w-6 h-6 text-muted-foreground" />
+                    {uploadingLogo ? (
+                      <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+                    ) : (
+                      <Upload className="w-6 h-6 text-muted-foreground" />
+                    )}
                   </div>
                 )}
                 <Input
                   type="file"
-                  accept="image/png,image/jpeg,image/svg+xml"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
                   className="flex-1"
-                  onChange={(e) => {
-                    // Handle file upload - would integrate with Vercel Blob
-                    const file = e.target.files?.[0]
-                    if (file) {
-                      // TODO: Upload to Vercel Blob
-                    }
-                  }}
+                  disabled={uploadingLogo}
+                  onChange={handleLogoChange}
                 />
               </div>
+              <p className="text-[11px] text-muted-foreground">حد أقصى 4MB. PNG/JPG/SVG/WEBP</p>
             </div>
             <div className="space-y-2">
               <Label className="font-medium text-sm">Favicon</Label>
               <div className="flex items-center gap-3">
                 {settings.academy_general_favicon ? (
-                  <img
-                    src={settings.academy_general_favicon}
-                    alt="Favicon"
-                    className="w-8 h-8 object-contain rounded border"
-                  />
+                  <div className="relative">
+                    <img
+                      src={settings.academy_general_favicon || "/placeholder.svg"}
+                      alt="Favicon"
+                      className="w-8 h-8 object-contain rounded border"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => onUpdate({ academy_general_favicon: "" })}
+                      className="absolute -top-2 -left-2 w-4 h-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90"
+                      aria-label="حذف الـ Favicon"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
                 ) : (
                   <div className="w-8 h-8 bg-muted rounded flex items-center justify-center">
-                    <Upload className="w-4 h-4 text-muted-foreground" />
+                    {uploadingFavicon ? (
+                      <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 text-muted-foreground" />
+                    )}
                   </div>
                 )}
                 <Input
                   type="file"
                   accept="image/png,image/x-icon,image/svg+xml"
                   className="flex-1"
+                  disabled={uploadingFavicon}
+                  onChange={handleFaviconChange}
                 />
               </div>
-              <p className="text-[11px] text-muted-foreground">32x32 بكسل</p>
+              <p className="text-[11px] text-muted-foreground">32x32 بكسل، حد أقصى 1MB</p>
             </div>
           </div>
 

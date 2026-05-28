@@ -1,6 +1,7 @@
 "use client"
 
-import { Video, Upload, HardDrive, Download, Droplet, RotateCcw, CheckCircle, XCircle } from "lucide-react"
+import useSWR from "swr"
+import { Video, Upload, HardDrive, Download, Droplet, RotateCcw, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,10 +17,10 @@ interface CoursesContentSettingsProps {
   onReset: () => void
 }
 
-const storageProviders = [
-  { id: "uploadthing", name: "UploadThing", status: "connected" },
-  { id: "cloudinary", name: "Cloudinary", status: "not_configured" },
-  { id: "s3", name: "Amazon S3", status: "not_configured" },
+const storageProviderMeta = [
+  { id: "uploadthing", name: "UploadThing" },
+  { id: "cloudinary", name: "Cloudinary" },
+  { id: "s3", name: "Amazon S3" },
 ]
 
 const videoQualities = [
@@ -40,6 +41,18 @@ const defaultFormats = ["mp4", "webm", "mov", "pdf", "docx", "pptx", "mp3", "wav
 
 export function CoursesContentSettings({ settings, onUpdate, onReset }: CoursesContentSettingsProps) {
   const allowedFormats = settings.academy_courses_allowed_formats || defaultFormats
+
+  const { data: storageStatus, isLoading: storageLoading } = useSWR<{
+    providers: Record<string, boolean>
+  }>("/api/academy/admin/settings/storage-status", (url: string) => fetch(url).then((r) => r.json()), {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  })
+
+  const storageProviders = storageProviderMeta.map((p) => ({
+    ...p,
+    connected: storageStatus?.providers?.[p.id] ?? false,
+  }))
 
   const toggleFormat = (format: string) => {
     const newFormats = allowedFormats.includes(format)
@@ -180,7 +193,12 @@ export function CoursesContentSettings({ settings, onUpdate, onReset }: CoursesC
                   />
                   <span className="font-medium">{provider.name}</span>
                 </div>
-                {provider.status === "connected" ? (
+                {storageLoading ? (
+                  <Badge variant="secondary">
+                    <Loader2 className="w-3 h-3 ml-1 animate-spin" />
+                    جاري الفحص
+                  </Badge>
+                ) : provider.connected ? (
                   <Badge variant="default" className="bg-success text-success-foreground">
                     <CheckCircle className="w-3 h-3 ml-1" />
                     متصل

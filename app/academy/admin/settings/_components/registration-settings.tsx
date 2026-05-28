@@ -1,5 +1,6 @@
 "use client"
 
+import useSWR from "swr"
 import { UserPlus, Shield, CheckSquare, Mail, BookOpen, RotateCcw } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -25,7 +26,16 @@ const requiredFieldOptions = [
   { id: "phone", label: "رقم الهاتف" },
 ]
 
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
+
 export function RegistrationSettings({ settings, onUpdate, onReset }: RegistrationSettingsProps) {
+  const { data: coursesData } = useSWR<{ data: Array<{ id: string; title: string; status: string }> }>(
+    "/api/academy/admin/courses",
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 60000 }
+  )
+  const publishedCourses = (coursesData?.data || []).filter((c) => c.status === "published")
+
   const requiredFields = settings.academy_registration_required_fields || []
 
   const toggleRequiredField = (fieldId: string) => {
@@ -217,7 +227,11 @@ export function RegistrationSettings({ settings, onUpdate, onReset }: Registrati
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">بدون دورة افتراضية</SelectItem>
-              {/* TODO: Fetch courses from API */}
+              {publishedCourses.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.title}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <p className="text-[11px] text-muted-foreground mt-2">اختياري - الطالب يُسجل تلقائياً في هذه الدورة</p>
