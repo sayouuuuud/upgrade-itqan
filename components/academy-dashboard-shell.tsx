@@ -120,19 +120,24 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
           ]
         },
         {
-          title: t.management || 'الإدارة',
+          title: 'العملية التعليمية',
           items: [
             { href: '/academy/admin/courses', label: t.academy?.courses || 'الدورات', icon: BookOpen },
             { href: '/academy/admin/archive', label: 'الأرشيف الشامل', icon: Archive },
             { href: '/academy/admin/categories', label: t.academy?.categories || 'التصنيفات', icon: Grid },
+            { href: '/academy/admin/learning-paths', label: t.academy?.learningPaths || 'المسارات التعليمية', icon: Route },
+          ]
+        },
+        {
+          title: 'المستخدمون والصلاحيات',
+          items: [
             { href: '/academy/admin/teachers', label: t.academy?.teachers || 'المدرسين', icon: GraduationCap },
             { href: '/academy/admin/teacher-applications', label: t.academy?.teacherApplications || 'طلبات التدريس', icon: UserCheck },
             { href: '/academy/admin/application-questions', label: t.academy?.applicationQuestions || 'أسئلة طلبات الانضمام', icon: ClipboardList },
             { href: '/academy/admin/students', label: t.academy?.students || 'الطلاب', icon: Users },
-            { href: '/academy/admin/learning-paths', label: t.academy?.learningPaths || 'المسارات التعليمية', icon: Route },
-            { href: '/academy/admin/invitations', label: t.academy?.invitations || 'الدعوات', icon: UserPlus },
-            { href: '/academy/admin/users', label: t.admin?.users || 'المستخدمين', icon: Users },
             { href: '/academy/admin/supervisors', label: 'مشرفو الفقه', icon: Shield },
+            { href: '/academy/admin/users', label: t.admin?.users || 'المستخدمين', icon: Users },
+            { href: '/academy/admin/invitations', label: t.academy?.invitations || 'الدعوات', icon: UserPlus },
           ]
         },
         {

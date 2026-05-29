@@ -90,20 +90,28 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
         ]
       },
       {
-        title: t.management, items: [
+        title: 'المستخدمون والصلاحيات', items: [
           { href: '/admin/users', label: t.admin.users, icon: Users },
           { href: '/admin/invitations', label: t.admin.invitations || 'الدعوات', icon: Mail },
           { href: '/admin/readers', label: t.admin.readers, icon: BookOpen },
           { href: '/admin/reader-applications', label: t.admin.readerApplications, icon: UserCheck },
+        ]
+      },
+      {
+        title: 'العملية التعليمية', items: [
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/memorization-paths', label: t.admin.memorizationPaths || 'مسارات الحفظ', icon: Route },
           { href: '/admin/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },
           { href: '/admin/bookings', label: t.admin.bookings, icon: CalendarDays },
           { href: '/admin/halaqat', label: 'الحلقات', icon: GraduationCap },
           { href: '/admin/video-settings', label: 'إعدادات البث والفيديو', icon: Video },
+          { href: '/admin/certificates', label: t.admin.certificates.title, icon: Award },
+        ]
+      },
+      {
+        title: 'المجتمع والتفاعل', items: [
           { href: '/admin/competitions', label: 'مسابقات المقرأة', icon: Trophy },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
-          { href: '/admin/certificates', label: t.admin.certificates.title, icon: Award },
           { href: '/community/maqraa/admin', label: 'منتدى المقرأة', icon: MessagesSquare },
           { href: '/community/maqraa/admin/manage', label: 'إدارة المنتدى', icon: Shield },
           { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
