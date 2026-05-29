@@ -211,10 +211,10 @@ export default function AcademyAdminSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="bg-background -mx-6 lg:-mx-8 -mt-6 lg:-mt-8" dir="rtl">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-6 py-4">
+      <div className="sticky -top-6 lg:-top-8 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-6 lg:px-8 py-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-xl">
               <Settings className="w-6 h-6 text-primary" />
