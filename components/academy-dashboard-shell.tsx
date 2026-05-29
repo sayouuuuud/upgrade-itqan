@@ -450,7 +450,7 @@ export function AcademyDashboardShell({
         <div className={cn(
           'flex items-center border-b border-border relative overflow-hidden shrink-0 bg-gradient-to-l from-[#1E3A5F]/5 to-transparent',
           collapsed ? 'lg:justify-center lg:px-2 justify-center' : 'justify-center',
-          (role === 'student' || role === 'parent') ? 'h-20' : 'h-16'
+          (role === 'academy_student' || role === 'parent') ? 'h-20' : 'h-16'
         )}>
           <Link href="/" className={cn('block text-center w-full', collapsed ? 'px-0' : 'px-4')}>
             <span className={cn(

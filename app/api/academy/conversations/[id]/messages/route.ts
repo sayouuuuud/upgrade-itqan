@@ -11,8 +11,8 @@ const ADMIN_ROLES = new Set([
 
 async function canAccessConversation(conversationId: string, userId: string, role: string) {
   if (ADMIN_ROLES.has(role)) {
-    return queryOne<{ id: string }>(
-      `SELECT id FROM academy_conversations WHERE id = $1`,
+    return queryOne<{ id: string, student_id: string, teacher_id: string, admin_id: string | null }>(
+      `SELECT id, student_id, teacher_id, admin_id FROM academy_conversations WHERE id = $1`,
       [conversationId]
     )
   }

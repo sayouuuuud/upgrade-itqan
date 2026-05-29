@@ -36,7 +36,8 @@ export default function InvitationPage({
   const { inviteCode } = use(params)
   
   const [invitation, setInvitation] = useState<InvitationInfo | null>(null)
-  const [status, setStatus] = useState<'loading' | 'ready-new' | 'ready-logged' | 'invalid' | 'expired' | 'accepted' | 'accepting'>('loading')
+  const [status, setStatus] = useState<'loading' | 'ready-new' | 'ready-logged' | 'invalid' | 'expired' | 'accepted'>('loading')
+  const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [enrolledPlan, setEnrolledPlan] = useState<{ id: string; title: string } | null>(null)
   const [sessionEmail, setSessionEmail] = useState<string | null>(null)
@@ -90,7 +91,7 @@ export default function InvitationPage({
   }, [inviteCode])
 
   async function handleAcceptLoggedIn() {
-    setStatus('accepting')
+    setSubmitting(true)
     setErrorMsg('')
     try {
       const res = await fetch(`/api/academy/invitations/${inviteCode}/accept`, {
@@ -99,7 +100,6 @@ export default function InvitationPage({
       const data = await res.json()
       if (!res.ok) {
         setErrorMsg(data.error || 'حدث خطأ')
-        setStatus('ready-logged')
         return
       }
       if (data.enrolledPlanId) {
@@ -108,7 +108,8 @@ export default function InvitationPage({
       setStatus('accepted')
     } catch {
       setErrorMsg('حدث خطأ، يرجى المحاولة مجدداً')
-      setStatus('ready-logged')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -119,7 +120,7 @@ export default function InvitationPage({
       return
     }
 
-    setStatus('accepting')
+    setSubmitting(true)
     setErrorMsg('')
     try {
       const res = await fetch(`/api/academy/invitations/${inviteCode}/register`, {
@@ -130,7 +131,6 @@ export default function InvitationPage({
       const data = await res.json()
       if (!res.ok) {
         setErrorMsg(data.error || 'حدث خطأ أثناء التسجيل')
-        setStatus('ready-new')
         return
       }
       if (data.enrolledPlanId) {
@@ -139,7 +139,8 @@ export default function InvitationPage({
       setStatus('accepted')
     } catch {
       setErrorMsg('حدث خطأ، يرجى المحاولة مجدداً')
-      setStatus('ready-new')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -306,9 +307,9 @@ export default function InvitationPage({
               <Button
                 type="submit"
                 className="w-full h-12 rounded-2xl text-base font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 transition-all mt-2"
-                disabled={status === 'accepting' || !!isExpired}
+                disabled={submitting || !!isExpired}
               >
-                {status === 'accepting'
+                {submitting
                   ? <><Loader2 className="w-5 h-5 me-2 animate-spin" />جاري إنشاء الحساب...</>
                   : 'إنشاء الحساب وقبول الدعوة'}
               </Button>
@@ -327,10 +328,10 @@ export default function InvitationPage({
               </div>
               <Button
                 className="w-full h-12 rounded-2xl text-base font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                disabled={status === 'accepting' || !!isExpired}
+                disabled={submitting || !!isExpired}
                 onClick={handleAcceptLoggedIn}
               >
-                {status === 'accepting'
+                {submitting
                   ? <><Loader2 className="w-5 h-5 me-2 animate-spin" />جاري القبول...</>
                   : 'متابعة وقبول الدعوة'}
               </Button>

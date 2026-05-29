@@ -3,10 +3,10 @@ import { revalidatePath, revalidateTag } from "next/cache"
 import { getSession, requireRole } from "@/lib/auth"
 import { clearSettingCache } from "@/lib/settings"
 
-// POST /api/academy/admin/settings/clear-cache
+// POST /api/admin/settings/clear-cache
 export async function POST() {
   const session = await getSession()
-  if (!session || !requireRole(session, ["admin", "academy_admin"])) {
+  if (!session || !requireRole(session, ["admin"])) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
   }
 
@@ -15,7 +15,7 @@ export async function POST() {
     clearSettingCache()
 
     // Best-effort revalidation of common cached layers
-    const tags = ["settings", "courses", "users", "academy"]
+    const tags = ["settings", "halaqat", "readers", "recitations", "maqraah"]
     for (const tag of tags) {
       try {
         revalidateTag(tag, "max")
@@ -36,7 +36,7 @@ export async function POST() {
       cleared: ["settings", ...tags],
     })
   } catch (error: any) {
-    console.error("[clear-cache] Error:", error)
+    console.error("[Maqraah clear-cache] Error:", error)
     return NextResponse.json(
       { error: "فشل في مسح الـ Cache", details: error?.message },
       { status: 500 }

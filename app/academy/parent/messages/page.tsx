@@ -25,6 +25,8 @@ interface Conversation {
   last_message: string | null
   last_message_at: string | null
   unread_count: number
+  platform?: 'maqraa' | 'academy'
+  is_ticket?: boolean
 }
 
 interface Message {
@@ -87,10 +89,11 @@ export default function ParentMessagesPage() {
   useEffect(() => {
     if (!activeConv) return
     const conversationId = activeConv.id
+    const platform = activeConv.platform
     async function fetchMessages() {
       setLoadingMessages(true)
       try {
-        const res = await fetch(activeConv.platform === 'maqraa' ? `/api/conversations/${conversationId}/messages` : `/api/academy/conversations/${conversationId}/messages`)
+        const res = await fetch(platform === 'maqraa' ? `/api/conversations/${conversationId}/messages` : `/api/academy/conversations/${conversationId}/messages`)
         const data = await res.json()
         if (res.ok) setMessages(data.messages || [])
       } finally {

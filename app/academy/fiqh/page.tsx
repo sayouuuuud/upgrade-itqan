@@ -751,6 +751,9 @@ function AskTab({
   submitSuccess,
   onSubmit,
   isLoggedIn,
+  customFields,
+  askExtraData,
+  setAskExtraData,
 }: {
   isAr: boolean
   categories: Category[]

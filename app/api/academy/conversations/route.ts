@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ conversations })
     }
 
-    const isStudent = session.role === "student" || session.role === "academy_student"
+    const isStudent = session.role === "student"
     const isTeacher = session.role === "teacher"
     
     // We join to get the "other person's" details
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
     if (isTicket) {
       const isParent = session.role === "parent"
       const isTeacher = session.role === "teacher"
-      const isStudent = session.role === "student" || session.role === "academy_student"
+      const isStudent = session.role === "student"
 
       const result = await query(
           `INSERT INTO academy_conversations (student_id, teacher_id, parent_id, is_ticket, ticket_status) VALUES ($1, $2, $3, true, 'open') RETURNING id`,
@@ -233,7 +233,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ conversationId: newConv[0].id })
     }
 
-    const isStudent = session.role === "student" || session.role === "academy_student"
+    const isStudent = session.role === "student"
     const studentId = isStudent ? session.sub : otherUserId
     const teacherId = isStudent ? otherUserId : session.sub
 

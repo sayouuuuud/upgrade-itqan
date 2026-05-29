@@ -427,7 +427,7 @@ export default function SubmitTaskPage() {
                     isUploading={uploading === "video"}
                     isDisabled={submitting || isGraded}
                     data={videoData}
-                    onPick={e => handleFilePick(e, "video")}
+                    onPick={(e: React.ChangeEvent<HTMLInputElement>) => handleFilePick(e, "video")}
                     onClear={() => setVideoData(null)}
                     placeholder="اسحب الفيديو هنا أو اضغط للاختيار (MP4, WebM)"
                     icon={<Video className="w-8 h-8 text-primary/50" />}
@@ -448,7 +448,7 @@ export default function SubmitTaskPage() {
                     isUploading={uploading === "image"}
                     isDisabled={submitting || isGraded}
                     data={imageData}
-                    onPick={e => handleFilePick(e, "image")}
+                    onPick={(e: React.ChangeEvent<HTMLInputElement>) => handleFilePick(e, "image")}
                     onClear={() => setImageData(null)}
                     placeholder="اضغط لاختيار صورة (JPG, PNG)"
                     icon={<ImageIcon className="w-8 h-8 text-primary/50" />}
@@ -469,7 +469,7 @@ export default function SubmitTaskPage() {
                     isUploading={uploading === "file"}
                     isDisabled={submitting || isGraded}
                     data={fileData}
-                    onPick={e => handleFilePick(e, "file")}
+                    onPick={(e: React.ChangeEvent<HTMLInputElement>) => handleFilePick(e, "file")}
                     onClear={() => setFileData(null)}
                     placeholder="اضغط لاختيار ملف (PDF, Word, ZIP, PPTX)"
                     icon={<Paperclip className="w-8 h-8 text-primary/50" />}
@@ -489,7 +489,7 @@ export default function SubmitTaskPage() {
                     isUploading={uploading === "file"}
                     isDisabled={submitting || isGraded}
                     data={fileData}
-                    onPick={e => handleFilePick(e, "file")}
+                    onPick={(e: React.ChangeEvent<HTMLInputElement>) => handleFilePick(e, "file")}
                     onClear={() => setFileData(null)}
                     placeholder="إرفاق ملف داعم لإجابتك"
                     icon={<Paperclip className="w-8 h-8 text-primary/30" />}

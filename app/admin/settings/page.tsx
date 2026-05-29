@@ -1,801 +1,338 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useI18n } from "@/lib/i18n/context"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { useState, useEffect, useCallback } from "react"
+import {
+  Settings,
+  Globe,
+  Users,
+  BookOpen,
+  Mic,
+  Route,
+  Trophy,
+  Award,
+  Bell,
+  Shield,
+  Wrench,
+  Save,
+  X,
+  Loader2,
+  Search,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Save, User, Settings2, Loader2, CheckCircle, Mail, Image as ImageIcon, Phone, Globe } from "lucide-react"
-import { AvatarUpload } from "@/components/avatar-upload"
+import { Skeleton } from "@/components/ui/skeleton"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { cn } from "@/lib/utils"
+import { useMaqraahSettings } from "./hooks/use-maqraah-settings"
+import {
+  SystemSettings,
+  ReadersSettings,
+  HalaqatSettings,
+  RecitationsSettings,
+  PathsSettings,
+  GamificationSettings,
+  CompetitionsSettings,
+  NotificationsSettings,
+  SecuritySettings,
+  MaintenanceSettings,
+} from "./_components"
 
-export default function AdminSettingsPage() {
-    const { t } = useI18n()
-    const isAr = t.locale === "ar"
+const tabs = [
+  { id: "system", label: "إعدادات النظام", icon: Globe, prefix: "maqraah_general_", keywords: ["اسم", "شعار", "رابط", "وصف", "لغة", "توقيت", "حساب", "تواصل", "بريد"] },
+  { id: "readers", label: "المقرئون والطلبات", icon: Users, prefix: "maqraah_readers_", keywords: ["مقرئ", "طلب", "موافقة", "إجازة", "توزيع", "تقديم"] },
+  { id: "halaqat", label: "الحلقات والجلسات", icon: BookOpen, prefix: "maqraah_halaqat_", keywords: ["حلقة", "جلسة", "تذكير", "تسجيل", "حضور", "فيديو"] },
+  { id: "recitations", label: "التلاوات والتقييم", icon: Mic, prefix: "maqraah_recitations_", keywords: ["تلاوة", "تقييم", "صوت", "رواية", "تجويد", "درجة"] },
+  { id: "paths", label: "مسارات الحفظ والتجويد", icon: Route, prefix: "maqraah_paths_", keywords: ["حفظ", "تجويد", "مسار", "ورد", "هدف", "مرحلة"] },
+  { id: "gamification", label: "النقاط والمستويات", icon: Trophy, prefix: "maqraah_points_", keywords: ["نقاط", "مستوى", "شارة", "streak", "leaderboard"] },
+  { id: "competitions", label: "المسابقات والشهادات", icon: Award, prefix: "maqraah_competitions_", keywords: ["مسابقة", "شهادة", "توقيع", "قالب", "إصدار"] },
+  { id: "notifications", label: "الإشعارات والبريد", icon: Bell, prefix: "maqraah_notifications_", keywords: ["إشعار", "بريد", "smtp", "إيميل", "تذكير", "تقرير"] },
+  { id: "security", label: "الأمان والخصوصية", icon: Shield, prefix: "maqraah_security_", keywords: ["أمان", "كلمة سر", "2fa", "ip", "جلسة", "rate limit"] },
+  { id: "maintenance", label: "الصيانة", icon: Wrench, prefix: "maqraah_maintenance_", keywords: ["صيانة", "cache", "backup", "نسخة احتياطية", "تخزين"] },
+]
 
-    /* ──────────────── Profile ──────────────── */
-    const [profile, setProfile] = useState({ name: "", email: "", password: "", avatar_url: "" })
-    const [profileSaving, setProfileSaving] = useState(false)
-    const [profileSaved, setProfileSaved] = useState(false)
+export default function MaqraahAdminSettingsPage() {
+  const {
+    settings,
+    metadata,
+    isLoading,
+    saving,
+    hasUnsavedChanges,
+    unsavedCount,
+    updateSettings,
+    saveChanges,
+    discardChanges,
+    resetSection,
+    testSmtp,
+  } = useMaqraahSettings()
 
-    /* ──────────────── Assignment Strategy ──────────────── */
-    const [strategy, setStrategy] = useState("least_booked_today")
-    const [strategySaving, setStrategySaving] = useState(false)
-    const [strategySaved, setStrategySaved] = useState(false)
+  const [activeTab, setActiveTab] = useState("system")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isMobile, setIsMobile] = useState(false)
 
-    /* ──────────────── Environment Settings ──────────────── */
-    const [smtp, setSmtp] = useState({ host: "", port: "", user: "", password: "", secure: true, fromEmail: "", fromName: "" })
-    const [smtpSaving, setSmtpSaving] = useState(false)
-    const [smtpSaved, setSmtpSaved] = useState(false)
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
 
-    const [storage, setStorage] = useState({ uploadthingToken: "" })
-    const [storageSaving, setStorageSaving] = useState(false)
-    const [storageSaved, setStorageSaved] = useState(false)
-
-    /* ──────────────── Contact Information ──────────────── */
-    const [contactInfo, setContactInfo] = useState({ email: "", phone: "", address: "" })
-    const [contactSaving, setContactSaving] = useState(false)
-    const [contactSaved, setContactSaved] = useState(false)
-
-    /* ──────────────── Branding ──────────────── */
-    const [branding, setBranding] = useState({ logoUrl: "", faviconUrl: "", dashboardLogoUrl: "" })
-    const [brandingSaving, setBrandingSaving] = useState(false)
-    const [brandingSaved, setBrandingSaved] = useState(false)
-
-    /* ──────────────── App URL ──────────────── */
-    const [appUrl, setAppUrl] = useState("")
-    const [appUrlSaving, setAppUrlSaving] = useState(false)
-    const [appUrlSaved, setAppUrlSaved] = useState(false)
-
-    const [loading, setLoading] = useState(true)
-
-    useEffect(() => {
-        async function loadData() {
-            try {
-                const [profileRes, settingsRes] = await Promise.all([
-                    fetch("/api/admin/profile"),
-                    fetch("/api/admin/settings"),
-                ])
-                if (profileRes.ok) {
-                    const d = await profileRes.json()
-                    if (d.user) setProfile(p => ({ ...p, name: d.user.name, email: d.user.email, avatar_url: d.user.avatar_url || "" }))
-                }
-                if (settingsRes.ok) {
-                    const d = await settingsRes.json()
-
-                    // Parse Strategy
-                    const rawStrategy = d.settings?.reader_assignment_strategy
-                    if (rawStrategy) {
-                        const parsed = typeof rawStrategy === "string" ? rawStrategy.replace(/^"|"$/g, "") : rawStrategy
-                        setStrategy(parsed)
-                    }
-
-                    // Parse SMTP
-                    if (d.settings?.smtp_config) {
-                        try {
-                            const parsedSmtp = typeof d.settings.smtp_config === 'string' ? JSON.parse(d.settings.smtp_config) : d.settings.smtp_config;
-                            setSmtp((prev: any) => ({ ...prev, ...parsedSmtp }));
-                        } catch (e) { console.error("Could not parse SMTP settings", e) }
-                    }
-
-                    // Parse Storage (UploadThing)
-                    if (d.settings?.storage_config) {
-                        try {
-                            const parsedStorage = typeof d.settings.storage_config === 'string' ? JSON.parse(d.settings.storage_config) : d.settings.storage_config;
-                            setStorage((prev: any) => ({ ...prev, ...parsedStorage }));
-                        } catch (e) { console.error("Could not parse Storage settings", e) }
-                    }
-
-                    // Parse Contact Info
-                    if (d.settings?.contact_info) {
-                        try {
-                            const parsedContact = typeof d.settings.contact_info === 'string' ? JSON.parse(d.settings.contact_info) : d.settings.contact_info;
-                            setContactInfo((prev: any) => ({ ...prev, ...parsedContact }));
-                        } catch (e) { console.error("Could not parse Contact Info", e) }
-                    }
-
-                    // Parse Branding
-                    if (d.settings?.branding) {
-                        try {
-                            const parsedBranding = typeof d.settings.branding === 'string' ? JSON.parse(d.settings.branding) : d.settings.branding;
-                            setBranding((prev: any) => ({ ...prev, ...parsedBranding }));
-                        } catch (e) { console.error("Could not parse Branding", e) }
-                    }
-
-                    // Parse App URL
-                    if (d.settings?.app_url !== undefined) {
-                        const raw = d.settings.app_url
-                        setAppUrl(typeof raw === 'string' ? raw.replace(/^"|"$/g, '') : raw || '')
-                    }
-                }
-            } catch (err) {
-                console.error(err)
-            } finally {
-                setLoading(false)
-            }
-        }
-        loadData()
-    }, [])
-
-    const handleProfileSave = async () => {
-        setProfileSaving(true)
-        try {
-            const res = await fetch("/api/admin/profile", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(profile),
-            })
-            if (res.ok) {
-                setProfileSaved(true)
-                setProfile(p => ({ ...p, password: "" }))
-                setTimeout(() => setProfileSaved(false), 3000)
-            } else {
-                const d = await res.json()
-                alert(d.error || t.admin.errorSaving)
-            }
-        } catch {
-            alert(t.auth.errorOccurred)
-        } finally {
-            setProfileSaving(false)
-        }
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault()
+        if (hasUnsavedChanges) saveChanges()
+      }
+      if (e.key === "Escape") {
+        if (hasUnsavedChanges) discardChanges()
+      }
     }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [hasUnsavedChanges, saveChanges, discardChanges])
 
-    const handleStrategySave = async () => {
-        setStrategySaving(true)
-        try {
-            const res = await fetch("/api/admin/settings", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ settings: { reader_assignment_strategy: strategy } }),
-            })
-            if (res.ok) {
-                setStrategySaved(true)
-                setTimeout(() => setStrategySaved(false), 3000)
-            } else {
-                alert(t.admin.errorSaving)
-            }
-        } catch {
-            alert(t.auth.errorOccurred)
-        } finally {
-            setStrategySaving(false)
-        }
-    }
+  const filteredTabs = tabs.filter(
+    (tab) =>
+      tab.label.includes(searchQuery) ||
+      tab.keywords.some((kw) => kw.includes(searchQuery))
+  )
 
-    const handleSmtpSave = async () => {
-        setSmtpSaving(true)
-        try {
-            const smtpPayload = {
-                ...smtp,
-                port: smtp.port ? Number(smtp.port) : "",
-                secure: Boolean(smtp.secure),
-            }
-            const res = await fetch("/api/admin/settings", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ settings: { smtp_config: smtpPayload } }),
-            })
-            if (res.ok) {
-                setSmtpSaved(true)
-                setTimeout(() => setSmtpSaved(false), 3000)
-            } else { alert(t.admin.errorSaving) }
-        } catch { alert(t.auth.errorOccurred || t.admin.connectionError) }
-        finally { setSmtpSaving(false) }
-    }
+  const handleResetSection = useCallback(
+    (prefix: string) => {
+      resetSection(prefix)
+    },
+    [resetSection]
+  )
 
-    const handleStorageSave = async () => {
-        setStorageSaving(true)
-        try {
-            const res = await fetch("/api/admin/settings", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ settings: { storage_config: storage } }),
-            })
-            if (res.ok) {
-                setStorageSaved(true)
-                setTimeout(() => setStorageSaved(false), 3000)
-            } else { alert(t.admin.errorSaving) }
-        } catch { alert(t.auth.errorOccurred) }
-        finally { setStorageSaving(false) }
-    }
-
-    const handleContactSave = async () => {
-        setContactSaving(true)
-        try {
-            const res = await fetch("/api/admin/settings", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ settings: { contact_info: contactInfo } }),
-            })
-            if (res.ok) {
-                setContactSaved(true)
-                setTimeout(() => setContactSaved(false), 3000)
-            } else { alert(t.admin.errorSaving) }
-        } catch { alert(t.auth.errorOccurred) }
-        finally { setContactSaving(false) }
-    }
-
-    const handleBrandingSave = async () => {
-        setBrandingSaving(true)
-        try {
-            const res = await fetch("/api/admin/settings", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ settings: { branding: branding } }),
-            })
-            if (res.ok) {
-                setBrandingSaved(true)
-                setTimeout(() => setBrandingSaved(false), 3000)
-            } else { alert(t.admin.errorSaving) }
-        } catch { alert(t.auth.errorOccurred) }
-        finally { setBrandingSaving(false) }
-    }
-
-    const handleAppUrlSave = async () => {
-        if (!appUrl.trim()) { alert('يرجى إدخال رابط الموقع'); return }
-        setAppUrlSaving(true)
-        try {
-            const res = await fetch("/api/admin/settings", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ settings: { app_url: appUrl.trim().replace(/\/$/, '') } }),
-            })
-            if (res.ok) {
-                setAppUrlSaved(true)
-                setTimeout(() => setAppUrlSaved(false), 3000)
-            } else { alert(t.admin.errorSaving) }
-        } catch { alert(t.auth.errorOccurred) }
-        finally { setAppUrlSaving(false) }
-    }
-
-    if (loading) {
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "system":
         return (
-            <div className="flex justify-center items-center py-32">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
+          <SystemSettings
+            settings={settings}
+            metadata={metadata}
+            onUpdate={updateSettings}
+            onReset={() => handleResetSection("maqraah_general_")}
+          />
         )
+      case "readers":
+        return (
+          <ReadersSettings
+            settings={settings}
+            onUpdate={updateSettings}
+            onReset={() => handleResetSection("maqraah_readers_")}
+          />
+        )
+      case "halaqat":
+        return (
+          <HalaqatSettings
+            settings={settings}
+            onUpdate={updateSettings}
+            onReset={() => handleResetSection("maqraah_halaqat_")}
+          />
+        )
+      case "recitations":
+        return (
+          <RecitationsSettings
+            settings={settings}
+            onUpdate={updateSettings}
+            onReset={() => handleResetSection("maqraah_recitations_")}
+          />
+        )
+      case "paths":
+        return (
+          <PathsSettings
+            settings={settings}
+            onUpdate={updateSettings}
+            onReset={() => handleResetSection("maqraah_paths_")}
+          />
+        )
+      case "gamification":
+        return (
+          <GamificationSettings
+            settings={settings}
+            onUpdate={updateSettings}
+            onReset={() => handleResetSection("maqraah_points_")}
+          />
+        )
+      case "competitions":
+        return (
+          <CompetitionsSettings
+            settings={settings}
+            onUpdate={updateSettings}
+            onReset={() => handleResetSection("maqraah_competitions_")}
+          />
+        )
+      case "notifications":
+        return (
+          <NotificationsSettings
+            settings={settings}
+            onUpdate={updateSettings}
+            onReset={() => handleResetSection("maqraah_notifications_")}
+            onTestSmtp={testSmtp}
+          />
+        )
+      case "security":
+        return (
+          <SecuritySettings
+            settings={settings}
+            onUpdate={updateSettings}
+            onReset={() => handleResetSection("maqraah_security_")}
+          />
+        )
+      case "maintenance":
+        return (
+          <MaintenanceSettings
+            settings={settings}
+            onUpdate={updateSettings}
+            onReset={() => handleResetSection("maqraah_maintenance_")}
+          />
+        )
+      default:
+        return null
     }
+  }
 
-    const strategyOptions = [
-        {
-            value: "least_booked_today",
-            icon: "🔁",
-            label: t.admin.strategyFewestSessionsToday,
-            desc: t.admin.strategyFewestSessionsTodayDesc,
-        },
-        {
-            value: "least_total_bookings",
-            icon: "📊",
-            label: t.admin.strategyFewestTotalBookings,
-            desc: t.admin.strategyFewestTotalBookingsDesc,
-        },
-        {
-            value: "random",
-            icon: "🎲",
-            label: t.admin.strategyRandom,
-            desc: t.admin.strategyRandomDesc,
-        },
-    ]
-
+  if (isLoading) {
     return (
-        <div className="bg-card min-h-full -m-6 lg:-m-8 p-6 lg:p-8 min-h-screen relative pb-20" dir={isAr ? 'rtl' : 'ltr'}>
-            {/* Decorative background elements */}
-            <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-emerald-50/50 to-transparent -z-10" />
-            <div className="absolute top-20 right-[10%] w-64 h-64 bg-emerald-200/20 rounded-full blur-3xl -z-10 animate-pulse" />
-            <div className="absolute top-40 left-[15%] w-72 h-72 bg-amber-100/20 rounded-full blur-3xl -z-10 animate-pulse delay-700" />
-
-            <div className="max-w-4xl mx-auto px-6 pt-10 space-y-8 relative z-10">
-                {/* Page Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-2">
-                            <Settings2 className="w-3 h-3" />
-                            {t.admin.settings}
-                        </div>
-                        <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight leading-none">
-                            {t.admin.settings}
-                        </h1>
-                        <p className="text-muted-foreground font-medium max-w-md">
-                            {t.admin.settingsDesc}
-                        </p>
-                    </div>
-                </div>
-
-            {/* ── Admin Profile ── */}
-            <Card className="border-border shadow-2xl shadow-primary/5 bg-card/70 backdrop-blur-xl rounded-3xl overflow-hidden border">
-                <CardHeader className="p-8 pb-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                            <User className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-lg font-bold text-foreground">
-                                {t.admin.myAccount}
-                            </CardTitle>
-                            <CardDescription className="text-muted-foreground font-medium text-sm">
-                                {t.admin.myAccountDesc}
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                    {/* Avatar */}
-                    <div className="flex items-center gap-4">
-                        <AvatarUpload
-                            currentUrl={profile.avatar_url}
-                            name={profile.name}
-                            size="md"
-                            onUploaded={async (url) => {
-                                setProfile(p => ({ ...p, avatar_url: url }))
-                                await fetch("/api/auth/me", {
-                                    method: "PATCH",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ avatar_url: url }),
-                                })
-                            }}
-                        />
-                        <div>
-                            <p className="text-sm font-semibold text-foreground">{t.admin.profilePhoto}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{t.admin.clickToUpdatePhoto}</p>
-                        </div>
-                    </div>
-
-                    {/* Fields */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="admin-name" className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">{t.auth.fullName}</Label>
-                            <Input
-                                id="admin-name"
-                                value={profile.name}
-                                onChange={e => setProfile({ ...profile, name: e.target.value })}
-                                placeholder={t.auth.fullName}
-                                className="h-12 border-border bg-muted/30 rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all border font-medium"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="admin-email" className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">{t.auth.email}</Label>
-                            <Input
-                                id="admin-email"
-                                type="email"
-                                dir="ltr"
-                                value={profile.email}
-                                onChange={e => setProfile({ ...profile, email: e.target.value })}
-                                placeholder={t.auth.email}
-                                className="h-12 border-border bg-muted/30 rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all border font-medium"
-                            />
-                        </div>
-                        <div className="space-y-2 sm:col-span-2">
-                            <Label htmlFor="admin-pass" className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">{t.admin.newPassword}</Label>
-                            <Input
-                                id="admin-pass"
-                                type="password"
-                                dir="ltr"
-                                value={profile.password}
-                                onChange={e => setProfile({ ...profile, password: e.target.value })}
-                                placeholder={t.admin.passwordLeaveBlank}
-                                className="h-12 border-border bg-muted/30 rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all border font-medium"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Save Button */}
-                    <div className="pt-4 flex items-center justify-end gap-4 border-t border-slate-100 mt-6">
-                        <Button
-                            onClick={handleProfileSave}
-                            disabled={profileSaving}
-                            className="h-12 px-8 bg-gradient-to-r from-[#1B5E3B] to-[#2D8C5B] hover:shadow-lg hover:shadow-emerald-900/20 text-white rounded-2xl font-bold transition-all transform active:scale-95"
-                        >
-                            {profileSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : t.profile.saveChanges}
-                        </Button>
-                        {profileSaved && (
-                            <span className="flex items-center gap-2 text-sm text-emerald-600 font-bold animate-in fade-in slide-in-from-right-2">
-                                <CheckCircle className="w-5 h-5" /> {t.admin.savedSuccess}
-                            </span>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* ── Reader Assignment Strategy ── */}
-            <Card className="border-border shadow-sm rounded-2xl overflow-hidden bg-card">
-                <CardHeader className="bg-muted/30 border-b border-border px-6 py-5">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-xl">
-                            <Settings2 className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-lg font-bold text-foreground">
-                                {t.admin.readerAssignmentStrategy}
-                            </CardTitle>
-                            <CardDescription className="text-xs font-medium text-muted-foreground mt-0.5">
-                                {t.admin.readerAssignmentStrategyDesc}
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {strategyOptions.map((opt) => {
-                            const selected = strategy === opt.value
-                            return (
-                                <button
-                                    key={opt.value}
-                                    type="button"
-                                    onClick={() => setStrategy(opt.value)}
-                                    className={`relative text-right p-5 rounded-2xl border-2 transition-all duration-200 ${selected
-                                        ? "border-primary bg-primary/5 shadow-sm"
-                                        : "border-border hover:border-primary/20 hover:bg-muted/50"
-                                        }`}
-                                >
-                                    {selected && (
-                                        <span className="absolute top-3 left-3 rtl:right-3 rtl:left-auto text-[10px] bg-primary text-primary-foreground font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                                            {t.active}
-                                        </span>
-                                    )}
-                                    <div className="text-3xl mb-3">{opt.icon}</div>
-                                    <p className={`text-sm font-bold mb-1 transition-colors ${selected ? "text-primary" : "text-foreground"}`}>
-                                        {opt.label}
-                                    </p>
-                                    <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">{opt.desc}</p>
-                                </button>
-                            )
-                        })}
-                    </div>
-
-                    <div className="flex justify-end border-t border-border pt-5">
-                        <Button
-                            onClick={handleStrategySave}
-                            disabled={strategySaving}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 h-11 rounded-xl shadow-sm transition-all duration-200"
-                        >
-                            {strategySaving
-                                ? <Loader2 className="w-4 h-4 animate-spin" />
-                                : strategySaved
-                                    ? <CheckCircle className="w-4 h-4" />
-                                    : <Save className="w-4 h-4" />}
-                            <span className="mx-2">
-                                {strategySaved
-                                    ? t.admin.savedSuccess
-                                    : t.admin.saveStrategy}
-                            </span>
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* ── SMTP Email Settings ── */}
-            <Card className="border-border shadow-sm rounded-2xl overflow-hidden bg-card">
-                <CardHeader className="bg-muted/30 border-b border-border px-6 py-5">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-xl">
-                            <Mail className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-lg font-bold text-foreground">
-                                {t.admin.emailSettings}
-                            </CardTitle>
-                            <CardDescription className="text-xs font-medium text-muted-foreground mt-0.5">
-                                {t.admin.emailSettingsDesc}
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">SMTP Host</Label>
-                            <Input
-                                dir="ltr"
-                                value={smtp.host}
-                                onChange={e => setSmtp({ ...smtp, host: e.target.value })}
-                                placeholder="smtp.gmail.com"
-                                className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">SMTP Port</Label>
-                            <Input
-                                dir="ltr"
-                                type="number"
-                                value={smtp.port}
-                                onChange={e => setSmtp({ ...smtp, port: e.target.value })}
-                                placeholder="465"
-                                className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">{t.admin.userEmail}</Label>
-                            <Input
-                                dir="ltr"
-                                type="email"
-                                value={smtp.user}
-                                onChange={e => setSmtp({ ...smtp, user: e.target.value })}
-                                placeholder="example@gmail.com"
-                                className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">{t.admin.smtpPasswordLabel}</Label>
-                            <Input
-                                dir="ltr"
-                                type="password"
-                                value={smtp.password}
-                                onChange={e => setSmtp({ ...smtp, password: e.target.value })}
-                                placeholder="********"
-                                className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">{t.admin.fromName}</Label>
-                            <Input
-                                value={smtp.fromName}
-                                onChange={e => setSmtp({ ...smtp, fromName: e.target.value })}
-                                placeholder="إتقان الفاتحة"
-                                className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">{t.admin.fromEmail}</Label>
-                            <Input
-                                dir="ltr"
-                                type="email"
-                                value={smtp.fromEmail}
-                                onChange={e => setSmtp({ ...smtp, fromEmail: e.target.value })}
-                                placeholder="noreply@example.com"
-                                className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                            />
-                        </div>
-                        <div className="space-y-2 sm:col-span-2">
-                            <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 p-4">
-                                <Switch
-                                    checked={smtp.secure}
-                                    onCheckedChange={(checked) => setSmtp({ ...smtp, secure: checked })}
-                                />
-                                <div>
-                                    <Label className="font-bold text-sm text-foreground">
-                                        {isAr ? "اتصال SMTP آمن (SSL/TLS)" : "Secure SMTP connection (SSL/TLS)"}
-                                    </Label>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        {isAr ? "فعّلها عادةً مع المنفذ 465، وأوقفها عادةً مع 587." : "Usually enabled for port 465 and disabled for port 587."}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end pt-2">
-                        <Button
-                            onClick={handleSmtpSave}
-                            disabled={smtpSaving}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 h-11 rounded-xl shadow-sm transition-all duration-200"
-                        >
-                            {smtpSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : smtpSaved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                            <span className="mx-2">{smtpSaved ? t.admin.savedSuccess : t.admin.saveEmailSettings}</span>
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* ── Storage Settings (UploadThing) ── */}
-            <Card className="border-border shadow-sm rounded-2xl overflow-hidden bg-card">
-                <CardHeader className="bg-muted/30 border-b border-border px-6 py-5">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-xl">
-                            <ImageIcon className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-lg font-bold text-foreground">
-                                {t.admin.storageSettings}
-                            </CardTitle>
-                            <CardDescription className="text-xs font-medium text-muted-foreground mt-0.5">
-                                {t.admin.storageSettingsDesc}
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                    <div className="grid grid-cols-1 gap-6">
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">UploadThing Token</Label>
-                            <Input
-                                dir="ltr"
-                                type="password"
-                                value={storage.uploadthingToken}
-                                onChange={e => setStorage({ ...storage, uploadthingToken: e.target.value })}
-                                placeholder="eyJ..."
-                                className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                            />
-                            <p className="text-[10px] text-muted-foreground px-1">
-                                {isAr ? "تحصل على هذا الرمز من لوحة تحكم UploadThing (API Keys -> App Token)" : "Get this from UploadThing Dashboard (API Keys -> App Token)"}
-                            </p>
-                        </div>
-                    </div>
-[diff_chunk_separator]
-                    <div className="flex justify-end pt-2">
-                        <Button
-                            onClick={handleStorageSave}
-                            disabled={storageSaving}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 h-11 rounded-xl shadow-sm transition-all duration-200"
-                        >
-                            {storageSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : storageSaved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                            <span className="mx-2">{storageSaved ? t.admin.savedSuccess : t.admin.saveStorageSettings}</span>
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* ── Contact Settings ── */}
-            <Card className="border-border shadow-sm rounded-2xl overflow-hidden bg-card">
-                <CardHeader className="bg-muted/30 border-b border-border px-6 py-5">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-xl">
-                            <Phone className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-lg font-bold text-foreground">
-                                {t.admin.contactSettings}
-                            </CardTitle>
-                            <CardDescription className="text-xs font-medium text-muted-foreground mt-0.5">
-                                {t.admin.contactSettingsDesc}
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">{t.auth.email}</Label>
-                            <Input
-                                dir="ltr"
-                                value={contactInfo.email}
-                                onChange={e => setContactInfo({ ...contactInfo, email: e.target.value })}
-                                placeholder="info@itqaan.com"
-                                className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">{t.admin.phone}</Label>
-                            <Input
-                                dir="ltr"
-                                value={contactInfo.phone}
-                                onChange={e => setContactInfo({ ...contactInfo, phone: e.target.value })}
-                                placeholder="+966 50 000 0000"
-                                className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                            />
-                        </div>
-                        <div className="space-y-2 sm:col-span-2">
-                            <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">{t.admin.address}</Label>
-                            <Input
-                                value={contactInfo.address}
-                                onChange={e => setContactInfo({ ...contactInfo, address: e.target.value })}
-                                placeholder="الرياض، المملكة العربية السعودية"
-                                className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end pt-2">
-                        <Button
-                            onClick={handleContactSave}
-                            disabled={contactSaving}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 h-11 rounded-xl shadow-sm transition-all duration-200"
-                        >
-                            {contactSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : contactSaved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                            <span className="mx-2">{contactSaved ? t.admin.savedSuccess : t.admin.saveContactSettings}</span>
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* ── Branding Settings ── */}
-            <Card className="border-border shadow-sm rounded-2xl overflow-hidden bg-card">
-                <CardHeader className="bg-muted/30 border-b border-border px-6 py-5">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-xl">
-                            <ImageIcon className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-lg font-bold text-foreground">
-                                {t.admin.brandingTitle}
-                            </CardTitle>
-                            <CardDescription className="text-xs font-medium text-muted-foreground mt-0.5">
-                                {t.admin.brandingDesc}
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <p className="text-sm font-semibold text-foreground">{t.admin.logoLabel}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{t.admin.logoDesc || (isAr ? "الشعار الرئيسي للموقع" : "Main Website Logo")}</p>
-                            <AvatarUpload
-                                currentUrl={branding.logoUrl}
-                                name="Logo"
-                                size="md"
-                                onUploaded={(url) => setBranding(prev => ({ ...prev, logoUrl: url }))}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-sm font-semibold text-foreground">{isAr ? "شعار لوحة التحكم" : "Dashboard Logo"}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{isAr ? "يظهر في شريط السايد بار" : "Appears in the sidebar"}</p>
-                            <AvatarUpload
-                                currentUrl={branding.dashboardLogoUrl}
-                                name="Dashboard Logo"
-                                size="md"
-                                onUploaded={(url) => setBranding(prev => ({ ...prev, dashboardLogoUrl: url }))}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-sm font-semibold text-foreground">{t.admin.faviconLabel}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{t.admin.faviconDesc}</p>
-                            <AvatarUpload
-                                currentUrl={branding.faviconUrl}
-                                name="Favicon"
-                                size="sm"
-                                onUploaded={(url) => setBranding(prev => ({ ...prev, faviconUrl: url }))}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end pt-2">
-                        <Button
-                            onClick={handleBrandingSave}
-                            disabled={brandingSaving}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 h-11 rounded-xl shadow-sm transition-all duration-200"
-                        >
-                            {brandingSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : brandingSaved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                            <span className="mx-2">{brandingSaved ? t.admin.savedSuccess : "Save Branding"}</span>
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* ── App URL Settings ── */}
-            <Card className="border-border shadow-sm rounded-2xl overflow-hidden bg-card">
-                <CardHeader className="bg-muted/30 border-b border-border px-6 py-5">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-xl">
-                            <Globe className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-lg font-bold text-foreground">
-                                رابط الموقع (Domain)
-                            </CardTitle>
-                            <CardDescription className="text-xs font-medium text-muted-foreground mt-0.5">
-                                يُستخدم في روابط الدعوات المرسلة عبر البريد الإلكتروني
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-4">
-                    <div className="space-y-2">
-                        <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest">رابط الموقع</Label>
-                        <Input
-                            dir="ltr"
-                            value={appUrl}
-                            onChange={e => setAppUrl(e.target.value)}
-                            placeholder="https://your-domain.com"
-                            className="h-11 border-border bg-muted/50 text-foreground rounded-xl focus:ring-primary/20"
-                        />
-                        <p className="text-[11px] text-muted-foreground px-1">
-                            مثال: <code className="bg-muted px-1 rounded">https://itqan.example.com</code> — بدون / في النهاية
-                        </p>
-                    </div>
-
-                    <div className="flex justify-end pt-2">
-                        <Button
-                            onClick={handleAppUrlSave}
-                            disabled={appUrlSaving}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 h-11 rounded-xl shadow-sm transition-all duration-200"
-                        >
-                            {appUrlSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : appUrlSaved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                            <span className="mx-2">{appUrlSaved ? 'تم الحفظ ✓' : 'حفظ الرابط'}</span>
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-            </div>
+      <div className="p-6 space-y-6" dir="rtl">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-32" />
         </div>
+        <div className="flex gap-6">
+          <div className="w-64 space-y-2">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
+          <div className="flex-1 space-y-4">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-48 w-full" />
+          </div>
+        </div>
+      </div>
     )
+  }
+
+  return (
+    <div className="min-h-screen bg-background" dir="rtl">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <Settings className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">إعدادات النظام</h1>
+              <p className="text-xs text-muted-foreground">
+                {tabs.find((t) => t.id === activeTab)?.label}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {hasUnsavedChanges && (
+              <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
+                {unsavedCount} تغيير غير محفوظ
+              </span>
+            )}
+            <Button
+              variant="outline"
+              onClick={discardChanges}
+              disabled={!hasUnsavedChanges || saving}
+              className="gap-2"
+            >
+              <X className="w-4 h-4" />
+              إلغاء
+            </Button>
+            <Button onClick={saveChanges} disabled={!hasUnsavedChanges || saving} className="gap-2">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              حفظ التغييرات
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex">
+        {/* Sidebar - Desktop */}
+        {!isMobile && (
+          <aside className="w-64 border-l border-border min-h-[calc(100vh-73px)] bg-muted/30">
+            <div className="p-4 sticky top-[73px]">
+              <div className="relative mb-4">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="بحث في الإعدادات..."
+                  className="pr-10 h-10"
+                />
+              </div>
+
+              <ScrollArea className="h-[calc(100vh-180px)]">
+                <nav className="space-y-1">
+                  {filteredTabs.map((tab) => {
+                    const Icon = tab.icon
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-right",
+                          activeTab === tab.id
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        )}
+                      >
+                        <Icon className="w-4 h-4 shrink-0" />
+                        {tab.label}
+                      </button>
+                    )
+                  })}
+                </nav>
+              </ScrollArea>
+            </div>
+          </aside>
+        )}
+
+        {/* Main Content */}
+        <main className="flex-1 p-6">
+          {isMobile ? (
+            <Accordion
+              type="single"
+              collapsible
+              value={activeTab}
+              onValueChange={(v) => v && setActiveTab(v)}
+              className="space-y-4"
+            >
+              {tabs.map((tab) => {
+                const Icon = tab.icon
+                return (
+                  <AccordionItem key={tab.id} value={tab.id} className="border rounded-xl overflow-hidden">
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-5 h-5 text-primary" />
+                        <span className="font-medium">{tab.label}</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4">
+                      {activeTab === tab.id && renderTabContent()}
+                    </AccordionContent>
+                  </AccordionItem>
+                )
+              })}
+            </Accordion>
+          ) : (
+            <div className="max-w-4xl">{renderTabContent()}</div>
+          )}
+        </main>
+      </div>
+    </div>
+  )
 }

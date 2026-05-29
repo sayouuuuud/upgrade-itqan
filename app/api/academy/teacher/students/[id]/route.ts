@@ -4,14 +4,14 @@ import { query } from '@/lib/db'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession()
   if (!session || !['teacher', 'academy_admin'].includes(session.role)) {
     return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
   }
 
-  const studentId = params.id
+  const { id: studentId } = await params
 
   try {
     const [studentRows, enrollmentRows, badgeRows, specRows] = await Promise.all([

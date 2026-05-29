@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { 
   BookOpen, Clock, ChevronLeft, Award, PlayCircle, BookMarked, 
-  HelpCircle, CheckCircle2, Lock, ArrowRight, ExternalLink, Sparkles, Check
+  HelpCircle, CheckCircle2, Lock, ArrowRight, ExternalLink, Sparkles, Check, GraduationCap
 } from 'lucide-react'
 
 interface TajweedPath {

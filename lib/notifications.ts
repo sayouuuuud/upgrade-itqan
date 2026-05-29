@@ -29,6 +29,7 @@ export type NotificationType =
     | "task_marked_done"          // teacher: student self-marked a task done
     | "memorization_goal_set"     // student: teacher set a weekly memorization goal
     | "memorization_goal_completed" // teacher+student: goal completed
+    | "streak_reminder"           // student: daily streak reminder
     | "general"
 
 export interface CreateNotificationInput {

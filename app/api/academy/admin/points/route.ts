@@ -278,7 +278,7 @@ export async function POST(req: NextRequest) {
       session.sub,
     )
 
-    return NextResponse.json({ success: true, ...result })
+    return NextResponse.json({ ...result, success: true })
   } catch (error) {
     console.error('Error in admin points:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
