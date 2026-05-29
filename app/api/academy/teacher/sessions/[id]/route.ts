@@ -32,8 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             scheduled_at,
             duration_minutes,
             status,
-            meeting_link,
-            meeting_platform,
+            max_students,
             is_public,
             series_title,
             announce_to_students,
@@ -78,17 +77,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 fields.push(`ended_at = NOW()`)
             }
         }
-        if (meeting_link !== undefined) {
-            const normalizedMeetingLink = normalizeMeetingUrl(meeting_link)
-            if (meeting_link && !normalizedMeetingLink) {
-                return NextResponse.json({ error: 'Meeting link must be a valid URL' }, { status: 400 })
-            }
-            fields.push(`meeting_link = $${counter++}`)
-            values.push(normalizedMeetingLink)
-        }
-        if (meeting_platform !== undefined) {
-            fields.push(`meeting_platform = $${counter++}`)
-            values.push(MEETING_PLATFORMS.includes(meeting_platform) ? meeting_platform : 'custom')
+        if (max_students !== undefined) {
+            fields.push(`max_students = $${counter++}`)
+            values.push(max_students === null ? null : parseInt(max_students))
         }
         if (is_public !== undefined) {
             fields.push(`is_public = $${counter++}`)
@@ -128,13 +119,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 id: string
                 title: string
                 description?: string | null
-                meeting_link?: string | null
                 public_join_token?: string | null
             }
             const publicPath = updated.public_join_token ? `/academy/public/session/${updated.public_join_token}` : null
             const content = [
                 updated.description || 'تم تحديث جلسة مباشرة.',
-                updated.meeting_link ? `رابط الاجتماع: ${updated.meeting_link}` : null,
                 publicPath ? `رابط الدرس العام: ${publicPath}` : null,
             ].filter(Boolean).join('\n\n')
 

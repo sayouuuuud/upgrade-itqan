@@ -61,8 +61,7 @@ export async function POST(req: NextRequest) {
       description,
       scheduled_at,
       duration_minutes,
-      meeting_link,
-      meeting_platform,
+      max_students,
       is_public,
       series_title,
       announce_to_students,
@@ -71,13 +70,6 @@ export async function POST(req: NextRequest) {
     if (!course_id || !title || !scheduled_at) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
-
-    const normalizedMeetingLink = normalizeMeetingUrl(meeting_link)
-    if (meeting_link && !normalizedMeetingLink) {
-      return NextResponse.json({ error: 'Meeting link must be a valid URL' }, { status: 400 })
-    }
-
-    const platform = MEETING_PLATFORMS.includes(meeting_platform) ? meeting_platform : 'custom'
 
     // Verify teacher owns this course
     const courseCheck = await query('SELECT id FROM courses WHERE id = $1 AND teacher_id = $2', [course_id, session.sub])
@@ -100,10 +92,10 @@ export async function POST(req: NextRequest) {
     const result = await query(`
       INSERT INTO course_sessions (
         course_id, title, description, session_type, scheduled_at, duration_minutes,
-        meeting_link, meeting_platform, is_public, public_join_token, series_id,
+        meeting_platform, is_public, public_join_token, series_id, max_students,
         status, created_at
       )
-      VALUES ($1, $2, $3, 'live', $4, $5, $6, $7, $8, $9, $10, 'scheduled', NOW())
+      VALUES ($1, $2, $3, 'live', $4, $5, 'custom', $6, $7, $8, $9, 'scheduled', NOW())
       RETURNING *
     `, [
       course_id,
@@ -111,11 +103,10 @@ export async function POST(req: NextRequest) {
       description || null,
       scheduled_at,
       duration_minutes || 60,
-      normalizedMeetingLink,
-      platform,
       !!is_public,
       publicJoinToken,
       seriesId,
+      max_students ? parseInt(max_students) : 20,
     ])
 
     if (announce_to_students) {
@@ -123,7 +114,6 @@ export async function POST(req: NextRequest) {
       const publicPath = sessionRow.public_join_token ? `/academy/public/session/${sessionRow.public_join_token}` : null
       const content = [
         description || 'تمت جدولة جلسة مباشرة جديدة.',
-        normalizedMeetingLink ? `رابط الاجتماع: ${normalizedMeetingLink}` : null,
         publicPath ? `رابط الدرس العام: ${publicPath}` : null,
       ].filter(Boolean).join('\n\n')
 
