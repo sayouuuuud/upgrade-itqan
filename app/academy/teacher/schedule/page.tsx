@@ -220,6 +220,26 @@ export default function TeacherSchedulePage() {
     router.push(`/academy/teacher/sessions/${id}/live`)
   }
 
+  const handleDeactivate = async (id: string) => {
+    if (!confirm('هل أنت متأكد من إلغاء تفعيل هذه الجلسة؟ لن تظهر للطلاب بعد الآن.')) return
+
+    try {
+      const res = await fetch(`/api/academy/teacher/sessions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' })
+      });
+      if (res.ok) {
+        toast.success('تم إلغاء تفعيل الجلسة بنجاح')
+        fetchSessions()
+      } else {
+        toast.error('حدث خطأ أثناء إلغاء التفعيل')
+      }
+    } catch (err) {
+      toast.error('فشل في الاتصال بالخادم')
+    }
+  }
+
   const renderSkeletons = () => (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
@@ -346,7 +366,7 @@ export default function TeacherSchedulePage() {
                               <div className="grid grid-cols-2 gap-2 mt-1">
                                 <Button size="sm" variant="outline" onClick={() => handleOpenEditModal(session)} className="w-full">
                                   <Edit2 className="w-4 h-4 ml-1" />
-                                  تعديل
+                                  ��عديل
                                 </Button>
                                 <Button size="sm" variant="outline" onClick={() => handleDelete(session.id)} className="w-full text-destructive border-red-200 hover:bg-red-50">
                                   <Trash2 className="w-4 h-4 ml-1" />
@@ -385,9 +405,16 @@ export default function TeacherSchedulePage() {
                       <div>
                         <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
                           {session.title}
-                          <Badge variant="outline" className="text-xs bg-background">
-                            مكتملة
-                          </Badge>
+                          {session.status === 'completed' ? (
+                            <Badge variant="outline" className="text-xs bg-background">
+                              مكتملة
+                            </Badge>
+                          ) : (
+                            <Badge variant="default" className="text-xs bg-green-600 hover:bg-green-700">
+                              <Radio className="w-3 h-3 ml-1" />
+                              مفعّلة للطلاب
+                            </Badge>
+                          )}
                         </h3>
                         <p className="text-sm text-muted-foreground mb-3">{session.course_name}</p>
                         <div className="flex flex-wrap gap-4 text-xs font-medium text-gray-500">
@@ -415,6 +442,16 @@ export default function TeacherSchedulePage() {
                         >
                           عرض تقرير الحضور
                         </Button>
+                        {session.status !== 'completed' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full sm:w-auto border-amber-300 text-amber-700 hover:bg-amber-50"
+                            onClick={() => handleDeactivate(session.id)}
+                          >
+                            إلغاء التفعيل
+                          </Button>
+                        )}
                         <Button 
                           variant="ghost" 
                           size="sm" 
