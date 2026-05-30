@@ -255,6 +255,8 @@ export function asBool(v: any, fallback = true): boolean {
 export function buildHomepageContent(settings: AnyMap, locale: Locale) {
   const D = DEFAULT_HOMEPAGE_CONTENT as AnyMap
   const get = (key: string) => (settings[key] != null ? settings[key] : D[key])
+  // Typed array accessor so downstream `.map(...)` callbacks are not `any`.
+  const arr = (key: string): AnyMap[] => (Array.isArray(get(key)) ? (get(key) as AnyMap[]) : [])
 
   const academy = get('homepage_pillar_academy')
   const maqraa = get('homepage_pillar_maqraa')
@@ -266,7 +268,7 @@ export function buildHomepageContent(settings: AnyMap, locale: Locale) {
     desc: L(p?.desc, locale),
     cta: L(p?.cta, locale),
     link: p?.link || '#',
-    features: (p?.features || []).map((f: AnyMap) => ({ t: L(f.t, locale), d: L(f.d, locale) })),
+    features: (Array.isArray(p?.features) ? (p.features as AnyMap[]) : []).map((f: AnyMap) => ({ t: L(f.t, locale), d: L(f.d, locale) })),
   })
 
   return {
@@ -276,7 +278,7 @@ export function buildHomepageContent(settings: AnyMap, locale: Locale) {
     loginText: L(get('homepage_login_text'), locale),
     registerText: L(get('homepage_register_text'), locale),
     registerShort: L(get('homepage_register_short'), locale),
-    nav: (get('homepage_nav') || []).map((n: AnyMap) => ({ href: n.href, label: L(n.label, locale) })),
+    nav: arr('homepage_nav').map((n: AnyMap) => ({ href: String(n.href), label: L(n.label, locale) })),
 
     // hero
     bismillah: L(get('homepage_hero_bismillah'), locale),
@@ -288,7 +290,7 @@ export function buildHomepageContent(settings: AnyMap, locale: Locale) {
     ctaSecondaryText: L(get('homepage_cta_secondary_text'), locale),
     ctaSecondaryLink: get('homepage_cta_secondary_link') || '#',
     scrollText: L(get('homepage_scroll_text'), locale),
-    stats: (get('homepage_stats') || []).map((s: AnyMap) => ({ v: Number(s.v) || 0, s: s.s || '', l: L(s.label, locale) })),
+    stats: arr('homepage_stats').map((s: AnyMap) => ({ v: Number(s.v) || 0, s: String(s.s || ''), l: L(s.label, locale) })),
 
     // pillars
     pillarsEyebrow: L(get('homepage_pillars_eyebrow'), locale),
@@ -301,19 +303,19 @@ export function buildHomepageContent(settings: AnyMap, locale: Locale) {
     featuresEyebrow: L(get('homepage_features_eyebrow'), locale),
     featuresTitle: L(get('homepage_features_title'), locale),
     featuresSubtitle: L(get('homepage_features_subtitle'), locale),
-    features: (get('homepage_features') || []).map((f: AnyMap) => ({ num: L(f.num, locale), t: L(f.t, locale), d: L(f.d, locale) })),
+    features: arr('homepage_features').map((f: AnyMap) => ({ num: L(f.num, locale), t: L(f.t, locale), d: L(f.d, locale) })),
 
     // journey
     journeyEyebrow: L(get('homepage_journey_eyebrow'), locale),
     journeyTitle: L(get('homepage_journey_title'), locale),
     journeySubtitle: L(get('homepage_journey_subtitle'), locale),
-    steps: (get('homepage_journey_steps') || []).map((s: AnyMap) => ({ n: L(s.n, locale), t: L(s.t, locale), d: L(s.d, locale) })),
+    steps: arr('homepage_journey_steps').map((s: AnyMap) => ({ n: L(s.n, locale), t: L(s.t, locale), d: L(s.d, locale) })),
 
     // testimonials
     testimonialsEyebrow: L(get('homepage_testimonials_eyebrow'), locale),
     testimonialsTitle: L(get('homepage_testimonials_title'), locale),
-    testimonialsTop: (get('homepage_testimonials_top') || []).map((x: AnyMap) => ({ q: L(x.q, locale), n: L(x.n, locale), r: L(x.r, locale) })),
-    testimonialsBottom: (get('homepage_testimonials_bottom') || []).map((x: AnyMap) => ({ q: L(x.q, locale), n: L(x.n, locale), r: L(x.r, locale) })),
+    testimonialsTop: arr('homepage_testimonials_top').map((x: AnyMap) => ({ q: L(x.q, locale), n: L(x.n, locale), r: L(x.r, locale) })),
+    testimonialsBottom: arr('homepage_testimonials_bottom').map((x: AnyMap) => ({ q: L(x.q, locale), n: L(x.n, locale), r: L(x.r, locale) })),
 
     // final cta
     ctaTitle: L(get('homepage_cta_title'), locale),
@@ -326,9 +328,9 @@ export function buildHomepageContent(settings: AnyMap, locale: Locale) {
 
     // footer
     footerDesc: L(get('homepage_footer_desc'), locale),
-    footerColumns: (get('homepage_footer_columns') || []).map((c: AnyMap) => ({
-      title: L(c.title, locale),
-      links: (c.links || []).map((l: AnyMap) => ({ label: L(l.label, locale), href: l.href })),
+    footerColumns: arr('homepage_footer_columns').map((col: AnyMap) => ({
+      title: L(col.title, locale),
+      links: (Array.isArray(col.links) ? (col.links as AnyMap[]) : []).map((l: AnyMap) => ({ label: L(l.label, locale), href: String(l.href) })),
     })),
     footerCopyright: L(get('homepage_footer_copyright'), locale),
     footerMadePre: L(get('homepage_footer_made_pre'), locale),
