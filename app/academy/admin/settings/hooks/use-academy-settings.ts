@@ -136,7 +136,7 @@ export const defaultSettings: AcademySettings = {
   academy_courses_max_video_size: 500,
   academy_courses_max_attachment_size: 50,
   academy_courses_allowed_formats: ["mp4", "webm", "pdf", "mp3"],
-  academy_courses_storage_provider: "uploadthing",
+  academy_courses_storage_provider: "s3",
   academy_courses_default_quality: "720p",
   academy_courses_download_enabled: false,
   academy_courses_watermark_enabled: false,

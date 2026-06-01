@@ -25,6 +25,23 @@ function detectKind(url: string): MediaKind {
   return 'link'
 }
 
+// Cross-origin PDFs (S3 / legacy UploadThing) can be blocked when embedded in
+// an <iframe>; route them through our same-origin proxy.
+const PDF_PROXY_HOST_SUFFIXES = ['amazonaws.com', 'utfs.io', 'ufs.sh', 'cloudinary.com']
+
+function toViewablePdfSrc(url: string): string {
+  if (!url || url.startsWith('/')) return url
+  try {
+    const u = new URL(url)
+    const needsProxy = PDF_PROXY_HOST_SUFFIXES.some(
+      (suffix) => u.hostname === suffix || u.hostname.endsWith(`.${suffix}`),
+    )
+    return needsProxy ? `/api/pdf-proxy?url=${encodeURIComponent(url)}` : url
+  } catch {
+    return url
+  }
+}
+
 function fileNameFromUrl(url: string): string {
   try {
     const u = new URL(url)
@@ -172,7 +189,7 @@ export default function MediaViewer({ url }: MediaViewerProps) {
         </div>
         {pdfOpen && (
           <iframe
-            src={`${url}#view=FitH`}
+            src={`${toViewablePdfSrc(url)}#view=FitH`}
             className="w-full h-[60vh] min-h-[420px] bg-background rounded-lg border border-border"
             title="PDF preview"
           />

@@ -34,6 +34,27 @@ const MIN_SCALE = 0.5
 const MAX_SCALE = 2.5
 const SCALE_STEP = 0.2
 
+// pdf.js fetches the file from the browser. PDFs hosted on S3 (or legacy
+// UploadThing) can block cross-origin range requests, which makes the viewer
+// fail with "Failed to load PDF". Routing those URLs through our same-origin
+// proxy avoids the CORS problem. Same-origin / already-proxied URLs pass through.
+const PROXY_HOST_SUFFIXES = ["amazonaws.com", "utfs.io", "ufs.sh", "cloudinary.com"]
+
+function toFetchableSrc(src: string): string {
+  if (!src) return src
+  if (src.startsWith("/")) return src
+  try {
+    const u = new URL(src, typeof window !== "undefined" ? window.location.origin : "http://localhost")
+    if (typeof window !== "undefined" && u.origin === window.location.origin) return src
+    const needsProxy = PROXY_HOST_SUFFIXES.some(
+      (suffix) => u.hostname === suffix || u.hostname.endsWith(`.${suffix}`),
+    )
+    return needsProxy ? `/api/pdf-proxy?url=${encodeURIComponent(src)}` : src
+  } catch {
+    return src
+  }
+}
+
 export interface TajweedPdfViewerProps {
   src: string
   label?: string
@@ -53,6 +74,9 @@ export default function TajweedPdfViewer({ src, label, className }: TajweedPdfVi
   const [containerWidth, setContainerWidth] = useState<number>(0)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
+
+  // URL pdf.js actually fetches (proxied for cross-origin file hosts).
+  const fetchSrc = useMemo(() => toFetchableSrc(src), [src])
 
   useEffect(() => {
     void configureWorker()
@@ -255,7 +279,7 @@ export default function TajweedPdfViewer({ src, label, className }: TajweedPdfVi
               </div>
             )}
             <Document
-              file={src}
+              file={fetchSrc}
               onLoadSuccess={onDocumentLoadSuccess}
               onLoadError={onDocumentLoadError}
               loading={null}

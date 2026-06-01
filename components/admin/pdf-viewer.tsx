@@ -3,6 +3,23 @@
 import { useState } from "react"
 import { FileText, ExternalLink, Download, Maximize2, Minimize2 } from "lucide-react"
 
+// Route cross-origin file-host PDFs through our same-origin proxy so the
+// browser's built-in <iframe> viewer isn't blocked by CORS.
+const PROXY_HOST_SUFFIXES = ["amazonaws.com", "utfs.io", "ufs.sh", "cloudinary.com"]
+
+function toViewableSrc(src: string): string {
+    if (!src || src.startsWith("/")) return src
+    try {
+        const u = new URL(src)
+        const needsProxy = PROXY_HOST_SUFFIXES.some(
+            (suffix) => u.hostname === suffix || u.hostname.endsWith(`.${suffix}`),
+        )
+        return needsProxy ? `/api/pdf-proxy?url=${encodeURIComponent(src)}` : src
+    } catch {
+        return src
+    }
+}
+
 /**
  * Inline PDF viewer for admin review. Embeds the PDF via <iframe> (browser
  * built-in viewer) and offers fullscreen + download + open-in-new-tab.
@@ -46,7 +63,7 @@ export default function AdminPdfViewer({ src, label }: { src: string; label?: st
                 </div>
             </div>
             <iframe
-                src={`${src}#view=FitH`}
+                src={`${toViewableSrc(src)}#view=FitH`}
                 className={`w-full bg-muted ${expanded ? "h-[80vh]" : "h-[420px]"}`}
                 title={label || "PDF preview"}
             />
