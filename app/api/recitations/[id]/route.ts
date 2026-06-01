@@ -130,17 +130,21 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     // Cleanup file from storage if present
     if (recitation.audio_url) {
-      if (recitation.audio_url.includes("utfs.io")) {
-        try {
-          // Extract key from UploadThing URL: https://utfs.io/f/<key>
-          const fileKey = recitation.audio_url.split('/f/')[1]
-          if (fileKey) {
-            const { deleteFromStorage } = await import("@/lib/storage")
-            await deleteFromStorage(fileKey)
-          }
-        } catch (storageError) {
-          console.error("Failed to delete from UploadThing:", storageError)
+      try {
+        let fileKey: string | undefined
+        if (recitation.audio_url.includes("amazonaws.com")) {
+          // S3 URL: https://<bucket>.s3.<region>.amazonaws.com/<key>
+          fileKey = new URL(recitation.audio_url).pathname.replace(/^\/+/, "")
+        } else if (recitation.audio_url.includes("utfs.io")) {
+          // Legacy UploadThing URL: https://utfs.io/f/<key>
+          fileKey = recitation.audio_url.split("/f/")[1]
         }
+        if (fileKey) {
+          const { deleteFromStorage } = await import("@/lib/storage")
+          await deleteFromStorage(fileKey)
+        }
+      } catch (storageError) {
+        console.error("Failed to delete recitation file from storage:", storageError)
       }
     }
 

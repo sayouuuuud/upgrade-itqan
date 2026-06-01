@@ -18,9 +18,8 @@ interface CoursesContentSettingsProps {
 }
 
 const storageProviderMeta = [
-  { id: "uploadthing", name: "UploadThing" },
-  { id: "cloudinary", name: "Cloudinary" },
   { id: "s3", name: "Amazon S3" },
+  { id: "cloudinary", name: "Cloudinary" },
 ]
 
 const videoQualities = [

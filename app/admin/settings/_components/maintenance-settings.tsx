@@ -19,9 +19,8 @@ interface Props {
 }
 
 const providerLabels: Record<string, string> = {
-  uploadthing: "UploadThing",
-  cloudinary: "Cloudinary",
   s3: "Amazon S3",
+  cloudinary: "Cloudinary",
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())

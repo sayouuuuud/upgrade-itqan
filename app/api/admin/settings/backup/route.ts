@@ -26,10 +26,6 @@ export async function GET() {
         value = { ...value }
         if (value.password) value.password = "********"
       }
-      if (row.setting_key === "storage_config" && value && typeof value === "object") {
-        value = { ...value }
-        if (value.uploadthingToken) value.uploadthingToken = "********"
-      }
       settings[row.setting_key] = {
         value,
         type: row.setting_type,

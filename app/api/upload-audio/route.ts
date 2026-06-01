@@ -3,14 +3,13 @@ import { getSession } from "@/lib/auth"
 import { uploadToStorage } from "@/lib/storage"
 import { transliterate } from "transliteration"
 
-// Force Node.js runtime — S3 upload uses the AWS SDK which relies on Node APIs.
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 /**
- * Server-side audio upload helper used by the applicant audio recorder and the
- * student recitation recorder. Accepts a multipart/form-data POST with field
- * `file` and uploads it to AWS S3, returning the public URL + key.
+ * Server-side audio upload helper used by the recitation / applicant audio
+ * recorders. Accepts a multipart/form-data POST with field `file` and uploads
+ * the file to AWS S3, returning the public URL.
  */
 export async function POST(req: NextRequest) {
     const session = await getSession()
@@ -30,11 +29,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "الحد الأقصى 32 ميجا" }, { status: 400 })
         }
 
-        // Sanitize filename to keep the S3 key ASCII-clean
+        // Sanitize filename to keep the S3 key clean.
         const ext = file.name.includes(".") ? `.${file.name.split(".").pop()}` : ""
         let base = transliterate(file.name.replace(/\.[^/.]+$/, "")).replace(/[^a-zA-Z0-9\-_]/g, "_").slice(0, 60)
         if (base.length < 2) base = "audio"
-        const safeName = `${base}${ext}`
+        const safeName = `${base}_${Date.now()}${ext}`
 
         const result = await uploadToStorage(file, safeName, file.type)
         return NextResponse.json({ url: result.url, key: result.key })

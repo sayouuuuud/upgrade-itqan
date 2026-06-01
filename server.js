@@ -19,7 +19,7 @@ console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('PORT:', port);
 
 // Check critical environment variables (presence only)
-const criticalVars = ['DATABASE_URL', 'JWT_SECRET', 'NEXT_PUBLIC_SUPABASE_URL', 'UPLOADTHING_TOKEN'];
+const criticalVars = ['DATABASE_URL', 'JWT_SECRET', 'NEXT_PUBLIC_SUPABASE_URL', 'AWS_S3_BUCKET_NAME'];
 criticalVars.forEach(v => {
     console.log(`Checking ${v}:`, process.env[v] ? 'Present ✅' : 'MISSING ❌');
 });

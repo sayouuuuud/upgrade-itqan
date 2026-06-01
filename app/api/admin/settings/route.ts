@@ -58,10 +58,6 @@ export async function GET() {
         value = { ...value }
         if (value.password) value.password = "********"
       }
-      if (row.setting_key === "storage_config" && value && typeof value === "object") {
-        value = { ...value }
-        if (value.uploadthingToken) value.uploadthingToken = "********"
-      }
       acc[row.setting_key] = {
         value,
         type: row.setting_type,
@@ -114,24 +110,6 @@ export async function PUT(req: NextRequest) {
           const prevPassword = existing?.[0]?.setting_value?.password
           if (prevPassword) incoming.password = prevPassword
           else delete incoming.password
-        }
-        valueToStore = incoming
-      }
-
-      // storage_config: preserve existing token if masked/empty
-      if (key === "storage_config" && value && typeof value === "object") {
-        const incoming: any = { ...(value as any) }
-        if (
-          incoming.uploadthingToken === "********" ||
-          incoming.uploadthingToken === "" ||
-          incoming.uploadthingToken == null
-        ) {
-          const existing = await query<{ setting_value: any }>(
-            `SELECT setting_value FROM system_settings WHERE setting_key = 'storage_config'`
-          )
-          const prevToken = existing?.[0]?.setting_value?.uploadthingToken
-          if (prevToken) incoming.uploadthingToken = prevToken
-          else delete incoming.uploadthingToken
         }
         valueToStore = incoming
       }
