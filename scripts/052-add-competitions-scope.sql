@@ -1,4 +1,4 @@
--- ============================================
+نا مثلا لو عن-- ============================================
 -- 052 - Add missing `scope` column to competitions
 -- ============================================
 -- The application code (lib/academy/competitions.ts and all competition API
