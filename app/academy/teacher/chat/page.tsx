@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense, Fragment } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { ChatDateDivider } from '@/components/chat/date-divider'
+import { shouldShowDateDivider } from '@/lib/chat-date'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -22,6 +24,8 @@ interface Conversation {
   last_message: string | null
   last_message_at: string | null
   unread_count: number
+  is_ticket?: boolean
+  ticket_status?: string
 }
 
 interface Message {
@@ -269,13 +273,24 @@ function ChatContent() {
                 className={`pl-9 pr-9 h-10 rounded-xl bg-muted/30 border-border/50 focus:bg-card`}
               />
             </div>
-            <Button
-              onClick={() => setShowNewConv(true)}
-              className="w-full rounded-xl h-10 gap-2 font-bold"
-            >
-              <UserPlus className="w-4 h-4" />
-              {isAr ? "محادثة جديدة" : "New Conversation"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowNewConv(true)}
+                className="flex-1 justify-center rounded-xl h-10 gap-2 font-bold px-2"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span className="truncate">{isAr ? "محادثة" : "Chat"}</span>
+              </Button>
+              <Button
+                onClick={handleCreateTicket}
+                disabled={creatingConv}
+                variant="outline"
+                className="flex-1 justify-center rounded-xl h-10 gap-2 font-bold px-2 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950"
+              >
+                <Shield className="w-4 h-4" />
+                <span className="truncate">{isAr ? "الدعم" : "Support"}</span>
+              </Button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-1 overflow-x-hidden custom-scrollbar">
@@ -294,7 +309,7 @@ function ChatContent() {
                 >
                   <div className="relative">
                     <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20">
-                      <User className="w-6 h-6 text-blue-500" />
+                      {conv.is_ticket ? <Shield className="w-6 h-6 text-blue-500" /> : <User className="w-6 h-6 text-blue-500" />}
                     </div>
                     {conv.unread_count > 0 && (
                       <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-card">
@@ -305,7 +320,9 @@ function ChatContent() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-0.5">
-                      <h4 className="font-bold text-sm text-foreground truncate">{conv.other_user_name}</h4>
+                      <h4 className="font-bold text-sm text-foreground truncate">
+                        {conv.is_ticket ? (isAr ? "الدعم الفني" : "Support") : conv.other_user_name}
+                      </h4>
                       <span className="text-[10px] text-muted-foreground font-medium shrink-0">{formatTime(conv.last_message_at)}</span>
                     </div>
                     <p className={`text-xs truncate ${conv.unread_count > 0 ? 'text-foreground font-bold' : 'text-muted-foreground font-medium'}`}>
@@ -335,13 +352,21 @@ function ChatContent() {
                   <ArrowRight className={`w-5 h-5 ${isAr ? '' : 'rotate-180'}`} />
                 </Button>
                 <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20">
-                  <User className="w-5 h-5 text-blue-500" />
+                  {activeConv.is_ticket ? <Shield className="w-5 h-5 text-blue-500" /> : <User className="w-5 h-5 text-blue-500" />}
                 </div>
                 <div>
-                  <h3 className="font-bold text-foreground">{activeConv.other_user_name}</h3>
-                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 rounded-full hidden sm:inline-block">
-                    {isAr ? "طالب بالأكاديمية" : "Academy Student"}
-                  </span>
+                  <h3 className="font-bold text-foreground">
+                    {activeConv.is_ticket ? (isAr ? "الدعم الفني" : "Support") : activeConv.other_user_name}
+                  </h3>
+                  {activeConv.is_ticket ? (
+                    <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 rounded-full hidden sm:inline-block">
+                      {isAr ? "تذكرة دعم فني" : "Support Ticket"}
+                    </span>
+                  ) : (
+                    <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 rounded-full hidden sm:inline-block">
+                      {isAr ? "طالب بالأكاديمية" : "Academy Student"}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -350,21 +375,25 @@ function ChatContent() {
                 {loadingMsgs ? (
                   <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
                 ) : (
-                  messages.map(msg => {
+                  messages.map((msg, idx) => {
                     const isMe = msg.sender_id !== activeConv.other_user_id
+                    const showDate = shouldShowDateDivider(messages[idx - 1]?.created_at, msg.created_at)
 
                     return (
-                      <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${isMe
-                            ? 'bg-primary text-primary-foreground rounded-br-sm'
-                            : 'bg-muted border border-border rounded-bl-sm text-foreground'
-                          }`}>
-                          <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                          <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                            {formatTime(msg.created_at)}
+                      <Fragment key={msg.id}>
+                        {showDate && <ChatDateDivider date={msg.created_at} isAr={isAr} />}
+                        <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${isMe
+                              ? 'bg-primary text-primary-foreground rounded-br-sm'
+                              : 'bg-muted border border-border rounded-bl-sm text-foreground'
+                            }`}>
+                            <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                            <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                              {formatTime(msg.created_at)}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </Fragment>
                     )
                   })
                 )}

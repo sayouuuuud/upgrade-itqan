@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, Fragment } from 'react'
 import { Button } from '@/components/ui/button'
+import { ChatDateDivider } from '@/components/chat/date-divider'
+import { shouldShowDateDivider, formatChatTime } from '@/lib/chat-date'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useI18n } from '@/lib/i18n/context'
@@ -279,11 +281,16 @@ export default function ParentMessagesPage() {
               ) : loadingMessages ? (
                 <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
               ) : (
-                messages.map(message => (
-                  <div key={message.id} className="rounded-2xl border border-border bg-card p-3">
-                    <p className="text-sm font-medium whitespace-pre-wrap">{message.content}</p>
-                    <p className="text-[11px] text-muted-foreground mt-2">{new Date(message.created_at).toLocaleString(isAr ? 'ar-EG' : 'en-US')}</p>
-                  </div>
+                messages.map((message, idx) => (
+                  <Fragment key={message.id}>
+                    {shouldShowDateDivider(messages[idx - 1]?.created_at, message.created_at) && (
+                      <ChatDateDivider date={message.created_at} isAr={isAr} />
+                    )}
+                    <div className="rounded-2xl border border-border bg-card p-3">
+                      <p className="text-sm font-medium whitespace-pre-wrap">{message.content}</p>
+                      <p className="text-[11px] text-muted-foreground mt-2">{formatChatTime(message.created_at, isAr)}</p>
+                    </div>
+                  </Fragment>
                 ))
               )}
               <div ref={messagesEndRef} />
@@ -303,6 +310,39 @@ export default function ParentMessagesPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={showTicketDialog} onOpenChange={setShowTicketDialog}>
+        <DialogContent className="rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-blue-600" />
+              {isAr ? 'فتح تذكرة دعم فني' : 'Open a Support Ticket'}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {isAr ? 'اختر الجهة التي تريد التواصل معها:' : 'Choose which support team to contact:'}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <Button
+              onClick={() => handleCreateTicket('academy')}
+              disabled={sending}
+              className="rounded-2xl h-auto py-4 flex-col gap-1 font-bold"
+            >
+              <Shield className="w-5 h-5" />
+              {isAr ? 'دعم الأكاديمية' : 'Academy Support'}
+            </Button>
+            <Button
+              onClick={() => handleCreateTicket('maqraa')}
+              disabled={sending}
+              variant="outline"
+              className="rounded-2xl h-auto py-4 flex-col gap-1 font-bold"
+            >
+              <Shield className="w-5 h-5" />
+              {isAr ? 'دعم المقرأة' : 'Maqraa Support'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
