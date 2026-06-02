@@ -79,7 +79,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/teacher/calendar', label: t.academy?.calendar || 'التقويم', icon: Calendar },
             { href: '/academy/teacher/courses', label: t.academy?.myCourses || 'دوراتي', icon: BookOpen },
             { href: '/academy/teacher/enrollment-requests', label: t.academy?.enrollmentRequests || 'طلبات الانضمام', icon: Bell },
-            { href: '/academy/teacher/sessions', label: t.academy?.liveSessions || 'الجلسات', icon: Calendar },
+            { href: '/academy/teacher/sessions', label: t.academy?.liveSessions || 'الجلسات والبث المباشر', icon: Video },
             { href: '/academy/teacher/tasks', label: t.academy?.tasks || 'المهام', icon: ClipboardList },
             { href: '/academy/teacher/students', label: t.academy?.myStudents || 'طلابي', icon: Users },
             { href: '/academy/teacher/paths', label: t.academy?.learningPaths || 'المسارات التعليمية', icon: Route },
@@ -88,14 +88,6 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: FileText },
             { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
             { href: '/academy/library', label: t.academy?.booksLibrary || 'مكتبة الكتب', icon: BookOpen },
-          ]
-        },
-        {
-          title: t.academy?.liveSection || 'البث المباشر',
-          items: [
-            { href: '/academy/teacher/live', label: t.academy?.startSession || 'بدء جلسة', icon: PlayCircle },
-            { href: '/academy/teacher/my-sessions', label: t.video?.mySessions || 'سجل جلساتي', icon: Video },
-            { href: '/academy/teacher/recordings', label: t.video?.recordings || 'التسجيلات', icon: Video },
           ]
         },
         {

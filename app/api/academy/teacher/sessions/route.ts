@@ -65,9 +65,16 @@ export async function POST(req: NextRequest) {
       is_public,
       series_title,
       announce_to_students,
+      start_now,
     } = body
 
-    if (!course_id || !title || !scheduled_at) {
+    // When start_now is set, the teacher is opening a live room immediately,
+    // so scheduled_at is optional (defaults to now) and the session is created
+    // already in progress.
+    const effectiveScheduledAt = start_now ? (scheduled_at || new Date().toISOString()) : scheduled_at
+    const initialStatus = start_now ? 'in_progress' : 'scheduled'
+
+    if (!course_id || !title || !effectiveScheduledAt) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -95,18 +102,19 @@ export async function POST(req: NextRequest) {
         meeting_platform, is_public, public_join_token, series_id, max_students,
         status, created_at
       )
-      VALUES ($1, $2, $3, 'live', $4, $5, 'custom', $6, $7, $8, $9, 'scheduled', NOW())
+      VALUES ($1, $2, $3, 'live', $4, $5, 'custom', $6, $7, $8, $9, $10, NOW())
       RETURNING *
     `, [
       course_id,
       title,
       description || null,
-      scheduled_at,
+      effectiveScheduledAt,
       duration_minutes || 60,
       !!is_public,
       publicJoinToken,
       seriesId,
       max_students ? parseInt(max_students) : 20,
+      initialStatus,
     ])
 
     if (announce_to_students) {
