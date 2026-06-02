@@ -16,9 +16,28 @@ import {
   CalendarClock,
   Trophy,
   Loader2,
+  Plus,
+  Trash2,
+  CircleDot,
+  PencilLine,
+  GripVertical,
 } from "lucide-react"
 
 type TaskTypeKey = "written" | "audio" | "video" | "quiz" | "project"
+
+type QuizQuestionType = "mcq" | "essay"
+
+interface QuizQuestion {
+  id: string
+  type: QuizQuestionType
+  question: string
+  options: string[]
+  correct: number
+  points: number
+}
+
+let _qid = 0
+const newQuestionId = () => `q_${Date.now()}_${_qid++}`
 
 const TASK_TYPES: {
   key: TaskTypeKey
@@ -81,6 +100,60 @@ export default function NewTaskPage() {
     max_score: "100",
   })
 
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([])
+
+  const isQuiz = formData.task_type === "quiz"
+  const quizTotal = quizQuestions.reduce((s, q) => s + (Number(q.points) || 0), 0)
+
+  const addQuestion = (type: QuizQuestionType) => {
+    setQuizQuestions(prev => [
+      ...prev,
+      {
+        id: newQuestionId(),
+        type,
+        question: "",
+        options: type === "mcq" ? ["", ""] : [],
+        correct: 0,
+        points: type === "mcq" ? 1 : 5,
+      },
+    ])
+  }
+
+  const updateQuestion = (id: string, patch: Partial<QuizQuestion>) => {
+    setQuizQuestions(prev => prev.map(q => (q.id === id ? { ...q, ...patch } : q)))
+  }
+
+  const removeQuestion = (id: string) => {
+    setQuizQuestions(prev => prev.filter(q => q.id !== id))
+  }
+
+  const addOption = (id: string) => {
+    setQuizQuestions(prev =>
+      prev.map(q => (q.id === id ? { ...q, options: [...q.options, ""] } : q)),
+    )
+  }
+
+  const updateOption = (id: string, idx: number, value: string) => {
+    setQuizQuestions(prev =>
+      prev.map(q =>
+        q.id === id
+          ? { ...q, options: q.options.map((o, i) => (i === idx ? value : o)) }
+          : q,
+      ),
+    )
+  }
+
+  const removeOption = (id: string, idx: number) => {
+    setQuizQuestions(prev =>
+      prev.map(q => {
+        if (q.id !== id) return q
+        const options = q.options.filter((_, i) => i !== idx)
+        const correct = q.correct >= options.length ? Math.max(0, options.length - 1) : q.correct
+        return { ...q, options, correct }
+      }),
+    )
+  }
+
   useEffect(() => {
     async function fetchCourses() {
       try {
@@ -120,6 +193,19 @@ export default function NewTaskPage() {
     if (!formData.title.trim()) return setError("عنوان المهمة مطلوب")
     if (!formData.due_date) return setError("تاريخ التسليم مطلوب")
 
+    if (isQuiz) {
+      if (quizQuestions.length === 0) return setError("أضف سؤالاً واحداً على الأقل للاختبار")
+      for (const q of quizQuestions) {
+        if (!q.question.trim()) return setError("يوجد سؤال بدون نص. أكمل جميع الأسئلة")
+        if (q.type === "mcq") {
+          const filled = q.options.filter(o => o.trim()).length
+          if (filled < 2) return setError("أسئلة الاختيار يجب أن تحتوي على خيارين على الأقل")
+          if (!q.options[q.correct]?.trim())
+            return setError("حدّد الإجابة الصحيحة لكل سؤال اختيار من متعدد")
+        }
+      }
+    }
+
     setLoading(true)
     try {
       const res = await fetch("/api/academy/teacher/tasks", {
@@ -129,6 +215,20 @@ export default function NewTaskPage() {
           ...formData,
           max_score: formData.max_score ? Number(formData.max_score) : 100,
           due_date: new Date(formData.due_date).toISOString(),
+          quiz_questions: isQuiz
+            ? quizQuestions.map(q => ({
+                id: q.id,
+                type: q.type,
+                question: q.question.trim(),
+                points: Number(q.points) || 1,
+                ...(q.type === "mcq"
+                  ? {
+                      options: q.options.map(o => o.trim()).filter(Boolean),
+                      correct: q.correct,
+                    }
+                  : {}),
+              }))
+            : undefined,
         }),
       })
 
@@ -303,6 +403,165 @@ export default function NewTaskPage() {
             })}
           </div>
 
+          {/* Quiz builder — shown only when the quiz type is selected */}
+          {isQuiz && (
+            <div className="space-y-4 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-950/20 p-4">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <ListChecks className="w-4 h-4 text-blue-600" />
+                  <h3 className="text-sm font-bold text-foreground">أسئلة الاختبار</h3>
+                </div>
+                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 rounded-full">
+                  {quizQuestions.length} سؤال · {quizTotal} درجة
+                </span>
+              </div>
+
+              {quizQuestions.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  لم تُضِف أي أسئلة بعد. اختر نوع السؤال لإضافته.
+                </p>
+              )}
+
+              <div className="space-y-4">
+                {quizQuestions.map((q, qIdx) => (
+                  <div
+                    key={q.id}
+                    className="rounded-lg border border-border bg-background p-4 space-y-3"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="flex items-center gap-1.5 text-muted-foreground pt-2.5">
+                        <GripVertical className="w-4 h-4" />
+                        <span className="text-xs font-bold">{qIdx + 1}</span>
+                      </div>
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                              q.type === "mcq"
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                            }`}
+                          >
+                            {q.type === "mcq" ? (
+                              <>
+                                <CircleDot className="w-3 h-3" /> اختيار من متعدد
+                              </>
+                            ) : (
+                              <>
+                                <PencilLine className="w-3 h-3" /> سؤال مقالي
+                              </>
+                            )}
+                          </span>
+                          <div className="flex items-center gap-1.5 mr-auto">
+                            <label className="text-[11px] text-muted-foreground">الدرجة</label>
+                            <input
+                              type="number"
+                              min={1}
+                              value={q.points}
+                              onChange={e =>
+                                updateQuestion(q.id, { points: Number(e.target.value) })
+                              }
+                              className="w-16 p-1.5 text-sm rounded-md border border-border bg-background text-center"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeQuestion(q.id)}
+                            className="p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            aria-label="حذف السؤال"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <textarea
+                          rows={2}
+                          placeholder="اكتب نص السؤال هنا..."
+                          value={q.question}
+                          onChange={e => updateQuestion(q.id, { question: e.target.value })}
+                          className="w-full p-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+                        />
+
+                        {q.type === "mcq" && (
+                          <div className="space-y-2">
+                            <p className="text-[11px] text-muted-foreground">
+                              اختر الدائرة بجانب الإجابة الصحيحة:
+                            </p>
+                            {q.options.map((opt, oIdx) => (
+                              <div key={oIdx} className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => updateQuestion(q.id, { correct: oIdx })}
+                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                    q.correct === oIdx
+                                      ? "border-emerald-500 bg-emerald-500"
+                                      : "border-border"
+                                  }`}
+                                  aria-label="تحديد كإجابة صحيحة"
+                                >
+                                  {q.correct === oIdx && (
+                                    <CheckCircle2 className="w-3 h-3 text-white" />
+                                  )}
+                                </button>
+                                <input
+                                  type="text"
+                                  placeholder={`الخيار ${oIdx + 1}`}
+                                  value={opt}
+                                  onChange={e => updateOption(q.id, oIdx, e.target.value)}
+                                  className="flex-1 p-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                />
+                                {q.options.length > 2 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeOption(q.id, oIdx)}
+                                    className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                    aria-label="حذف الخيار"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => addOption(q.id)}
+                              className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 mt-1"
+                            >
+                              <Plus className="w-3.5 h-3.5" /> إضافة خيار
+                            </button>
+                          </div>
+                        )}
+
+                        {q.type === "essay" && (
+                          <p className="text-[11px] text-muted-foreground italic">
+                            سيكتب الطالب إجابته نصياً، وتقوم أنت بتصحيحها ورصد درجتها يدوياً.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => addQuestion("mcq")}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 text-sm font-bold hover:bg-emerald-100 transition-colors"
+                >
+                  <Plus className="w-4 h-4" /> سؤال اختيار من متعدد
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addQuestion("essay")}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-sm font-bold hover:bg-amber-100 transition-colors"
+                >
+                  <Plus className="w-4 h-4" /> سؤال مقالي
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Submission instructions */}
           <div className="space-y-2">
             <label
@@ -362,15 +621,22 @@ export default function NewTaskPage() {
                 <Trophy className="w-4 h-4 inline ml-1" />
                 الدرجة القصوى
               </label>
-              <input
-                id="max_score"
-                type="number"
-                min="1"
-                max="1000"
-                className="w-full p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.max_score}
-                onChange={e => setFormData({ ...formData, max_score: e.target.value })}
-              />
+              {isQuiz ? (
+                <div className="w-full p-3 rounded-lg border border-dashed border-border bg-muted/40 text-sm text-muted-foreground">
+                  تُحسب تلقائياً من مجموع درجات الأسئلة:{" "}
+                  <span className="font-bold text-foreground">{quizTotal} درجة</span>
+                </div>
+              ) : (
+                <input
+                  id="max_score"
+                  type="number"
+                  min="1"
+                  max="1000"
+                  className="w-full p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData.max_score}
+                  onChange={e => setFormData({ ...formData, max_score: e.target.value })}
+                />
+              )}
             </div>
           </div>
         </section>
