@@ -460,17 +460,29 @@ function SettingsTab({
           onChange={(v) => update('recording_auto_start', v)}
           disabled={!settings.recording_enabled}
         />
-        {capabilities && !capabilities.recording_configured && settings.recording_enabled && (
-          <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
-            ⚠️ تخزين التسجيلات (S3) غير مكوّن على الخادم. لن يبدأ التسجيل حتى تتم إضافة الإعدادات.
-          </div>
+        {capabilities && settings.recording_enabled && (
+          capabilities.recording_configured ? (
+            <div className="flex items-start gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs text-muted-foreground">
+              <span className="mt-0.5 text-emerald-600">✓</span>
+              <span>
+                التخزين السحابي مفعّل. تُحفظ التسجيلات تلقائياً على السحابة (S3)
+                وتظهر في صفحة «الجلسات والبث المباشر» ضمن تبويب «التسجيلات» بعد انتهاء كل جلسة.
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
+              <span className="mt-0.5 text-amber-600">⚠️</span>
+              <span>
+                التخزين السحابي (S3) غير مكوّن على الخادم، لذلك لن يبدأ التسجيل.
+                يحتاج مدير النظام إلى ضبط متغيّرات البيئة:{' '}
+                <code className="font-mono">AWS_ACCESS_KEY_ID</code>،{' '}
+                <code className="font-mono">AWS_SECRET_ACCESS_KEY</code>،{' '}
+                <code className="font-mono">AWS_S3_BUCKET_NAME</code>،{' '}
+                <code className="font-mono">AWS_REGION</code>.
+              </span>
+            </div>
+          )
         )}
-        <TextRow
-          label="رابط تخزين التسجيلات (اختياري)"
-          placeholder="https://bucket.s3.region.amazonaws.com/path/"
-          value={settings.recording_storage_url || ''}
-          onChange={(v) => update('recording_storage_url', v || null)}
-        />
       </SettingsCard>
 
       <SettingsCard title="صلاحيات المشاركين">

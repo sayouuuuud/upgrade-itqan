@@ -28,8 +28,8 @@ let cachedConfig: RecordingS3Config | null = null
 function readConfig(): RecordingS3Config | null {
   const accessKey = process.env.RECORDING_S3_ACCESS_KEY || process.env.AWS_ACCESS_KEY_ID
   const secret = process.env.RECORDING_S3_SECRET_KEY || process.env.AWS_SECRET_ACCESS_KEY
-  const bucket = process.env.RECORDING_S3_BUCKET
-  const region = process.env.RECORDING_S3_REGION || 'us-east-1'
+  const bucket = process.env.RECORDING_S3_BUCKET || process.env.AWS_S3_BUCKET_NAME
+  const region = process.env.RECORDING_S3_REGION || process.env.AWS_REGION || 'us-east-1'
   const endpoint = process.env.RECORDING_S3_ENDPOINT
   const pathPrefix = process.env.RECORDING_S3_PATH_PREFIX || 'recordings'
   if (!accessKey || !secret || !bucket) return null

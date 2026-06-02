@@ -98,6 +98,8 @@ export function ThreadView({
   const [reportDetails, setReportDetails] = useState("")
   const [submittingReport, setSubmittingReport] = useState(false)
   const [voting, setVoting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -199,18 +201,33 @@ export function ThreadView({
   }
 
   const deletePost = async () => {
-    if (!confirm(isAr ? "حذف هذا المنشور؟" : "Delete this post?")) return
-    const res = await fetch(`/api/community/forum/${postId}`, {
-      method: "DELETE",
-    })
-    if (res.ok) {
-      router.push(`/community/${community}/forum`)
-    } else {
-      const data = await res.json()
+    if (deleting) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/community/forum/${postId}`, {
+        method: "DELETE",
+      })
+      if (res.ok) {
+        toast({ title: isAr ? "تم حذف المنشور" : "Post deleted" })
+        setConfirmDelete(false)
+        // Refresh App Router cache so the deleted post no longer appears in
+        // the forum list, then navigate back to the forum.
+        router.replace(`/community/${community}/forum`)
+        router.refresh()
+      } else {
+        const data = await res.json().catch(() => ({}))
+        toast({
+          title: data.error || (isAr ? "تعذّر الحذف" : "Failed to delete"),
+          variant: "destructive",
+        })
+      }
+    } catch {
       toast({
-        title: data.error || (isAr ? "تعذّر الحذف" : "Failed"),
+        title: isAr ? "تعذّر الاتصال بالخادم" : "Network error",
         variant: "destructive",
       })
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -382,7 +399,7 @@ export function ThreadView({
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={deletePost}
+                  onClick={() => setConfirmDelete(true)}
                   className="text-rose-500 h-7"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -430,7 +447,7 @@ export function ThreadView({
                     <Lock className="w-3.5 h-3.5" />
                     {post.is_locked
                       ? isAr ? "فتح" : "Unlock"
-                      : isAr ? "إغلاق" : "Lock"}
+                      : isAr ? "��غلاق" : "Lock"}
                   </Button>
                   <Button
                     size="sm"
@@ -499,6 +516,43 @@ export function ThreadView({
           </div>
         </Card>
       ) : null}
+
+      <Dialog
+        open={confirmDelete}
+        onOpenChange={(o) => !deleting && setConfirmDelete(o)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {isAr ? "حذف المنشور" : "Delete post"}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {isAr
+              ? "هل أنت متأكد من حذف هذا المنشور؟ سيتم حذف جميع التعليقات المرتبطة به ولا يمكن التراجع عن هذا الإجراء."
+              : "Are you sure you want to delete this post? All its comments will be removed and this action cannot be undone."}
+          </p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDelete(false)}
+              disabled={deleting}
+            >
+              {isAr ? "إلغاء" : "Cancel"}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={deletePost}
+              disabled={deleting}
+            >
+              {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {deleting
+                ? isAr ? "جارٍ الحذف…" : "Deleting…"
+                : isAr ? "حذف" : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={!!reportTarget}

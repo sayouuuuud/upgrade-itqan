@@ -215,7 +215,26 @@ export async function DELETE(
   }
 
   try {
-    await query(`DELETE FROM forum_posts WHERE id = $1`, [id])
+    // forum_reports has no FK to forum_posts/replies (it uses a polymorphic
+    // target_id), so clean up related reports manually to avoid orphans.
+    await query(
+      `DELETE FROM forum_reports
+       WHERE (target_type = 'post' AND target_id = $1)
+          OR (target_type = 'reply' AND target_id IN (
+                SELECT id FROM forum_replies WHERE post_id = $1
+             ))`,
+      [id]
+    ).catch(() => undefined)
+
+    // forum_replies, forum_post_likes and forum_reply_likes all cascade via
+    // ON DELETE CASCADE, so deleting the post is enough.
+    const deleted = await query<{ id: string }>(
+      `DELETE FROM forum_posts WHERE id = $1 RETURNING id`,
+      [id]
+    )
+    if (deleted.length === 0) {
+      return NextResponse.json({ error: "المنشور غير موجود" }, { status: 404 })
+    }
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error("[community/forum DELETE]", err)
