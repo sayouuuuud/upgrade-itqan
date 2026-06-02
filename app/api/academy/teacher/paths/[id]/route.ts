@@ -33,6 +33,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (body.subject !== undefined) fieldsToUpdate.subject = body.subject
     if (body.level !== undefined) fieldsToUpdate.level = body.level
     if (estimated_days !== undefined) fieldsToUpdate.estimated_days = estimated_days
+    if (body.thumbnail_url !== undefined) fieldsToUpdate.thumbnail_url = body.thumbnail_url || null
+    if (body.require_audio !== undefined) fieldsToUpdate.require_audio = body.require_audio === true
+    if (body.is_published !== undefined) fieldsToUpdate.is_published = body.is_published === true
     
     if (body.target_audience !== undefined) fieldsToUpdate.target_audience = body.target_audience
     if (body.what_you_will_learn !== undefined) fieldsToUpdate.what_you_will_learn = typeof body.what_you_will_learn === 'string' ? body.what_you_will_learn : JSON.stringify(body.what_you_will_learn)

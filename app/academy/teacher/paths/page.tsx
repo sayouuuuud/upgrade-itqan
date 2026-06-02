@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Trash2, Edit2, BookOpen, X, Loader2, BarChart3 } from 'lucide-react'
+import {
+  Plus, Trash2, Edit2, BookOpen, X, Loader2, BarChart3,
+  UserPlus, Users, Mic, Eye, EyeOff, Search, CheckSquare, Square, Check,
+} from 'lucide-react'
 
 interface Path {
   id: string
@@ -11,8 +14,24 @@ interface Path {
   subject: string
   level: string
   is_published: boolean
+  thumbnail_url?: string | null
+  require_audio?: boolean
   total_courses: number
   estimated_hours: number
+  enrolled_count?: number
+}
+
+interface TeacherCourse {
+  id: string
+  title: string
+  total_enrolled: number
+}
+
+interface CourseStudent {
+  student_id: string
+  name: string
+  email: string
+  status: string
 }
 
 const SUBJECTS = [
@@ -28,7 +47,10 @@ const LEVELS = [
   { value: 'advanced', label: 'متقدم' },
 ]
 
-const emptyForm = { title: '', description: '', subject: 'tajweed', level: 'beginner', estimated_hours: 0 }
+const emptyForm = {
+  title: '', description: '', subject: 'tajweed', level: 'beginner',
+  estimated_hours: 0, thumbnail_url: '', require_audio: false, is_published: false,
+}
 
 export default function TeacherPathsPage() {
   const [paths, setPaths] = useState<Path[]>([])
@@ -38,6 +60,17 @@ export default function TeacherPathsPage() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  // Enroll-students modal state
+  const [enrollPath, setEnrollPath] = useState<Path | null>(null)
+  const [courses, setCourses] = useState<TeacherCourse[]>([])
+  const [coursesLoaded, setCoursesLoaded] = useState(false)
+  const [enrollCourseId, setEnrollCourseId] = useState('')
+  const [courseStudents, setCourseStudents] = useState<CourseStudent[]>([])
+  const [loadingStudents, setLoadingStudents] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [studentSearch, setStudentSearch] = useState('')
+  const [enrolling, setEnrolling] = useState(false)
 
   const fetchPaths = async () => {
     try {
@@ -63,8 +96,107 @@ export default function TeacherPathsPage() {
 
   const openEdit = (path: Path) => {
     setEditItem(path)
-    setForm({ title: path.title, description: path.description || '', subject: path.subject || 'tajweed', level: path.level || 'beginner', estimated_hours: path.estimated_hours || 0 })
+    setForm({
+      title: path.title,
+      description: path.description || '',
+      subject: path.subject || 'tajweed',
+      level: path.level || 'beginner',
+      estimated_hours: path.estimated_hours || 0,
+      thumbnail_url: path.thumbnail_url || '',
+      require_audio: path.require_audio || false,
+      is_published: path.is_published || false,
+    })
     setShowModal(true)
+  }
+
+  const openEnroll = async (path: Path) => {
+    setEnrollPath(path)
+    setEnrollCourseId('')
+    setCourseStudents([])
+    setSelectedIds(new Set())
+    setStudentSearch('')
+    if (!coursesLoaded) {
+      try {
+        const res = await fetch('/api/academy/teacher/courses')
+        if (res.ok) {
+          const data = await res.json()
+          setCourses(Array.isArray(data) ? data : data.data || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch courses:', error)
+      } finally {
+        setCoursesLoaded(true)
+      }
+    }
+  }
+
+  const selectCourse = async (courseId: string) => {
+    setEnrollCourseId(courseId)
+    setCourseStudents([])
+    setSelectedIds(new Set())
+    if (!courseId) return
+    setLoadingStudents(true)
+    try {
+      const res = await fetch(`/api/academy/teacher/courses/${courseId}/students`)
+      if (res.ok) {
+        const data = await res.json()
+        const list: CourseStudent[] = (data.data || []).filter((s: CourseStudent) => s.status !== 'dropped')
+        setCourseStudents(list)
+      }
+    } catch (error) {
+      console.error('Failed to fetch course students:', error)
+    } finally {
+      setLoadingStudents(false)
+    }
+  }
+
+  const filteredStudents = courseStudents.filter(
+    (s) => s.name?.toLowerCase().includes(studentSearch.toLowerCase()) || s.email?.toLowerCase().includes(studentSearch.toLowerCase())
+  )
+
+  const toggleStudent = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const allFilteredSelected = filteredStudents.length > 0 && filteredStudents.every((s) => selectedIds.has(s.student_id))
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (allFilteredSelected) filteredStudents.forEach((s) => next.delete(s.student_id))
+      else filteredStudents.forEach((s) => next.add(s.student_id))
+      return next
+    })
+  }
+
+  const handleEnroll = async (mode: 'selected' | 'all') => {
+    if (!enrollPath || !enrollCourseId) return
+    const payload = mode === 'all'
+      ? { course_id: enrollCourseId, all: true }
+      : { student_ids: Array.from(selectedIds) }
+    if (mode === 'selected' && selectedIds.size === 0) return
+    setEnrolling(true)
+    try {
+      const res = await fetch(`/api/academy/teacher/paths/${enrollPath.id}/enroll-students`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        alert(`تم تسجيل ${data.enrolled} طالب جديد` + (data.reactivated ? ` وإعادة تفعيل ${data.reactivated}` : '') + (data.skipped ? ` (${data.skipped} مسجلين مسبقاً)` : ''))
+        setEnrollPath(null)
+        fetchPaths()
+      } else {
+        alert(data.error || 'حدث خطأ أثناء التسجيل')
+      }
+    } finally {
+      setEnrolling(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -155,8 +287,11 @@ export default function TeacherPathsPage() {
                 
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-5">
                   <span className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded">{getSubjectLabel(path.subject)}</span>
-                  <span className="bg-muted px-2 py-0.5 rounded">{path.total_courses || 0} دورة</span>
-                  {path.estimated_hours > 0 && <span className="bg-muted px-2 py-0.5 rounded">{path.estimated_hours} ساعة</span>}
+                  <span className="bg-muted px-2 py-0.5 rounded">{path.total_courses || 0} مرحلة</span>
+                  <span className="bg-muted px-2 py-0.5 rounded inline-flex items-center gap-1"><Users className="w-3 h-3" /> {path.enrolled_count || 0} طالب</span>
+                  {path.is_published
+                    ? <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded">منشور</span>
+                    : <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded">مسودة</span>}
                 </div>
               </div>
 
@@ -165,8 +300,15 @@ export default function TeacherPathsPage() {
                   href={`/academy/teacher/paths/${path.id}`} 
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors shadow-sm"
                 >
-                  <BarChart3 className="w-4 h-4" /> عرض الإحصائيات
+                  <BarChart3 className="w-4 h-4" /> الإحصائيات
                 </Link>
+                <button
+                  onClick={() => openEnroll(path)}
+                  className="flex items-center justify-center p-2 border border-emerald-200 dark:border-emerald-900 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-xl transition-colors"
+                  title="إضافة طلاب من دوراتك"
+                >
+                  <UserPlus className="w-4 h-4" />
+                </button>
                 <button 
                   onClick={() => openEdit(path)} 
                   className="flex items-center justify-center p-2 border border-border hover:bg-accent hover:text-accent-foreground rounded-xl transition-colors"
@@ -243,7 +385,7 @@ export default function TeacherPathsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-bold block mb-1.5">الساعات التقديرية للدراسة</label>
+                <label className="text-sm font-bold block mb-1.5">المدة التقديرية للإنجاز (بالأيام)</label>
                 <input
                   type="number"
                   min={0}
@@ -251,6 +393,52 @@ export default function TeacherPathsPage() {
                   onChange={e => setForm({ ...form, estimated_hours: Number(e.target.value) })}
                   className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
+              </div>
+              <div>
+                <label className="text-sm font-bold block mb-1.5">رابط صورة الغلاف (اختياري)</label>
+                <input
+                  type="url"
+                  value={form.thumbnail_url}
+                  onChange={e => setForm({ ...form, thumbnail_url: e.target.value })}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="space-y-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, require_audio: !form.require_audio })}
+                  className="w-full flex items-center justify-between gap-3 px-3.5 py-3 border border-border rounded-xl hover:bg-muted/50 transition-colors text-right"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <Mic className={`w-4 h-4 ${form.require_audio ? 'text-emerald-600' : 'text-muted-foreground'}`} />
+                    <span className="text-sm">
+                      <span className="font-bold block">طلب تسجيل صوتي</span>
+                      <span className="text-xs text-muted-foreground">إلزام الطالب برفع تلاوة صوتية لكل مرحلة</span>
+                    </span>
+                  </span>
+                  <span className={`relative w-10 h-6 rounded-full transition-colors shrink-0 ${form.require_audio ? 'bg-emerald-600' : 'bg-muted-foreground/30'}`}>
+                    <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all ${form.require_audio ? 'right-0.5' : 'right-4'}`} />
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, is_published: !form.is_published })}
+                  className="w-full flex items-center justify-between gap-3 px-3.5 py-3 border border-border rounded-xl hover:bg-muted/50 transition-colors text-right"
+                >
+                  <span className="flex items-center gap-2.5">
+                    {form.is_published ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
+                    <span className="text-sm">
+                      <span className="font-bold block">نشر المسار</span>
+                      <span className="text-xs text-muted-foreground">إتاحة المسار للطلاب فور الحفظ</span>
+                    </span>
+                  </span>
+                  <span className={`relative w-10 h-6 rounded-full transition-colors shrink-0 ${form.is_published ? 'bg-emerald-600' : 'bg-muted-foreground/30'}`}>
+                    <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all ${form.is_published ? 'right-0.5' : 'right-4'}`} />
+                  </span>
+                </button>
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-border rounded-lg font-bold hover:bg-muted transition-colors">
@@ -266,6 +454,121 @@ export default function TeacherPathsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Enroll students modal */}
+      {enrollPath && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && setEnrollPath(null)}>
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <div>
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-emerald-600" />
+                  إضافة طلاب للمسار
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{enrollPath.title}</p>
+              </div>
+              <button onClick={() => setEnrollPath(null)} className="p-2 hover:bg-muted rounded-lg transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 overflow-y-auto">
+              <div>
+                <label className="text-sm font-bold block mb-1.5">اختر الدورة</label>
+                <select
+                  value={enrollCourseId}
+                  onChange={e => selectCourse(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="">— اختر دورة من دوراتك —</option>
+                  {courses.map(c => (
+                    <option key={c.id} value={c.id}>{c.title} ({c.total_enrolled} طالب)</option>
+                  ))}
+                </select>
+                {coursesLoaded && courses.length === 0 && (
+                  <p className="text-xs text-muted-foreground mt-2">لا توجد دورات مرتبطة بحسابك بعد.</p>
+                )}
+              </div>
+
+              {enrollCourseId && (
+                <>
+                  <div className="relative">
+                    <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={studentSearch}
+                      onChange={e => setStudentSearch(e.target.value)}
+                      placeholder="ابحث بالاسم أو البريد..."
+                      className="w-full pr-9 pl-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                    />
+                  </div>
+
+                  {loadingStudents ? (
+                    <div className="flex items-center justify-center py-10">
+                      <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+                    </div>
+                  ) : courseStudents.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-8">لا يوجد طلاب مسجلون في هذه الدورة.</p>
+                  ) : (
+                    <div className="border border-border rounded-xl overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={toggleSelectAll}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 bg-muted/40 hover:bg-muted text-sm font-bold border-b border-border transition-colors text-right"
+                      >
+                        {allFilteredSelected ? <CheckSquare className="w-4 h-4 text-emerald-600" /> : <Square className="w-4 h-4 text-muted-foreground" />}
+                        تحديد الكل ({filteredStudents.length})
+                      </button>
+                      <div className="max-h-56 overflow-y-auto divide-y divide-border/60">
+                        {filteredStudents.map(s => {
+                          const checked = selectedIds.has(s.student_id)
+                          return (
+                            <button
+                              key={s.student_id}
+                              type="button"
+                              onClick={() => toggleStudent(s.student_id)}
+                              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 hover:bg-muted/40 transition-colors text-right"
+                            >
+                              {checked ? <CheckSquare className="w-4 h-4 text-emerald-600 shrink-0" /> : <Square className="w-4 h-4 text-muted-foreground shrink-0" />}
+                              <span className="flex-1 min-w-0">
+                                <span className="text-sm font-medium block truncate">{s.name}</span>
+                                <span className="text-xs text-muted-foreground block truncate">{s.email}</span>
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {enrollCourseId && courseStudents.length > 0 && (
+              <div className="flex gap-3 p-6 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => handleEnroll('all')}
+                  disabled={enrolling}
+                  className="flex-1 py-2.5 border border-emerald-600 text-emerald-700 dark:text-emerald-400 rounded-lg font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Users className="w-4 h-4" />
+                  إضافة كل طلاب الدورة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleEnroll('selected')}
+                  disabled={enrolling || selectedIds.size === 0}
+                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {enrolling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  إضافة المحددين ({selectedIds.size})
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
