@@ -16,7 +16,7 @@ export async function GET(
     
     // Verify task belongs to this teacher
     const qTask = `
-      SELECT t.id, t.max_score FROM tasks t
+      SELECT t.id, t.max_score, t.type, t.title, t.quiz_questions FROM tasks t
       JOIN courses c ON t.course_id = c.id
       WHERE t.id = $1 AND c.teacher_id = $2
     `
@@ -37,7 +37,7 @@ export async function GET(
     // Add max_score to each row for the frontend
     const mapped = rows.map(r => ({ ...r, max_score: tCheck[0].max_score }))
 
-    return NextResponse.json({ data: mapped })
+    return NextResponse.json({ data: mapped, task: tCheck[0] })
   } catch (error) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }

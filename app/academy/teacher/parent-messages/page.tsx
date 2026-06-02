@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Fragment } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
+import { ChatDateDivider } from '@/components/chat/date-divider'
+import { shouldShowDateDivider, formatChatTime } from '@/lib/chat-date'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2, Send, MessageSquare, UserCircle2 } from 'lucide-react'
@@ -155,27 +157,30 @@ export default function TeacherParentMessagesPage() {
             ) : (
               <>
                 <div className="flex-1 overflow-y-auto space-y-2 max-h-[55vh]">
-                  {messages.map((m) => {
+                  {messages.map((m, idx) => {
                     const conv = conversations.find((c) => c.id === activeId)
                     const isMe = conv && m.sender_id === conv.teacher_id
+                    const showDate = shouldShowDateDivider(messages[idx - 1]?.created_at, m.created_at)
                     return (
-                      <div
-                        key={m.id}
-                        className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
-                      >
+                      <Fragment key={m.id}>
+                        {showDate && <ChatDateDivider date={m.created_at} isAr={isAr} />}
                         <div
-                          className={`max-w-[75%] p-3 rounded-2xl ${
-                            isMe
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-foreground'
-                          }`}
+                          className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                         >
-                          <div className="text-sm whitespace-pre-wrap">{m.content}</div>
-                          <div className="text-[10px] opacity-70 mt-1">
-                            {new Date(m.created_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
+                          <div
+                            className={`max-w-[75%] p-3 rounded-2xl ${
+                              isMe
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted text-foreground'
+                            }`}
+                          >
+                            <div className="text-sm whitespace-pre-wrap">{m.content}</div>
+                            <div className="text-[10px] opacity-70 mt-1">
+                              {formatChatTime(m.created_at, isAr)}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </Fragment>
                     )
                   })}
                 </div>

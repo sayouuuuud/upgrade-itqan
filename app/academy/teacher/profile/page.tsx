@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { AvatarUpload } from '@/components/avatar-upload'
 import {
   GraduationCap, BadgeCheck, Award, Briefcase, BookOpen,
-  Save, Loader2, Plus, X, CheckCircle, Star, Users, Lock,
+  Save, Loader2, Plus, X, CheckCircle, Users, Lock,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
 
@@ -26,7 +26,6 @@ interface TeacherProfile {
   subjects: string[] | null
   total_students: number | null
   total_courses: number | null
-  rating: number | null
   is_verified: boolean | null
   is_accepting_students: boolean | null
 }
@@ -93,7 +92,6 @@ export default function TeacherProfilePage() {
           subjects: prof?.data?.subjects ?? [],
           total_students: prof?.data?.total_students ?? 0,
           total_courses: prof?.data?.total_courses ?? 0,
-          rating: prof?.data?.rating ?? 0,
           is_verified: prof?.data?.is_verified ?? false,
           is_accepting_students: prof?.data?.is_accepting_students ?? true,
         }
@@ -219,7 +217,7 @@ export default function TeacherProfilePage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="rounded-3xl">
           <CardContent className="p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
@@ -239,17 +237,6 @@ export default function TeacherProfilePage() {
             <div>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{isAr ? 'الدورات' : 'Courses'}</p>
               <p className="text-2xl font-black">{profile?.total_courses || 0}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-3xl">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center">
-              <Star className="w-5 h-5 text-amber-500" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{isAr ? 'التقييم' : 'Rating'}</p>
-              <p className="text-2xl font-black">{Number(profile?.rating || 0).toFixed(1)}</p>
             </div>
           </CardContent>
         </Card>

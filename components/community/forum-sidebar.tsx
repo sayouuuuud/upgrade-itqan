@@ -13,6 +13,7 @@ import {
   Plus,
   Sparkles,
   ShieldCheck,
+  UserSquare,
 } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
 import {
@@ -39,6 +40,9 @@ interface ForumSidebarProps {
   onPostTypeChange?: (t: PostType) => void
   canModerate?: boolean
   isAdmin?: boolean
+  mineOnly?: boolean
+  canShowMine?: boolean
+  onToggleMine?: () => void
 }
 
 export function ForumSidebar({
@@ -51,6 +55,9 @@ export function ForumSidebar({
   onPostTypeChange,
   canModerate,
   isAdmin,
+  mineOnly,
+  canShowMine,
+  onToggleMine,
 }: ForumSidebarProps) {
   const { locale } = useI18n()
   const isAr = locale === "ar"
@@ -70,6 +77,24 @@ export function ForumSidebar({
         <Plus className="w-4 h-4" />
         {isAr ? "إنشاء منشور جديد" : "Create post"}
       </Button>
+
+      {canShowMine && onToggleMine && (
+        <Button
+          variant={mineOnly ? "default" : "outline"}
+          className="w-full justify-start"
+          onClick={onToggleMine}
+          aria-pressed={mineOnly}
+        >
+          <UserSquare className="w-4 h-4" />
+          {mineOnly
+            ? isAr
+              ? "عرض كل المنشورات"
+              : "Show all posts"
+            : isAr
+              ? "منشوراتي فقط"
+              : "My posts only"}
+        </Button>
+      )}
 
       {onPostTypeChange && (
         <div className="rounded-xl border border-border bg-card overflow-hidden">

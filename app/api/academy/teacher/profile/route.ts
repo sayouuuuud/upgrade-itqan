@@ -28,7 +28,6 @@ export async function GET() {
       subjects: string[] | null
       total_students: number | null
       total_courses: number | null
-      rating: number | null
       is_verified: boolean | null
       is_accepting_students: boolean | null
     }>(
@@ -36,8 +35,19 @@ export async function GET() {
       SELECT u.id, u.name, u.email, u.phone, u.avatar_url,
              at.bio, at.specialization, at.years_of_experience,
              at.certifications, at.subjects,
-             at.total_students, at.total_courses, at.rating,
-             at.is_verified, at.is_accepting_students
+             at.is_verified, at.is_accepting_students,
+             (
+               SELECT COUNT(*)::int
+               FROM courses c
+               WHERE c.teacher_id = u.id
+             ) AS total_courses,
+             (
+               SELECT COUNT(DISTINCT e.student_id)::int
+               FROM enrollments e
+               JOIN courses c ON c.id = e.course_id
+               WHERE c.teacher_id = u.id
+                 AND e.status <> 'DROPPED'
+             ) AS total_students
       FROM users u
       LEFT JOIN academy_teachers at ON at.user_id = u.id
       WHERE u.id = $1

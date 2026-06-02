@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   ArrowRight, Mail, User, BookOpen, Award, CheckCircle, 
-  MapPin, Calendar, BookMarked, GraduationCap, Clock, TrendingUp
+  MapPin, Calendar, BookMarked, GraduationCap, Clock, TrendingUp,
+  ClipboardList, FileText, ListChecks, ExternalLink
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -34,9 +35,25 @@ interface StudentData {
 interface Enrollment {
   id: string
   title: string
+  thumbnail_url: string | null
   status: string
   enrolled_at: string
   progress_percentage: number
+}
+
+interface Submission {
+  id: string
+  task_id: string
+  status: string
+  score: number | null
+  auto_score: number | null
+  submission_type: string | null
+  submitted_at: string | null
+  graded_at: string | null
+  task_title: string
+  task_type: string
+  max_score: number
+  course_title: string | null
 }
 
 interface Badge {
@@ -56,6 +73,7 @@ export default function TeacherStudentProfilePage() {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [badges, setBadges] = useState<Badge[]>([])
   const [specializations, setSpecializations] = useState<string[]>([])
+  const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -69,6 +87,7 @@ export default function TeacherStudentProfilePage() {
           setEnrollments(json.enrollments || [])
           setBadges(json.badges || [])
           setSpecializations(json.specializations || [])
+          setSubmissions(json.submissions || [])
         } else {
           toast.error(json.error || 'حدث خطأ أثناء جلب البيانات')
         }
@@ -268,6 +287,12 @@ export default function TeacherStudentProfilePage() {
                     الدورات المشتركة
                   </TabsTrigger>
                   <TabsTrigger 
+                    value="submissions" 
+                    className="h-full px-6 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none font-bold"
+                  >
+                    المهام والتسليمات ({submissions.length})
+                  </TabsTrigger>
+                  <TabsTrigger 
                     value="badges" 
                     className="h-full px-6 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none font-bold"
                   >
@@ -289,8 +314,16 @@ export default function TeacherStudentProfilePage() {
                     {enrollments.map(enrollment => (
                       <div key={enrollment.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-border bg-card hover:shadow-md transition-shadow gap-4">
                         <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                            <BookOpen className="w-6 h-6 text-primary" />
+                          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+                            {enrollment.thumbnail_url ? (
+                              <img
+                                src={enrollment.thumbnail_url || "/placeholder.svg"}
+                                alt={enrollment.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <BookOpen className="w-6 h-6 text-primary" />
+                            )}
                           </div>
                           <div>
                             <h3 className="font-bold text-foreground">{enrollment.title}</h3>
@@ -328,6 +361,78 @@ export default function TeacherStudentProfilePage() {
                   <div className="text-center py-12">
                     <BookOpen className="w-12 h-12 mx-auto text-muted-foreground opacity-20 mb-3" />
                     <p className="text-muted-foreground font-medium">لا توجد دورات مشتركة حالياً</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Submissions Tab */}
+              <TabsContent value="submissions" className="p-6 m-0 outline-none">
+                {submissions.length > 0 ? (
+                  <div className="space-y-3">
+                    {submissions.map(sub => {
+                      const isQuiz = sub.task_type === "quiz"
+                      const isGraded = sub.status === "graded"
+                      const displayScore = sub.score ?? sub.auto_score
+                      return (
+                        <div
+                          key={sub.id}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border border-border bg-card hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-start gap-3 min-w-0">
+                            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                              isQuiz ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30" : "bg-primary/10 text-primary"
+                            }`}>
+                              {isQuiz ? <ListChecks className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-foreground truncate">{sub.task_title}</h3>
+                              <div className="flex items-center flex-wrap gap-2 mt-1 text-xs text-muted-foreground">
+                                {sub.course_title && <span className="truncate">{sub.course_title}</span>}
+                                {sub.submitted_at && (
+                                  <>
+                                    <span className="w-1 h-1 rounded-full bg-border" />
+                                    <span>{new Date(sub.submitted_at).toLocaleDateString("ar-EG")}</span>
+                                  </>
+                                )}
+                                <span className="w-1 h-1 rounded-full bg-border" />
+                                <span className={`px-2 py-0.5 rounded-full font-medium ${
+                                  isGraded
+                                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                    : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                }`}>
+                                  {isGraded ? "مصححة" : sub.status === "late" ? "متأخرة" : "بانتظار التصحيح"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-4 shrink-0">
+                            <div className="text-center">
+                              <p className="text-lg font-bold text-foreground">
+                                {displayScore != null ? (
+                                  <>{displayScore}<span className="text-xs text-muted-foreground font-normal"> / {sub.max_score}</span></>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground font-normal">—</span>
+                                )}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground">{isQuiz ? "درجة الاختبار" : "الدرجة"}</p>
+                            </div>
+                            <Link
+                              href={`/academy/teacher/tasks/${sub.task_id}/grade`}
+                              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-sm font-bold transition-colors"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              فتح
+                            </Link>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <ClipboardList className="w-12 h-12 mx-auto text-muted-foreground opacity-20 mb-3" />
+                    <p className="text-muted-foreground font-medium">لم يسلّم الطالب أي مهام بعد</p>
                   </div>
                 )}
               </TabsContent>

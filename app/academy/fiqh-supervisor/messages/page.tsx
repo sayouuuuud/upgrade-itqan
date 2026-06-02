@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { Input } from '@/components/ui/input'
+import { ChatDateDivider } from '@/components/chat/date-divider'
+import { shouldShowDateDivider } from '@/lib/chat-date'
 import { Button } from '@/components/ui/button'
 import { Search, Send, User, Loader2, ArrowRight, MessageSquare } from 'lucide-react'
 
@@ -202,23 +204,27 @@ export default function FiqhSupervisorMessagesPage() {
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
                 ) : (
-                  messages.map(msg => {
-                    const isMe = msg.sender_id !== activeConv.other_user_id
-                    return (
-                      <div key={msg.id} className={`flex ${isMe ? 'justify-start' : 'justify-end'}`}>
+                messages.map((msg, idx) => {
+                  const isMe = msg.sender_id !== activeConv.other_user_id
+                  const showDate = shouldShowDateDivider(messages[idx - 1]?.created_at, msg.created_at)
+                  return (
+                    <Fragment key={msg.id}>
+                      {showDate && <ChatDateDivider date={msg.created_at} isAr={true} />}
+                      <div className={`flex ${isMe ? 'justify-start' : 'justify-end'}`}>
                         <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${
                           isMe
                             ? 'bg-primary text-primary-foreground rounded-bl-sm'
                             : 'bg-muted border border-border rounded-br-sm text-foreground'
-                        }`}>
+                          }`}>
                           <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                           <p className={`text-[10px] mt-1 ${isMe ? 'text-primary-foreground/70 text-left' : 'text-muted-foreground text-right'}`}>
                             {formatTime(msg.created_at)}
                           </p>
                         </div>
                       </div>
-                    )
-                  })
+                    </Fragment>
+                  )
+                })
                 )}
                 <div ref={messagesEndRef} />
               </div>

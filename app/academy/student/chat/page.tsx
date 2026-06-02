@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense, Fragment } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { ChatDateDivider } from '@/components/chat/date-divider'
+import { shouldShowDateDivider } from '@/lib/chat-date'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -408,21 +410,25 @@ function StudentChatPageInner() {
                 {loadingMsgs ? (
                   <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
                 ) : (
-                  messages.map(msg => {
+                  messages.map((msg, idx) => {
                     const isMe = msg.sender_id !== activeConv.other_user_id
+                    const showDate = shouldShowDateDivider(messages[idx - 1]?.created_at, msg.created_at)
 
                     return (
-                      <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                    <Fragment key={msg.id}>
+                      {showDate && <ChatDateDivider date={msg.created_at} isAr={isAr} />}
+                      <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${isMe
                             ? 'bg-primary text-primary-foreground rounded-br-sm'
                             : 'bg-muted border border-border rounded-bl-sm text-foreground'
-                          }`}>
+                            }`}>
                           <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                           <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                             {formatTime(msg.created_at)}
                           </div>
                         </div>
                       </div>
+                    </Fragment>
                     )
                   })
                 )}

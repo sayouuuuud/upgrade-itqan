@@ -44,12 +44,16 @@ export function ForumBoard({
     isModerator: false,
     isAdmin: false,
   })
+  const [reloadKey, setReloadKey] = useState(0)
+  const [meId, setMeId] = useState<string | null>(null)
+  const [mineOnly, setMineOnly] = useState(false)
 
   useEffect(() => {
     fetch(`/api/auth/me`)
       .then((r) => r.json())
       .then((data: MeResponse) => {
         const role = data?.user?.role
+        setMeId(data?.user?.id ?? null)
         const mod = !!role && (
           role === "admin" ||
           role.includes("supervisor") ||
@@ -84,16 +88,20 @@ export function ForumBoard({
       onPostTypeChange={showPostTypeSwitcher ? setPostType : undefined}
       canModerate={capabilities.isModerator}
       isAdmin={capabilities.isAdmin || !!isAdminView}
+      mineOnly={mineOnly}
+      canShowMine={!!meId}
+      onToggleMine={() => setMineOnly((v) => !v)}
       onPostCreated={() => {
-        // Force the feed to reload by toggling a no-op state. We re-mount
-        // the feed by setting category to itself, which triggers its reload.
-        setCategory((c) => (c === "all" ? "all" : c))
+        // Force the feed to refetch so the newly created post appears.
+        setReloadKey((k) => k + 1)
       }}
     >
       <ForumFeed
         community={community}
         postType={postType}
         category={category}
+        reloadKey={reloadKey}
+        authorId={mineOnly && meId ? meId : undefined}
       />
     </ForumShell>
   )

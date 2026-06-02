@@ -33,6 +33,10 @@ interface ForumFeedProps {
   externalPosts?: ForumPost[]
   /** When fetching, append this query string (used by admin view) */
   extraQuery?: string
+  /** Bump this number to force a reload (e.g. after creating a post). */
+  reloadKey?: number
+  /** When set, only fetch posts authored by this user id. */
+  authorId?: string
 }
 
 const SORTS: { id: SortKey; icon: typeof Flame; label_ar: string; label_en: string }[] =
@@ -60,6 +64,8 @@ export function ForumFeed({
   hrefBase,
   externalPosts,
   extraQuery,
+  reloadKey,
+  authorId,
 }: ForumFeedProps) {
   const { locale } = useI18n()
   const isAr = locale === "ar"
@@ -88,13 +94,14 @@ export function ForumFeed({
     sp.set("sort", sort)
     if (category && category !== "all") sp.set("category", category)
     if (debouncedSearch) sp.set("search", debouncedSearch)
+    if (authorId) sp.set("author_id", authorId)
     sp.set("page", String(page))
     sp.set("page_size", "20")
     if (extraQuery) {
       for (const [k, v] of new URLSearchParams(extraQuery)) sp.set(k, v)
     }
     return sp.toString()
-  }, [community, postType, sort, category, debouncedSearch, page, extraQuery])
+  }, [community, postType, sort, category, debouncedSearch, page, extraQuery, authorId])
 
   const load = useCallback(async () => {
     if (externalPosts) return
@@ -108,7 +115,9 @@ export function ForumFeed({
     } finally {
       setLoading(false)
     }
-  }, [externalPosts, params, page])
+    // reloadKey is intentionally a dependency so a bump forces a refetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalPosts, params, page, reloadKey])
 
   useEffect(() => {
     if (externalPosts) {
@@ -116,7 +125,7 @@ export function ForumFeed({
       return
     }
     setPage(1)
-  }, [community, postType, category, sort, debouncedSearch, externalPosts])
+  }, [community, postType, category, sort, debouncedSearch, externalPosts, reloadKey, authorId])
 
   useEffect(() => {
     if (!externalPosts) load()

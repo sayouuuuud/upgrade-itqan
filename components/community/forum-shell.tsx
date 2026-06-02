@@ -23,6 +23,9 @@ interface ForumShellProps {
   onPostTypeChange?: (t: PostType) => void
   canModerate?: boolean
   isAdmin?: boolean
+  mineOnly?: boolean
+  canShowMine?: boolean
+  onToggleMine?: () => void
   onPostCreated?: (post: ForumPost) => void
   /** Center column content. */
   children: React.ReactNode
@@ -36,6 +39,9 @@ export function ForumShell({
   onPostTypeChange,
   canModerate,
   isAdmin,
+  mineOnly,
+  canShowMine,
+  onToggleMine,
   onPostCreated,
   children,
 }: ForumShellProps) {
@@ -52,6 +58,9 @@ export function ForumShell({
         onCreate={() => setCreateOpen(true)}
         canModerate={canModerate}
         isAdmin={isAdmin}
+        mineOnly={mineOnly}
+        canShowMine={canShowMine}
+        onToggleMine={onToggleMine}
       />
 
       <main className="min-w-0">{children}</main>

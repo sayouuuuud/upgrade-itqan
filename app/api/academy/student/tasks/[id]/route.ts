@@ -26,6 +26,7 @@ export async function GET(
         t.max_score,
         t.status,
         t.submission_instructions,
+        t.quiz_questions,
         t.created_at,
         t.course_id,
         c.title AS course_title,
@@ -52,7 +53,8 @@ export async function GET(
       SELECT 
         id, content, file_url, file_name, file_type, file_size,
         audio_url, video_url, submission_type, status,
-        score, feedback, attempts, submitted_at, graded_at, updated_at
+        score, feedback, attempts, submitted_at, graded_at, updated_at,
+        quiz_answers, auto_score
       FROM task_submissions
       WHERE task_id = $1 AND student_id = $2
       ORDER BY submitted_at DESC

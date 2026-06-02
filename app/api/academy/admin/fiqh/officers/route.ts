@@ -19,7 +19,7 @@ export async function GET() {
               ARRAY[]::text[]
             ) AS category_ids,
             COALESCE(
-              (SELECT array_agg(c.name_ar)
+              (SELECT array_agg(c.name)
                  FROM fiqh_officer_categories oc
                  JOIN categories c ON c.id = oc.category_id
                 WHERE oc.officer_id = o.id),
