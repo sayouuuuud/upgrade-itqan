@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2, PlayCircle, Search, Users, Clock, Calendar, Filter } from 'lucide-react'
+import { VideoPlayerModal } from '@/components/video/video-player-modal'
 
 interface Recording {
   id: string
@@ -169,14 +170,17 @@ export default function RecordingsIndexPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((r) => (
               <Card key={r.id} className="hover:shadow-lg transition-shadow overflow-hidden">
-                <a
-                  href={r.recording_url || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block aspect-video bg-gradient-to-br from-emerald-500/10 to-blue-500/10 grid place-items-center group"
-                >
-                  <PlayCircle className="w-14 h-14 text-emerald-600 group-hover:scale-110 transition-transform" />
-                </a>
+                {r.recording_url ? (
+                  <VideoPlayerModal url={r.recording_url} title={r.title || KIND_LABEL[r.kind]}>
+                    <button className="block aspect-video w-full bg-gradient-to-br from-emerald-500/10 to-blue-500/10 grid place-items-center group focus:outline-none">
+                      <PlayCircle className="w-14 h-14 text-emerald-600 group-hover:scale-110 transition-transform" />
+                    </button>
+                  </VideoPlayerModal>
+                ) : (
+                  <div className="aspect-video bg-muted flex items-center justify-center">
+                    <PlayCircle className="w-14 h-14 text-muted-foreground/30" />
+                  </div>
+                )}
                 <CardContent className="pt-4 space-y-2.5">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-semibold truncate flex-1">
@@ -207,12 +211,7 @@ export default function RecordingsIndexPage() {
                   </div>
                   <div className="flex gap-2 pt-1">
                     {r.recording_url ? (
-                      <Button asChild size="sm" className="gap-1 flex-1">
-                        <a href={r.recording_url} target="_blank" rel="noopener noreferrer">
-                          <PlayCircle className="w-4 h-4" />
-                          مشاهدة
-                        </a>
-                      </Button>
+                      <VideoPlayerModal url={r.recording_url} title={r.title || KIND_LABEL[r.kind]} />
                     ) : (
                       <Button size="sm" disabled className="flex-1">
                         لا يوجد رابط

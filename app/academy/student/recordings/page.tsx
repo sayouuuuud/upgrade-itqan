@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, Loader2, PlayCircle, Users, Video } from 'lucide-react'
+import { VideoPlayerModal } from '@/components/video/video-player-modal'
 
 interface Recording {
   id: string
@@ -135,12 +136,7 @@ export default function StudentRecordingsPage() {
                 </div>
                 <div className="flex gap-2">
                   {r.recording_url ? (
-                    <Button asChild size="sm" className="flex-1 gap-1">
-                      <a href={r.recording_url} target="_blank" rel="noopener noreferrer">
-                        <PlayCircle className="w-4 h-4" />
-                        مشاهدة
-                      </a>
-                    </Button>
+                    <VideoPlayerModal url={r.recording_url} title={r.title || KIND_LABEL[r.kind]} />
                   ) : (
                     <Button size="sm" disabled className="flex-1">
                       لا يوجد رابط

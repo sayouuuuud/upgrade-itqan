@@ -11,7 +11,9 @@ import {
   CompleteMultipartUploadCommand,
   AbortMultipartUploadCommand,
   ListPartsCommand,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 export interface RecordingS3Config {
   accessKey: string
@@ -188,4 +190,36 @@ export function buildObjectKey(opts: {
   const prefix = cfg?.pathPrefix || 'recordings'
   const ext = (opts.ext || 'webm').replace(/^\./, '')
   return `${prefix}/${opts.sessionId}/${opts.recordingId}.${ext}`
+}
+
+export function extractKeyFromUrl(urlStr: string): string | null {
+  try {
+    const u = new URL(urlStr)
+    const cfg = getRecordingS3Config()
+    let key = u.pathname.replace(/^\//, '')
+    if (cfg && key.startsWith(`${cfg.bucket}/`)) {
+      key = key.substring(cfg.bucket.length + 1)
+    }
+    return key
+  } catch {
+    return null
+  }
+}
+
+export async function getSignedRecordingUrl(key: string): Promise<string | null> {
+  const ctx = getRecordingS3Client()
+  if (!ctx) return null
+  try {
+    return await getSignedUrl(
+      ctx.client,
+      new GetObjectCommand({
+        Bucket: ctx.config.bucket,
+        Key: key,
+      }),
+      { expiresIn: 3600 * 6 } // 6 hours
+    )
+  } catch (err) {
+    console.error('[recordings-s3] sign url failed', err)
+    return null
+  }
 }
