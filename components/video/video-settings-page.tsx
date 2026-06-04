@@ -209,7 +209,7 @@ export function VideoSettingsPage({ platform, sessionsBasePath }: Props) {
       </div>
 
       {tab === 'overview' && (
-        <OverviewTab stats={stats} sessionsBasePath={sessionsBasePath} />
+        <OverviewTab stats={stats} onViewAll={() => setTab('log')} />
       )}
 
       {tab === 'settings' && (
@@ -311,7 +311,7 @@ function StatCard({
   )
 }
 
-function OverviewTab({ stats, sessionsBasePath }: { stats: Stats; sessionsBasePath: string }) {
+function OverviewTab({ stats, onViewAll }: { stats: Stats; onViewAll: () => void }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -377,9 +377,9 @@ function OverviewTab({ stats, sessionsBasePath }: { stats: Stats; sessionsBasePa
 
       <div className="flex items-center justify-between">
         <h3 className="font-bold">آخر الجلسات</h3>
-        <Link href={`/${sessionsBasePath}`.replace('//', '/')} className="text-xs text-emerald-600 hover:underline">
+        <button type="button" onClick={onViewAll} className="text-xs text-emerald-600 hover:underline">
           عرض الكل
-        </Link>
+        </button>
       </div>
     </div>
   )
