@@ -132,7 +132,11 @@ export async function completeMultipart(
       },
     })
   )
-  return res.Location || buildRecordingObjectUrl(key)
+  // NOTE: S3 returns `res.Location` with the key URL-encoded (slashes become
+  // %2F). Persisting that breaks key extraction later, so we always rebuild a
+  // clean URL from the real key instead of trusting res.Location.
+  void res
+  return buildRecordingObjectUrl(key)
 }
 
 export async function abortMultipart(key: string, uploadId: string): Promise<boolean> {
@@ -198,7 +202,15 @@ export function extractKeyFromUrl(urlStr: string): string | null {
   try {
     const u = new URL(urlStr)
     const cfg = getRecordingS3Config()
+    // S3's CompleteMultipartUpload Location encodes the key (slashes → %2F).
+    // Decode so the resulting key matches the real object path. decodeURIComponent
+    // is idempotent for already-decoded keys, so this is safe for clean URLs too.
     let key = u.pathname.replace(/^\//, '')
+    try {
+      key = decodeURIComponent(key)
+    } catch {
+      /* leave key as-is if it isn't valid percent-encoding */
+    }
     if (cfg && key.startsWith(`${cfg.bucket}/`)) {
       key = key.substring(cfg.bucket.length + 1)
     }
