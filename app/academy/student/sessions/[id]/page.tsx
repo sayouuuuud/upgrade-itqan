@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
+import { VideoPlayerModal } from '@/components/video/video-player-modal'
 
 interface SessionDetails {
   id: string
@@ -388,7 +389,7 @@ export default function SessionDetailsPage() {
               >
                 <Link href={`/academy/student/sessions/${session.id}/live`}>
                   <PlayCircle className="w-5 h-5" />
-                  {isAr ? 'انضم للبث المباشر الآن' : 'Join Live Stream Now'}
+                  {isAr ? 'انضم للبث ا��مباشر الآن' : 'Join Live Stream Now'}
                 </Link>
               </Button>
             )}
@@ -415,16 +416,15 @@ export default function SessionDetailsPage() {
             )}
 
             {isCompleted && session.recording_url && (
-              <Button
-                size="lg"
-                asChild
-                className="gap-2 flex-1 bg-green-600 hover:bg-green-700 hover:shadow-lg hover:shadow-green-500/25 transition-all duration-200"
-              >
-                <a href={session.recording_url} target="_blank" rel="noopener noreferrer">
+              <VideoPlayerModal url={session.recording_url} title={session.title}>
+                <Button
+                  size="lg"
+                  className="gap-2 flex-1 bg-green-600 hover:bg-green-700 hover:shadow-lg hover:shadow-green-500/25 transition-all duration-200"
+                >
                   <PlayCircle className="w-5 h-5" />
                   {isAr ? 'شاهد التسجيل' : 'Watch Recording'}
-                </a>
-              </Button>
+                </Button>
+              </VideoPlayerModal>
             )}
 
             {isUpcoming && !session.meeting_link && (

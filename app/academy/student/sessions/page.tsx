@@ -9,6 +9,7 @@ import {
   CheckCircle2, ExternalLink, BookOpen, Search,
   ArrowUpRight, History
 } from 'lucide-react'
+import { VideoPlayerModal } from '@/components/video/video-player-modal'
 
 interface Session {
   id: string
@@ -408,15 +409,14 @@ function SessionCard({ session, isLive, isAr, t, statusConfig, fmtTime, timeUnti
               {isAr ? 'رابط الجلسة الخارجي' : 'External meeting link'}
             </a>
           ) : session.status === 'completed' && session.recording_url ? (
-            <a
-              href={session.recording_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
-            >
-              <PlayCircle className="w-5 h-5" />
-              {t.academy?.watchRecording || (isAr ? 'شاهد التسجيل' : 'Watch recording')}
-            </a>
+            <VideoPlayerModal url={session.recording_url} title={session.title}>
+              <button
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              >
+                <PlayCircle className="w-5 h-5" />
+                {t.academy?.watchRecording || (isAr ? 'شاهد التسجيل' : 'Watch recording')}
+              </button>
+            </VideoPlayerModal>
           ) : (
             <button
               disabled

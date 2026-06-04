@@ -43,6 +43,7 @@ import {
   GraduationCap,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { VideoPlayerModal } from '@/components/video/video-player-modal'
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -913,12 +914,12 @@ function HistoryCard({ row }: { row: HistoryRow }) {
         </div>
         <div className="flex flex-col gap-2 shrink-0 md:items-end">
           {row.recording_url ? (
-            <Button asChild size="sm" variant="outline" className="gap-1">
-              <a href={row.recording_url} target="_blank" rel="noopener noreferrer">
+            <VideoPlayerModal url={row.recording_url} title={row.title || KIND_LABEL[row.kind] || row.kind}>
+              <Button size="sm" variant="outline" className="gap-1">
                 <PlayCircle className="w-4 h-4" />
                 شاهد التسجيل
-              </a>
-            </Button>
+              </Button>
+            </VideoPlayerModal>
           ) : (
             <span className="text-[11px] text-muted-foreground">
               {row.recording_status === 'recording' ? 'جاري التسجيل...' : 'لا يوجد تسجيل'}
@@ -956,19 +957,26 @@ function HistoryCard({ row }: { row: HistoryRow }) {
 }
 
 function RecordingCard({ r }: { r: RecordingRow }) {
+  const title = r.title || KIND_LABEL[r.kind]
   return (
     <Card className="hover:shadow-md transition-shadow overflow-hidden">
-      <a
-        href={r.recording_url || '#'}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block aspect-video bg-secondary/30 grid place-items-center relative group"
-      >
-        <PlayCircle className="w-12 h-12 text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity" />
-        <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-          {fmtDuration(r.duration_seconds)}
-        </span>
-      </a>
+      {r.recording_url ? (
+        <VideoPlayerModal url={r.recording_url} title={title}>
+          <button className="block w-full aspect-video bg-secondary/30 grid place-items-center relative group focus:outline-none">
+            <PlayCircle className="w-12 h-12 text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity" />
+            <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+              {fmtDuration(r.duration_seconds)}
+            </span>
+          </button>
+        </VideoPlayerModal>
+      ) : (
+        <div className="block aspect-video bg-secondary/30 grid place-items-center relative">
+          <PlayCircle className="w-12 h-12 text-muted-foreground opacity-40" />
+          <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+            {fmtDuration(r.duration_seconds)}
+          </span>
+        </div>
+      )}
       <CardContent className="pt-4 space-y-2.5">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-bold truncate flex-1">{r.title || KIND_LABEL[r.kind]}</h3>
@@ -985,15 +993,12 @@ function RecordingCard({ r }: { r: RecordingRow }) {
           </span>
         </div>
         {r.recording_url ? (
-          <a
-            href={r.recording_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline font-medium inline-flex items-center gap-1"
-          >
-            <PlayCircle className="w-4 h-4" />
-            مشاهدة التسجيل
-          </a>
+          <VideoPlayerModal url={r.recording_url} title={title}>
+            <button className="text-sm text-primary hover:underline font-medium inline-flex items-center gap-1">
+              <PlayCircle className="w-4 h-4" />
+              مشاهدة التسجيل
+            </button>
+          </VideoPlayerModal>
         ) : (
           <span className="text-xs text-muted-foreground">لا يوجد رابط</span>
         )}

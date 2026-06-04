@@ -6,13 +6,13 @@ import {
   ArrowRight,
   Calendar,
   Clock,
-  Download,
   Loader2,
   PlayCircle,
   Star,
   Users,
   Video as VideoIcon,
 } from 'lucide-react'
+import { VideoPlayerModal } from '@/components/video/video-player-modal'
 
 interface Props {
   sessionId: string
