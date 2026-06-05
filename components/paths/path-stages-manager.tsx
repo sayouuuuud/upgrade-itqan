@@ -313,27 +313,38 @@ export default function PathStagesManager({ pathId }: { pathId: string }) {
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-bold block mb-1.5">نوع المرحلة <span className="text-rose-500">*</span></label>
-                  <select
-                    value={form.stage_type}
-                    onChange={(e) => setForm({ ...form, stage_type: e.target.value as any })}
-                    className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 appearance-none font-bold"
-                  >
-                    <option value="custom">محتوى مخصص (افتراضي)</option>
-                    <option value="course">دورة كاملة</option>
-                    <option value="halaqa">حلقة تفاعلية</option>
-                    <option value="lesson">درس ضمن دورة</option>
-                  </select>
+                <div className="sm:col-span-2">
+                  <label className="text-sm font-bold block mb-2">نوع المرحلة <span className="text-rose-500">*</span></label>
+                  <div className="flex bg-muted/50 p-1 rounded-xl border border-border overflow-x-auto scrollbar-none">
+                    {[
+                      { id: 'custom', label: 'درس' },
+                      { id: 'lesson', label: 'درس ضمن دورة' },
+                      { id: 'course', label: 'دورة كاملة' },
+                      { id: 'halaqa', label: 'حلقة تفاعلية' }
+                    ].map(tab => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setForm({ ...form, stage_type: tab.id as any })}
+                        className={`flex-1 min-w-[100px] whitespace-nowrap text-sm font-bold py-2 px-3 rounded-lg transition-all ${
+                          form.stage_type === tab.id
+                            ? 'bg-card text-emerald-600 shadow-sm border border-border/50'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div>
+                <div className="sm:col-span-2">
                   <label className="text-sm font-bold block mb-1.5">عنوان المرحلة <span className="text-rose-500">*</span></label>
                   <input
                     required
                     type="text"
                     value={form.title}
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    placeholder={form.stage_type === 'custom' ? "مثال: المرحلة الأولى — أحكام النون الساكنة" : "عنوان يظهر في المسار"}
+                    placeholder={form.stage_type === 'custom' ? "مثال: أحكام النون الساكنة" : "عنوان يظهر في المسار"}
                     className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
@@ -396,79 +407,83 @@ export default function PathStagesManager({ pathId }: { pathId: string }) {
                   </select>
                 </div>
               )}
-              <div>
-                <label className="text-sm font-bold block mb-1.5">وصف مختصر</label>
-                <textarea
-                  rows={2}
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="نبذة قصيرة عن هذه المرحلة..."
-                  className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-bold block mb-1.5">المحتوى التعليمي</label>
-                <textarea
-                  rows={4}
-                  value={form.content}
-                  onChange={(e) => setForm({ ...form, content: e.target.value })}
-                  placeholder="اشرح محتوى المرحلة، النقاط الأساسية، التعليمات للطالب..."
-                  className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-bold block mb-1.5">المقطع المطلوب تلاوته (اختياري)</label>
-                <textarea
-                  rows={2}
-                  value={form.passage_text}
-                  onChange={(e) => setForm({ ...form, passage_text: e.target.value })}
-                  placeholder="الآيات أو النص المرجعي لهذه المرحلة..."
-                  className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-bold block mb-1.5">رابط فيديو (اختياري)</label>
-                <input
-                  type="url"
-                  value={form.video_url}
-                  onChange={(e) => setForm({ ...form, video_url: e.target.value })}
-                  placeholder="https://youtube.com/..."
-                  className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-bold block mb-1.5">ملف مرفق PDF (اختياري)</label>
-                <input
-                  ref={pdfInputRef}
-                  type="file"
-                  accept=".pdf,application/pdf"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (f) handlePdfUpload(f)
-                  }}
-                />
-                {form.pdf_url ? (
-                  <div className="flex items-center justify-between gap-2 px-3 py-2.5 border border-emerald-500/30 bg-emerald-500/5 rounded-lg">
-                    <a href={form.pdf_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm text-emerald-600 hover:underline truncate">
-                      <FileText className="w-4 h-4 shrink-0" /> تم إرفاق الملف
-                    </a>
-                    <button type="button" onClick={() => setForm({ ...form, pdf_url: '' })} className="text-xs text-rose-500 hover:underline shrink-0">
-                      إزالة
-                    </button>
+              {form.stage_type === 'custom' && (
+                <>
+                  <div>
+                    <label className="text-sm font-bold block mb-1.5">وصف مختصر</label>
+                    <textarea
+                      rows={2}
+                      value={form.description}
+                      onChange={(e) => setForm({ ...form, description: e.target.value })}
+                      placeholder="نبذة قصيرة عن هذه المرحلة..."
+                      className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                    />
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => pdfInputRef.current?.click()}
-                    disabled={uploadingPdf}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed border-border rounded-lg hover:bg-muted/50 transition-colors text-sm text-muted-foreground"
-                  >
-                    {uploadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
-                    {uploadingPdf ? 'جاري الرفع...' : 'رفع ملف PDF'}
-                  </button>
-                )}
-              </div>
+                  <div>
+                    <label className="text-sm font-bold block mb-1.5">المحتوى التعليمي</label>
+                    <textarea
+                      rows={4}
+                      value={form.content}
+                      onChange={(e) => setForm({ ...form, content: e.target.value })}
+                      placeholder="اشرح محتوى المرحلة، النقاط الأساسية، التعليمات للطالب..."
+                      className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-bold block mb-1.5">المقطع المطلوب تلاوته (اختياري)</label>
+                    <textarea
+                      rows={2}
+                      value={form.passage_text}
+                      onChange={(e) => setForm({ ...form, passage_text: e.target.value })}
+                      placeholder="الآيات أو النص المرجعي لهذه المرحلة..."
+                      className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-bold block mb-1.5">رابط فيديو (اختياري)</label>
+                    <input
+                      type="url"
+                      value={form.video_url}
+                      onChange={(e) => setForm({ ...form, video_url: e.target.value })}
+                      placeholder="https://youtube.com/..."
+                      className="w-full px-3 py-2.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-bold block mb-1.5">ملف مرفق PDF (اختياري)</label>
+                    <input
+                      ref={pdfInputRef}
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0]
+                        if (f) handlePdfUpload(f)
+                      }}
+                    />
+                    {form.pdf_url ? (
+                      <div className="flex items-center justify-between gap-2 px-3 py-2.5 border border-emerald-500/30 bg-emerald-500/5 rounded-lg">
+                        <a href={form.pdf_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm text-emerald-600 hover:underline truncate">
+                          <FileText className="w-4 h-4 shrink-0" /> تم إرفاق الملف
+                        </a>
+                        <button type="button" onClick={() => setForm({ ...form, pdf_url: '' })} className="text-xs text-rose-500 hover:underline shrink-0">
+                          إزالة
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => pdfInputRef.current?.click()}
+                        disabled={uploadingPdf}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed border-border rounded-lg hover:bg-muted/50 transition-colors text-sm text-muted-foreground"
+                      >
+                        {uploadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+                        {uploadingPdf ? 'جاري الرفع...' : 'رفع ملف PDF'}
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
               <div>
                 <label className="text-sm font-bold block mb-1.5">المدة التقديرية (دقائق)</label>
                 <input
