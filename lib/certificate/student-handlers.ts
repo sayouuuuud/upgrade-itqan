@@ -6,7 +6,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
-import type { CertificateScope } from "@/lib/certificates"
+import { getAllSettings, type CertificateScope } from "@/lib/certificates"
+import { autoIssueRequest } from "@/lib/certificate/eligibility"
 
 export interface StudentSpec {
   scope: CertificateScope
@@ -301,7 +302,30 @@ export function makeStudentRequestPatch(spec: StudentSpec) {
             RETURNING *`,
           [id, JSON.stringify(cleanData)],
         )
-        return NextResponse.json({ request: row })
+
+        // Auto-issue immediately — no admin step — when enabled in settings.
+        // On any failure the request stays `submitted` so the admin flow still
+        // acts as a fallback.
+        let finalRow = row
+        let autoIssued = false
+        try {
+          const settings = await getAllSettings(spec.scope)
+          if (settings.auto_issue_on_eligibility === true) {
+            const res = await autoIssueRequest(id, spec.scope)
+            if (res.issued) {
+              autoIssued = true
+              finalRow =
+                (await queryOne(
+                  `SELECT * FROM certificate_issuance_requests WHERE id = $1`,
+                  [id],
+                )) || row
+            }
+          }
+        } catch (err) {
+          console.error("[student-submit] auto-issue failed", err)
+        }
+
+        return NextResponse.json({ request: finalRow, auto_issued: autoIssued })
       }
       case "cancel": {
         if (!["data_required", "submitted"].includes(existing.status)) {

@@ -225,8 +225,8 @@ export default function StudentCertificateRequestForm({
           </div>
           <p className="text-sm text-muted-foreground">
             {isAr
-              ? 'اكتب اسمك كما تريده أن يظهر على الشهادة. سيراجع الإدارة الطلب قبل الإصدار.'
-              : 'Type your name as you want it to appear on the certificate. An admin will review before issuing.'}
+              ? 'اكتب اسمك كما تريده أن يظهر على الشهادة بالضبط. سيتم إصدار شهادتك تلقائيًا فور الإرسال.'
+              : 'Type your name exactly as you want it on the certificate. Your certificate is issued automatically as soon as you submit.'}
           </p>
 
           {request.rejection_reason && (
@@ -333,19 +333,19 @@ export default function StudentCertificateRequestForm({
               )}
               {request.status === 'rejected'
                 ? isAr
-                  ? 'إعادة الإرسال'
-                  : 'Resubmit'
+                  ? 'إعادة الإرسال وإصدار الشهادة'
+                  : 'Resubmit & issue'
                 : isAr
-                  ? 'إرسال للإدارة'
-                  : 'Submit to admin'}
+                  ? 'إصدار الشهادة'
+                  : 'Issue my certificate'}
             </Button>
           ) : (
             <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-600" />
               <span className="text-sm font-medium text-emerald-800">
                 {isAr
-                  ? 'تم إرسال طلبك. ستصلك إشعار عند صدور الشهادة.'
-                  : 'Your request has been submitted. You will be notified once the certificate is issued.'}
+                  ? 'تم استلام بياناتك. ستجد شهادتك في "الشهادات الصادرة" بمجرد جاهزيتها.'
+                  : 'Your details were received. You will find your certificate under "Issued certificates" once it is ready.'}
               </span>
             </div>
           )}

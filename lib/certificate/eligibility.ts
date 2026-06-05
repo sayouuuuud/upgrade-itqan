@@ -26,6 +26,99 @@ import {
   type CertificateLanguage,
 } from "@/lib/certificates"
 
+/**
+ * Issue a certificate for an existing request *now*, with no admin step.
+ *
+ * Runs the full approve → render → issue → notify sequence. It is defensive:
+ *   - returns (never throws) so callers can keep their happy path intact;
+ *   - re-resolves a default template when the request has none assigned yet,
+ *     so a single admin-configured default template is enough;
+ *   - is idempotent — an already-issued request short-circuits.
+ *
+ * Returns whether a PDF was produced. When it cannot issue (no template, render
+ * failure, ...) the request is left untouched so the manual admin flow still
+ * works as a fallback.
+ */
+export async function autoIssueRequest(
+  requestId: string,
+  scope: CertificateScope,
+): Promise<{ issued: boolean; pdf_url: string | null }> {
+  try {
+    const req = await queryOne<{
+      id: string
+      student_id: string
+      kind: CertificateKind
+      language: CertificateLanguage | null
+      template_id: string | null
+      status: string
+      pdf_url: string | null
+    }>(
+      `SELECT id, student_id, kind, language, template_id, status, pdf_url
+         FROM certificate_issuance_requests
+        WHERE id = $1 AND scope = $2`,
+      [requestId, scope],
+    )
+    if (!req) return { issued: false, pdf_url: null }
+    if (req.status === "issued") {
+      return { issued: true, pdf_url: req.pdf_url }
+    }
+
+    // Ensure a template is assigned (fall back to the scope/kind default).
+    let templateId = req.template_id
+    if (!templateId) {
+      const def = await resolveDefaultTemplate(scope, req.kind, req.language || "ar")
+      if (def?.id) {
+        templateId = def.id
+        await query(
+          `UPDATE certificate_issuance_requests SET template_id = $2 WHERE id = $1`,
+          [requestId, templateId],
+        )
+      }
+    }
+    if (!templateId) {
+      // No template configured at all — cannot auto-issue.
+      return { issued: false, pdf_url: null }
+    }
+
+    await query(
+      `UPDATE certificate_issuance_requests
+          SET status = 'approved', approved_at = COALESCE(approved_at, NOW())
+        WHERE id = $1`,
+      [requestId],
+    )
+    const result = await issueCertificateForRequest({
+      request_id: requestId,
+      scope,
+      format: "pdf",
+    })
+    await query(
+      `UPDATE certificate_issuance_requests
+          SET status = 'issued', issued_at = NOW()
+        WHERE id = $1`,
+      [requestId],
+    )
+
+    const link =
+      scope === "academy"
+        ? "/academy/student/certificates"
+        : "/student/certificates"
+    await createNotification({
+      userId: req.student_id,
+      type: "general",
+      title: "تم إصدار شهادتك 🎓",
+      message: "تهانينا! تم إصدار شهادتك تلقائيًا. اضغط هنا لعرضها وتحميلها.",
+      category: "system",
+      link,
+      dedupKey: `cert-issued:${requestId}`,
+    })
+
+    return { issued: true, pdf_url: result.pdf_url }
+  } catch (err) {
+    console.error("[eligibility] autoIssueRequest failed", err)
+    return { issued: false, pdf_url: null }
+  }
+}
+
 export interface EligibilityInput {
   scope: CertificateScope
   kind: CertificateKind
@@ -289,38 +382,12 @@ export async function createEligibilityRequest(
       try {
         const settings = await getAllSettings(scope)
         if (settings.auto_issue_on_eligibility === true) {
-          // Move request to approved first so the issue flow is uniform.
-          await query(
-            `UPDATE certificate_issuance_requests
-                SET status = 'approved', approved_at = NOW()
-              WHERE id = $1`,
-            [insert.id],
-          )
-          const issued = await issueCertificateForRequest({
-            request_id: insert.id,
-            scope,
-            format: "pdf",
-          })
-          await query(
-            `UPDATE certificate_issuance_requests
-                SET status = 'issued', issued_at = NOW()
-              WHERE id = $1`,
-            [insert.id],
-          )
-          result.auto_issued = true
-          result.pdf_url = issued.pdf_url
-          result.status = "issued"
-
-          await createNotification({
-            userId: studentId,
-            type: "general",
-            title: "تم إصدار شهادتك",
-            message:
-              "تهانينا! تم إصدار شهادتك بنجاح. اضغط هنا لعرضها وتحميلها.",
-            category: "system",
-            link: notif.link,
-            dedupKey: `cert-issued:${insert.id}`,
-          })
+          const issued = await autoIssueRequest(insert.id, scope)
+          if (issued.issued) {
+            result.auto_issued = true
+            result.pdf_url = issued.pdf_url
+            result.status = "issued"
+          }
         }
       } catch (err) {
         console.error("[eligibility] auto-issue failed", err)
