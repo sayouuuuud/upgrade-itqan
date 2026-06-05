@@ -165,7 +165,7 @@ export default function StudentTasksPage() {
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-12" dir="rtl">
       {/* Header */}
-      <div className="bg-gradient-to-l from-rose-600 to-orange-500 rounded-2xl p-6 text-white shadow-lg shadow-rose-500/20">
+      <div className="bg-gradient-to-l from-amber-600 to-orange-500 rounded-2xl p-6 text-white shadow-lg shadow-amber-500/20">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <ClipboardList className="w-7 h-7" />
           {t.academy?.tasks || 'لوحة المهام'}
