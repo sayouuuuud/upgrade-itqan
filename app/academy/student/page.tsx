@@ -190,28 +190,28 @@ export default function AcademyStudentDashboard() {
     <div className="space-y-6">
       {/* Welcome + Level Hero */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2 bg-gradient-to-l from-primary to-primary/85 rounded-2xl p-6 text-primary-foreground">
+        <div className="lg:col-span-2 bg-gradient-to-br from-violet-600 via-indigo-600 to-sky-500 rounded-2xl p-6 text-white shadow-lg shadow-indigo-500/20">
           <h1 className="text-2xl font-bold mb-1 text-balance">
             {t.academy?.welcomeBack || 'مرحباً بعودتك!'}
           </h1>
-          <p className="text-primary-foreground/80 mb-5 text-sm leading-relaxed">
+          <p className="text-white/80 mb-5 text-sm leading-relaxed">
             {t.academy?.continueJourney || 'واصل رحلتك التعليمية واكسب المزيد من النقاط'}
           </p>
           <div className="flex items-center gap-6 flex-wrap">
             <div className="flex items-center gap-2">
               <Flame className="w-5 h-5 text-orange-300" />
               <span className="font-bold text-lg">{stats?.streak_days || 0}</span>
-              <span className="text-primary-foreground/70 text-sm">يوم متتالي</span>
+              <span className="text-white/70 text-sm">يوم متتالي</span>
             </div>
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-300" />
               <span className="font-bold text-lg">{stats?.total_points || 0}</span>
-              <span className="text-primary-foreground/70 text-sm">نقطة</span>
+              <span className="text-white/70 text-sm">نقطة</span>
             </div>
             <div className="flex items-center gap-2">
               <Medal className="w-5 h-5 text-amber-200" />
               <span className="font-bold text-lg">{stats?.badges_earned || 0}</span>
-              <span className="text-primary-foreground/70 text-sm">شارة</span>
+              <span className="text-white/70 text-sm">شارة</span>
             </div>
           </div>
         </div>
@@ -220,7 +220,7 @@ export default function AcademyStudentDashboard() {
         <div className="bg-card rounded-2xl border border-border p-6 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                 <Trophy className="w-5 h-5" />
               </div>
               <div>
@@ -235,7 +235,7 @@ export default function AcademyStudentDashboard() {
           <div>
             <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-2">
               <div
-                className="h-full bg-primary rounded-full transition-all"
+                className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all"
                 style={{ width: `${lp?.percent ?? 100}%` }}
               />
             </div>
@@ -250,15 +250,16 @@ export default function AcademyStudentDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <StatCard icon={BookOpen} label="دوراتي" value={stats?.enrolled_courses || 0} />
-        <StatCard icon={CheckCircle2} label="دورات مكتملة" value={stats?.completed_courses || 0} />
+        <StatCard icon={BookOpen} label="دوراتي" value={stats?.enrolled_courses || 0} tone="sky" />
+        <StatCard icon={CheckCircle2} label="دورات مكتملة" value={stats?.completed_courses || 0} tone="emerald" />
         <StatCard icon={Clock} label="مهام معلّقة" value={stats?.pending_tasks || 0} highlight={Boolean(stats?.pending_tasks)} />
-        <StatCard icon={Calendar} label="جلسات قادمة" value={stats?.upcoming_sessions || 0} />
-        <StatCard icon={Award} label="الشارات" value={stats?.badges_earned || 0} />
+        <StatCard icon={Calendar} label="جلسات قادمة" value={stats?.upcoming_sessions || 0} tone="violet" />
+        <StatCard icon={Award} label="الشارات" value={stats?.badges_earned || 0} tone="rose" />
         <StatCard
           icon={GraduationCap}
           label="متوسط الدرجات"
           value={stats?.avg_grade != null ? `${stats.avg_grade}%` : '—'}
+          tone="teal"
         />
       </div>
 
@@ -266,27 +267,27 @@ export default function AcademyStudentDashboard() {
       {nextSession && (
         <Link
           href={`/academy/student/sessions/${nextSession.id}`}
-          className="block bg-card rounded-2xl border border-border p-5 hover:border-primary/40 transition-colors group"
+          className="block bg-gradient-to-l from-violet-500/10 to-transparent rounded-2xl border border-violet-500/20 p-5 hover:border-violet-500/50 transition-colors group"
         >
           <div className="flex items-center gap-4 flex-wrap">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-violet-500/15 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
               <Video className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-xs font-medium text-primary">جلستك القادمة</p>
+                <p className="text-xs font-medium text-violet-600 dark:text-violet-400">جلستك القادمة</p>
                 {sessionStartsSoon(nextSession.scheduled_at) && (
-                  <span className="text-[10px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-full animate-pulse">
+                  <span className="text-[10px] font-bold bg-violet-600 text-white px-2 py-0.5 rounded-full animate-pulse">
                     تبدأ قريباً
                   </span>
                 )}
               </div>
-              <p className="font-bold truncate group-hover:text-primary transition-colors">{nextSession.title}</p>
+              <p className="font-bold truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{nextSession.title}</p>
               <p className="text-sm text-muted-foreground truncate">{nextSession.course_title}</p>
             </div>
             <div className="text-left shrink-0">
               <p className="text-sm font-medium">{formatDate(nextSession.scheduled_at)}</p>
-              <span className="inline-flex items-center gap-1 mt-1 text-xs text-primary font-bold">
+              <span className="inline-flex items-center gap-1 mt-1 text-xs text-violet-600 dark:text-violet-400 font-bold">
                 <PlayCircle className="w-4 h-4" /> انضمام
               </span>
             </div>
@@ -301,9 +302,9 @@ export default function AcademyStudentDashboard() {
           <div className="bg-card rounded-2xl border border-border p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-primary" /> دوراتي
+                <BookOpen className="w-5 h-5 text-sky-600 dark:text-sky-400" /> دوراتي
               </h2>
-              <Link href="/academy/student/courses" className="text-sm text-primary hover:underline flex items-center gap-1">
+              <Link href="/academy/student/courses" className="text-sm text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
                 عرض الكل <ChevronLeft className="w-4 h-4" />
               </Link>
             </div>
@@ -327,26 +328,26 @@ export default function AcademyStudentDashboard() {
                     href={`/academy/student/courses/${course.id}`}
                     className="flex items-center gap-4 p-3 rounded-xl bg-muted/40 hover:bg-muted transition-colors group"
                   >
-                    <div className="w-20 h-14 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                    <div className="w-20 h-14 rounded-lg bg-sky-500/10 flex items-center justify-center overflow-hidden shrink-0">
                       {course.thumbnail_url ? (
                         <img src={course.thumbnail_url || "/placeholder.svg"} alt={course.title} className="w-full h-full object-cover" />
                       ) : (
-                        <BookOpen className="w-6 h-6 text-primary" />
+                        <BookOpen className="w-6 h-6 text-sky-600 dark:text-sky-400" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold truncate group-hover:text-primary transition-colors">{course.title}</h3>
+                      <h3 className="font-semibold truncate group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">{course.title}</h3>
                       {course.teacher_name && (
                         <p className="text-sm text-muted-foreground">{course.teacher_name}</p>
                       )}
                       <div className="flex items-center gap-2 mt-2">
                         <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${course.progress_percent}%` }} />
+                          <div className="h-full bg-gradient-to-r from-sky-500 to-emerald-500 rounded-full transition-all" style={{ width: `${course.progress_percent}%` }} />
                         </div>
                         <span className="text-xs font-medium text-muted-foreground">{course.progress_percent}%</span>
                       </div>
                     </div>
-                    <PlayCircle className="w-7 h-7 text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    <PlayCircle className="w-7 h-7 text-sky-600 dark:text-sky-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   </Link>
                 ))}
               </div>
@@ -356,7 +357,7 @@ export default function AcademyStudentDashboard() {
           {/* Activity Feed */}
           <div className="bg-card rounded-2xl border border-border p-6">
             <h2 className="text-lg font-bold flex items-center gap-2 mb-5">
-              <ActivityIcon className="w-5 h-5 text-primary" /> آخر النشاطات
+              <ActivityIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" /> آخر النشاطات
             </h2>
             {activity.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">لا توجد نشاطات بعد</p>
@@ -364,7 +365,7 @@ export default function AcademyStudentDashboard() {
               <div className="space-y-1">
                 {activity.slice(0, 6).map((entry) => (
                   <div key={entry.id} className="flex items-center gap-3 py-2.5 border-b border-border/50 last:border-0">
-                    <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                       <Sparkles className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -392,7 +393,7 @@ export default function AcademyStudentDashboard() {
           <div className="bg-card rounded-2xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-primary" /> الجلسات القادمة
+                <Calendar className="w-5 h-5 text-violet-600 dark:text-violet-400" /> الجلسات القادمة
               </h2>
             </div>
             {sessions.length === 0 ? (
@@ -403,17 +404,17 @@ export default function AcademyStudentDashboard() {
                   <Link
                     key={session.id}
                     href={`/academy/student/sessions/${session.id}`}
-                    className="block p-3 rounded-xl bg-muted/40 hover:bg-muted transition-colors"
+                    className="block p-3 rounded-xl bg-muted/40 hover:bg-violet-500/10 transition-colors"
                   >
                     <p className="font-medium text-sm truncate">{session.title}</p>
                     <p className="text-xs text-muted-foreground mt-1 truncate">{session.course_title}</p>
-                    <p className="text-xs text-primary mt-2">{formatDate(session.scheduled_at)}</p>
+                    <p className="text-xs text-violet-600 dark:text-violet-400 mt-2">{formatDate(session.scheduled_at)}</p>
                   </Link>
                 ))}
                 {sessions.length > 4 && (
                   <button
                     onClick={() => setShowAllSessions(!showAllSessions)}
-                    className="w-full text-center text-sm text-blue-600 hover:text-blue-700 py-2 mt-2 border border-blue-100 dark:border-blue-900/50 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                    className="w-full text-center text-sm text-violet-600 hover:text-violet-700 dark:text-violet-400 py-2 mt-2 border border-violet-500/20 rounded-lg hover:bg-violet-500/10 transition-colors"
                   >
                     {showAllSessions ? (t.academy?.showLess || 'عرض أقل') : (t.academy?.showMore || 'المزيد')}
                   </button>
@@ -426,9 +427,9 @@ export default function AcademyStudentDashboard() {
           <div className="bg-card rounded-2xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold flex items-center gap-2">
-                <Target className="w-5 h-5 text-primary" /> المهام المعلّقة
+                <Target className="w-5 h-5 text-rose-600 dark:text-rose-400" /> المهام المعلّقة
               </h2>
-              <Link href="/academy/student/tasks" className="text-xs text-primary hover:underline">الكل</Link>
+              <Link href="/academy/student/tasks" className="text-xs text-rose-600 dark:text-rose-400 hover:underline">الكل</Link>
             </div>
             {tasks.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">لا توجد مهام معلّقة</p>
@@ -441,19 +442,19 @@ export default function AcademyStudentDashboard() {
                     <Link
                       key={task.id}
                       href={`/academy/student/tasks/${task.id}`}
-                      className="block p-3 rounded-xl bg-muted/40 hover:bg-muted transition-colors"
+                      className="block p-3 rounded-xl bg-muted/40 hover:bg-rose-500/10 transition-colors"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-medium text-sm truncate">{task.title}</p>
                         <span className={cn(
                           'text-xs px-2 py-0.5 rounded shrink-0',
-                          late ? 'bg-destructive/15 text-destructive' : 'bg-primary/10 text-primary'
+                          late ? 'bg-destructive/15 text-destructive' : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
                         )}>
                           {due}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 truncate">{task.course_title}</p>
-                      <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1 mt-2 text-xs text-amber-600 dark:text-amber-400">
                         <Star className="w-3 h-3" /> <span>{task.points_value} نقطة</span>
                       </div>
                     </Link>
@@ -504,25 +505,37 @@ export default function AcademyStudentDashboard() {
   )
 }
 
+const STAT_TONES = {
+  sky: { icon: 'bg-sky-500/15 text-sky-600 dark:text-sky-400', border: 'hover:border-sky-500/40' },
+  emerald: { icon: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400', border: 'hover:border-emerald-500/40' },
+  amber: { icon: 'bg-amber-500/15 text-amber-600 dark:text-amber-400', border: 'hover:border-amber-500/40' },
+  violet: { icon: 'bg-violet-500/15 text-violet-600 dark:text-violet-400', border: 'hover:border-violet-500/40' },
+  rose: { icon: 'bg-rose-500/15 text-rose-600 dark:text-rose-400', border: 'hover:border-rose-500/40' },
+  teal: { icon: 'bg-teal-500/15 text-teal-600 dark:text-teal-400', border: 'hover:border-teal-500/40' },
+} as const
+
 function StatCard({
   icon: Icon,
   label,
   value,
   highlight,
+  tone = 'sky',
 }: {
   icon: React.ElementType
   label: string
   value: number | string
   highlight?: boolean
+  tone?: keyof typeof STAT_TONES
 }) {
+  const t = STAT_TONES[tone]
   return (
     <div className={cn(
       'bg-card rounded-xl border p-4 transition-colors',
-      highlight ? 'border-primary/40' : 'border-border'
+      highlight ? 'border-amber-500/50' : cn('border-border', t.border)
     )}>
       <div className={cn(
         'w-9 h-9 rounded-lg flex items-center justify-center mb-3',
-        highlight ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+        highlight ? 'bg-amber-500 text-white' : t.icon
       )}>
         <Icon className="w-4 h-4" />
       </div>
