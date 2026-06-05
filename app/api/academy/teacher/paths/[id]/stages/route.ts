@@ -34,7 +34,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
               s.video_url, s.pdf_url, s.passage_text, s.estimated_minutes, s.created_at,
               s.stage_type, s.course_id, s.halaqa_id, s.lesson_id,
               c.title as course_title,
-              h.title as halaqa_title,
+              h.name as halaqa_title,
               l.title as lesson_title
          FROM tajweed_path_stages s
          LEFT JOIN courses c ON s.course_id = c.id

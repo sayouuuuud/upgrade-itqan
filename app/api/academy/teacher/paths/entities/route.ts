@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest) {
     let halaqat: any[] = []
     try {
       halaqat = await query(
-        `SELECT id, title FROM halaqat WHERE teacher_id = $1 ORDER BY created_at DESC`,
+        `SELECT id, name as title FROM halaqat WHERE teacher_id = $1 ORDER BY created_at DESC`,
         [session.sub]
       )
     } catch {
