@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Users,
   Plus,
@@ -256,9 +257,20 @@ export function HalaqatList({
     )
   }
 
+  const FADE_UP_ANIMATION_VARIANTS = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+  }
+
   return (
-    <div className="space-y-6">
-      <div className={`rounded-2xl border bg-gradient-to-l ${theme.accent} p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4`}>
+    <motion.div 
+      initial="hidden" animate="show" viewport={{ once: true }}
+      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}
+      className="space-y-6 relative"
+    >
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+      <motion.div variants={FADE_UP_ANIMATION_VARIANTS} className={`relative overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-l ${theme.accent} p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-sm`}>
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay" />
         <div className="flex items-start gap-3 sm:gap-4">
           <div className="shrink-0 mt-0.5">{theme.icon}</div>
           <div>
@@ -276,21 +288,21 @@ export function HalaqatList({
         {canEdit && (
           <button
             onClick={openAdd}
-            className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2.5 bg-foreground text-background rounded-xl font-bold transition-transform hover:scale-105 shadow-sm"
+            className="self-start sm:self-auto inline-flex items-center gap-2 px-5 py-3 bg-foreground text-background rounded-xl font-bold transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 z-10"
           >
             <Plus className="w-5 h-5" /> حلقة جديدة
           </button>
         )}
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <motion.div variants={FADE_UP_ANIMATION_VARIANTS} className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatCard label="إجمالي الحلقات" value={halaqat.length} icon={<Users className="w-4 h-4" />} />
         <StatCard label="حلقات مباشرة الآن" value={liveCount} icon={<Radio className="w-4 h-4" />} accent="text-red-600 dark:text-red-400" />
         <StatCard label="إجمالي الطلاب" value={totalStudents} icon={<GraduationCap className="w-4 h-4" />} />
         <StatCard label="نشطة" value={halaqat.filter(h => h.is_active !== false).length} icon={<Sparkles className="w-4 h-4" />} accent="text-emerald-600 dark:text-emerald-400" />
-      </div>
+      </motion.div>
 
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+      <motion.div variants={FADE_UP_ANIMATION_VARIANTS} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center bg-card/50 backdrop-blur-sm p-2 rounded-2xl border border-border/50">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
@@ -314,10 +326,10 @@ export function HalaqatList({
             </button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {filtered.length === 0 ? (
-        <div className="bg-card border border-dashed border-border rounded-2xl p-12 sm:p-16 text-center">
+        <motion.div variants={FADE_UP_ANIMATION_VARIANTS} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-border/50 rounded-3xl p-12 sm:p-16 text-center shadow-sm">
           <div className="mx-auto w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mb-4">
             <Users className="w-8 h-8 text-muted-foreground opacity-60" />
           </div>
@@ -331,22 +343,31 @@ export function HalaqatList({
               <Plus className="w-4 h-4" /> إضافة حلقة
             </button>
           )}
-        </div>
+        </motion.div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((h) => (
-            <HalaqaCard
-              key={h.id}
-              halaqa={h}
-              themeBadge={theme.badge}
-              basePath={basePath}
-              role={role}
-              onEdit={canEdit ? openEdit : undefined}
-              onDelete={canEdit ? handleDelete : undefined}
-              deleting={deletingId === h.id}
-            />
-          ))}
-        </div>
+        <motion.div variants={FADE_UP_ANIMATION_VARIANTS} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <AnimatePresence>
+            {filtered.map((h) => (
+              <motion.div
+                key={h.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+              >
+                <HalaqaCard
+                  halaqa={h}
+                  themeBadge={theme.badge}
+                  basePath={basePath}
+                  role={role}
+                  onEdit={canEdit ? openEdit : undefined}
+                  onDelete={canEdit ? handleDelete : undefined}
+                  deleting={deletingId === h.id}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
 
       {showModal && canEdit && (
@@ -362,7 +383,7 @@ export function HalaqatList({
           onSubmit={handleSubmit}
         />
       )}
-    </div>
+    </motion.div>
   )
 }
 
@@ -378,12 +399,12 @@ function StatCard({
   accent?: string
 }) {
   return (
-    <div className="bg-card border border-border rounded-xl p-3 sm:p-4">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-border/50 rounded-3xl p-5 relative transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+      <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
         <span className={accent || 'text-muted-foreground'}>{icon}</span>
         <span className="truncate">{label}</span>
       </div>
-      <p className={`text-xl sm:text-2xl font-extrabold ${accent || ''}`}>{value}</p>
+      <p className={`text-3xl font-black ${accent || ''}`}>{value}</p>
     </div>
   )
 }
@@ -407,65 +428,68 @@ function HalaqaCard({
 }) {
   const scheduled = formatRelativeFromNow(h.scheduled_at)
   return (
-    <div className="group relative bg-card border border-border rounded-2xl p-5 hover:shadow-md hover:border-emerald-500/40 transition-all overflow-hidden">
+    <div className="group relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-border/50 rounded-3xl p-6 hover:shadow-xl hover:shadow-indigo-500/5 hover:border-indigo-500/30 transition-all duration-300 overflow-hidden flex flex-col h-full">
       {h.is_live && (
-        <span className="absolute top-3 right-3 inline-flex items-center gap-1 text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
-          <Radio className="w-3 h-3 animate-pulse" /> مباشر الآن
+        <span className="absolute top-4 right-4 inline-flex items-center gap-1.5 text-[11px] font-black bg-red-500 text-white px-2.5 py-1 rounded-full shadow-lg shadow-red-500/20">
+          <Radio className="w-3.5 h-3.5 animate-pulse" /> مباشر الآن
         </span>
       )}
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="min-w-0">
-          <h3 className="font-bold text-lg leading-tight truncate">{h.name}</h3>
-          {h.teacher_name && (
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">
-              <GraduationCap className="w-3 h-3 inline ml-1" />
-              {h.teacher_name}
-            </p>
+      
+      <div className="flex-1">
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="min-w-0 pr-1">
+            <h3 className="font-bold text-xl leading-tight truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{h.name}</h3>
+            {h.teacher_name && (
+              <p className="text-xs font-medium text-muted-foreground mt-1.5 truncate flex items-center gap-1.5">
+                <div className="p-1 rounded-md bg-muted"><GraduationCap className="w-3 h-3 text-foreground" /></div>
+                {h.teacher_name}
+              </p>
+            )}
+          </div>
+          <span
+            className={`shrink-0 text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-black border ${
+              h.is_active !== false
+                ? 'bg-emerald-100/50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-200/50'
+                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200/50'
+            }`}
+          >
+            {h.is_active !== false ? 'نشطة' : 'متوقفة'}
+          </span>
+        </div>
+
+        {h.description && (
+          <p className="text-sm font-medium text-muted-foreground line-clamp-2 mb-5 leading-relaxed">{h.description}</p>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          <span className={`px-2.5 py-1 rounded-md font-bold text-[11px] border ${themeBadge}`}>
+            {GENDER_LABELS[h.gender] || 'مختلط'}
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-bold text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+            <Users className="w-3.5 h-3.5" /> {h.current_students}/{h.max_students}
+          </span>
+          {scheduled && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-bold text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 w-full sm:w-auto mt-1 sm:mt-0">
+              <CalendarClock className="w-3.5 h-3.5" /> {scheduled}
+            </span>
           )}
         </div>
-        <span
-          className={`shrink-0 text-[11px] px-2 py-0.5 rounded-full font-medium ${
-            h.is_active !== false
-              ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300'
-              : 'bg-gray-100 text-gray-600 dark:bg-gray-700/30 dark:text-gray-300'
-          }`}
-        >
-          {h.is_active !== false ? 'نشطة' : 'متوقفة'}
-        </span>
       </div>
 
-      {h.description && (
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{h.description}</p>
-      )}
-
-      <div className="flex flex-wrap gap-1.5 mb-3 text-[11px]">
-        <span className={`px-2 py-0.5 rounded-full font-medium border ${themeBadge}`}>
-          {GENDER_LABELS[h.gender] || 'مختلط'}
-        </span>
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-medium bg-secondary/50 text-foreground">
-          <Users className="w-3 h-3" /> {h.current_students}/{h.max_students}
-        </span>
-        {scheduled && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-medium bg-secondary/50 text-foreground">
-            <CalendarClock className="w-3 h-3" /> {scheduled}
-          </span>
-        )}
-      </div>
-
-      <div className="flex gap-2">
+      <div className="flex gap-2 pt-4 border-t border-border/50">
         <Link
           href={`${basePath}/${h.id}`}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 bg-foreground/90 hover:bg-foreground text-background rounded-lg text-sm font-bold transition-colors"
+          className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow-md"
         >
           <ChevronLeft className="w-4 h-4 rotate-180" />
           {role === 'student' ? 'فتح الحلقة' : 'إدارة الحلقة'}
         </Link>
         <Link
           href={`${basePath}/${h.id}/live`}
-          className={`inline-flex items-center justify-center py-2 px-3 rounded-lg text-sm font-bold transition-colors ${
+          className={`inline-flex items-center justify-center py-2.5 px-3 rounded-xl text-sm font-bold transition-all shadow-sm ${
             h.is_live
-              ? 'bg-red-500 hover:bg-red-600 text-white'
-              : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+              ? 'bg-red-500 hover:bg-red-600 text-white hover:shadow-red-500/20'
+              : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-emerald-500/20'
           }`}
           title={h.is_live ? 'انضم للبث المباشر' : 'دخول الغرفة'}
         >
@@ -474,7 +498,7 @@ function HalaqaCard({
         {onEdit && (
           <button
             onClick={() => onEdit(h)}
-            className="inline-flex items-center justify-center py-2 px-3 rounded-lg text-sm border border-border hover:bg-secondary transition-colors"
+            className="inline-flex items-center justify-center py-2.5 px-3 rounded-xl text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
             title="تعديل"
           >
             <Edit2 className="w-4 h-4" />
@@ -484,7 +508,7 @@ function HalaqaCard({
           <button
             onClick={() => onDelete(h.id)}
             disabled={deleting}
-            className="inline-flex items-center justify-center py-2 px-3 rounded-lg text-sm border border-red-200 dark:border-red-500/40 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            className="inline-flex items-center justify-center py-2.5 px-3 rounded-xl text-sm bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 transition-colors disabled:opacity-50"
             title="حذف"
           >
             {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
@@ -521,17 +545,22 @@ function HalaqaFormModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
-          <h3 className="text-lg font-bold flex items-center gap-2">
-            <Shield className="w-5 h-5 text-emerald-500" />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-3xl shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col"
+      >
+        <div className="flex items-center justify-between p-6 sm:p-8 border-b border-border/50 shrink-0">
+          <h3 className="text-xl font-black flex items-center gap-3">
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-xl">
+              <Shield className="w-5 h-5" />
+            </div>
             {editItem ? 'تعديل الحلقة' : 'إضافة حلقة جديدة'}
           </h3>
-          <button onClick={onClose} className="p-2 hover:bg-muted rounded-lg transition-colors">
+          <button onClick={onClose} className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full transition-colors shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
-        <form onSubmit={onSubmit} className="p-5 space-y-4">
+        <form onSubmit={onSubmit} className="p-6 sm:p-8 space-y-5 overflow-y-auto scrollbar-thin scrollbar-thumb-border">
           <Field label="اسم الحلقة" required>
             <input
               required
@@ -627,25 +656,25 @@ function HalaqaFormModal({
             </p>
           </Field>
 
-          <div className="flex gap-3 pt-1">
+          <div className="flex gap-4 pt-4 border-t border-border/50 mt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 border border-border rounded-lg font-bold hover:bg-muted transition-colors"
+              className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold transition-colors"
             >
               إلغاء
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-60"
+              className="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-60 disabled:shadow-none"
             >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
               {editItem ? 'حفظ التعديلات' : 'إنشاء الحلقة'}
             </button>
           </div>
         </form>
-      </div>
+      </motion.div>
       <style jsx>{`
         :global(.input) {
           width: 100%;

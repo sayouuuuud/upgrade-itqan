@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -310,20 +311,33 @@ export default function FiqhLibraryPage() {
       [me]
     )
 
+  const FADE_UP_ANIMATION_VARIANTS = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+  }
+
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6" dir={isAr ? 'rtl' : 'ltr'}>
-      {/* Hero */}
-      <div className="rounded-3xl border-2 border-primary/20 bg-gradient-to-bl from-primary/5 via-card to-card p-6 md:p-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+    <motion.div 
+      initial="hidden" animate="show" viewport={{ once: true }}
+      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}
+      className="max-w-6xl mx-auto p-4 md:p-6 space-y-6 relative" 
+      dir={isAr ? 'rtl' : 'ltr'}
+    >
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+
+      {/* Premium Hero */}
+      <motion.div variants={FADE_UP_ANIMATION_VARIANTS} className="relative overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-bl from-primary/10 via-card to-card p-6 md:p-10 shadow-sm">
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div className="space-y-4 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 text-primary text-xs font-bold uppercase tracking-wider border border-primary/20">
               <ShieldCheck className="w-4 h-4" />
               {isAr ? 'مكتبة الفتاوى' : 'Fiqh Library'}
             </div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
               {isAr ? 'المكتبة الفقهية' : 'Fiqh Q&A Library'}
             </h1>
-            <p className="text-muted-foreground leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed text-lg">
               {isAr
                 ? 'تصفّح أسئلة فقهية أجاب عنها المسؤولون المتخصصون ووافق أصحابها على نشرها، أو اطرح سؤالك وسيصل إلى مسؤول مختص في التصنيف.'
                 : 'Browse questions answered by specialized supervisors and published with the asker’s consent, or submit your own and it will reach a specialist.'}
@@ -332,17 +346,17 @@ export default function FiqhLibraryPage() {
           <Button
             onClick={() => setTab('ask')}
             size="lg"
-            className="self-start md:self-end shrink-0"
+            className="self-start md:self-auto shrink-0 shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 h-14 px-8 rounded-2xl font-black text-lg"
           >
-            <Plus className="w-4 h-4 me-2" />
+            <Plus className="w-5 h-5 me-2" />
             {isAr ? 'اطرح سؤالاً' : 'Ask a question'}
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Tabs */}
-      <div className="border-b border-border">
-        <div className="flex gap-1 overflow-x-auto">
+      <motion.div variants={FADE_UP_ANIMATION_VARIANTS} className="border-b border-border/60">
+        <div className="flex gap-2 overflow-x-auto pb-px">
           {TABS.filter((t) => t.visible).map((t) => {
             const Icon = t.icon
             const active = tab === t.id
@@ -352,19 +366,19 @@ export default function FiqhLibraryPage() {
                 type="button"
                 onClick={() => setTab(t.id)}
                 className={cn(
-                  'inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-colors -mb-px',
+                  'inline-flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all',
                   active
                     ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-t-xl'
                 )}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className={cn("w-4 h-4", active && "animate-pulse")} />
                 {isAr ? t.ar : t.en}
               </button>
             )
           })}
         </div>
-      </div>
+      </motion.div>
 
       {/* Tab contents */}
       {tab === 'library' && (
@@ -407,28 +421,30 @@ export default function FiqhLibraryPage() {
       )}
 
       {tab === 'ask' && (
-        <AskTab
-          isAr={isAr}
-          categories={categories}
-          askCategory={askCategory}
-          setAskCategory={setAskCategory}
-          askTitle={askTitle}
-          setAskTitle={setAskTitle}
-          askBody={askBody}
-          setAskBody={setAskBody}
-          askAnonymous={askAnonymous}
-          setAskAnonymous={setAskAnonymous}
-          submitting={submitting}
-          submitError={submitError}
-          submitSuccess={submitSuccess}
-          onSubmit={submit}
-          isLoggedIn={!!me}
-          customFields={customFields}
-          askExtraData={askExtraData}
-          setAskExtraData={setAskExtraData}
-        />
+        <motion.div variants={FADE_UP_ANIMATION_VARIANTS}>
+          <AskTab
+            isAr={isAr}
+            categories={categories}
+            askCategory={askCategory}
+            setAskCategory={setAskCategory}
+            askTitle={askTitle}
+            setAskTitle={setAskTitle}
+            askBody={askBody}
+            setAskBody={setAskBody}
+            askAnonymous={askAnonymous}
+            setAskAnonymous={setAskAnonymous}
+            submitting={submitting}
+            submitError={submitError}
+            submitSuccess={submitSuccess}
+            onSubmit={submit}
+            isLoggedIn={!!me}
+            customFields={customFields}
+            askExtraData={askExtraData}
+            setAskExtraData={setAskExtraData}
+          />
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   )
 }
 
@@ -452,15 +468,20 @@ function LibraryTab({
   onSearch: (v: string) => void
 }) {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col md:flex-row gap-3">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="space-y-6"
+    >
+      <div className="flex flex-col md:flex-row gap-3 bg-card/50 backdrop-blur-sm p-2 rounded-2xl border border-border/50">
         <div className="relative flex-1">
-          <Search className="absolute top-1/2 -translate-y-1/2 w-4 h-4 start-3 text-muted-foreground" />
+          <Search className="absolute top-1/2 -translate-y-1/2 w-5 h-5 start-4 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => onSearch(e.target.value)}
-            placeholder={isAr ? 'ابحث في المكتبة...' : 'Search the library...'}
-            className="ps-10"
+            placeholder={isAr ? 'ابحث في المكتبة الفقهية...' : 'Search the library...'}
+            className="ps-11 h-12 bg-background border-none shadow-sm rounded-xl text-base"
           />
         </div>
       </div>
@@ -503,47 +524,59 @@ function LibraryTab({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {questions.map((q) => (
-            <Link key={q.id} href={`/academy/fiqh/${q.id}`} className="block group">
-              <Card className="rounded-2xl hover:shadow-md hover:border-primary/40 transition-all h-full">
-                <CardContent className="p-5 space-y-2.5">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {q.category_name_ar && (
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
-                        {isAr ? q.category_name_ar : q.category_name_en || q.category_name_ar}
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="font-bold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-                    {q.title || q.question.slice(0, 80) + (q.question.length > 80 ? '…' : '')}
-                  </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                    {q.question}
-                  </p>
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-2 border-t border-border/60">
-                    <div className="truncate">
-                      {q.answered_by_name && (
-                        <span>
-                          {isAr ? 'أجاب: ' : 'Answered by '}
-                          <span className="font-semibold text-foreground">
-                            {q.answered_by_name}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AnimatePresence>
+            {questions.map((q) => (
+              <motion.div
+                key={q.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Link href={`/academy/fiqh/${q.id}`} className="block group h-full">
+                  <Card className="rounded-3xl hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300 h-full flex flex-col bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-border/50">
+                    <CardContent className="p-6 flex flex-col h-full space-y-4">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {q.category_name_ar && (
+                          <span className="text-[11px] px-3 py-1 rounded-full bg-primary/10 text-primary font-bold border border-primary/20">
+                            {isAr ? q.category_name_ar : q.category_name_en || q.category_name_ar}
                           </span>
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Eye className="w-3 h-3" />
-                      {q.views_count || 0}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <h3 className="font-bold text-xl line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+                          {q.title || q.question.slice(0, 80) + (q.question.length > 80 ? '…' : '')}
+                        </h3>
+                        <p className="text-sm font-medium text-muted-foreground line-clamp-3 leading-relaxed">
+                          {q.question}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground pt-4 border-t border-border/50 mt-auto">
+                        <div className="truncate">
+                          {q.answered_by_name && (
+                            <span className="flex items-center gap-1.5">
+                              {isAr ? 'أجاب: ' : 'Answered by '}
+                              <span className="text-foreground">
+                                {q.answered_by_name}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0 bg-secondary/50 px-2 py-1 rounded-md">
+                          <Eye className="w-4 h-4" />
+                          {q.views_count || 0}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }
 
