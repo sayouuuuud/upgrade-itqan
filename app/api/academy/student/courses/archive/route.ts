@@ -42,7 +42,11 @@ export async function GET(req: NextRequest) {
       LEFT JOIN users u ON c.teacher_id = u.id
       LEFT JOIN categories cat ON c.category_id = cat.id
       WHERE e.student_id = $1
-        AND LOWER(e.status) = 'completed'
+        AND (
+          LOWER(e.status) = 'completed'
+          OR e.completed_at IS NOT NULL
+          OR COALESCE(e.progress_percentage, 0) >= 100
+        )
         ${searchFilter}
       ORDER BY e.completed_at DESC NULLS LAST, e.enrolled_at DESC
       `,
