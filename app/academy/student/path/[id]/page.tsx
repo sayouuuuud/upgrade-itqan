@@ -200,8 +200,16 @@ export default function StudentPathDetailPage() {
     fiqh: 'الفقه الإسلامي',
     aqeedah: 'العقيدة الإسلامية',
     seerah: 'السيرة النبوية',
+    seerah: 'السيرة النبوية',
     tafsir: 'التفسير وعلوم القرآن',
     tajweed: 'التجويد والمقرأة'
+  }
+
+  const getCertLabel = (type?: string) => {
+    if (!type) return 'شهادة إنجاز للمسار'
+    if (type === 'certificate_of_completion') return 'شهادة إتمام معتمدة'
+    if (type === 'certificate_of_attendance') return 'شهادة حضور'
+    return type
   }
 
   const isEnrolled = enrollment && enrollment.status === 'active'
@@ -347,7 +355,7 @@ export default function StudentPathDetailPage() {
             <div className="h-36 bg-gradient-to-tr from-emerald-800 to-teal-900 flex flex-col items-center justify-center p-6 text-white text-center">
               <Award className="w-12 h-12 text-emerald-300 mb-2" />
               <span className="text-xs tracking-widest text-emerald-200 uppercase font-bold">شهادة معتمدة عند الإتمام</span>
-              <p className="text-sm font-semibold opacity-90">{path.certification_type || 'شهادة إنجاز للمسار'}</p>
+              <p className="text-sm font-semibold opacity-90">{getCertLabel(path.certification_type)}</p>
             </div>
 
             {/* Price & Details */}
@@ -385,8 +393,8 @@ export default function StudentPathDetailPage() {
                     <Award className="w-4 h-4 text-emerald-600" />
                     الشهادة المقدمة
                   </span>
-                  <span className="font-semibold text-foreground text-xs text-right max-w-[120px] truncate" title={path.certification_type}>
-                    {path.certification_type || 'شهادة إتمام'}
+                  <span className="font-semibold text-foreground text-xs text-right max-w-[120px] truncate" title={getCertLabel(path.certification_type)}>
+                    {getCertLabel(path.certification_type)}
                   </span>
                 </div>
               </div>
