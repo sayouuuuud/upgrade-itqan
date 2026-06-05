@@ -17,6 +17,7 @@ interface Course {
   total_lessons: number
   total_enrolled: number
   created_at: string
+  my_enrollment_status?: string
 }
 
 export default function BrowseCoursesPage() {
@@ -32,7 +33,12 @@ export default function BrowseCoursesPage() {
         const res = await fetch('/api/academy/student/courses/all')
         if (res.ok) {
           const data = await res.json()
-          setCourses(data.data || [])
+          const allCourses = data.data || []
+          const availableCourses = allCourses.filter((c: Course) => 
+            !c.my_enrollment_status || 
+            !['active', 'pending', 'completed'].includes(c.my_enrollment_status)
+          )
+          setCourses(availableCourses)
         }
       } catch (error) {
         console.error('Failed to fetch courses:', error)
