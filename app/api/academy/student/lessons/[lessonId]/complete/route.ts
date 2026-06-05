@@ -62,7 +62,8 @@ export async function POST(
        SET progress_percentage = sub.pct,
            last_accessed_at = NOW(),
            updated_at = NOW(),
-           completed_at = CASE WHEN sub.pct >= 100 THEN COALESCE(e.completed_at, NOW()) ELSE e.completed_at END
+           completed_at = CASE WHEN sub.pct >= 100 THEN COALESCE(e.completed_at, NOW()) ELSE e.completed_at END,
+           status = CASE WHEN sub.pct >= 100 THEN 'completed' ELSE e.status END
        FROM (
          SELECT
            CASE WHEN COUNT(l.id) = 0 THEN 0
