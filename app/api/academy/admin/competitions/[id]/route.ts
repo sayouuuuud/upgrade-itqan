@@ -24,6 +24,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         certificate_enabled = COALESCE($18, certificate_enabled),
         award_top_n = COALESCE($19, award_top_n),
         certificate_template_id = COALESCE($20, certificate_template_id),
+        points_first = COALESCE($21, points_first),
+        points_second = COALESCE($22, points_second),
+        points_third = COALESCE($23, points_third),
         updated_at = NOW() WHERE id = $9 RETURNING *
     `, [
       body.title || null,
@@ -50,6 +53,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       typeof body.certificate_enabled === 'boolean' ? body.certificate_enabled : null,
       Number(body.award_top_n) > 0 ? Number(body.award_top_n) : null,
       body.certificate_template_id || null,
+      Number.isFinite(Number(body.points_first)) && Number(body.points_first) >= 0 ? Number(body.points_first) : null,
+      Number.isFinite(Number(body.points_second)) && Number(body.points_second) >= 0 ? Number(body.points_second) : null,
+      Number.isFinite(Number(body.points_third)) && Number(body.points_third) >= 0 ? Number(body.points_third) : null,
     ])
     
     if (result.length === 0) {

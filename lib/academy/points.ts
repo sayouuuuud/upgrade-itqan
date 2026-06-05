@@ -1,5 +1,6 @@
 import { query, queryOne } from '@/lib/db'
 import { PointsAction, MemorizationQuality } from '@/lib/types'
+import { awardPoints as engineAwardPoints } from '@/lib/academy/gamification'
 
 export interface PointsConfig {
   task_complete: number
@@ -97,11 +98,18 @@ export async function awardPoints(
 }
 
 export async function adminAdjustPoints(userId: string, points: number, description: string, adminId: string) {
-  return awardPoints(userId, points, 'manual', {
-    description,
-    admin_id: adminId,
-    type: 'manual_adjustment'
+  // Route through the real gamification engine. The legacy local awardPoints()
+  // above logged with reason='manual', which is rejected by the points_log
+  // CHECK constraint (only 'admin_adjust' is allowed for manual tweaks) — that
+  // made every admin adjustment fail with a 500. We also disable the streak
+  // multiplier so admin-entered amounts are applied exactly as typed.
+  const result = await engineAwardPoints(userId, Number(points), 'admin_adjust', {
+    description: description || 'تعديل يدوي من الأدمن',
+    relatedEntityType: 'admin',
+    relatedEntityId: adminId,
+    applyStreakMultiplier: false,
   })
+  return { success: true, total_points: result.total_points, new_badges: result.new_badges }
 }
 
 export async function awardMemorizationPoints(

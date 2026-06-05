@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession, requireRole } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 import { onPathCompleted } from "@/lib/certificate/eligibility"
+import { awardPoints } from "@/lib/academy/gamification"
 
 // POST /api/student/tajweed-paths/[id]/stages/[stageId]/complete
 // Marks stage completed → unlocks next stage. Validates audio if path.require_audio.
@@ -91,6 +92,19 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       [audioUrl, recitationId, body.notes || null, progress.id],
     )
 
+    // Award points for completing this stage. The early-return guard above
+    // (progress.status === "completed") ensures this only runs on the real
+    // transition, so points are never granted twice for the same stage.
+    try {
+      await awardPoints(session!.sub, 25, "lesson", {
+        description: "إكمال مرحلة في مسار",
+        relatedEntityType: "tajweed_stage",
+        relatedEntityId: stageId,
+      })
+    } catch (e) {
+      console.warn("[tajweed-stage-complete] award points failed", e)
+    }
+
     // Find next stage to unlock
     const stageRows = (await query<any>(
       `SELECT id, position FROM tajweed_path_stages WHERE path_id = $1 ORDER BY position ASC`,
@@ -146,6 +160,16 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         })
       } catch (e) {
         console.warn("[tajweed-path-complete] eligibility hook failed", e)
+      }
+      // Completion bonus for finishing the whole path.
+      try {
+        await awardPoints(session!.sub, 100, "course_complete", {
+          description: "إكمال مسار كامل",
+          relatedEntityType: "tajweed_path",
+          relatedEntityId: id,
+        })
+      } catch (e) {
+        console.warn("[tajweed-path-complete] award bonus failed", e)
       }
     } else {
       await query(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
 import { onPathCompleted } from "@/lib/certificate/eligibility"
+import { awardPoints } from "@/lib/academy/gamification"
 
 // POST /api/student/memorization-paths/[id]/units/[unitId]/complete
 // Body: { audio_url?: string, audio_duration_seconds?: number, notes?: string, recitation_id?: string }
@@ -116,6 +117,19 @@ export async function POST(
       ],
     )) as any[]
 
+    // Award points for completing this unit. The early-return guard above
+    // (progress.status === "completed") ensures this only runs on the real
+    // transition, so points are never granted twice for the same unit.
+    try {
+      await awardPoints(session.sub, 25, "lesson", {
+        description: "إكمال وحدة في مسار حفظ",
+        relatedEntityType: "memorization_unit",
+        relatedEntityId: unitId,
+      })
+    } catch (e) {
+      console.warn("[memo-unit-complete] award points failed", e)
+    }
+
     // 5. unlock next unit (by position)
     const nextUnitRows = (await query(
       `SELECT id, position FROM memorization_path_units
@@ -174,6 +188,16 @@ export async function POST(
         })
       } catch (e) {
         console.warn("[path-complete] eligibility hook failed", e)
+      }
+      // Completion bonus for finishing the whole memorization path.
+      try {
+        await awardPoints(session.sub, 100, "course_complete", {
+          description: "إكمال مسار حفظ كامل",
+          relatedEntityType: "memorization_path",
+          relatedEntityId: pathId,
+        })
+      } catch (e) {
+        console.warn("[path-complete] award bonus failed", e)
       }
     }
 

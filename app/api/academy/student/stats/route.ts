@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
-import { getUserPointsSummary } from '@/lib/academy/gamification'
+import { getUserPointsSummary, awardDailyLoginIfNew } from '@/lib/academy/gamification'
 
 export async function GET(req: NextRequest) {
     const session = await getSession()
@@ -10,6 +10,14 @@ export async function GET(req: NextRequest) {
     }
 
     try {
+        // Grant daily-login points once per calendar day. This is the hook for
+        // "student opened the platform today". It's idempotent so calling it on
+        // every dashboard load is safe, and it runs before reading the summary
+        // so today's points show up immediately.
+        if (['student', 'reader'].includes(session.role)) {
+            await awardDailyLoginIfNew(session.sub)
+        }
+
         const enrolledRes = await query<{ count: string }>(`SELECT COUNT(*) as count FROM enrollments WHERE student_id = $1`, [session.sub]);
         const enrolled_courses = parseInt(enrolledRes[0]?.count || '0');
 

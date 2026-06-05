@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
-import { awardCompetitionWinner } from '@/lib/academy/competitions'
+import { awardCompetitionRank } from '@/lib/academy/competitions'
 
 export async function PATCH(
   req: NextRequest,
@@ -54,8 +54,11 @@ export async function PATCH(
     return NextResponse.json({ error: 'Entry not found' }, { status: 404 })
   }
 
-  if (body.mark_winner === true || rows[0].rank === 1) {
-    await awardCompetitionWinner(id, rows[0].student_id)
+  // Grant points for any of the top-3 ranks (idempotent inside the helper).
+  // mark_winner is treated as an explicit 1st place.
+  const effectiveRank = body.mark_winner === true ? 1 : rows[0].rank
+  if (effectiveRank === 1 || effectiveRank === 2 || effectiveRank === 3) {
+    await awardCompetitionRank(id, rows[0].student_id, effectiveRank)
   }
 
   return NextResponse.json({ data: rows[0] })

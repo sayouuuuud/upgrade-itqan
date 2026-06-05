@@ -65,6 +65,9 @@ interface Competition {
   tajweed_rules?: string[] | null
   badge_key?: string | null
   points_multiplier?: number | string | null
+  points_first?: number | null
+  points_second?: number | null
+  points_third?: number | null
   min_verses?: number | null
   is_featured?: boolean
   certificate_enabled?: boolean | null
@@ -88,6 +91,9 @@ type CompetitionForm = {
   tajweed_rules: string
   badge_key: string
   points_multiplier: number
+  points_first: number
+  points_second: number
+  points_third: number
   min_verses: number
   is_featured: boolean
   certificate_enabled: boolean
@@ -159,6 +165,9 @@ const emptyForm: CompetitionForm = {
   tajweed_rules: '',
   badge_key: 'star_of_halaqah',
   points_multiplier: 2,
+  points_first: 500,
+  points_second: 300,
+  points_third: 150,
   min_verses: 0,
   is_featured: false,
   certificate_enabled: false,
@@ -297,6 +306,9 @@ export default function AdminCompetitionsPage() {
       tajweed_rules: Array.isArray(comp.tajweed_rules) ? comp.tajweed_rules.join(', ') : '',
       badge_key: comp.badge_key || config.badge,
       points_multiplier: Number(comp.points_multiplier || 2),
+      points_first: Number(comp.points_first ?? 500),
+      points_second: Number(comp.points_second ?? 300),
+      points_third: Number(comp.points_third ?? 150),
       min_verses: comp.min_verses || 0,
       is_featured: Boolean(comp.is_featured),
       certificate_enabled: Boolean(comp.certificate_enabled),
@@ -331,6 +343,9 @@ export default function AdminCompetitionsPage() {
           tajweed_rules: form.tajweed_rules.split(',').map((item) => item.trim()).filter(Boolean),
           certificate_template_id: form.certificate_template_id || null,
           award_top_n: form.certificate_enabled ? Number(form.award_top_n) || 10 : null,
+          points_first: Number(form.points_first) >= 0 ? Number(form.points_first) : 500,
+          points_second: Number(form.points_second) >= 0 ? Number(form.points_second) : 300,
+          points_third: Number(form.points_third) >= 0 ? Number(form.points_third) : 150,
         }),
       })
       if (res.ok) {
@@ -346,7 +361,7 @@ export default function AdminCompetitionsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذه المسابقة؟')) return
+    if (!confirm('هل أنت ��تأكد من حذف هذه المسابقة؟')) return
     setDeletingId(id)
     try {
       const res = await fetch(`/api/academy/admin/competitions/${id}`, { method: 'DELETE' })
@@ -731,6 +746,21 @@ export default function AdminCompetitionsPage() {
                 <Field label="مضاعف النقاط">
                   <input type="number" min={1} step="0.5" value={form.points_multiplier} onChange={(event) => setForm({ ...form, points_multiplier: Number(event.target.value) })} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-amber-500" />
                 </Field>
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm font-medium text-foreground">نقاط المراكز (تُضرب في مضاعف النقاط)</p>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Field label="المركز الأول">
+                    <input type="number" min={0} value={form.points_first} onChange={(event) => setForm({ ...form, points_first: Number(event.target.value) })} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-amber-500" />
+                  </Field>
+                  <Field label="المركز الثاني">
+                    <input type="number" min={0} value={form.points_second} onChange={(event) => setForm({ ...form, points_second: Number(event.target.value) })} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-amber-500" />
+                  </Field>
+                  <Field label="المركز الثالث">
+                    <input type="number" min={0} value={form.points_third} onChange={(event) => setForm({ ...form, points_third: Number(event.target.value) })} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-amber-500" />
+                  </Field>
+                </div>
               </div>
 
               <Field label="أحكام التجويد المطلوبة">

@@ -1,4 +1,5 @@
 import { query, queryOne } from '@/lib/db'
+import { awardPoints } from '@/lib/academy/gamification'
 
 export async function getCompetitions(filters: { status?: string; type?: string; userId?: string; scope?: string } = {}) {
   let sql = `SELECT * FROM competitions WHERE 1=1`
@@ -228,35 +229,91 @@ export async function evaluateEntry(entryId: string, judgeId: string, evaluation
   }
 }
 
-export async function awardCompetitionWinner(competitionId: string, studentId: string) {
+/**
+ * Award points for a finishing position in a competition.
+ *
+ * `rank` 1/2/3 maps to the competition's configurable points_first/second/third
+ * columns. Points are granted through the real gamification engine
+ * (user_points + points_log) — NOT the old non-existent `student_points` table.
+ *
+ * Idempotent: if this student was already awarded competition points for this
+ * competition we skip, so re-saving an evaluation never double-pays.
+ */
+export async function awardCompetitionRank(
+  competitionId: string,
+  studentId: string,
+  rank: number,
+) {
   try {
-    await query(
-      `UPDATE competitions SET winner_id = $1, status = 'ended' WHERE id = $2`,
-      [studentId, competitionId]
+    const comp = await queryOne<{
+      title: string | null
+      points_multiplier: number | null
+      points_first: number | null
+      points_second: number | null
+      points_third: number | null
+    }>(
+      `SELECT title, points_multiplier, points_first, points_second, points_third
+         FROM competitions WHERE id = $1`,
+      [competitionId],
     )
-    await query(
-      `UPDATE competition_entries SET status = 'winner' WHERE competition_id = $1 AND student_id = $2`,
-      [competitionId, studentId]
-    )
-    
-    const comp = await queryOne<{ points_multiplier: number; badge_key: string | null }>(
-      `SELECT points_multiplier, badge_key FROM competitions WHERE id = $1`,
-      [competitionId]
-    )
-    if (comp) {
-      const basePoints = 50
-      const points = Math.round(basePoints * (Number(comp.points_multiplier) || 1))
+    if (!comp) return { success: false, error: 'Competition not found' }
+
+    // The 1st-place finisher is recorded as the competition winner.
+    if (rank === 1) {
       await query(
-        `INSERT INTO student_points (student_id, points, reason, created_at)
-         VALUES ($1, $2, $3, NOW())
-         ON CONFLICT DO NOTHING`,
-        [studentId, points, `فائز مسابقة - ${competitionId}`]
-      ).catch(() => {})
+        `UPDATE competitions SET winner_id = $1 WHERE id = $2`,
+        [studentId, competitionId],
+      )
+      await query(
+        `UPDATE competition_entries SET status = 'winner' WHERE competition_id = $1 AND student_id = $2`,
+        [competitionId, studentId],
+      )
     }
-    
-    return { success: true }
+
+    const rankPoints: Record<number, number> = {
+      1: Number(comp.points_first ?? 500),
+      2: Number(comp.points_second ?? 300),
+      3: Number(comp.points_third ?? 150),
+    }
+    const basePoints = rankPoints[rank]
+    if (!basePoints || basePoints <= 0) {
+      // Only the top 3 ranks earn points.
+      return { success: true, awarded: 0 }
+    }
+
+    const multiplier = Number(comp.points_multiplier) > 0 ? Number(comp.points_multiplier) : 1
+    const points = Math.round(basePoints * multiplier)
+
+    // Idempotency guard: skip if this student already has competition points
+    // logged for this competition (regardless of rank changes).
+    const already = await queryOne<{ id: string }>(
+      `SELECT id FROM points_log
+        WHERE user_id = $1 AND reason = 'competition_win'
+          AND related_entity_type = 'competition' AND related_entity_id = $2
+        LIMIT 1`,
+      [studentId, competitionId],
+    )
+    if (already) {
+      return { success: true, awarded: 0, alreadyAwarded: true }
+    }
+
+    const rankLabel = rank === 1 ? 'المركز الأول' : rank === 2 ? 'المركز الثاني' : 'المركز الثالث'
+    await awardPoints(studentId, points, 'competition_win', {
+      description: `${rankLabel} في مسابقة: ${comp.title ?? ''}`.trim(),
+      relatedEntityType: 'competition',
+      relatedEntityId: competitionId,
+      applyStreakMultiplier: false,
+    })
+
+    return { success: true, awarded: points }
   } catch (error) {
-    console.error('Error awarding winner:', error)
+    console.error('Error awarding competition rank:', error)
     return { success: false, error: 'Internal server error' }
   }
+}
+
+/** Back-compat helper: awarding the winner is just rank #1. */
+export async function awardCompetitionWinner(competitionId: string, studentId: string) {
+  await query(`UPDATE competitions SET status = 'ended' WHERE id = $1`, [competitionId])
+  return awardCompetitionRank(competitionId, studentId, 1)
 }

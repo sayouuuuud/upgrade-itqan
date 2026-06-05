@@ -70,6 +70,9 @@ export async function POST(req: NextRequest) {
       certificate_enabled,
       award_top_n,
       certificate_template_id,
+      points_first,
+      points_second,
+      points_third,
     } = await req.json()
     if (!title || !start_date || !end_date) {
       return NextResponse.json({ error: 'Title, start_date and end_date required' }, { status: 400 })
@@ -84,10 +87,11 @@ export async function POST(req: NextRequest) {
         prizes_description, rules, status, created_by, tajweed_rules,
         badge_key, points_multiplier, halqa_id, min_verses, is_featured,
         certificate_enabled, award_top_n, certificate_template_id,
+        points_first, points_second, points_third,
         scope, created_at
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
-              $15, $16, $17, $18, $19, 'academy', NOW())
+              $15, $16, $17, $18, $19, $20, $21, $22, 'academy', NOW())
       RETURNING *
     `, [
       title,
@@ -113,6 +117,9 @@ export async function POST(req: NextRequest) {
       Boolean(certificate_enabled),
       Number(award_top_n) > 0 ? Number(award_top_n) : null,
       certificate_template_id || null,
+      Number.isFinite(Number(points_first)) && Number(points_first) >= 0 ? Number(points_first) : 500,
+      Number.isFinite(Number(points_second)) && Number(points_second) >= 0 ? Number(points_second) : 300,
+      Number.isFinite(Number(points_third)) && Number(points_third) >= 0 ? Number(points_third) : 150,
     ])
     
     return NextResponse.json({ data: result[0] }, { status: 201 })

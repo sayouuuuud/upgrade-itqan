@@ -41,6 +41,7 @@ export type PointsReason =
   | 'daily_login'
   | 'competition_win'
   | 'badge_earned'
+  | 'admin_adjust'
 
 export type AcademyLevel =
   | 'beginner'
@@ -569,6 +570,36 @@ export const awardLessonPoints = (userId: string, lessonId: string, lessonTitle?
 
 export const awardDailyLoginPoints = (userId: string) =>
   awardPoints(userId, POINTS_RULES.streak, 'streak', { description: 'يوم Streak' })
+
+/**
+ * Award daily-login points at most once per calendar day. Safe to call on
+ * every dashboard load: it checks points_log for a 'daily_login' entry dated
+ * today and skips if one already exists. Returns whether points were granted.
+ */
+export async function awardDailyLoginIfNew(
+  userId: string,
+): Promise<{ awarded: boolean; total_points?: number }> {
+  if (!userId) return { awarded: false }
+  try {
+    const already = await queryOne<{ id: string }>(
+      `SELECT id FROM points_log
+        WHERE user_id = $1 AND reason = 'daily_login'
+          AND created_at::date = CURRENT_DATE
+        LIMIT 1`,
+      [userId],
+    )
+    if (already) return { awarded: false }
+
+    const result = await awardPoints(userId, 5, 'daily_login', {
+      description: 'تسجيل دخول يومي',
+      applyStreakMultiplier: false,
+    })
+    return { awarded: true, total_points: result.total_points }
+  } catch (e) {
+    console.warn('[gamification] awardDailyLoginIfNew failed', e)
+    return { awarded: false }
+  }
+}
 
 export const awardCourseCompletePoints = (userId: string, courseId: string, courseTitle?: string) =>
   awardPoints(userId, POINTS_RULES.juz_complete, 'course_complete', {
