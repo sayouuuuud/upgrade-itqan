@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
            c.is_active,
            c.archived_at,
            c.archive_reason,
-           c.specialization,
+           NULL::text                        AS specialization,
            COALESCE(cat.name, '')            AS category_name,
            COALESCE(orig.name, '')           AS original_teacher_name,
            orig.email                        AS original_teacher_email,

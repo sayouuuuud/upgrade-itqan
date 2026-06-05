@@ -201,6 +201,7 @@ export default function AdminUnifiedArchivePage() {
   const [reasonFilter, setReasonFilter] = useState('')
   const [restoreTarget, setRestoreTarget] = useState<ArchiveItem | null>(null)
   const [counts, setCounts] = useState({ total: 0, courses: 0, halaqat: 0 })
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   // debounce
   useEffect(() => {
@@ -210,15 +211,27 @@ export default function AdminUnifiedArchivePage() {
 
   const fetchArchive = () => {
     setLoading(true)
+    setLoadError(null)
     const p = new URLSearchParams()
     if (activeTab !== 'all') p.set('type', activeTab)
     if (searchDebounced) p.set('search', searchDebounced)
     if (reasonFilter) p.set('reason', reasonFilter)
     fetch(`/api/academy/admin/archive?${p}`)
-      .then((r) => (r.ok ? r.json() : { data: [], counts: { total: 0, courses: 0, halaqat: 0 } }))
+      .then(async (r) => {
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}))
+          throw new Error(body.error || `فشل تحميل الأرشيف (${r.status})`)
+        }
+        return r.json()
+      })
       .then((d) => {
         setItems(d.data || [])
         setCounts(d.counts || { total: 0, courses: 0, halaqat: 0 })
+      })
+      .catch((e) => {
+        setItems([])
+        setCounts({ total: 0, courses: 0, halaqat: 0 })
+        setLoadError(e?.message || 'تعذّر تحميل الأرشيف')
       })
       .finally(() => setLoading(false))
   }
@@ -247,12 +260,12 @@ export default function AdminUnifiedArchivePage() {
   return (
     <div className="space-y-6" dir="rtl">
       {/* Header */}
-      <div>
+      <div className="bg-gradient-to-l from-emerald-600 to-teal-500 rounded-2xl p-6 text-white shadow-lg shadow-emerald-500/20">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Archive className="w-7 h-7 text-emerald-600" />
+          <Archive className="w-7 h-7" />
           الأرشيف الشامل
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-white/85 mt-1.5 text-sm leading-relaxed">
           كل المحتوى المؤرشف — كورسات وحلقات — يمكن استعادتها وتعيين مدرس جديد لها
         </p>
       </div>
@@ -307,7 +320,19 @@ export default function AdminUnifiedArchivePage() {
       </div>
 
       {/* Content */}
-      {loading ? (
+      {loadError ? (
+        <div className="text-center py-16 bg-card rounded-2xl border border-red-200 dark:border-red-900/40">
+          <AlertCircle className="w-14 h-14 mx-auto mb-4 text-red-500" />
+          <h3 className="text-lg font-bold mb-2 text-red-600">تعذّر تحميل الأرشيف</h3>
+          <p className="text-muted-foreground text-sm mb-5 max-w-sm mx-auto">{loadError}</p>
+          <button
+            onClick={fetchArchive}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" /> إعادة المحاولة
+          </button>
+        </div>
+      ) : loading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="w-7 h-7 animate-spin text-emerald-600" />
         </div>
