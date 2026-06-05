@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Mic, FileText, Clock, CheckCircle, Calendar, Loader2, ChevronLeft, Plus } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
 import { useMemo } from "react"
+import { cn } from "@/lib/utils"
 
 type Recitation = {
   id: string

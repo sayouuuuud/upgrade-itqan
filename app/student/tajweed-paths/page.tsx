@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
-  GraduationCap, ChevronRight, CheckCircle2, Loader2, Pause, Search,
+  GraduationCap, ChevronRight, CheckCircle2, Loader2, Pause, Search, Lock, Target, Play,
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useI18n } from "@/lib/i18n/context"
+import { cn } from "@/lib/utils"
 
 type Subject = "tajweed" | "fiqh" | "aqeedah" | "seerah" | "tafsir"
 const SUBJECTS: Subject[] = ["tajweed"] // Maqra'ah student: tajweed only
@@ -32,7 +33,7 @@ type Path = {
 
 export default function StudentTajweedPathsPage() {
   const { t } = useI18n()
-  const tp = (t as any).tajweedPaths
+  const tp = (t as any).tajweedPaths || {}
 
   const [paths, setPaths] = useState<Path[]>([])
   const [enrolled, setEnrolled] = useState<Path[]>([])
@@ -87,7 +88,7 @@ export default function StudentTajweedPathsPage() {
             مسارات <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-emerald-50">التجويد</span>
           </h1>
           <p className="text-emerald-100/90 text-base sm:text-lg font-medium leading-relaxed max-w-xl mx-auto md:mx-0">
-            {tp.studentSubtitleTajweed}
+            {tp.studentSubtitleTajweed || "تدرج في تعلم أحكام التجويد من التأسيس حتى الإتقان"}
           </p>
         </div>
       </div>

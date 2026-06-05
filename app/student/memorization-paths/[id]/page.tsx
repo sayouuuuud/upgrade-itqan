@@ -19,6 +19,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import AudioRecorder from "@/components/applicant/audio-recorder"
+import { cn } from "@/lib/utils"
 
 type ProgressRow = {
   id: string

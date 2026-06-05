@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import {
   ArrowRight, GraduationCap, CheckCircle2, ChevronDown, ChevronUp, Loader2,
-  Lock, Mic, Play, Trophy, Unlock, FileText, Video,
+  Lock, Mic, Play, Trophy, Unlock, FileText, Video, Target, BookOpen
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,7 @@ import {
 import AudioRecorder from "@/components/applicant/audio-recorder"
 import TajweedPdfViewer from "@/components/tajweed/pdf-viewer"
 import { useI18n } from "@/lib/i18n/context"
+import { cn } from "@/lib/utils"
 
 type ProgressRow = {
   id?: string
@@ -48,7 +49,7 @@ export default function StudentTajweedPathDetail() {
   const params = useParams<{ id: string }>()
   const pathId = params.id
   const { t } = useI18n()
-  const tp = (t as any).tajweedPaths
+  const tp = (t as any).tajweedPaths || {}
 
   const [path, setPath] = useState<any>(null)
   const [stages, setStages] = useState<Stage[]>([])

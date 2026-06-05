@@ -465,7 +465,8 @@ export default function MushafPage() {
         rel="stylesheet"
       />
 
-      <div className="min-h-screen bg-background/50">
+      {/* Negative margins to counter the DashboardShell's p-6 lg:p-8 padding */}
+      <div className="-m-6 lg:-m-8 min-h-[calc(100vh-4rem)] flex flex-col bg-background/50 relative font-sans">
         {/* Top toolbar */}
         <div className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border shadow-sm">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
@@ -579,8 +580,10 @@ export default function MushafPage() {
         </div>
 
         {/* Mushaf page */}
-        <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-          <div className="mushaf-page relative bg-[#fbf6e6] dark:bg-card rounded-3xl shadow-2xl shadow-amber-900/10 dark:shadow-black/30 border-[6px] border-double border-amber-700/30 dark:border-primary/30 p-6 sm:p-10 min-h-[70vh]">
+        <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-8 pb-20">
+          <div className="mushaf-page relative bg-[#fdfaf2] dark:bg-slate-900 rounded-[2rem] shadow-2xl shadow-amber-900/10 dark:shadow-black/40 border-[8px] border-double border-amber-800/20 dark:border-primary/30 p-8 sm:p-12 min-h-[75vh] flex flex-col justify-center overflow-hidden transition-all duration-500">
+            {/* Paper Texture Overlay */}
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/rice-paper-2.png')] opacity-40 dark:opacity-10 mix-blend-multiply pointer-events-none" />
             {loading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
