@@ -152,7 +152,7 @@ export default function AcademyCalendarPage() {
             {isAr ? 'التقويم الأكاديمي' : 'Academic Calendar'}
           </div>
           <h1 className={cn(
-            "text-4xl lg:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400",
+            "text-4xl lg:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 py-2 leading-relaxed",
             isAr ? "tracking-normal" : "tracking-tight"
           )}>
             {isAr ? 'التقويم والمواعيد' : 'Calendar & Schedule'}
