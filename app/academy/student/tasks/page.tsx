@@ -99,22 +99,26 @@ export default function StudentTasksPage() {
   const statusConfig = {
     pending: { 
       label: 'معلق', 
-      color: 'bg-primary/5 text-primary border-primary/20',
+      color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
+      bgLight: 'bg-amber-500/10',
       icon: Clock
     },
     submitted: { 
       label: 'مُسلَّم', 
-      color: 'bg-primary/10 text-primary border-primary/30',
+      color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+      bgLight: 'bg-emerald-500/10',
       icon: CheckCircle2
     },
     graded: { 
       label: 'مُقيَّم', 
-      color: 'bg-primary/20 text-primary border-primary/40',
+      color: 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/20',
+      bgLight: 'bg-sky-500/10',
       icon: CheckCircle2
     },
     late: { 
       label: 'متأخر', 
-      color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+      color: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/20',
+      bgLight: 'bg-rose-500/10',
       icon: AlertCircle
     }
   }
@@ -161,25 +165,23 @@ export default function StudentTasksPage() {
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-12" dir="rtl">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-foreground flex items-center gap-3">
-            <ClipboardList className="w-8 h-8 text-primary" />
-            {t.academy?.tasks || 'لوحة المهام'}
-          </h1>
-          <p className="text-muted-foreground mt-2 font-medium">
-            {t.academy?.tasksDesc || 'تابع إنجازاتك وأكمل مهامك لترفع رصيد نقاطك'}
-          </p>
-        </div>
+      <div className="bg-gradient-to-l from-amber-600 to-orange-500 rounded-2xl p-6 text-white shadow-lg shadow-amber-500/20">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <ClipboardList className="w-7 h-7" />
+          {t.academy?.tasks || 'لوحة المهام'}
+        </h1>
+        <p className="text-white/85 mt-1.5 text-sm leading-relaxed">
+          {t.academy?.tasksDesc || 'تابع إنجازاتك وأكمل مهامك لترفع رصيد نقاطك'}
+        </p>
       </div>
 
       {/* Completion progress card */}
       {totalCount > 0 && (
-        <div className="relative overflow-hidden bg-card/40 backdrop-blur-xl rounded-2xl border border-border shadow-sm p-6">
-          <div className="absolute top-0 right-0 w-2 h-full bg-primary" />
+        <div className="relative overflow-hidden bg-gradient-to-r from-violet-500/10 to-indigo-500/10 rounded-2xl border border-violet-200 dark:border-violet-900/40 shadow-sm p-6">
+          <div className="absolute top-0 right-0 w-2 h-full bg-gradient-to-b from-violet-600 to-indigo-600" />
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-violet-600/15 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
                 <TrendingUp className="w-8 h-8" />
               </div>
               <div>
@@ -189,7 +191,7 @@ export default function StudentTasksPage() {
                 <div className="flex items-center gap-3 mt-1 text-sm font-medium">
                   <span className="text-muted-foreground">{doneCount} من {totalCount} مهام مكتملة</span>
                   {lateCount > 0 && (
-                    <span className="inline-flex items-center gap-1 text-red-500 bg-red-500/10 px-2 py-0.5 rounded-md text-xs">
+                    <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 bg-rose-500/15 px-2 py-0.5 rounded-md text-xs">
                       <AlertCircle className="w-3.5 h-3.5" />
                       {lateCount} مهام متأخرة
                     </span>
@@ -199,11 +201,11 @@ export default function StudentTasksPage() {
             </div>
             <div className="flex-1 w-full max-w-md">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-primary">{completionPct}%</span>
+                <span className="text-sm font-bold text-violet-600 dark:text-violet-400">{completionPct}%</span>
               </div>
               <div className="h-3 w-full rounded-full bg-muted overflow-hidden shadow-inner border border-border/50">
                 <div
-                  className="h-full bg-primary transition-all duration-1000 ease-out"
+                  className="h-full bg-gradient-to-r from-violet-600 to-indigo-600 transition-all duration-1000 ease-out"
                   style={{ width: `${completionPct}%` }}
                 />
               </div>
@@ -218,36 +220,36 @@ export default function StudentTasksPage() {
           onClick={() => setFilter('pending')}
           className={cn(
             "relative overflow-hidden bg-card/60 backdrop-blur-md rounded-2xl border p-5 text-start transition-all duration-300 hover:-translate-y-1 group",
-            filter === 'pending' ? "border-primary shadow-md ring-1 ring-primary" : "border-border hover:border-primary/50"
+            filter === 'pending' ? "border-amber-500/50 shadow-md ring-1 ring-amber-500/30" : "border-border hover:border-amber-500/40"
           )}
         >
-          <div className="absolute -left-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all" />
-          <p className="text-4xl font-black text-primary mb-1 drop-shadow-sm">{pendingCount}</p>
-          <p className="text-sm font-bold text-muted-foreground group-hover:text-primary transition-colors">المهام المعلقة</p>
+          <div className="absolute -left-6 -top-6 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-all" />
+          <p className="text-4xl font-black text-amber-600 dark:text-amber-400 mb-1 drop-shadow-sm">{pendingCount}</p>
+          <p className="text-sm font-bold text-muted-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">المهام المعلقة</p>
         </button>
 
         <button
           onClick={() => setFilter('submitted')}
           className={cn(
             "relative overflow-hidden bg-card/60 backdrop-blur-md rounded-2xl border p-5 text-start transition-all duration-300 hover:-translate-y-1 group",
-            filter === 'submitted' ? "border-primary shadow-md ring-1 ring-primary" : "border-border hover:border-primary/50"
+            filter === 'submitted' ? "border-emerald-500/50 shadow-md ring-1 ring-emerald-500/30" : "border-border hover:border-emerald-500/40"
           )}
         >
-          <div className="absolute -left-6 -top-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all" />
-          <p className="text-4xl font-black text-primary mb-1 drop-shadow-sm">{submittedCount}</p>
-          <p className="text-sm font-bold text-muted-foreground group-hover:text-primary transition-colors">المهام المُسلَّمة</p>
+          <div className="absolute -left-6 -top-6 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all" />
+          <p className="text-4xl font-black text-emerald-600 dark:text-emerald-400 mb-1 drop-shadow-sm">{submittedCount}</p>
+          <p className="text-sm font-bold text-muted-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">المهام المُسلَّمة</p>
         </button>
 
         <button
           onClick={() => setFilter('graded')}
           className={cn(
             "relative overflow-hidden bg-card/60 backdrop-blur-md rounded-2xl border p-5 text-start transition-all duration-300 hover:-translate-y-1 group",
-            filter === 'graded' ? "border-primary shadow-md ring-1 ring-primary" : "border-border hover:border-primary/50"
+            filter === 'graded' ? "border-sky-500/50 shadow-md ring-1 ring-sky-500/30" : "border-border hover:border-sky-500/40"
           )}
         >
-          <div className="absolute -left-6 -top-6 w-24 h-24 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/30 transition-all" />
-          <p className="text-4xl font-black text-primary mb-1 drop-shadow-sm">{gradedCount}</p>
-          <p className="text-sm font-bold text-muted-foreground group-hover:text-primary transition-colors">المهام المُقيَّمة</p>
+          <div className="absolute -left-6 -top-6 w-24 h-24 bg-sky-500/5 rounded-full blur-2xl group-hover:bg-sky-500/10 transition-all" />
+          <p className="text-4xl font-black text-sky-600 dark:text-sky-400 mb-1 drop-shadow-sm">{gradedCount}</p>
+          <p className="text-sm font-bold text-muted-foreground group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">المهام المُقيَّمة</p>
         </button>
       </div>
 
@@ -256,13 +258,16 @@ export default function StudentTasksPage() {
         {(['all', 'pending', 'submitted', 'graded'] as const).map((f) => (
           <button
             key={f}
-            onClick={() => setFilter(f)}
             className={cn(
               "px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-200",
               filter === f
-                ? "bg-primary text-primary-foreground shadow-md"
+                ? f === 'pending' ? "bg-amber-600 text-white shadow-md" :
+                  f === 'submitted' ? "bg-emerald-600 text-white shadow-md" :
+                  f === 'graded' ? "bg-sky-600 text-white shadow-md" :
+                  "bg-foreground text-background shadow-md"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
+            onClick={() => setFilter(f)}
           >
             {f === 'all' && 'كل المهام'}
             {f === 'pending' && 'المعلقة'}
@@ -310,14 +315,21 @@ export default function StudentTasksPage() {
                 {/* Status Indicator Line */}
                 <div className={cn(
                   "absolute top-0 right-0 w-full h-1 opacity-50 group-hover:opacity-100 transition-opacity",
-                  task.status === 'graded' ? "bg-primary" :
-                  task.status === 'submitted' ? "bg-primary/50" :
-                  task.status === 'late' ? "bg-red-500" : "bg-primary/30"
+                  task.status === 'graded' ? "bg-sky-600" :
+                  task.status === 'submitted' ? "bg-emerald-600" :
+                  task.status === 'late' ? "bg-rose-600" : "bg-amber-600"
                 )} />
 
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm bg-primary/10 text-primary">
+                    <div className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                      conf.bgLight,
+                      task.status === 'graded' ? "text-sky-600 dark:text-sky-400" :
+                      task.status === 'submitted' ? "text-emerald-600 dark:text-emerald-400" :
+                      task.status === 'late' ? "text-rose-600 dark:text-rose-400" :
+                      "text-amber-600 dark:text-amber-400"
+                    )}>
                       <TypeIcon className="w-6 h-6" />
                     </div>
                     <div>
@@ -342,8 +354,8 @@ export default function StudentTasksPage() {
                       className={cn(
                         "inline-flex items-center justify-center w-8 h-8 rounded-full transition-all shrink-0 border",
                         isDoneOrGraded
-                          ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
-                          : "bg-muted text-muted-foreground border-border hover:bg-primary hover:text-white hover:border-primary"
+                          ? task.status === 'submitted' ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/25" : "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/25"
+                          : "bg-muted text-muted-foreground border-border hover:bg-rose-600 hover:text-white hover:border-rose-600"
                       )}
                       title={isDoneOrGraded ? 'تراجع عن الإنجاز' : 'تأشير كمنجز'}
                     >
@@ -376,15 +388,22 @@ export default function StudentTasksPage() {
                 {/* Footer Metrics */}
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
                   <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1.5 text-sm font-black text-primary bg-primary/10 px-2 py-1 rounded-md">
-                      <Star className="w-4 h-4 text-primary" />
+                    <span className={cn(
+                      "flex items-center gap-1.5 text-sm font-black px-2 py-1 rounded-md",
+                      task.status === 'graded' ? "text-sky-600 dark:text-sky-400 bg-sky-500/15" :
+                      task.status === 'submitted' ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/15" :
+                      task.status === 'late' ? "text-rose-600 dark:text-rose-400 bg-rose-500/15" :
+                      "text-amber-600 dark:text-amber-400 bg-amber-500/15"
+                    )}>
+                      <Star className="w-4 h-4" />
                       {task.points_value} نقطة
                     </span>
                     
                     {dueStatus && (
                       <span className={cn(
                         "flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-md",
-                        dueStatus.veryUrgent ? "text-red-600 bg-red-500/10" :
+                        dueStatus.veryUrgent ? "text-rose-600 dark:text-rose-400 bg-rose-500/15" :
+                        dueStatus.urgent ? "text-amber-600 dark:text-amber-400 bg-amber-500/15" :
                         "text-muted-foreground bg-muted"
                       )}>
                         <Clock className="w-3.5 h-3.5" />
@@ -399,7 +418,9 @@ export default function StudentTasksPage() {
                       "text-sm font-bold px-4 py-2 rounded-lg transition-colors inline-flex items-center gap-2",
                       isDoneOrGraded 
                         ? "bg-muted hover:bg-muted/80 text-foreground" 
-                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : task.status === 'late' ? "bg-rose-600 hover:bg-rose-700 text-white" :
+                          task.status === 'submitted' ? "bg-emerald-600 hover:bg-emerald-700 text-white" :
+                          "bg-amber-600 hover:bg-amber-700 text-white"
                     )}
                   >
                     {isDoneOrGraded ? 'عرض التفاصيل' : 'ابدأ المهمة'}
