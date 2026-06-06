@@ -6,11 +6,72 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { query, queryOne } from "@/lib/db"
-import { getAllSettings, type CertificateScope } from "@/lib/certificates"
-import { autoIssueRequest, reconcileStudentCertificates } from "@/lib/certificate/eligibility"
+import { type CertificateScope } from "@/lib/certificates"
+import { reconcileStudentCertificates } from "@/lib/certificate/eligibility"
 
 export interface StudentSpec {
   scope: CertificateScope
+}
+
+/**
+ * Notify the people who can approve a freshly-submitted request: the scope
+ * admins, plus the teacher who owns the source course (when applicable).
+ * Best-effort — failures are swallowed by the caller.
+ */
+async function notifyApproversOfSubmission(
+  scope: CertificateScope,
+  requestId: string,
+): Promise<void> {
+  const req = await queryOne<{
+    student_name: string | null
+    source_label: string | null
+    source_table: string | null
+    source_id: string | null
+  }>(
+    `SELECT u.name AS student_name, r.source_label, r.source_table, r.source_id
+       FROM certificate_issuance_requests r
+       JOIN users u ON u.id = r.student_id
+      WHERE r.id = $1`,
+    [requestId],
+  )
+  if (!req) return
+
+  const adminLink =
+    scope === "academy"
+      ? "/academy/admin/certificates"
+      : "/admin/certificates-center"
+  const title = "طلب شهادة بانتظار الاعتماد"
+  const message = `${req.student_name || "طالب"} أكمل بياناته لشهادة «${
+    req.source_label || "—"
+  }» وبانتظار اعتمادك.`
+
+  const recipients = new Set<string>()
+
+  // Scope admins.
+  const adminRoles =
+    scope === "academy" ? ["admin", "academy_admin"] : ["admin"]
+  const admins = await query<{ id: string }>(
+    `SELECT id FROM users WHERE role = ANY($1)`,
+    [adminRoles],
+  ).catch(() => [])
+  admins.forEach((a) => recipients.add(a.id))
+
+  // The course teacher, when the source is a course.
+  if (req.source_table === "courses" && req.source_id) {
+    const teacher = await queryOne<{ teacher_id: string | null }>(
+      `SELECT teacher_id FROM courses WHERE id = $1`,
+      [req.source_id],
+    ).catch(() => null)
+    if (teacher?.teacher_id) recipients.add(teacher.teacher_id)
+  }
+
+  for (const userId of recipients) {
+    await query(
+      `INSERT INTO notifications (user_id, title, message, type, link, created_at)
+       VALUES ($1, $2, $3, 'certificate', $4, NOW())`,
+      [userId, title, message, adminLink],
+    ).catch(() => {})
+  }
 }
 
 // =====================================================================
@@ -23,9 +84,9 @@ export function makeStudentCertificatesGet(spec: StudentSpec) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Self-heal before reading: make sure completed courses/paths have an
-    // issuance request, and auto-issue any request that's ready — no admin
-    // step required. Best-effort so it never blocks the page.
+    // Self-heal before reading: make sure every completed course/path has a
+    // `data_required` issuance request so the student can fill in their data.
+    // Best-effort so it never blocks the page.
     await reconcileStudentCertificates(spec.scope, session.sub)
 
     try {
@@ -308,29 +369,17 @@ export function makeStudentRequestPatch(spec: StudentSpec) {
           [id, JSON.stringify(cleanData)],
         )
 
-        // Auto-issue immediately — no admin step — when enabled in settings.
-        // On any failure the request stays `submitted` so the admin flow still
-        // acts as a fallback.
-        let finalRow = row
-        let autoIssued = false
+        // Notify the scope admins / the course teacher that a request is now
+        // awaiting their review. Best-effort — never blocks the student.
         try {
-          const settings = await getAllSettings(spec.scope)
-          if (settings.auto_issue_on_eligibility === true) {
-            const res = await autoIssueRequest(id, spec.scope)
-            if (res.issued) {
-              autoIssued = true
-              finalRow =
-                (await queryOne(
-                  `SELECT * FROM certificate_issuance_requests WHERE id = $1`,
-                  [id],
-                )) || row
-            }
-          }
+          await notifyApproversOfSubmission(spec.scope, id)
         } catch (err) {
-          console.error("[student-submit] auto-issue failed", err)
+          console.error("[student-submit] notify approvers failed", err)
         }
 
-        return NextResponse.json({ request: finalRow, auto_issued: autoIssued })
+        // The request stays `submitted` and waits for an admin or the course
+        // teacher to approve and issue it. No auto-issue.
+        return NextResponse.json({ request: row, auto_issued: false })
       }
       case "cancel": {
         if (!["data_required", "submitted"].includes(existing.status)) {

@@ -122,18 +122,14 @@ export async function autoIssueRequest(
 /**
  * Self-heal a student's certificates when they open their certificates page.
  *
- * This makes issuance fully automatic and resilient even if:
- *   - the `auto_issue_on_eligibility` setting was never flipped on, or
- *   - a completion happened on an older build before the eligibility hooks
- *     existed (so no request was ever created).
+ * Ensures that every COMPLETED course / tajweed path / memorization path has a
+ * matching issuance request, even if the completion happened on an older build
+ * before the eligibility hooks existed.
  *
- * Steps (academy scope):
- *   1. For every COMPLETED course / tajweed path / memorization path, make sure
- *      an issuance request exists (idempotent — duplicates are skipped).
- *   2. Issue, right now and without any admin step, every request that is ready
- *      (`submitted` or `approved`). `data_required` requests are left alone so
- *      the student can still type their name first (paths), after which the
- *      submit handler auto-issues them.
+ * Each created request starts at `data_required`: the student fills in their
+ * data, the request becomes `submitted`, and an admin or the course teacher
+ * then approves and issues it. This function never issues a certificate by
+ * itself — issuance is always a manual approval step.
  *
  * Entirely best-effort: any failure is swallowed so the page still renders.
  */
@@ -196,17 +192,6 @@ export async function reconcileStudentCertificates(
           pathType: "memorization_path",
         })
       }
-    }
-
-    // 2. Issue any request that needs no further student input.
-    const ready = await query<{ id: string }>(
-      `SELECT id FROM certificate_issuance_requests
-        WHERE student_id = $1 AND scope = $2
-          AND status IN ('submitted', 'approved')`,
-      [studentId, scope],
-    ).catch(() => [])
-    for (const r of ready) {
-      await autoIssueRequest(r.id, scope)
     }
   } catch (err) {
     console.error("[eligibility] reconcileStudentCertificates failed", err)
@@ -527,7 +512,9 @@ export async function onCourseCompleted(opts: {
     sourceId: opts.courseId,
     sourceLabel: opts.courseTitle,
     language: opts.language || "ar",
-    skipDataStep: true,
+    // Require the student to fill in their data first, then an admin or the
+    // course teacher approves and issues. No auto-issue.
+    skipDataStep: false,
   })
 }
 
