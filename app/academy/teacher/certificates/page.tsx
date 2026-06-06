@@ -1,184 +1,306 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { Award, Download, ExternalLink, Calendar, Star, Loader2 } from "lucide-react";
+import React, { useState } from "react";
 import useSWR from "swr";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
+import { CheckCircle2, XCircle, Clock, FileText, Loader2, Download, AlertCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-// Framer Motion Variants for Staggered Magic
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
-};
+export default function TeacherCertificatesRequestsPage() {
+  const { data, error, mutate, isLoading } = useSWR("/api/academy/teacher/certificates/requests", fetcher);
+  const [filter, setFilter] = useState("all"); // 'all', 'submitted', 'approved', 'rejected'
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 260, damping: 20 },
-  },
-};
+  const requests = data?.requests || [];
 
-export default function CertificatesPage() {
-  const { data, error, isLoading } = useSWR("/api/academy/teacher/certificates", fetcher);
+  const filteredRequests = requests.filter((req: any) => {
+    if (filter === "all") return true;
+    if (filter === "approved") return req.status === "approved" || req.status === "issued";
+    return req.status === filter;
+  });
 
-  const certificates = data?.issued?.map((cert: any, index: number) => {
-    const gradients = [
-      "from-indigo-500/20 to-indigo-500/0",
-      "from-emerald-500/20 to-emerald-500/0",
-      "from-amber-500/20 to-amber-500/0",
-      "from-purple-500/20 to-purple-500/0",
-      "from-rose-500/20 to-rose-500/0"
-    ];
-    const borders = [
-      "group-hover:border-indigo-500/50",
-      "group-hover:border-emerald-500/50",
-      "group-hover:border-amber-500/50",
-      "group-hover:border-purple-500/50",
-      "group-hover:border-rose-500/50"
-    ];
-    const iconGlows = [
-      "text-indigo-600 dark:text-indigo-400",
-      "text-emerald-600 dark:text-emerald-400",
-      "text-amber-600 dark:text-amber-400",
-      "text-purple-600 dark:text-purple-400",
-      "text-rose-600 dark:text-rose-400"
-    ];
-    const styleIdx = index % gradients.length;
+  const handleApprove = async (id: string) => {
+    setIsProcessing(id);
+    try {
+      const res = await fetch(`/api/academy/teacher/certificates/requests/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve" }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "حدث خطأ أثناء الاعتماد");
+      
+      toast.success("تم اعتماد الشهادة بنجاح");
+      mutate();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsProcessing(null);
+    }
+  };
 
-    return {
-      id: cert.id,
-      title: cert.source_label || cert.template_name || "شهادة إتمام",
-      issuer: "أكاديمية إتقان",
-      date: new Date(cert.issued_at || cert.requested_at || new Date()).toLocaleDateString("ar-EG", { year: 'numeric', month: 'long', day: 'numeric' }),
-      grade: cert.data?.grade || "اجتياز",
-      type: cert.kind === "course" ? "دورة تدريبية" : "شهادة إنجاز",
-      gradient: gradients[styleIdx],
-      border: borders[styleIdx],
-      iconGlow: iconGlows[styleIdx],
-      pdf_url: cert.pdf_url
-    };
-  }) || [];
+  const handleReject = async (id: string) => {
+    if (!rejectReason.trim()) {
+      toast.error("يرجى إدخال سبب الرفض");
+      return;
+    }
+    setIsProcessing(id);
+    try {
+      const res = await fetch(`/api/academy/teacher/certificates/requests/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reject", reason: rejectReason }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "حدث خطأ أثناء الرفض");
+      
+      toast.success("تم رفض طلب الشهادة");
+      setRejectingId(null);
+      setRejectReason("");
+      mutate();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsProcessing(null);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-[#0A0A0A] p-6 md:p-12 font-sans selection:bg-indigo-500/30" dir="rtl">
-      <div className="max-w-5xl mx-auto space-y-10">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-[#0A0A0A] p-6 md:p-12 font-sans" dir="rtl">
+      <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header Section */}
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }} 
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-6"
-        >
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-sm font-medium">
-              <Award className="w-4 h-4" />
-              <span>إنجازاتك الأكاديمية</span>
+              <FileText className="w-4 h-4" />
+              <span>إدارة الشهادات</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white text-balance">
-              شهاداتي واعتماداتي
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              اعتماد شهادات الطلاب
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 max-w-lg leading-relaxed text-sm md:text-base">
-              تصفح وحمّل جميع شهاداتك والدورات التي اجتزتها بنجاح. هذه المساحة تعكس رحلتك المهنية وتطورك المستمر كمعلم.
+            <p className="text-slate-500 dark:text-slate-400 max-w-xl">
+              قم بمراجعة واعتماد طلبات الشهادات المقدمة من طلابك في الدورات التي تدرسها.
             </p>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Certificates Grid */}
+        {/* Tabs / Filters */}
+        <div className="flex flex-wrap gap-2 pb-4 border-b border-border">
+          <FilterTab active={filter === "all"} onClick={() => setFilter("all")} label="الكل" count={requests.length} />
+          <FilterTab active={filter === "submitted"} onClick={() => setFilter("submitted")} label="بانتظار الاعتماد" count={data?.counts?.submitted || 0} color="text-amber-500" />
+          <FilterTab active={filter === "approved"} onClick={() => setFilter("approved")} label="تم الاعتماد" count={(data?.counts?.approved || 0) + (data?.counts?.issued || 0)} color="text-emerald-500" />
+          <FilterTab active={filter === "rejected"} onClick={() => setFilter("rejected")} label="مرفوضة" count={data?.counts?.rejected || 0} color="text-rose-500" />
+        </div>
+
+        {/* Content */}
         {isLoading ? (
-          <div className="flex justify-center items-center py-20">
+          <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
           </div>
         ) : error ? (
-          <div className="text-center text-red-500 py-10">
-            حدث خطأ أثناء تحميل الشهادات.
+          <div className="text-center py-20 text-red-500">
+            <AlertCircle className="w-8 h-8 mx-auto mb-3 opacity-50" />
+            <p>حدث خطأ أثناء تحميل الطلبات</p>
           </div>
-        ) : certificates.length === 0 ? (
-          <div className="text-center text-slate-500 py-20">
-            لا توجد شهادات متاحة حالياً.
+        ) : filteredRequests.length === 0 ? (
+          <div className="text-center py-20 text-slate-500">
+            <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+            <p className="text-lg">لا توجد طلبات لعرضها حالياً</p>
           </div>
         ) : (
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {certificates.map((cert: any) => (
-            <motion.div
-              key={cert.id}
-              variants={itemVariants}
-              whileHover={{ y: -4, scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              className={`group relative overflow-hidden bg-white dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(255,255,255,0.02)] transition-all duration-300 ease-out cursor-pointer ${cert.border}`}
-            >
-              {/* Subtle Top Glow Effect */}
-              <div className={`absolute top-0 right-0 w-full h-32 bg-gradient-to-b ${cert.gradient} opacity-0 pointer-events-none transition-opacity duration-500 group-hover:opacity-100`} />
-              
-              <div className="p-6 relative z-10 flex flex-col h-full">
-                {/* Top Bar: Icon & Type */}
-                <div className="flex justify-between items-start mb-6">
-                  <div className="p-3 bg-white dark:bg-[#1A1A1A] rounded-xl border border-slate-100 dark:border-white/10 shadow-sm transition-colors duration-300 group-hover:border-transparent">
-                    <Award className={`w-6 h-6 text-slate-700 dark:text-slate-300 transition-colors duration-300 ${cert.iconGlow}`} />
-                  </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 rounded-lg">
-                    {cert.type}
-                  </span>
-                </div>
-
-                {/* Content */}
-                <div className="space-y-1.5 mb-6 flex-grow">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight transition-colors duration-300">
-                    {cert.title}
-                  </h3>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    {cert.issuer}
-                  </p>
-                </div>
-
-                {/* Meta Information */}
-                <div className="flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400 mb-6">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{cert.date}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5 text-amber-500" />
-                    <span>{cert.grade}</span>
-                  </div>
-                </div>
-
-                {/* Actions (Buttons) */}
-                <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex items-center gap-3">
-                  <button 
-                    onClick={() => cert.pdf_url && window.open(cert.pdf_url, '_blank')}
-                    disabled={!cert.pdf_url}
-                    className="flex-1 flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-slate-900 text-sm font-semibold py-2.5 rounded-xl transition-all active:scale-[0.97]"
-                  >
-                    <Download className="w-4 h-4" />
-                    تحميل PDF
-                  </button>
-                  <button 
-                    onClick={() => cert.pdf_url && window.open(cert.pdf_url, '_blank')}
-                    disabled={!cert.pdf_url}
-                    className="p-2.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all active:scale-[0.97]"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-          </motion.div>
+          <div className="grid gap-4">
+            <AnimatePresence>
+              {filteredRequests.map((req: any) => (
+                <RequestCard 
+                  key={req.id} 
+                  req={req} 
+                  isProcessing={isProcessing === req.id}
+                  rejectingId={rejectingId}
+                  setRejectingId={setRejectingId}
+                  rejectReason={rejectReason}
+                  setRejectReason={setRejectReason}
+                  onApprove={() => handleApprove(req.id)}
+                  onReject={() => handleReject(req.id)}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
         )}
       </div>
     </div>
   );
+}
+
+function FilterTab({ active, onClick, label, count, color }: any) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-2 text-sm font-semibold rounded-full transition-all flex items-center gap-2 ${
+        active 
+          ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-none" 
+          : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+      }`}
+    >
+      <span>{label}</span>
+      <span className={`px-2 py-0.5 rounded-full text-xs bg-white/20 dark:bg-black/20 ${active ? "text-white" : color || "text-slate-500"}`}>
+        {count || 0}
+      </span>
+    </button>
+  );
+}
+
+function RequestCard({ req, isProcessing, rejectingId, setRejectingId, rejectReason, setRejectReason, onApprove, onReject }: any) {
+  const isPending = req.status === "submitted";
+  const isApproved = req.status === "approved" || req.status === "issued";
+  const isRejected = req.status === "rejected";
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="bg-white dark:bg-[#111] border border-slate-200 dark:border-white/10 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row gap-6 md:items-center"
+    >
+      <div className="flex-1 space-y-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                {req.student_name}
+              </h3>
+              <StatusBadge status={req.status} />
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {req.student_email}
+            </p>
+          </div>
+          
+          <div className="text-left">
+            <p className="text-xs text-slate-400 font-medium bg-slate-50 dark:bg-white/5 px-2.5 py-1 rounded-md">
+              {req.requested_at ? format(new Date(req.requested_at), "d MMMM yyyy", { locale: ar }) : ""}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 dark:bg-white/5 rounded-xl p-4">
+          <div>
+            <p className="text-xs text-slate-500 mb-1">الدورة / المسار</p>
+            <p className="font-medium text-sm text-slate-800 dark:text-slate-200">{req.course_title || req.source_label}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 mb-1">بيانات الشهادة (الاسم)</p>
+            <p className="font-medium text-sm text-slate-800 dark:text-slate-200">{req.data?.name || req.student_name}</p>
+          </div>
+          {req.data?.grade && (
+            <div>
+              <p className="text-xs text-slate-500 mb-1">التقدير</p>
+              <p className="font-medium text-sm text-slate-800 dark:text-slate-200">{req.data.grade}</p>
+            </div>
+          )}
+          {isApproved && req.certificate_number && (
+            <div>
+              <p className="text-xs text-slate-500 mb-1">رقم الشهادة</p>
+              <p className="font-medium text-sm text-slate-800 dark:text-slate-200 font-mono text-left" dir="ltr">{req.certificate_number}</p>
+            </div>
+          )}
+        </div>
+        
+        {isRejected && req.rejection_reason && (
+          <div className="bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 p-3 rounded-xl text-sm flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            <p><strong>سبب الرفض:</strong> {req.rejection_reason}</p>
+          </div>
+        )}
+      </div>
+
+      {isPending && (
+        <div className="flex flex-col gap-3 min-w-[200px] border-t md:border-t-0 md:border-r border-slate-100 dark:border-white/10 pt-4 md:pt-0 md:pr-6">
+          {rejectingId === req.id ? (
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="اكتب سبب الرفض..."
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                className="w-full text-sm bg-white dark:bg-black border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-rose-500"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={onReject}
+                  disabled={isProcessing}
+                  className="flex-1 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  تأكيد الرفض
+                </button>
+                <button
+                  onClick={() => setRejectingId(null)}
+                  disabled={isProcessing}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-slate-300 text-xs font-bold py-2 rounded-lg transition-colors"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={onApprove}
+                disabled={isProcessing}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm disabled:opacity-50"
+              >
+                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                اعتماد وإصدار
+              </button>
+              <button
+                onClick={() => setRejectingId(req.id)}
+                disabled={isProcessing}
+                className="w-full flex items-center justify-center gap-2 bg-white dark:bg-[#111] hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 border border-rose-200 dark:border-rose-500/30 font-bold py-2.5 rounded-xl transition-colors shadow-sm disabled:opacity-50"
+              >
+                <XCircle className="w-5 h-5" />
+                رفض الطلب
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {isApproved && req.pdf_url && (
+         <div className="flex flex-col gap-3 min-w-[200px] border-t md:border-t-0 md:border-r border-slate-100 dark:border-white/10 pt-4 md:pt-0 md:pr-6">
+           <a 
+              href={req.pdf_url}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 dark:text-indigo-400 font-bold py-2.5 rounded-xl transition-colors shadow-sm"
+           >
+             <Download className="w-4 h-4" />
+             عرض الشهادة
+           </a>
+         </div>
+      )}
+    </motion.div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "submitted") {
+    return <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-2 py-0.5 rounded-md"><Clock className="w-3 h-3"/> قيد المراجعة</span>;
+  }
+  if (status === "approved" || status === "issued") {
+    return <span className="flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-2 py-0.5 rounded-md"><CheckCircle2 className="w-3 h-3"/> معتمدة</span>;
+  }
+  if (status === "rejected") {
+    return <span className="flex items-center gap-1 text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 px-2 py-0.5 rounded-md"><XCircle className="w-3 h-3"/> مرفوضة</span>;
+  }
+  if (status === "data_required") {
+    return <span className="flex items-center gap-1 text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-500/20 dark:text-slate-400 px-2 py-0.5 rounded-md"><FileText className="w-3 h-3"/> بانتظار بيانات الطالب</span>;
+  }
+  return null;
 }
