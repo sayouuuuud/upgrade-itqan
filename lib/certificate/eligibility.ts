@@ -42,7 +42,7 @@ import {
 export async function autoIssueRequest(
   requestId: string,
   scope: CertificateScope,
-): Promise<{ issued: boolean; pdf_url: string | null }> {
+): Promise<{ issued: boolean; pdf_url: string | null; reason?: string }> {
   try {
     const req = await queryOne<{
       id: string
@@ -58,7 +58,7 @@ export async function autoIssueRequest(
         WHERE id = $1 AND scope = $2`,
       [requestId, scope],
     )
-    if (!req) return { issued: false, pdf_url: null }
+    if (!req) return { issued: false, pdf_url: null, reason: "request_not_found" }
     if (req.status === "issued") {
       return { issued: true, pdf_url: req.pdf_url }
     }
@@ -81,7 +81,7 @@ export async function autoIssueRequest(
         "[eligibility] autoIssueRequest: no default template for",
         { scope, kind: req.kind, language: req.language },
       )
-      return { issued: false, pdf_url: null }
+      return { issued: false, pdf_url: null, reason: "no_template" }
     }
 
     await query(
@@ -119,7 +119,9 @@ export async function autoIssueRequest(
     return { issued: true, pdf_url: result.pdf_url }
   } catch (err) {
     console.error("[eligibility] autoIssueRequest failed", err)
-    return { issued: false, pdf_url: null }
+    const message =
+      err instanceof Error ? err.message : "unknown_render_error"
+    return { issued: false, pdf_url: null, reason: `render_failed: ${message}` }
   }
 }
 

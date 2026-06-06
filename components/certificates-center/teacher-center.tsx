@@ -90,7 +90,7 @@ export default function TeacherCertificatesCenter() {
       // Read as text first so we still surface non-JSON errors (e.g. a
       // serverless 500/timeout from the PDF renderer).
       const raw = await res.text()
-      let d: { error?: string; issued?: boolean } | null = null
+      let d: { error?: string; issued?: boolean; reason?: string } | null = null
       try {
         d = raw ? JSON.parse(raw) : null
       } catch {
@@ -107,11 +107,8 @@ export default function TeacherCertificatesCenter() {
         return
       }
       if (action === 'approve' && d && d.issued === false) {
-        alert(
-          isAr
-            ? 'تم الاعتماد لكن تعذّر إصدار ملف الشهادة. تأكد من وجود قالب افتراضي للدورات وحاول مرة أخرى.'
-            : 'Approved, but the certificate file could not be generated. Make sure a default course template exists and try again.',
-        )
+        console.log('[v0] cert issue failed reason:', d.reason)
+        alert(d.error || (isAr ? 'تعذّر إصدار ملف الشهادة.' : 'Could not issue the certificate file.'))
       }
       load(tab)
     } catch (err) {
@@ -217,6 +214,9 @@ function RequestCard({
   const pending = r.status === 'submitted'
   const issued = r.status === 'issued'
   const rejected = r.status === 'rejected'
+  // Approved but the PDF was never produced (e.g. the renderer failed). The
+  // teacher can retry issuing it.
+  const approvedNotIssued = r.status === 'approved' && !r.pdf_url
 
   const date = r.submitted_at || r.requested_at
 
@@ -285,25 +285,40 @@ function RequestCard({
         )}
 
         {/* Actions */}
-        {pending && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            <Button onClick={onApprove} disabled={busy} className="flex-1 min-w-[160px]">
-              {busy ? (
-                <Loader2 className="w-4 h-4 me-2 animate-spin" />
-              ) : (
-                <BadgeCheck className="w-4 h-4 me-2" />
-              )}
-              {isAr ? 'اعتماد وإصدار الشهادة' : 'Approve & issue'}
-            </Button>
-            <Button
-              onClick={onReject}
-              disabled={busy}
-              variant="outline"
-              className="text-rose-600 border-rose-200 hover:bg-rose-50"
-            >
-              <XCircle className="w-4 h-4 me-2" />
-              {isAr ? 'رفض' : 'Reject'}
-            </Button>
+        {(pending || approvedNotIssued) && (
+          <div className="space-y-2 pt-1">
+            {approvedNotIssued && (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                {isAr
+                  ? 'تم اعتماد الطلب لكن لم يُنشأ ملف الشهادة بعد. اضغط لإعادة محاولة الإصدار.'
+                  : 'This request was approved but the certificate file was not created. Click to retry issuing.'}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={onApprove} disabled={busy} className="flex-1 min-w-[160px]">
+                {busy ? (
+                  <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                ) : (
+                  <BadgeCheck className="w-4 h-4 me-2" />
+                )}
+                {approvedNotIssued
+                  ? isAr
+                    ? 'إعادة محاولة الإصدار'
+                    : 'Retry issuing'
+                  : isAr
+                    ? 'اعتماد وإصدار الشهادة'
+                    : 'Approve & issue'}
+              </Button>
+              <Button
+                onClick={onReject}
+                disabled={busy}
+                variant="outline"
+                className="text-rose-600 border-rose-200 hover:bg-rose-50"
+              >
+                <XCircle className="w-4 h-4 me-2" />
+                {isAr ? 'رفض' : 'Reject'}
+              </Button>
+            </div>
           </div>
         )}
 
