@@ -7,9 +7,11 @@ import {
   ChevronLeft, Sun, Sunrise, Sunset, Moon, MoonStar,
   BookOpen, Plus, Sparkles, TrendingUp, Loader2,
   Flame, Target, BarChart3, PenLine, Save, Map,
+  Trophy, Star, Medal, Route,
 } from "lucide-react"
 import { SURAHS } from "@/lib/quran-data"
 import { useI18n } from "@/lib/i18n/context"
+import { AdhkarWidget } from "@/components/adhkar-widget"
 
 type Recitation = {
   id: string
@@ -34,6 +36,25 @@ type PrayerTimes = {
 }
 
 type WirdItem = { id: string; label: string; detail?: string }
+
+type PointsInfo = {
+  total_points: number
+  level_label: string
+  streak_days: number
+  next_level: { label: string; min: number } | null
+  points_to_next_level: number
+}
+
+type RankInfo = { rank: number; total_points: number } | null
+
+type StudentPath = {
+  id: string
+  title: string
+  enrollment_status?: string | null
+  stages_completed?: number | null
+  total_stages?: number | null
+  subject?: string | null
+}
 
 type DailyChartItem = { date: string; day: string; newVerses: number; revisedVerses: number }
 type WeeklyChartItem = { weekStart: string; newVerses: number; revisedVerses: number }
@@ -83,6 +104,11 @@ export default function StudentDashboard() {
   // Progress report state
   const [progress, setProgress] = useState<ProgressReport | null>(null)
   const [loadingProgress, setLoadingProgress] = useState(true)
+
+  // Gamification + paths
+  const [points, setPoints] = useState<PointsInfo | null>(null)
+  const [rank, setRank] = useState<RankInfo>(null)
+  const [paths, setPaths] = useState<StudentPath[]>([])
 
   // Daily log form state
   const [logNewVerses, setLogNewVerses] = useState("")
@@ -142,6 +168,37 @@ export default function StudentDashboard() {
       })
       .catch(() => { })
       .finally(() => { if (!cancelled) setLoadingProgress(false) })
+
+    fetch("/api/student/points")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d) {
+          setPoints({
+            total_points: d.total_points ?? 0,
+            level_label: d.level_label ?? "مبتدئ",
+            streak_days: d.streak_days ?? 0,
+            next_level: d.next_level ? { label: d.next_level.label, min: d.next_level.min } : null,
+            points_to_next_level: d.points_to_next_level ?? 0,
+          })
+        }
+      })
+      .catch(() => { })
+
+    fetch("/api/academy/leaderboard?period=all_time&limit=1")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d?.current_user) {
+          setRank({ rank: d.current_user.rank, total_points: d.current_user.total_points })
+        }
+      })
+      .catch(() => { })
+
+    fetch("/api/student/tajweed-paths?scope=enrolled")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && Array.isArray(d?.paths)) setPaths(d.paths.slice(0, 3))
+      })
+      .catch(() => { })
 
     return () => { cancelled = true }
   }, [])
@@ -305,6 +362,59 @@ export default function StudentDashboard() {
           gradient
         />
       </div>
+
+      {/* ═══ GAMIFICATION STRIP (points / rank / streak / next level) ═══ */}
+      {points && (
+        <div className="bg-gradient-to-l from-primary/10 via-card to-card border border-border rounded-2xl p-5 md:p-6 shadow-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link href="/student/points" className="flex items-center gap-3 group">
+              <div className="w-11 h-11 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0">
+                <Star className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-black text-foreground leading-none">{toArabicDigits(points.total_points)}</p>
+                <p className="text-xs text-muted-foreground mt-1 group-hover:text-primary transition-colors">نقطة</p>
+              </div>
+            </Link>
+
+            <Link href="/student/leaderboard" className="flex items-center gap-3 group">
+              <div className="w-11 h-11 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
+                <Trophy className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-black text-foreground leading-none">
+                  {rank ? `#${toArabicDigits(rank.rank)}` : "—"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 group-hover:text-primary transition-colors">ترتيبك</p>
+              </div>
+            </Link>
+
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0">
+                <Flame className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-black text-foreground leading-none">{toArabicDigits(points.streak_days)}</p>
+                <p className="text-xs text-muted-foreground mt-1">يوم متتالي</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
+                <Medal className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-black text-foreground leading-tight truncate">{points.level_label}</p>
+                <p className="text-xs text-muted-foreground mt-1 truncate">
+                  {points.next_level
+                    ? `باقي ${toArabicDigits(points.points_to_next_level)} لـ${points.next_level.label}`
+                    : "أعلى مستوى"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Progress Card */}
       <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-sm">
@@ -776,6 +886,77 @@ export default function StudentDashboard() {
           <p className="text-[11px] text-muted-foreground mt-4 text-center">
             يتم إعادة تعيين الورد كل يوم تلقائياً
           </p>
+        </div>
+      </div>
+
+      {/* ═══ ADHKAR + ENROLLED PATHS ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {/* Morning/Evening Adhkar */}
+        <AdhkarWidget />
+
+        {/* My Learning Paths */}
+        <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4 md:mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                <Route className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h3 className="text-base md:text-lg font-bold text-foreground">مساراتي التعليمية</h3>
+                <p className="text-xs text-muted-foreground">{toArabicDigits(paths.length)} مسار نشط</p>
+              </div>
+            </div>
+            <Link href="/student/tajweed-paths" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+              الكل
+              <ChevronLeft className="w-3 h-3" />
+            </Link>
+          </div>
+
+          {paths.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-sm text-muted-foreground mb-3">لم تنضم إلى أي مسار بعد</p>
+              <Link
+                href="/student/tajweed-paths"
+                className="inline-flex items-center gap-2 bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-4 py-2 rounded-xl font-bold text-xs hover:bg-indigo-500/20 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                تصفّح المسارات
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {paths.map((p) => {
+                const total = p.total_stages || 0
+                const done = p.stages_completed || 0
+                const pct = total > 0 ? Math.round((done / total) * 100) : 0
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/student/tajweed-paths/${p.id}`}
+                    className="block p-3 rounded-xl bg-muted/30 hover:bg-muted/60 transition-colors group"
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <h4 className="font-bold text-sm truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        {p.title}
+                      </h4>
+                      <span className="text-xs font-bold text-muted-foreground shrink-0">{toArabicDigits(pct)}٪</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-l from-indigo-500 to-violet-500 rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    {total > 0 && (
+                      <p className="text-[11px] text-muted-foreground mt-1.5">
+                        {toArabicDigits(done)} من {toArabicDigits(total)} مرحلة
+                      </p>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
 

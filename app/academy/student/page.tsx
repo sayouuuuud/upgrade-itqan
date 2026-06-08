@@ -10,6 +10,8 @@ import {
   CheckCircle2, GraduationCap, Activity as ActivityIcon,
   Video, Sparkles, ArrowUpRight, Medal,
 } from 'lucide-react'
+import { AdhkarWidget } from '@/components/adhkar-widget'
+import { PrayerTimesDialog } from '@/components/prayer-times-dialog'
 
 const LEVEL_LABELS: Record<string, string> = {
   beginner: 'مبتدئ',
