@@ -11,6 +11,7 @@ import {
   Sparkles,
   Trophy,
   User,
+  XCircle,
 } from 'lucide-react'
 import { CertRequest } from './types'
 import { motion } from 'framer-motion'

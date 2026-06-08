@@ -458,11 +458,6 @@ export const ar = {
     gradePlaceholder: 'التقدير',
     total: 'الإجمالي',
     reviewedLabel: 'تم مراجعتها',
-    statusPending: 'قيد المراجعة',
-    statusInReview: 'قيد المراجعة',
-    statusMastered: 'متقن',
-    statusNeedsSession: 'يحتاج جلسة',
-    statusBooked: 'تم حجز الموعد',
     statusCompleted: 'مكتمل',
     statusCancelled: 'ملغية',
     viewRecitation: 'عرض التلاوة',
@@ -922,7 +917,7 @@ export const ar = {
     allSessions: 'كل الجلسات',
     upcoming: 'القادمة',
     today: 'اليوم',
-    completed: 'المكتملة',
+    completed: 'المكتم��ة',
     pendingLinks: 'بدون رابط',
     underReview: 'قيد المراجعة',
     profile: 'الملف الشخصي',
@@ -1224,7 +1219,7 @@ export const ar = {
       total: 'الإجمالي',
       average: 'المتوسط',
       dailySuffix: 'يومياً',
-      views: 'المشاهدات',
+      views: 'المشاهد��ت',
       visitors: 'الزوار',
       last7Days: 'آخر 7 أيام',
       last30Days: 'آخر 30 يوم',
@@ -1253,7 +1248,7 @@ export const ar = {
       enableMaintenanceDesc: 'سيرى الزوار رسالة الصيانة',
       maintenanceMessage: 'رسالة الصيانة',
       bannerColor: 'لون البانر',
-      fullMaintenancePage: 'صفحة صيانة كاملة',
+      fullMaintenancePage: 'صفحة ص��انة كاملة',
       fullMaintenancePageDesc: 'بدلاً من مجرد بانر',
       heroSection: 'قسم Hero',
       heroTitle: 'العنوان الرئيسي',
@@ -1647,62 +1642,5 @@ export const ar = {
     skip: 'تخطي',
     submit: 'إرسال',
   },
-  // Tajweed Paths
-  tajweedPaths: {
-    tajweedTitle: 'مسارات التجويد',
-    studentSubtitleTajweed: 'تدرج في تعلم أحكام التجويد من التأسيس حتى الإتقان',
-    migrationMissingStudent: 'النظام جاهز لكن قاعدة البيانات تحتاج تشغيل ميجريشن أولاً — راسل الإدارة لو ظهرت لك هذه الرسالة.',
-    searchPlaceholder: 'ابحث عن مسار...',
-    emptyEnrolled: 'اكتشف مسارات التجويد المتاحة في علامة التبويب "تصفح المسارات" وابدأ رحلتك القرآنية اليوم.',
-    emptyPublished: 'لا توجد مسارات مطابقة للبحث',
-    tabs: {
-      myPaths: 'مساراتي',
-      browse: 'تصفح المسارات'
-    },
-    levels: {
-      beginner: 'مبتدئ',
-      intermediate: 'متوسط',
-      advanced: 'متقدم'
-    },
-    metadata: {
-      requireAudioBadge: 'يتطلب تسجيل',
-      stagesUnit: 'مرحلة',
-      estimatedDays: 'يوم متوقع',
-      estimatedDaysLabel: 'المدة المتوقعة',
-      daysSuffix: 'يوماً',
-      progress: 'التقدم المنجز',
-      yourProgress: 'التقدم الإجمالي',
-      pathCompleteCelebration: 'لقد أتممت هذا المسار بنجاح.'
-    },
-    detail: {
-      enrollPrompt: 'اشترك في المسار لتبدأ التعلم، وستفتح المرحلة الأولى مباشرة.',
-      learningContent: 'المحتوى التعليمي',
-      videoTutorial: 'فيديو توضيحي',
-      pdfFile: 'ملف PDF',
-      practicePassage: 'تطبيق عملي',
-      yourPreviousRecording: 'تسجيلك المعتمد لهذه المرحلة',
-      completeDialogTitle: 'إتمام المرحلة',
-      requireAudioDescription: 'يلزم تسجيل صوتي قبل إتمام المرحلة — سجّل تسجيلاً جديداً أو اربط تسجيلاً سابقاً.',
-      optionalAudioDescription: 'يمكنك تسجيل صوت لإثبات الحفظ أو ربط تسجيل سابق (اختياري)، ثم اضغط إتمام.',
-      audioRecorderLabel: 'سجّل التلاوة للتطبيق',
-      completeFailed: 'تعذّر إتمام المرحلة'
-    },
-    actions: {
-      startPath: 'ابدأ المسار الآن',
-      start: 'استكشاف وابدأ',
-      backToPaths: 'رجوع للمسارات',
-      continueLearning: 'متابعة المسار',
-      review: 'مراجعة المسار',
-      completeStage: 'إتمام المرحلة',
-      updateRecording: 'تحديث التسجيل',
-      cancel: 'إلغاء',
-      pass: 'تأكيد الإتمام'
-    },
-    statuses: {
-      inProgress: 'قيد العمل',
-      completed: 'مكتمل',
-      paused: 'متوقف'
-    }
-  }
 }
 

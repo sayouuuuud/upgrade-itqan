@@ -42,7 +42,7 @@ import {
 export async function autoIssueRequest(
   requestId: string,
   scope: CertificateScope,
-): Promise<{ issued: boolean; pdf_url: string | null; reason?: string }> {
+): Promise<{ issued: boolean; pdf_url: string | null; reason?: string; error?: string }> {
   try {
     const req = await queryOne<{
       id: string

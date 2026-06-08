@@ -324,6 +324,9 @@
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
+  /* Non-static position so framer-motion's useScroll can measure the
+     document scroll container correctly (target-based scroll offsets). */
+  position: relative;
 }
 
 /* 3D Perspective */

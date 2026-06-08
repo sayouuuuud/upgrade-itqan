@@ -8,7 +8,50 @@
 // No Puppeteer / Chromium required — works on Vercel Node 24 / AL2023.
 
 import { PDFDocument } from "pdf-lib"
+import { writeFile, mkdir } from "node:fs/promises"
+import { join } from "node:path"
+import { tmpdir } from "node:os"
 import { ALL_FIELDS, type FieldAnchor, type FieldValues } from "./fields"
+
+// ---------------------------------------------------------------------------
+// Embedded Arabic/Latin fonts via fontconfig
+//
+// librsvg (used by sharp to rasterise our SVG text overlays) has NO access to
+// system fonts in the serverless runtime, and it does NOT reliably honour
+// base64 @font-face declarations either — Arabic then renders as tofu boxes
+// (□□□□□) or raw code points.
+//
+// The reliable approach is fontconfig: we ship real TTF files, write a small
+// fonts.conf pointing at that directory, and set FONTCONFIG_FILE so librsvg
+// can resolve the font by family name ("Cairo"). This must run BEFORE sharp
+// loads its native binding.
+// ---------------------------------------------------------------------------
+export const ARABIC_FONT_FAMILY = "Cairo"
+let _fontConfigReady: Promise<void> | null = null
+
+async function ensureFontConfig(): Promise<void> {
+  if (_fontConfigReady) return _fontConfigReady
+  _fontConfigReady = (async () => {
+    try {
+      const fontDir = join(process.cwd(), "lib", "certificate", "fonts")
+      const cacheDir = join(tmpdir(), "fontconfig-cache")
+      await mkdir(cacheDir, { recursive: true })
+      const confPath = join(tmpdir(), "cert-fonts.conf")
+      const conf = `<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <dir>${fontDir}</dir>
+  <cachedir>${cacheDir}</cachedir>
+  <config></config>
+</fontconfig>`
+      await writeFile(confPath, conf)
+      process.env.FONTCONFIG_FILE = confPath
+    } catch (err) {
+      console.error("[certificate/render] Failed to set up fontconfig:", err)
+    }
+  })()
+  return _fontConfigReady
+}
 
 export interface RenderInput {
   template_url: string
@@ -176,6 +219,9 @@ export async function renderCertificate(
   input: RenderInput,
   format: RenderFormat = "pdf",
 ): Promise<Buffer> {
+  // Configure fontconfig BEFORE sharp's native binding is loaded so librsvg
+  // can resolve our embedded Arabic font.
+  await ensureFontConfig()
   const sharp = (await import("sharp")).default
 
   const targetWidth = input.width ?? 1400
@@ -229,10 +275,10 @@ export async function renderCertificate(
     const ay = Math.round(anchor.y * targetHeight)
 
     // For SVG, we use a foreignObject-free approach: use <text> with textLength
-    // to cap width when needed. We embed a safe-ish font stack.
-    const fontFamily = isAr
-      ? "Arial, Tahoma, sans-serif"
-      : "Arial, Helvetica, sans-serif"
+    // to cap width when needed.
+    // Use the embedded Arabic-capable font (resolved via fontconfig) so
+    // server-side rasterisation renders Arabic glyphs correctly.
+    const fontFamily = `${ARABIC_FONT_FAMILY}, sans-serif`
 
     const safeText = escapeSvg(text)
 
