@@ -36,16 +36,13 @@ async function notifyApproversOfSubmission(
   )
   if (!req) return
 
-  const adminLink =
-    scope === "academy"
-      ? "/academy/admin/certificates"
-      : "/admin/certificates-center"
   const title = "طلب شهادة بانتظار الاعتماد"
   const message = `${req.student_name || "طالب"} أكمل بياناته لشهادة «${
     req.source_label || "—"
   }» وبانتظار اعتمادك.`
 
-  const recipients = new Set<string>()
+  // userId -> target link
+  const recipients = new Map<string, string>()
 
   // Scope admins.
   const adminRoles =
@@ -54,7 +51,9 @@ async function notifyApproversOfSubmission(
     `SELECT id FROM users WHERE role = ANY($1)`,
     [adminRoles],
   ).catch(() => [])
-  admins.forEach((a) => recipients.add(a.id))
+  
+  const adminLink = scope === "academy" ? "/academy/admin/certificates" : "/admin/certificates-center"
+  admins.forEach((a) => recipients.set(a.id, adminLink))
 
   // The course teacher, when the source is a course.
   if (req.source_table === "courses" && req.source_id) {
@@ -62,14 +61,20 @@ async function notifyApproversOfSubmission(
       `SELECT teacher_id FROM courses WHERE id = $1`,
       [req.source_id],
     ).catch(() => null)
-    if (teacher?.teacher_id) recipients.add(teacher.teacher_id)
+    
+    if (teacher?.teacher_id) {
+      const teacherLink = scope === "academy" ? "/academy/teacher/certificates" : "/teacher/certificates"
+      if (!recipients.has(teacher.teacher_id)) {
+        recipients.set(teacher.teacher_id, teacherLink)
+      }
+    }
   }
 
-  for (const userId of recipients) {
+  for (const [userId, link] of recipients.entries()) {
     await query(
       `INSERT INTO notifications (user_id, title, message, type, link, created_at)
        VALUES ($1, $2, $3, 'certificate', $4, NOW())`,
-      [userId, title, message, adminLink],
+      [userId, title, message, link],
     ).catch(() => {})
   }
 }
