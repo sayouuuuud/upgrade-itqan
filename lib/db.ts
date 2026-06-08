@@ -51,6 +51,14 @@ if (databaseUrl) {
     pool = global._dbPool
   }
 
+  // Prevent unhandled 'error' events on idle clients from crashing the process.
+  // The Supabase pooler periodically drops idle connections, which makes pg emit
+  // an 'error' on the pool. Without this listener it becomes an uncaughtException
+  // that takes down the dev server (causing empty responses / JSON parse errors).
+  pool.on("error", (err) => {
+    console.error("[DB] Idle client error (handled, pool will recover):", err.message)
+  })
+
   console.log("[DB] Connected to database at:", databaseUrl.split('@')[1]?.split('/')[0] || 'unknown host')
 }
 
