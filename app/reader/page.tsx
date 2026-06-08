@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ClipboardList, Calendar, CalendarCheck, CheckCircle, ArrowLeft, Loader2, ArrowRight, Power, Star, Users, BarChart3, Clock, Target, Flame, BookOpen } from "lucide-react"
+import { ClipboardList, Calendar, CalendarCheck, CheckCircle, ArrowLeft, Loader2, ArrowRight, Power, Star, Users, BarChart3, Clock, Target, Flame, BookOpen, Video, MessageSquare, Bell, Trophy, ChevronLeft, Mic, CalendarDays, MessagesSquare } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
@@ -42,6 +42,23 @@ interface ReaderPerformanceStats {
   averageRating: string
 }
 
+interface UpcomingSession {
+  id: string
+  student_name: string | null
+  slot_start: string
+  slot_end: string | null
+  status: string
+  meeting_link: string | null
+  is_today: boolean
+}
+
+interface DashboardSummary {
+  upcomingSessions: UpcomingSession[]
+  unreadMessages: number
+  unreadNotifications: number
+  pendingCompetitionEvals: number
+}
+
 export default function ReaderDashboard() {
   const { t, locale } = useI18n()
   const isAr = locale === 'ar'
@@ -54,6 +71,7 @@ export default function ReaderDashboard() {
   const [performanceStats, setPerformanceStats] = useState<ReaderPerformanceStats | null>(null)
   const [studentProgress, setStudentProgress] = useState<StudentProgressReport[]>([])
   const [loadingStudentProgress, setLoadingStudentProgress] = useState(true)
+  const [summary, setSummary] = useState<DashboardSummary | null>(null)
 
   useEffect(() => {
     // Fetch stats
@@ -90,7 +108,12 @@ export default function ReaderDashboard() {
       .catch(() => setStudentProgress([]))
       .finally(() => setLoadingStudentProgress(false))
 
-    Promise.all([fetchStats, fetchProfile, fetchRequests, fetchPerformance, fetchStudentProgress]).finally(() => setLoading(false))
+    const fetchSummary = fetch('/api/reader/dashboard-summary')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setSummary(data) })
+      .catch(() => setSummary(null))
+
+    Promise.all([fetchStats, fetchProfile, fetchRequests, fetchPerformance, fetchStudentProgress, fetchSummary]).finally(() => setLoading(false))
   }, [])
 
   const handleToggleActivity = async (checked: boolean) => {
@@ -128,17 +151,17 @@ export default function ReaderDashboard() {
       label: t.reader.pendingReviewsLabel,
       value: stats?.pendingReviews ?? 0,
       icon: ClipboardList,
-      color: "text-[#C9A227]",
-      bg: "bg-[#C9A227]/10",
-      iconBig: "text-[#C9A227]",
+      color: "text-primary",
+      bg: "bg-primary/10",
+      iconBig: "text-primary",
       urgent: (stats?.pendingReviews ?? 0) > 0,
     },
     {
       label: t.reader.todaySessionsLabel,
       value: stats?.todaySessions ?? 0,
       icon: Calendar,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
+      color: "text-blue-600 dark:text-blue-400",
+      bg: "bg-blue-500/10",
       iconBig: "text-blue-500",
       urgent: false,
     },
@@ -146,17 +169,17 @@ export default function ReaderDashboard() {
       label: t.reader.upcomingSessions7Days,
       value: stats?.upcomingSessions ?? 0,
       icon: CalendarCheck,
-      color: "text-purple-600",
-      bg: "bg-purple-50",
-      iconBig: "text-purple-500",
+      color: "text-violet-600 dark:text-violet-400",
+      bg: "bg-violet-500/10",
+      iconBig: "text-violet-500",
       urgent: false,
     },
     {
       label: t.reader.masteredCasesCount,
       value: stats?.masteredCount ?? 0,
       icon: CheckCircle,
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-500/10",
       iconBig: "text-emerald-500",
       urgent: false,
     },
@@ -179,6 +202,27 @@ export default function ReaderDashboard() {
   }
 
   const formatArabicNumber = (value: number) => value.toLocaleString(isAr ? 'ar-EG' : 'en-US')
+
+  const fmtTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
+  const fmtDay = (iso: string) =>
+    new Date(iso).toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' })
+
+  const nextSession = summary?.upcomingSessions?.[0] ?? null
+  // A session is "joinable" within 15 minutes of its start time.
+  const isJoinable = (iso: string) => {
+    const diffMin = (new Date(iso).getTime() - Date.now()) / 60000
+    return diffMin <= 15
+  }
+
+  const quickLinks = [
+    { href: '/reader/recitations', label: isAr ? 'التلاوات' : 'Recitations', icon: Mic, color: 'text-primary', bg: 'bg-primary/10' },
+    { href: '/reader/sessions', label: isAr ? 'الجلسات' : 'Sessions', icon: Video, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { href: '/reader/halaqat', label: isAr ? 'الحلقات' : 'Halaqat', icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { href: '/reader/schedule', label: isAr ? 'المواعيد' : 'Availability', icon: CalendarDays, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+    { href: '/reader/chat', label: isAr ? 'الرسائل' : 'Messages', icon: MessagesSquare, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { href: '/reader/competitions', label: isAr ? 'المسابقات' : 'Competitions', icon: Trophy, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+  ]
 
   return (
     <div className="bg-card min-h-full -m-6 lg:-m-8 p-6 lg:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -294,6 +338,174 @@ export default function ReaderDashboard() {
             </div>
           )
         })}
+      </div>
+
+      {/* Alerts / unread summary bar */}
+      {summary && (summary.unreadMessages > 0 || summary.unreadNotifications > 0 || summary.pendingCompetitionEvals > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            {
+              show: summary.unreadMessages > 0,
+              href: '/reader/chat',
+              icon: MessageSquare,
+              count: summary.unreadMessages,
+              label: isAr ? 'رسائل غير مقروءة' : 'Unread messages',
+              color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20',
+            },
+            {
+              show: summary.pendingCompetitionEvals > 0,
+              href: '/reader/competitions',
+              icon: Trophy,
+              count: summary.pendingCompetitionEvals,
+              label: isAr ? 'مشاركات تنتظر تقييمك' : 'Entries awaiting your review',
+              color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20',
+            },
+            {
+              show: summary.unreadNotifications > 0,
+              href: '/reader/notifications',
+              icon: Bell,
+              count: summary.unreadNotifications,
+              label: isAr ? 'إشعارات جديدة' : 'New notifications',
+              color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20',
+            },
+          ].filter(a => a.show).map((a) => (
+            <Link
+              key={a.href}
+              href={a.href}
+              className={cn(
+                "group flex items-center gap-4 p-4 rounded-3xl border bg-card/60 backdrop-blur-xl shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300",
+                a.border
+              )}
+            >
+              <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", a.bg, a.color)}>
+                <a.icon className="w-6 h-6" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className={cn("text-2xl font-black leading-none", a.color)}>{formatArabicNumber(a.count)}</p>
+                <p className="text-xs font-bold text-muted-foreground mt-1 truncate">{a.label}</p>
+              </div>
+              <ChevronLeft className={cn("w-5 h-5 text-muted-foreground transition-transform group-hover:-translate-x-1 shrink-0", !isAr && "rotate-180 group-hover:translate-x-1")} />
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Next session + today's sessions */}
+      {summary && summary.upcomingSessions.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Highlighted next session */}
+          {nextSession && (
+            <div className="lg:col-span-1 p-1 rounded-[32px] border border-primary/20 bg-primary/5 shadow-2xl shadow-black/5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl -mr-24 -mt-24 opacity-30 pointer-events-none" />
+              <div className="bg-card/60 backdrop-blur-xl p-6 rounded-[30px] h-full flex flex-col relative z-10">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-2 rounded-xl bg-primary/15 text-primary border border-primary/20">
+                    <Video className="w-5 h-5" />
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-primary">
+                    {isAr ? 'جلستك القادمة' : 'Your next session'}
+                  </span>
+                </div>
+                <p className="text-lg font-black text-foreground">{nextSession.student_name || (isAr ? 'طالب' : 'Student')}</p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-muted-foreground font-medium">
+                  <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" />{nextSession.is_today ? (isAr ? 'اليوم' : 'Today') : fmtDay(nextSession.slot_start)}</span>
+                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" />{fmtTime(nextSession.slot_start)}</span>
+                </div>
+                <div className="mt-auto pt-6">
+                  {nextSession.meeting_link && isJoinable(nextSession.slot_start) ? (
+                    <a
+                      href={nextSession.meeting_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-primary text-primary-foreground font-black text-sm hover:opacity-90 transition-opacity"
+                    >
+                      <Video className="w-4 h-4" />
+                      {isAr ? 'دخول الجلسة المباشرة' : 'Join live session'}
+                    </a>
+                  ) : (
+                    <Link
+                      href="/reader/sessions"
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-muted text-foreground font-black text-sm hover:bg-muted/70 transition-colors"
+                    >
+                      {isAr ? 'تفاصيل الجلسة' : 'Session details'}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Upcoming list */}
+          <div className="lg:col-span-2 bg-card/60 backdrop-blur-xl border border-border/50 rounded-[32px] shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
+              <h3 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+                <CalendarCheck className="w-4 h-4 text-primary" />
+                {isAr ? 'الجلسات القادمة' : 'Upcoming sessions'}
+              </h3>
+              <Link href="/reader/sessions" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+                {isAr ? 'الكل' : 'All'}
+                <ChevronLeft className={cn("w-3.5 h-3.5", !isAr && "rotate-180")} />
+              </Link>
+            </div>
+            <div className="divide-y divide-border/60">
+              {summary.upcomingSessions.map((s) => (
+                <div key={s.id} className="flex items-center gap-4 px-6 py-4">
+                  <div className={cn(
+                    "w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border",
+                    s.is_today ? "bg-primary/10 text-primary border-primary/20" : "bg-muted text-muted-foreground border-border"
+                  )}>
+                    <Video className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-foreground truncate">{s.student_name || (isAr ? 'طالب' : 'Student')}</p>
+                    <p className="text-xs text-muted-foreground font-medium">
+                      {s.is_today ? (isAr ? 'اليوم' : 'Today') : fmtDay(s.slot_start)} · {fmtTime(s.slot_start)}
+                    </p>
+                  </div>
+                  {s.meeting_link && isJoinable(s.slot_start) ? (
+                    <a
+                      href={s.meeting_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-black hover:opacity-90 transition-opacity shrink-0"
+                    >
+                      {isAr ? 'دخول' : 'Join'}
+                    </a>
+                  ) : (
+                    <span className={cn(
+                      "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0",
+                      s.is_today ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                    )}>
+                      {s.is_today ? (isAr ? 'اليوم' : 'Today') : (isAr ? 'قادمة' : 'Soon')}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick links */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+          <Target className="w-4 h-4 text-primary" />
+          {isAr ? 'وصول سريع' : 'Quick access'}
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {quickLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="group flex flex-col items-center justify-center gap-2 p-4 rounded-3xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+            >
+              <div className={cn("w-11 h-11 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", link.bg, link.color)}>
+                <link.icon className="w-5 h-5" />
+              </div>
+              <span className="text-xs font-bold text-foreground text-center">{link.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Performance Stats Overlay */}
