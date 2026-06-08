@@ -89,7 +89,7 @@ export function FamilyCenter() {
     fetchData()
   }, [])
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const res = await fetch('/api/student/family')
       if (res.ok) {
