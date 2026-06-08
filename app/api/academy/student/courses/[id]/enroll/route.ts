@@ -66,3 +66,65 @@ export async function POST(
     return NextResponse.json({ error: error.message || 'Internal server error while enrolling', details: error.stack }, { status: 500 })
   }
 }
+
+/**
+ * DELETE /api/academy/student/courses/[id]/enroll
+ * Lets a student leave a course (or cancel a pending request) they own.
+ * Removes the student's lesson progress for the course and the enrollment row.
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getSession()
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const courseId = (await params).id
+
+    // Find the student's enrollment for this course
+    const existing = await query<any>(
+      `SELECT id, status FROM enrollments WHERE course_id = $1 AND student_id = $2`,
+      [courseId, session.sub]
+    )
+
+    if (existing.length === 0) {
+      return NextResponse.json({ error: 'أنت غير مسجل في هذه الدورة' }, { status: 404 })
+    }
+
+    const enrollmentId = existing[0].id
+
+    // Remove lesson progress tied to this enrollment, then the enrollment itself
+    await query(`DELETE FROM lesson_progress WHERE enrollment_id = $1`, [enrollmentId])
+    await query(`DELETE FROM enrollments WHERE id = $1 AND student_id = $2`, [enrollmentId, session.sub])
+
+    // Notify the teacher that the student left
+    try {
+      const courseInfo = await query<any>(
+        `SELECT c.title, c.teacher_id, u.name as student_name
+         FROM courses c, users u
+         WHERE c.id = $1 AND u.id = $2`,
+        [courseId, session.sub]
+      )
+      if (courseInfo[0]?.teacher_id) {
+        await createNotification({
+          userId: courseInfo[0].teacher_id,
+          type: 'general',
+          title: 'انسحاب طالب من الدورة',
+          message: `انسحب الطالب «${courseInfo[0].student_name || 'طالب'}» من دورتك «${courseInfo[0].title || 'الدورة'}».`,
+          category: 'course',
+          link: '/academy/teacher/enrollment-requests',
+        })
+      }
+    } catch (notifErr) {
+      console.error('[API] Failed to notify teacher of unenroll:', notifErr)
+    }
+
+    return NextResponse.json({ success: true, message: 'تم الخروج من الدورة بنجاح' })
+  } catch (error: any) {
+    console.error('[API] Error unenrolling:', error)
+    return NextResponse.json({ error: error.message || 'Internal server error while unenrolling' }, { status: 500 })
+  }
+}

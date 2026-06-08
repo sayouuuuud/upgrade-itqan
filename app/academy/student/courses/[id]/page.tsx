@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
-import { GraduationCap, PlayCircle, Clock, Users, BookOpen, Lock, BookMarked, ArrowRight, MessageSquare } from 'lucide-react'
+import { GraduationCap, PlayCircle, Clock, Users, BookOpen, Lock, BookMarked, ArrowRight, MessageSquare, LogOut, AlertTriangle } from 'lucide-react'
 
 interface CourseDetail {
   course: {
@@ -24,6 +24,8 @@ export default function CourseDetailPage() {
   const [data, setData] = useState<CourseDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [enrolling, setEnrolling] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [showLeaveModal, setShowLeaveModal] = useState(false)
   const [errorText, setErrorText] = useState('')
 
   const courseId = params.id as string
@@ -68,6 +70,24 @@ export default function CourseDetailPage() {
       alert('حدث خطأ في الاتصال')
     } finally {
       setEnrolling(false)
+    }
+  }
+
+  const handleLeave = async () => {
+    setLeaving(true)
+    try {
+      const res = await fetch(`/api/academy/student/courses/${courseId}/enroll`, { method: 'DELETE' })
+      if (res.ok) {
+        setShowLeaveModal(false)
+        router.push('/academy/student/courses')
+      } else {
+        const json = await res.json()
+        alert(json.error || 'حدث خطأ أثناء الخروج من الدورة')
+      }
+    } catch (e) {
+      alert('حدث خطأ في الاتصال')
+    } finally {
+      setLeaving(false)
     }
   }
 
@@ -200,9 +220,62 @@ export default function CourseDetailPage() {
                 {t.academy?.messageTeacher || 'مراسلة المدرس'}
               </Link>
             )}
+
+            {(enrollment_status === 'active' || enrollment_status === 'pending') && (
+              <button
+                onClick={() => setShowLeaveModal(true)}
+                className="px-6 py-3.5 bg-red-500/15 hover:bg-red-500/25 text-red-100 text-base font-bold rounded-xl transition-all border border-red-400/40 backdrop-blur-sm flex items-center gap-2"
+                title={enrollment_status === 'pending' ? 'إلغاء طلب الانضمام' : 'الخروج من الدورة'}
+              >
+                <LogOut className="w-5 h-5" />
+                {enrollment_status === 'pending' ? 'إلغاء الطلب' : 'الخروج من الدورة'}
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Leave Course Confirmation Modal */}
+      {showLeaveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-md w-full p-6 text-center">
+            <div className="w-14 h-14 mx-auto rounded-full bg-red-500/10 flex items-center justify-center text-red-600 mb-4">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">
+              {enrollment_status === 'pending' ? 'إلغاء طلب الانضمام؟' : 'الخروج من الدورة؟'}
+            </h3>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              {enrollment_status === 'pending'
+                ? 'سيتم إلغاء طلب انضمامك لهذه الدورة. يمكنك التقديم مرة أخرى لاحقاً.'
+                : 'سيتم إلغاء تسجيلك وحذف تقدمك في هذه الدورة. يمكنك إعادة الانضمام لاحقاً مع البدء من جديد.'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLeaveModal(false)}
+                disabled={leaving}
+                className="flex-1 px-4 py-3 bg-muted hover:bg-muted/70 text-foreground font-bold rounded-xl transition-colors disabled:opacity-60"
+              >
+                تراجع
+              </button>
+              <button
+                onClick={handleLeave}
+                disabled={leaving}
+                className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {leaving ? (
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <LogOut className="w-4 h-4" />
+                    {enrollment_status === 'pending' ? 'تأكيد الإلغاء' : 'تأكيد الخروج'}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Course Content */}
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
