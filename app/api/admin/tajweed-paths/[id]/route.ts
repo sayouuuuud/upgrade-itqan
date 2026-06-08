@@ -184,7 +184,7 @@ function buildPatch(source: PathSource, body: DbRecord) {
   }
 
   if (source.kind === "tajweed") {
-    for (const key of ["is_active", "require_audio", "manager_id"] as const) {
+    for (const key of ["is_active", "require_audio", "manager_id", "certificate_enabled", "certificate_template_id"] as const) {
       if (key in body && source.columns.has(key)) {
         params.push(body[key])
         sets.push(`${key} = $${params.length}`)

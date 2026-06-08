@@ -16,7 +16,7 @@
 // underlying completion / award flow.
 
 import { query, queryOne } from "@/lib/db"
-import { createNotification } from "@/lib/notifications"
+import { createNotification, createNotificationForAdmins } from "@/lib/notifications"
 import { issueCertificateForRequest } from "./issue"
 import {
   resolveDefaultTemplate,
@@ -446,6 +446,38 @@ export async function createEligibilityRequest(
       link: notif.link,
       dedupKey: `cert-eligible:${insert.id}`,
     })
+
+    // 3b. If no template is configured for this scope/kind, the certificate
+    //     cannot be rendered. Alert admins so they create a template.
+    if (!template.id) {
+      try {
+        const kindLabelAr: Record<CertificateKind, string> = {
+          course: "دورة تعليمية",
+          learning_path: "مسار تعليمي",
+          memorization_path: "مسار حفظ",
+          tajweed_path: "مسار تجويد",
+          series: "سلسلة",
+          competition: "مسابقة",
+          recitation: "ختمة تلاوة",
+          custom: "إنجاز",
+        }
+        const scopeLabel = scope === "academy" ? "الأكاديمية" : "المقرأة"
+        const templatesLink =
+          scope === "academy"
+            ? "/academy/admin/certificates"
+            : "/admin/certificates"
+        await createNotificationForAdmins({
+          type: "general",
+          title: "لا يوجد قالب شهادة ⚠️",
+          message: `أصبح طالب مؤهلاً لشهادة (${kindLabelAr[kind]}) في ${scopeLabel} «${sourceLabel || ""}» لكن لا يوجد قالب شهادة مُعدّ. الرجاء إنشاء قالب لإصدار الشهادة.`,
+          category: "system",
+          link: templatesLink,
+          dedupKey: `cert-no-template:${scope}:${kind}`,
+        })
+      } catch (err) {
+        console.error("[eligibility] notify admins (no template) failed", err)
+      }
+    }
 
     // 4. Optional auto-issue when settings allow it.
     const result: EligibilityResult = {

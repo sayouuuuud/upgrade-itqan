@@ -75,6 +75,7 @@ export default function AcademyAdminLearningPathDetailPage() {
     certification_type: "certificate_of_completion", enrollment_type: "open", price: 0,
     tags: [] as string[],
     thumbnail_url: "",
+    certificate_enabled: false,
   })
   const [managers, setManagers] = useState<ManagerCandidate[]>([])
 
@@ -115,6 +116,7 @@ export default function AcademyAdminLearningPathDetailPage() {
           price: d1.path.price || 0,
           tags: d1.path.tags || [],
           thumbnail_url: d1.path.thumbnail_url || "",
+          certificate_enabled: d1.path.certificate_enabled !== false,
         })
       }
       if (r2.ok) {
@@ -182,6 +184,7 @@ export default function AcademyAdminLearningPathDetailPage() {
           price: edit.price,
           tags: edit.tags,
           thumbnail_url: edit.thumbnail_url || null,
+          certificate_enabled: edit.certificate_enabled,
         }),
       })
       await load()
@@ -642,6 +645,15 @@ export default function AcademyAdminLearningPathDetailPage() {
             <div className="flex items-center gap-2">
               <input id="t_pub_e" type="checkbox" className="h-4 w-4" checked={edit.is_published} onChange={e => setEdit({ ...edit, is_published: e.target.checked })} />
               <Label htmlFor="t_pub_e" className="cursor-pointer">{tp.form.publishedToggle}</Label>
+            </div>
+            <div className="flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3">
+              <input id="t_cert_e" type="checkbox" className="h-4 w-4 mt-0.5 accent-emerald-600" checked={edit.certificate_enabled} onChange={e => setEdit({ ...edit, certificate_enabled: e.target.checked })} />
+              <Label htmlFor="t_cert_e" className="cursor-pointer leading-relaxed">
+                إصدار شهادة عند إكمال المسار
+                <span className="block text-xs font-normal text-muted-foreground mt-0.5">
+                  عند التفعيل، يصبح الطالب مؤهلاً تلقائياً لشهادة بمجرد إنهاء كل مراحل المسار.
+                </span>
+              </Label>
             </div>
             <Button onClick={savePath} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
