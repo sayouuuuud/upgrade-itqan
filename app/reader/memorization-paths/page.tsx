@@ -211,7 +211,9 @@ export default function ReaderMemorizationPathsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-emerald-600" />
+            <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-primary/10 text-primary">
+              <BookOpen className="h-5 w-5" />
+            </span>
             مسارات الحفظ
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -225,20 +227,25 @@ export default function ReaderMemorizationPathsPage() {
       </div>
 
       {schemaNotice && (
-        <Card className="p-4 bg-amber-50 border-amber-200 text-sm text-amber-900">
-          {schemaNotice.notice === "schema_prerequisite_missing" ? (
-            <>
-              <strong>اتصال قاعدة البيانات مش على schema التطبيق المطلوبة.</strong> الجدول الأساسي
-              <code className="bg-amber-100 px-2 py-0.5 mx-1 rounded">{schemaNotice.missing_relation}</code>
-              غير موجود، فتأكد من `DATABASE_URL`/`POSTGRES_URL` أو شغّل السكريبتات الأساسية قبل
-              <code className="bg-amber-100 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
-            </>
-          ) : (
-            <>
-              <strong>الميجريشن لسه ما اتشغّلش.</strong> راسل الإدارة لتشغيل
-              <code className="bg-amber-100 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
-            </>
-          )}
+        <Card className="p-4 bg-amber-500/10 border-amber-500/30 text-sm text-foreground">
+          <div className="flex gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              {schemaNotice.notice === "schema_prerequisite_missing" ? (
+                <>
+                  <strong>اتصال قاعدة البيانات مش على schema التطبيق المطلوبة.</strong> الجدول الأساسي
+                  <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">{schemaNotice.missing_relation}</code>
+                  غير موجود، فتأكد من `DATABASE_URL`/`POSTGRES_URL` أو شغّل السكريبتات الأساسية قبل
+                  <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
+                </>
+              ) : (
+                <>
+                  <strong>الميجريشن لسه ما اتشغّلش.</strong> راسل الإدارة لتشغيل
+                  <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
+                </>
+              )}
+            </div>
+          </div>
         </Card>
       )}
 
@@ -247,26 +254,58 @@ export default function ReaderMemorizationPathsPage() {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : paths.length === 0 ? (
-        <Card className="p-10 text-center text-muted-foreground">
-          لم تنشئ أي مسار بعد — اضغط «إنشاء مسار جديد» لتبدأ.
+        <Card className="p-12 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-primary/10 text-primary mb-4">
+            <Layers className="h-8 w-8" />
+          </div>
+          <h3 className="text-lg font-bold">لم تنشئ أي مسار بعد</h3>
+          <p className="text-sm text-muted-foreground mt-1 mb-5 max-w-md mx-auto">
+            أنشئ خطة حفظ متتابعة لطلابك خلال ثوانٍ — اختر قالباً جاهزاً مثل «جزء عمّ» أو حدّد المدى بنفسك.
+          </p>
+          <Button onClick={() => setOpenCreate(true)} className="gap-2">
+            <Plus className="h-4 w-4" /> إنشاء مسار جديد
+          </Button>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: "إجمالي المسارات", value: paths.length, icon: Layers, tone: "text-primary bg-primary/10" },
+              { label: "المنشورة", value: paths.filter(p => p.is_published).length, icon: Eye, tone: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" },
+              { label: "إجمالي المشتركين", value: paths.reduce((s, p) => s + (Number(p.stats?.enrolled) || 0), 0), icon: Users, tone: "text-blue-600 dark:text-blue-400 bg-blue-500/10" },
+              { label: "إجمالي الوحدات", value: paths.reduce((s, p) => s + (Number(p.total_units) || 0), 0), icon: Hash, tone: "text-violet-600 dark:text-violet-400 bg-violet-500/10" },
+            ].map((s, i) => (
+              <Card key={i} className="p-4 flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${s.tone}`}>
+                  <s.icon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xl font-black leading-none">{s.value}</div>
+                  <div className="text-[11px] text-muted-foreground mt-1 truncate">{s.label}</div>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {paths.map(p => (
-            <Card key={p.id} className="p-4 hover:shadow-md transition-shadow">
+            <Card key={p.id} className="p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <Link
                     href={`/reader/memorization-paths/${p.id}`}
-                    className="font-semibold text-lg hover:text-emerald-700 line-clamp-2"
+                    className="font-semibold text-lg hover:text-primary line-clamp-2 transition-colors"
                   >
                     {p.title}
                   </Link>
                   <div className="flex flex-wrap gap-1 mt-2">
                     <Badge variant="outline">{TYPE_LABELS[p.unit_type] || p.unit_type}</Badge>
                     <Badge variant="secondary">{p.total_units} وحدة</Badge>
+                    {p.level && LEVEL_LABELS[p.level] && (
+                      <Badge variant="outline" className="border-primary/30 text-primary">{LEVEL_LABELS[p.level]}</Badge>
+                    )}
                     {p.is_published ? (
-                      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+                      <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/15">
                         <Eye className="h-3 w-3 me-1" /> منشور
                       </Badge>
                     ) : (
@@ -283,25 +322,25 @@ export default function ReaderMemorizationPathsPage() {
               )}
 
               <div className="grid grid-cols-3 gap-2 mt-4 text-center">
-                <div className="border rounded-lg p-2">
+                <div className="border rounded-xl p-2">
                   <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                     <Users className="h-3 w-3" /> مشترك
                   </div>
                   <div className="text-lg font-semibold">{p.stats?.enrolled || "0"}</div>
                 </div>
-                <div className="border rounded-lg p-2">
+                <div className="border rounded-xl p-2">
                   <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                     <CheckCircle2 className="h-3 w-3" /> أتموا
                   </div>
                   <div className="text-lg font-semibold">{p.stats?.completed || "0"}</div>
                 </div>
-                <div className="border rounded-lg p-2">
+                <div className="border rounded-xl p-2">
                   <div className="text-xs text-muted-foreground">متوسط %</div>
                   <div className="text-lg font-semibold">{p.stats?.avg_progress || "0"}%</div>
                 </div>
               </div>
 
-              <div className="flex gap-2 mt-4">
+              <div className="flex gap-2 mt-4 pt-4 border-t">
                 <Button asChild variant="outline" size="sm" className="flex-1">
                   <Link href={`/reader/memorization-paths/${p.id}`}>
                     إدارة <ChevronRight className="h-4 w-4 ms-1 rtl:rotate-180" />
@@ -313,23 +352,56 @@ export default function ReaderMemorizationPathsPage() {
                 >
                   {p.is_published ? "إخفاء" : "نشر"}
                 </Button>
-                <Button variant="destructive" size="icon" onClick={() => remove(p)}>
+                <Button variant="ghost" size="icon" onClick={() => remove(p)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </Card>
           ))}
-        </div>
+          </div>
+        </>
       )}
 
       <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>إنشاء مسار حفظ جديد</DialogTitle>
             <DialogDescription>
-              اختر نوع التقسيم (جزء/سورة/حزب/صفحة) والمدى — يولّد النظام الوحدات تلقائياً.
+              اختر قالباً جاهزاً أو حدّد التقسيم والمدى — يولّد النظام الوحدات تلقائياً.
             </DialogDescription>
           </DialogHeader>
+
+          {/* Quick presets */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Sparkles className="h-3.5 w-3.5 text-primary" /> قوالب سريعة
+            </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {PRESETS.map(p => {
+                const active =
+                  form.unit_type === p.unit_type &&
+                  form.range_from === String(p.range_from) &&
+                  form.range_to === String(p.range_to) &&
+                  form.direction === p.direction
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => applyPreset(p)}
+                    className={`text-start rounded-2xl border p-3 transition-all ${
+                      active ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "hover:border-primary/40 hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className="font-bold text-sm flex items-center justify-between gap-2">
+                      {p.label}
+                      {active && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">{p.description}</div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
             <div className="md:col-span-2 space-y-1">
@@ -356,49 +428,53 @@ export default function ReaderMemorizationPathsPage() {
               <Select
                 value={form.unit_type}
                 onValueChange={v => {
-                  const max = RANGE_MAX[v] || 1
-                  setForm({ ...form, unit_type: v, range_from: "1", range_to: String(max) })
+                  const m = RANGE_MAX[v] || 1
+                  setForm({ ...form, unit_type: v, range_from: "1", range_to: String(m) })
                 }}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="surah">حسب السور</SelectItem>
-                  <SelectItem value="juz">حسب الأجزاء</SelectItem>
-                  <SelectItem value="hizb">حسب الأحزاب</SelectItem>
-                  <SelectItem value="page">حسب الصفحات</SelectItem>
+                  <SelectItem value="surah">حسب السور (1-114)</SelectItem>
+                  <SelectItem value="juz">حسب الأجزاء (1-30)</SelectItem>
+                  <SelectItem value="hizb">حسب الأحزاب (1-60)</SelectItem>
+                  <SelectItem value="page">حسب الصفحات (1-604)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1">
-              <Label>الترتيب</Label>
+              <Label className="flex items-center gap-1.5">
+                <ArrowUpDown className="h-3.5 w-3.5" /> ترتيب الحفظ
+              </Label>
               <Select
                 value={form.direction}
                 onValueChange={v => setForm({ ...form, direction: v as any })}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="desc">من الأول للآخر (الفاتحة → الناس)</SelectItem>
-                  <SelectItem value="asc">من الآخر للأول (جزء عم → الفاتحة)</SelectItem>
+                  <SelectItem value="desc">الترتيب الطبيعي (يبدأ بـ{unitWord} {form.range_from})</SelectItem>
+                  <SelectItem value="asc">معكوس (يبدأ بـ{unitWord} {form.range_to})</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1">
-              <Label>من رقم</Label>
+              <Label>من {unitWord} رقم</Label>
               <Input
-                type="number" min="1" max={RANGE_MAX[form.unit_type] || 1}
+                type="number" min="1" max={max}
                 value={form.range_from}
                 onChange={e => setForm({ ...form, range_from: e.target.value })}
+                className={!rangeValid && form.range_from ? "border-destructive" : ""}
               />
             </div>
 
             <div className="space-y-1">
-              <Label>إلى رقم</Label>
+              <Label>إلى {unitWord} رقم</Label>
               <Input
-                type="number" min="1" max={RANGE_MAX[form.unit_type] || 1}
+                type="number" min="1" max={max}
                 value={form.range_to}
                 onChange={e => setForm({ ...form, range_to: e.target.value })}
+                className={!rangeValid && form.range_to ? "border-destructive" : ""}
               />
             </div>
 
@@ -427,24 +503,48 @@ export default function ReaderMemorizationPathsPage() {
               />
             </div>
 
-            <div className="md:col-span-2 flex items-center gap-2">
+            {/* Live preview / validation */}
+            <div className="md:col-span-2">
+              {rangeValid ? (
+                <div className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                    <Layers className="h-5 w-5" />
+                  </div>
+                  <p className="text-sm">
+                    سيتم توليد <strong className="text-primary">{unitCount} {unitCount === 1 ? unitWord : `${unitWord}اً`}</strong>{" "}
+                    ({TYPE_LABELS[form.unit_type]}) — تُفتح وحدة تلو الأخرى بعد إتمام السابقة.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-3">
+                  <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+                  <p className="text-sm text-destructive">
+                    المدى غير صحيح — أدخل أرقاماً بين 1 و {max} لنوع «{TYPE_LABELS[form.unit_type]}».
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="md:col-span-2 flex items-center gap-2 rounded-xl border p-3">
               <input
-                id="r_require_audio" type="checkbox" className="h-4 w-4"
+                id="r_require_audio" type="checkbox" className="h-4 w-4 accent-primary"
                 checked={form.require_audio}
                 onChange={e => setForm({ ...form, require_audio: e.target.checked })}
               />
-              <Label htmlFor="r_require_audio" className="cursor-pointer">
+              <Label htmlFor="r_require_audio" className="cursor-pointer flex items-center gap-1.5">
+                <Mic className="h-4 w-4 text-muted-foreground" />
                 يتطلب تسجيل صوتي قبل إتمام كل وحدة
               </Label>
             </div>
 
-            <div className="md:col-span-2 flex items-center gap-2">
+            <div className="md:col-span-2 flex items-center gap-2 rounded-xl border p-3">
               <input
-                id="r_is_published" type="checkbox" className="h-4 w-4"
+                id="r_is_published" type="checkbox" className="h-4 w-4 accent-primary"
                 checked={form.is_published}
                 onChange={e => setForm({ ...form, is_published: e.target.checked })}
               />
-              <Label htmlFor="r_is_published" className="cursor-pointer">
+              <Label htmlFor="r_is_published" className="cursor-pointer flex items-center gap-1.5">
+                <Eye className="h-4 w-4 text-muted-foreground" />
                 نشر المسار للطلاب فوراً
               </Label>
             </div>
@@ -452,9 +552,9 @@ export default function ReaderMemorizationPathsPage() {
 
           <DialogFooter>
             <Button variant="ghost" onClick={() => setOpenCreate(false)}>إلغاء</Button>
-            <Button onClick={submit} disabled={creating || !form.title.trim()} className="gap-2">
+            <Button onClick={submit} disabled={creating || !canSubmit} className="gap-2">
               {creating && <Loader2 className="h-4 w-4 animate-spin" />}
-              إنشاء المسار
+              {rangeValid && unitCount > 0 ? `إنشاء المسار (${unitCount} ${unitWord})` : "إنشاء المسار"}
             </Button>
           </DialogFooter>
         </DialogContent>
