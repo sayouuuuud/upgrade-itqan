@@ -195,175 +195,181 @@ export default function ReaderCompetitionDetailPage({ params }: { params: Promis
           </p>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-6">
           {filteredEntries.map(entry => (
-            <div key={entry.id} className="bg-card border border-border/50 rounded-xl p-6 shadow-sm transition-colors hover:border-primary/20">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                <div className="flex-1 space-y-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-lg font-bold text-foreground">{entry.student_name}</h3>
-                      <span className={cn(
-                        "px-2.5 py-0.5 rounded-full text-xs font-semibold border",
-                        entry.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/50' :
-                        entry.status === 'winner' ? 'bg-yellow-50 text-yellow-700 border-yellow-200/50 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800/50' :
-                        'bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50'
-                      )}>
-                        {entry.status === 'pending' ? 'قيد التقييم' : entry.status === 'winner' ? 'فائز 🏆' : 'تم التقييم'}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{entry.student_email}</p>
+            <div key={entry.id} className="bg-card border border-border/60 rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md">
+              {/* Card Header */}
+              <div className="p-5 border-b border-border/40 bg-muted/10 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                    {entry.student_name.charAt(0)}
                   </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">{entry.student_name}</h3>
+                    <p className="text-sm text-muted-foreground" dir="ltr">{entry.student_email}</p>
+                  </div>
+                </div>
+                <span className={cn(
+                  "px-3 py-1 rounded-full text-xs font-semibold border shadow-sm",
+                  entry.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/50' :
+                  entry.status === 'winner' ? 'bg-yellow-50 text-yellow-700 border-yellow-200/50 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800/50' :
+                  'bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50'
+                )}>
+                  {entry.status === 'pending' ? 'قيد التقييم' : entry.status === 'winner' ? 'فائز 🏆' : 'تم التقييم'}
+                </span>
+              </div>
 
-                  {entry.submission_url && (
-                    <div className="max-w-md rounded-lg overflow-hidden border border-border/50 bg-muted/20">
-                      <MediaViewer url={entry.submission_url} />
+              {/* Card Content */}
+              <div className="p-5 space-y-5">
+                {entry.submission_url && (
+                  <div className="bg-muted/20 rounded-lg p-2 border border-border/50 max-w-2xl">
+                    <MediaViewer url={entry.submission_url} />
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
+                  {entry.verses_count > 0 && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span className="font-semibold text-foreground">عدد الآيات:</span> 
+                      <span className="bg-muted px-2 py-0.5 rounded-md">{entry.verses_count}</span>
                     </div>
                   )}
+                  {entry.notes && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span className="font-semibold text-foreground">ملاحظات الطالب:</span> 
+                      <span>{entry.notes}</span>
+                    </div>
+                  )}
+                </div>
 
-                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-                    {entry.verses_count > 0 && (
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <span className="font-medium text-foreground">عدد الآيات:</span> {entry.verses_count}
+                {entry.score !== null && (
+                  <div className="bg-muted/30 rounded-xl p-5 border border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                        <Award className="w-6 h-6" />
                       </div>
-                    )}
-                    {entry.notes && (
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <span className="font-medium text-foreground">ملاحظات:</span> {entry.notes}
-                      </div>
-                    )}
-                  </div>
-
-                  {entry.score !== null && (
-                    <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-foreground">الدرجة النهائية:</span>
-                          <span className="text-xl font-bold text-primary">{entry.score}</span>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">الدرجة النهائية</p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-foreground">{entry.score}</span>
                           <span className="text-sm text-muted-foreground">/ 100</span>
                         </div>
-                        {entry.evaluator_name && (
-                          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md">
-                            المُقيّم: {entry.evaluator_name}
-                          </span>
-                        )}
                       </div>
-                      {entry.feedback && (
-                        <p className="text-sm text-muted-foreground leading-relaxed mt-3 pt-3 border-t border-border/50">
-                          <span className="font-medium text-foreground block mb-1">الملاحظات:</span>
-                          {entry.feedback}
-                        </p>
-                      )}
                     </div>
-                  )}
-                </div>
-
-                <div className="md:pl-4 md:border-l border-border/50 flex flex-col gap-2 min-w-[140px]">
-                  {entry.submission_url && (
-                    <button
-                      onClick={() => startEvaluate(entry)}
-                      className={cn(
-                        "w-full px-4 py-2 rounded-lg text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20",
-                        entry.status === 'pending' 
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                      )}
-                    >
-                      {entry.status === 'pending' ? 'بدء التقييم' : 'تعديل التقييم'}
-                    </button>
-                  )}
-                </div>
+                    
+                    {entry.feedback && (
+                      <div className="flex-1 sm:border-r border-border/50 sm:pr-4">
+                        <p className="text-sm font-medium text-foreground mb-1">الملاحظات التوجيهية:</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{entry.feedback}</p>
+                      </div>
+                    )}
+                    
+                    {entry.evaluator_name && (
+                      <div className="text-xs text-muted-foreground bg-background px-3 py-1.5 rounded-md border border-border/50 text-center shrink-0">
+                        المُقيّم: <span className="font-medium text-foreground">{entry.evaluator_name}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
+
+              {/* Card Footer */}
+              {entry.submission_url && !evaluatingId && (
+                <div className="p-5 pt-0 flex justify-end border-t border-border/40 mt-4 bg-muted/5">
+                  <button
+                    onClick={() => startEvaluate(entry)}
+                    className={cn(
+                      "mt-4 px-6 py-2.5 rounded-lg text-sm font-bold transition-all hover:scale-105 shadow-sm",
+                      entry.status === 'pending' 
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                        : "bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80"
+                    )}
+                  >
+                    {entry.status === 'pending' ? 'بدء التقييم' : 'تعديل التقييم'}
+                  </button>
+                </div>
+              )}
 
               {/* Evaluation Form */}
               {evaluatingId === entry.id && (
-                <form onSubmit={handleEvaluate} className="mt-6 pt-6 border-t border-border space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-lg font-semibold text-foreground">نموذج التقييم</h4>
-                  </div>
-                  
-                  {competition.type === 'tajweed' ? (
-                    <div className="space-y-3">
-                      <label className="text-sm font-semibold text-foreground">تقييم أحكام التجويد (من 10)</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {(competition.tajweed_rules || TAJWEED_RULES.map(r => r.key)).map(ruleKey => {
-                          const ruleLabel = TAJWEED_RULES.find(r => r.key === ruleKey)?.label || ruleKey
-                          return (
-                            <div key={ruleKey} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/10 hover:bg-muted/20 transition-colors">
-                              <label className="text-sm font-medium text-muted-foreground">{ruleLabel}</label>
-                              <input
-                                type="number"
-                                min={0}
-                                max={10}
-                                step={0.5}
-                                value={evalForm.tajweed_scores[ruleKey] || 0}
-                                onChange={e => setEvalForm(prev => ({
-                                  ...prev,
-                                  tajweed_scores: { ...prev.tajweed_scores, [ruleKey]: parseFloat(e.target.value) || 0 },
-                                }))}
-                                className="w-16 px-2 py-1 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center transition-all"
-                              />
-                            </div>
-                          )
-                        })}
-                      </div>
+                <div className="p-6 border-t border-border bg-muted/10">
+                  <form onSubmit={handleEvaluate} className="space-y-6">
+                    <div className="flex items-center justify-between pb-4 border-b border-border/50">
+                      <h4 className="text-lg font-bold text-foreground flex items-center gap-2">
+                        <Award className="w-5 h-5 text-primary" />
+                        نموذج التقييم
+                      </h4>
                     </div>
-                  ) : (
-                    <div className="space-y-2 max-w-xs">
-                      <label className="block text-sm font-semibold text-foreground">الدرجة النهائية (من 100)</label>
-                      <input
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={evalForm.score}
-                        onChange={e => setEvalForm(prev => ({ ...prev, score: parseFloat(e.target.value) || 0 }))}
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-lg font-medium"
+                    
+                    {competition.type === 'tajweed' ? (
+                      <div className="space-y-4">
+                        <label className="text-sm font-bold text-foreground bg-primary/10 text-primary px-3 py-1 rounded-md w-fit">تقييم أحكام التجويد (من 10)</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {(competition.tajweed_rules || TAJWEED_RULES.map(r => r.key)).map(ruleKey => {
+                            const ruleLabel = TAJWEED_RULES.find(r => r.key === ruleKey)?.label || ruleKey
+                            return (
+                              <div key={ruleKey} className="flex items-center justify-between p-3.5 rounded-xl border border-border/50 bg-background hover:border-primary/30 transition-colors shadow-sm">
+                                <label className="text-sm font-semibold text-muted-foreground">{ruleLabel}</label>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={10}
+                                  step={0.5}
+                                  value={evalForm.tajweed_scores[ruleKey] || 0}
+                                  onChange={e => setEvalForm(prev => ({
+                                    ...prev,
+                                    tajweed_scores: { ...prev.tajweed_scores, [ruleKey]: parseFloat(e.target.value) || 0 },
+                                  }))}
+                                  className="w-20 px-3 py-1.5 text-sm font-bold rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center transition-all"
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-w-xs">
+                        <label className="block text-sm font-bold text-foreground">الدرجة النهائية (من 100)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={evalForm.score}
+                          onChange={e => setEvalForm(prev => ({ ...prev, score: parseFloat(e.target.value) || 0 }))}
+                          className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-xl font-bold shadow-sm"
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-foreground">الملاحظات التوجيهية للطالب</label>
+                      <textarea
+                        value={evalForm.feedback}
+                        onChange={e => setEvalForm(prev => ({ ...prev, feedback: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-background min-h-[120px] resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        placeholder="أضف ملاحظاتك البناءة للطالب هنا لتساعده على التطور..."
                       />
                     </div>
-                  )}
 
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-foreground">الملاحظات التوجيهية للطالب</label>
-                    <textarea
-                      value={evalForm.feedback}
-                      onChange={e => setEvalForm(prev => ({ ...prev, feedback: e.target.value }))}
-                      className="w-full px-4 py-3 rounded-lg border border-border bg-background min-h-[100px] resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      placeholder="أضف ملاحظاتك البناءة للطالب هنا..."
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setEvaluatingId(null)}
-                      className="px-5 py-2.5 rounded-lg text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
-                    >
-                      إلغاء
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="inline-flex items-center justify-center min-w-[120px] px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 ml-2" />}
-                      حفظ التقييم
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}=> setEvaluatingId(null)}
-                      className="px-4 py-2.5 bg-muted text-foreground rounded-xl font-bold transition-colors"
-                    >
-                      إلغاء
-                    </button>
-                  </div>
-                </form>
+                    <div className="flex items-center justify-end gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => setEvaluatingId(null)}
+                        className="px-6 py-2.5 rounded-xl text-sm font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      >
+                        إلغاء
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className="inline-flex items-center justify-center min-w-[140px] px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                      >
+                        {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-2" />}
+                        حفظ التقييم
+                      </button>
+                    </div>
+                  </form>
+                </div>
               )}
             </div>
           ))}
