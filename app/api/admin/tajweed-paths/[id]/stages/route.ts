@@ -49,8 +49,9 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     const inserted = (await query<any>(
       `INSERT INTO tajweed_path_stages (
           path_id, position, title, description, content,
-          video_url, pdf_url, passage_text, estimated_minutes, course_id, halaqa_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+          video_url, pdf_url, passage_text, estimated_minutes, course_id, halaqa_id,
+          stage_type, recitation_mode, surah_number, ayah_from, ayah_to, juz_number, page_from, page_to
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
       [
         id, position, title,
         body.description || null,
@@ -61,6 +62,14 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         body.estimated_minutes || 30,
         body.course_id || null,
         body.halaqa_id || null,
+        body.stage_type || "custom",
+        body.recitation_mode || null,
+        body.surah_number || null,
+        body.ayah_from || null,
+        body.ayah_to || null,
+        body.juz_number || null,
+        body.page_from || null,
+        body.page_to || null,
       ],
     )) as any[]
 

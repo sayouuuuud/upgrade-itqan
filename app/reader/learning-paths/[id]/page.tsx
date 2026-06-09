@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import {
   ArrowRight, GraduationCap, Eye, EyeOff, Loader2, Plus, Save, Trash2,
-  Users, CheckCircle2, Clock, ChevronUp, ChevronDown, BarChart3, Video, FileText,
+  Users, CheckCircle2, Clock, ChevronUp, ChevronDown, BarChart3, Video, FileText, Mic, BookOpen,
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import FileUploader from "@/components/academy/file-uploader"
+import { SURAHS } from "@/lib/data/surahs"
+import { juzName } from "@/lib/quran-data"
 import { useI18n } from "@/lib/i18n/context"
 
 function toYouTubeEmbed(url: string): string | null {
@@ -31,6 +33,31 @@ function toYouTubeEmbed(url: string): string | null {
   if (url.includes("youtu.be/")) return `https://www.youtube.com/embed/${url.split("youtu.be/")[1]?.split("?")[0]}`
   if (url.includes("youtube.com/embed/")) return url
   return null
+}
+
+// Build a human-readable Arabic title for a recitation stage based on its target.
+function recitationLabel(f: {
+  recitation_mode: string
+  surah_number: number
+  ayah_from: number
+  ayah_to: number
+  juz_number: number
+  page_from: number
+  page_to: number
+}): string {
+  const surah = SURAHS.find(s => s.number === f.surah_number)
+  switch (f.recitation_mode) {
+    case "surah":
+      return `تلاوة ${surah?.name ? "سورة " + surah.name : ""}`.trim()
+    case "ayah":
+      return `تلاوة ${surah?.name ? "سورة " + surah.name : ""} (${f.ayah_from}-${f.ayah_to})`.trim()
+    case "juz":
+      return `تلاوة ${juzName(f.juz_number)}`
+    case "page":
+      return f.page_from === f.page_to ? `تلاوة صفحة ${f.page_from}` : `تلاوة الصفحات ${f.page_from}-${f.page_to}`
+    default:
+      return "تلاوة"
+  }
 }
 
 type Stage = {
@@ -43,12 +70,28 @@ type Stage = {
   pdf_url: string | null
   passage_text: string | null
   estimated_minutes: number
+  stage_type?: string | null
+  recitation_mode?: string | null
+  surah_number?: number | null
+  ayah_from?: number | null
+  ayah_to?: number | null
+  juz_number?: number | null
+  page_from?: number | null
+  page_to?: number | null
 }
 
 const initialStageForm = {
   title: "", description: "", content: "",
   video_url: "", pdf_url: "", passage_text: "",
   estimated_minutes: 30,
+  stage_type: "custom",
+  recitation_mode: "surah",
+  surah_number: 1,
+  ayah_from: 1,
+  ayah_to: 7,
+  juz_number: 30,
+  page_from: 1,
+  page_to: 1,
 }
 
 export default function ReaderTajweedPathDetailPage() {
@@ -151,22 +194,44 @@ export default function ReaderTajweedPathDetailPage() {
       pdf_url: stage.pdf_url || "",
       passage_text: stage.passage_text || "",
       estimated_minutes: stage.estimated_minutes || 30,
+      stage_type: stage.stage_type || "custom",
+      recitation_mode: stage.recitation_mode || "surah",
+      surah_number: stage.surah_number || 1,
+      ayah_from: stage.ayah_from || 1,
+      ayah_to: stage.ayah_to || 7,
+      juz_number: stage.juz_number || 30,
+      page_from: stage.page_from || 1,
+      page_to: stage.page_to || 1,
     })
     setStageDialog({ open: true, stage })
   }
 
   async function saveStage() {
-    if (!stageForm.title.trim()) return
+    const isRecitation = stageForm.stage_type === "recitation"
+    const autoTitle = isRecitation ? recitationLabel(stageForm) : stageForm.title
+    if (!autoTitle.trim()) return
     setSavingStage(true)
     try {
-      const body = {
-        title: stageForm.title,
+      const body: any = {
+        title: autoTitle,
         description: stageForm.description || null,
         content: stageForm.content || null,
         video_url: stageForm.video_url || null,
         pdf_url: stageForm.pdf_url || null,
         passage_text: stageForm.passage_text || null,
         estimated_minutes: stageForm.estimated_minutes,
+        stage_type: stageForm.stage_type || "custom",
+      }
+      if (isRecitation) {
+        body.recitation_mode = stageForm.recitation_mode
+        body.surah_number = stageForm.recitation_mode === "surah" || stageForm.recitation_mode === "ayah" ? stageForm.surah_number : null
+        body.ayah_from = stageForm.recitation_mode === "ayah" ? stageForm.ayah_from : null
+        body.ayah_to = stageForm.recitation_mode === "ayah" ? stageForm.ayah_to : null
+        body.juz_number = stageForm.recitation_mode === "juz" ? stageForm.juz_number : null
+        body.page_from = stageForm.recitation_mode === "page" ? stageForm.page_from : null
+        body.page_to = stageForm.recitation_mode === "page" ? stageForm.page_to : null
+      } else {
+        body.recitation_mode = null
       }
       // Reader uses /api/admin/tajweed-paths/[id]/stages — that route accepts
       // 'reader' role and enforces ownership server-side.
@@ -426,6 +491,137 @@ export default function ReaderTajweedPathDetailPage() {
             <DialogDescription>المرحلة عبارة عن درس مستقل — أضف الشرح والمحتوى والمرفقات.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
+            {/* Stage type: a normal lesson OR a Quran recitation task */}
+            <div className="md:col-span-2 space-y-2">
+              <Label>نوع المرحلة</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setStageForm({ ...stageForm, stage_type: "custom" })}
+                  className={`flex items-center gap-2 rounded-xl border p-3 text-sm font-bold transition-colors ${stageForm.stage_type !== "recitation" ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-muted-foreground hover:bg-muted/50"}`}
+                >
+                  <BookOpen className="h-4 w-4" /> درس (شرح/فيديو/ملف)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStageForm({ ...stageForm, stage_type: "recitation" })}
+                  className={`flex items-center gap-2 rounded-xl border p-3 text-sm font-bold transition-colors ${stageForm.stage_type === "recitation" ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-muted-foreground hover:bg-muted/50"}`}
+                >
+                  <Mic className="h-4 w-4" /> تلاوة / تسجيل
+                </button>
+              </div>
+            </div>
+
+            {stageForm.stage_type === "recitation" ? (
+              <>
+                {/* Recitation target selector */}
+                <div className="md:col-span-2 space-y-2 rounded-2xl border border-border/60 bg-muted/20 p-4">
+                  <Label className="flex items-center gap-2">
+                    <Mic className="h-4 w-4 text-primary" /> المطلوب تلاوته
+                  </Label>
+                  <Select
+                    value={stageForm.recitation_mode}
+                    onValueChange={v => setStageForm({ ...stageForm, recitation_mode: v })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="surah">سورة كاملة</SelectItem>
+                      <SelectItem value="ayah">آيات محددة (من - إلى)</SelectItem>
+                      <SelectItem value="juz">جزء كامل</SelectItem>
+                      <SelectItem value="page">نطاق صفحات</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {(stageForm.recitation_mode === "surah" || stageForm.recitation_mode === "ayah") && (
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">السورة</Label>
+                      <Select
+                        value={String(stageForm.surah_number)}
+                        onValueChange={v => {
+                          const n = parseInt(v, 10)
+                          const s = SURAHS.find(x => x.number === n)
+                          setStageForm({ ...stageForm, surah_number: n, ayah_from: 1, ayah_to: s?.verses || 1 })
+                        }}
+                      >
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent className="max-h-72">
+                          {SURAHS.map(s => (
+                            <SelectItem key={s.number} value={String(s.number)}>
+                              {s.number}. {s.name} ({s.verses} آية)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {stageForm.recitation_mode === "ayah" && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">من الآية</Label>
+                        <Input
+                          type="number" min="1"
+                          max={SURAHS.find(s => s.number === stageForm.surah_number)?.verses || 1}
+                          value={stageForm.ayah_from}
+                          onChange={e => setStageForm({ ...stageForm, ayah_from: parseInt(e.target.value, 10) || 1 })}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">إلى الآية</Label>
+                        <Input
+                          type="number" min="1"
+                          max={SURAHS.find(s => s.number === stageForm.surah_number)?.verses || 1}
+                          value={stageForm.ayah_to}
+                          onChange={e => setStageForm({ ...stageForm, ayah_to: parseInt(e.target.value, 10) || 1 })}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {stageForm.recitation_mode === "juz" && (
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">الجزء</Label>
+                      <Select
+                        value={String(stageForm.juz_number)}
+                        onValueChange={v => setStageForm({ ...stageForm, juz_number: parseInt(v, 10) })}
+                      >
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent className="max-h-72">
+                          {Array.from({ length: 30 }, (_, i) => i + 1).map(j => (
+                            <SelectItem key={j} value={String(j)}>{juzName(j)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {stageForm.recitation_mode === "page" && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">من صفحة</Label>
+                        <Input type="number" min="1" max="604" value={stageForm.page_from}
+                          onChange={e => setStageForm({ ...stageForm, page_from: parseInt(e.target.value, 10) || 1 })} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">إلى صفحة</Label>
+                        <Input type="number" min="1" max="604" value={stageForm.page_to}
+                          onChange={e => setStageForm({ ...stageForm, page_to: parseInt(e.target.value, 10) || 1 })} />
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-muted-foreground">
+                    عنوان المرحلة سيُولّد تلقائياً: <span className="font-bold text-foreground">{recitationLabel(stageForm)}</span>
+                  </p>
+                </div>
+
+                <div className="md:col-span-2 space-y-1">
+                  <Label>{tp.stageForm.description} (تعليمات للطالب)</Label>
+                  <Textarea rows={3} value={stageForm.description} onChange={e => setStageForm({ ...stageForm, description: e.target.value })} placeholder="مثال: راعِ أحكام التجويد وأرسل تلاوتك" />
+                </div>
+              </>
+            ) : (
+              <>
             <div className="md:col-span-2 space-y-1">
               <Label>{tp.stageForm.title}</Label>
               <Input value={stageForm.title} onChange={e => setStageForm({ ...stageForm, title: e.target.value })} placeholder={tp.stageForm.titlePlaceholder} />
@@ -488,6 +684,8 @@ export default function ReaderTajweedPathDetailPage() {
               <Label>{tp.stageForm.passageText}</Label>
               <Textarea rows={3} value={stageForm.passage_text} onChange={e => setStageForm({ ...stageForm, passage_text: e.target.value })} placeholder={tp.stageForm.passagePlaceholder} />
             </div>
+              </>
+            )}
             <div className="space-y-1">
               <Label>{tp.stageForm.estimatedMinutes}</Label>
               <Input type="number" min="1" value={stageForm.estimated_minutes} onChange={e => setStageForm({ ...stageForm, estimated_minutes: parseInt(e.target.value, 10) || 30 })} />
@@ -495,7 +693,7 @@ export default function ReaderTajweedPathDetailPage() {
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setStageDialog({ open: false })}>{tp.actions.cancel}</Button>
-            <Button onClick={saveStage} disabled={savingStage || !stageForm.title.trim()} className="gap-2">
+            <Button onClick={saveStage} disabled={savingStage || (stageForm.stage_type !== "recitation" && !stageForm.title.trim())} className="gap-2">
               {savingStage && <Loader2 className="h-4 w-4 animate-spin" />}
               {stageDialog.stage ? tp.actions.saveChanges : tp.actions.addStageVerb}
             </Button>

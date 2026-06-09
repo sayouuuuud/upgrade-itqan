@@ -19,6 +19,136 @@ import AudioRecorder from "@/components/applicant/audio-recorder"
 import TajweedPdfViewer from "@/components/tajweed/pdf-viewer"
 import { useI18n } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
+import { SURAHS } from "@/lib/data/surahs"
+import { juzName, juzPageRange } from "@/lib/quran-data"
+
+const toAr = (n: number) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[parseInt(d)])
+
+// Build the Arabic label describing what a recitation stage requires.
+function recitationTarget(stage: {
+  recitation_mode?: string | null
+  surah_number?: number | null
+  ayah_from?: number | null
+  ayah_to?: number | null
+  juz_number?: number | null
+  page_from?: number | null
+  page_to?: number | null
+}): string {
+  const surah = SURAHS.find((s) => s.number === stage.surah_number)
+  switch (stage.recitation_mode) {
+    case "surah":
+      return surah ? `سورة ${surah.name} كاملة` : "سورة كاملة"
+    case "ayah":
+      return surah ? `سورة ${surah.name} — الآيات ${toAr(stage.ayah_from || 1)} إلى ${toAr(stage.ayah_to || 1)}` : "آيات محددة"
+    case "juz":
+      return juzName(stage.juz_number || 1)
+    case "page":
+      return stage.page_from === stage.page_to ? `صفحة ${toAr(stage.page_from || 1)}` : `الصفحات ${toAr(stage.page_from || 1)} إلى ${toAr(stage.page_to || 1)}`
+    default:
+      return "تلاوة"
+  }
+}
+
+// Fetches and displays the required ayah text for a recitation stage.
+type AyahData = { numberInSurah: number; text: string; surahNumber: number }
+
+function StageAyahText({ stage }: { stage: Stage }) {
+  const [ayahs, setAyahs] = useState<AyahData[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    const mode = stage.recitation_mode
+    if (!mode) return
+    setLoading(true)
+    setError(false)
+    setAyahs([])
+    const controller = new AbortController()
+
+    // Resolve a list of pages to fetch (juz/page modes) or a surah ayah-range.
+    if (mode === "surah" || mode === "ayah") {
+      const surahNumber = stage.surah_number || 1
+      const surah = SURAHS.find((s) => s.number === surahNumber)
+      const from = mode === "ayah" ? (stage.ayah_from || 1) : 1
+      const to = mode === "ayah" ? (stage.ayah_to || 1) : (surah?.verses || 1)
+      fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/quran-uthmani`, { signal: controller.signal })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.data?.ayahs) {
+            const slice: AyahData[] = (data.data.ayahs as Array<{ numberInSurah: number; text: string }>)
+              .filter((a) => a.numberInSurah >= from && a.numberInSurah <= to)
+              .map((a) => ({ numberInSurah: a.numberInSurah, text: a.text, surahNumber }))
+            setAyahs(slice)
+            if (slice.length === 0) setError(true)
+          } else setError(true)
+        })
+        .catch((e) => { if (e.name !== "AbortError") setError(true) })
+        .finally(() => setLoading(false))
+    } else {
+      let pageFrom: number, pageTo: number
+      if (mode === "juz") {
+        const range = juzPageRange(stage.juz_number || 1)
+        pageFrom = range?.from || 1
+        pageTo = range?.to || 1
+      } else {
+        pageFrom = stage.page_from || 1
+        pageTo = stage.page_to || 1
+      }
+      const pages = Array.from({ length: Math.max(0, pageTo - pageFrom) + 1 }, (_, i) => pageFrom + i)
+      Promise.all(
+        pages.map((p) =>
+          fetch(`https://api.alquran.cloud/v1/page/${p}/quran-uthmani`, { signal: controller.signal }).then((r) => r.json())
+        )
+      )
+        .then((results) => {
+          const all: AyahData[] = []
+          for (const data of results) {
+            if (data?.data?.ayahs) {
+              for (const a of data.data.ayahs as Array<{ numberInSurah: number; text: string; surah: { number: number } }>) {
+                all.push({ numberInSurah: a.numberInSurah, text: a.text, surahNumber: a.surah.number })
+              }
+            }
+          }
+          setAyahs(all)
+          if (all.length === 0) setError(true)
+        })
+        .catch((e) => { if (e.name !== "AbortError") setError(true) })
+        .finally(() => setLoading(false))
+    }
+    return () => controller.abort()
+  }, [stage.recitation_mode, stage.surah_number, stage.ayah_from, stage.ayah_to, stage.juz_number, stage.page_from, stage.page_to])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-6 gap-2 text-amber-700/70">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        <span className="text-xs font-bold">جاري تحميل نص الآيات...</span>
+      </div>
+    )
+  }
+  if (error) {
+    return <p className="text-xs text-center text-muted-foreground py-4">تعذّر تحميل نص الآيات. تحقق من اتصالك بالإنترنت.</p>
+  }
+  if (ayahs.length === 0) return null
+  return (
+    <div className="overflow-y-auto max-h-[18rem] pr-1" style={{ direction: "rtl" }}>
+      <p
+        className="leading-loose text-xl sm:text-2xl text-slate-800 dark:text-slate-100 text-justify pt-1"
+        style={{ fontFamily: "'Amiri Quran', 'Amiri', serif" }}
+      >
+        {ayahs.map((a, idx) => (
+          <span key={`${a.surahNumber}-${a.numberInSurah}-${idx}`}>
+            {idx > 0 ? " " : ""}
+            {a.text}{" "}
+            <span className="inline-block align-middle text-base font-black text-amber-700 dark:text-amber-500 mx-0.5" style={{ fontFamily: "system-ui, sans-serif" }}>
+              ﴿{toAr(a.numberInSurah)}﴾
+            </span>
+          </span>
+        ))}
+      </p>
+    </div>
+  )
+}
 
 type ProgressRow = {
   id?: string
@@ -42,6 +172,14 @@ type Stage = {
   estimated_minutes: number
   halaqa_name?: string | null
   halaqa_id?: string | null
+  stage_type?: string | null
+  recitation_mode?: string | null
+  surah_number?: number | null
+  ayah_from?: number | null
+  ayah_to?: number | null
+  juz_number?: number | null
+  page_from?: number | null
+  page_to?: number | null
   progress?: ProgressRow
 }
 
@@ -358,6 +496,19 @@ export default function StudentTajweedPathDetail() {
                     {stage.description && (
                       <div className="text-base text-muted-foreground leading-relaxed">
                         {stage.description}
+                      </div>
+                    )}
+
+                    {stage.stage_type === "recitation" && (
+                      <div className="bg-[#fbf6e6] dark:bg-card border border-amber-700/25 dark:border-border rounded-2xl p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3 flex-wrap">
+                          <Mic className="w-4 h-4 text-amber-700 dark:text-amber-500" />
+                          <span className="text-sm font-bold text-amber-900 dark:text-amber-200">المطلوب تلاوته</span>
+                          <span className="text-[11px] font-bold bg-amber-700/10 text-amber-700 dark:text-amber-400 px-2.5 py-0.5 rounded-full">
+                            {recitationTarget(stage)}
+                          </span>
+                        </div>
+                        <StageAyahText stage={stage} />
                       </div>
                     )}
 
