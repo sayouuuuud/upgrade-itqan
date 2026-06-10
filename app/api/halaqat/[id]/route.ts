@@ -123,6 +123,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'قيمة الجنس غير صحيحة' }, { status: 400 })
   }
 
+  // Path linking: when the halaqa is made public, clear any path binding.
+  const makingPublic = body.scope === 'public'
+  const pathType = makingPublic
+    ? null
+    : body.path_type === 'tajweed' || body.path_type === 'memorization'
+      ? body.path_type
+      : undefined
+  const pathId = makingPublic
+    ? null
+    : body.path_id !== undefined
+      ? body.path_id
+        ? String(body.path_id)
+        : null
+      : undefined
+  const autoEnroll = makingPublic
+    ? false
+    : body.auto_enroll !== undefined
+      ? Boolean(body.auto_enroll)
+      : undefined
+
   const updates: string[] = []
   const values: unknown[] = []
   let i = 1
@@ -136,6 +156,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     ['scheduled_at', body.scheduled_at],
     ['duration_minutes', body.duration_minutes],
     ['scope', body.scope],
+    ['path_type', pathType],
+    ['path_id', pathId],
+    ['auto_enroll', autoEnroll],
     ['is_active', body.is_active],
   ]
   for (const [col, val] of fields) {
