@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { useI18n } from '@/lib/i18n/context'
 import { Loader2, Plus, ArrowRight, Play, Edit2, Trash2, Clock, ListOrdered } from 'lucide-react'
+import { SimpleListSkeleton } from '@/components/ui/skeletons'
 
 interface Lesson {
   id: string
@@ -169,7 +170,7 @@ export default function CourseLessonsPage() {
 
       <div className="space-y-4">
         {loading ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+          <SimpleListSkeleton rows={4} />
         ) : lessons.length === 0 ? (
           <Card className="border-dashed bg-muted/30">
             <CardContent className="flex flex-col items-center justify-center p-12 text-center">

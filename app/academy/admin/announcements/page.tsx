@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Bell, Plus, Trash2, Edit2, X, Loader2, Users } from 'lucide-react'
+import { SimpleListSkeleton } from '@/components/ui/skeletons'
 
 interface Announcement {
   id: string
@@ -102,7 +103,7 @@ export default function AdminAnnouncementsPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-rose-500" /></div>
+    return <SimpleListSkeleton rows={4} />
   }
 
   return (

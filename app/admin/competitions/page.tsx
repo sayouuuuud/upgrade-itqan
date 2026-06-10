@@ -8,6 +8,7 @@ import {
   BookOpen, Star, Play, Send, ArrowLeft, BarChart3, Clock
 } from 'lucide-react'
 import { Gavel } from 'lucide-react'
+import { CardListSkeleton } from '@/components/ui/skeletons'
 import { cn } from '@/lib/utils'
 import MediaViewer from '@/components/media-viewer'
 import { JudgesManager } from '@/components/competitions/judges-manager'
@@ -276,7 +277,7 @@ export default function AdminLibraryCompetitionsPage() {
         </div>
 
         {loadingEntries ? (
-          <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+          <CardListSkeleton rows={3} />
         ) : entries.length === 0 ? (
           <div className="border-2 border-dashed border-border rounded-2xl p-16 text-center">
             <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
@@ -668,7 +669,7 @@ export default function AdminLibraryCompetitionsPage() {
 
               <label className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 text-sm font-bold cursor-pointer">
                 <input type="checkbox" checked={form.is_featured} onChange={e => setForm(p => ({ ...p, is_featured: e.target.checked }))} className="h-4 w-4 accent-primary" />
-                إبراز المسابقة للطلاب في الواجهة
+                إبرا�� المسابقة للطلاب في الواجهة
               </label>
 
               <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">

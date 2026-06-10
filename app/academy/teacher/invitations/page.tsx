@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Copy, Plus, Loader2, Link as LinkIcon, CheckCircle2 } from 'lucide-react'
+import { SimpleListSkeleton } from '@/components/ui/skeletons'
 import { useI18n } from '@/lib/i18n/context'
 
 interface Course {
@@ -148,7 +149,7 @@ export default function TeacherInvitationsPage() {
           </CardHeader>
           <CardContent className="p-0">
             {loading ? (
-              <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+              <SimpleListSkeleton rows={3} />
             ) : codes.length === 0 ? (
               <div className="text-center p-12 text-muted-foreground">
                 {isAr ? "لا توجد أكواد حالياً. ابدأ بتوليد كود جديد." : "No codes yet. Generate a new one."}

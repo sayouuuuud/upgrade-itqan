@@ -9,6 +9,7 @@ import {
   Users, CheckCircle2, Clock, ChevronUp, ChevronDown, BarChart3, UploadCloud,
   FileText, PlaySquare, LayoutTemplate, Link2 as LinkIcon, Image as ImageIcon,
 } from "lucide-react"
+import { PathDetailSkeleton } from "@/components/ui/skeletons"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -327,7 +328,7 @@ export default function AcademyAdminLearningPathDetailPage() {
     await load()
   }
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+  if (loading) return <PathDetailSkeleton />
   if (!path) return <div className="p-6 text-center text-muted-foreground">{tp.notFound}</div>
 
   return (
@@ -679,7 +680,7 @@ export default function AcademyAdminLearningPathDetailPage() {
             </div>
             <div className="space-y-1">
               <Label>المتطلبات السابقة (Prerequisites) - افصل بينها بفاصلة</Label>
-              <Textarea rows={2} value={edit.prerequisites.join(', ')} onChange={e => setEdit({ ...edit, prerequisites: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="القدرة على قراءة الحروف العربية..." />
+              <Textarea rows={2} value={edit.prerequisites.join(', ')} onChange={e => setEdit({ ...edit, prerequisites: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="الق��رة على قراءة الحروف العربية..." />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">

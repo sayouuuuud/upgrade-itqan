@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useI18n } from '@/lib/i18n/context'
 import { Loader2, MessageSquare, Send, UserRound, Shield } from 'lucide-react'
+import { ConversationsSkeleton } from '@/components/ui/skeletons'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 interface TeacherOption {
@@ -193,7 +194,7 @@ export default function ParentMessagesPage() {
   }
 
   if (loading) {
-    return <div className="flex min-h-[400px] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+    return <ConversationsSkeleton />
   }
 
   return (

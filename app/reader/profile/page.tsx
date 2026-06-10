@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { AvatarUpload } from '@/components/avatar-upload'
 import { User, Lock, CheckCircle, Loader2 } from 'lucide-react'
+import { ProfileSkeleton } from '@/components/ui/skeletons'
 import { useI18n } from '@/lib/i18n/context'
 
 interface UserProfile {
@@ -62,7 +63,7 @@ export default function ReaderProfilePage() {
   }
 
   const { t } = useI18n()
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-[#0B3D2E]" /></div>
+  if (loading) return <ProfileSkeleton />
 
   return (
     <div className="space-y-6 max-w-2xl">

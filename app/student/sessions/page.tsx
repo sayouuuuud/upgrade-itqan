@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { Video, CalendarDays, Clock, ExternalLink, MessageSquare, Loader2, Send, X, CalendarClock, Info, ShieldCheck } from "lucide-react"
+import { SessionsListSkeleton } from "@/components/ui/skeletons"
 import { useI18n } from "@/lib/i18n/context"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -155,7 +156,7 @@ export default function StudentSessionsPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center py-32"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
+        <SessionsListSkeleton />
       ) : bookings.length === 0 ? (
         <div className="bg-card border border-border rounded-[2rem] py-24 text-center shadow-sm">
           <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">

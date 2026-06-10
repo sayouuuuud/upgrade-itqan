@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useI18n } from '@/lib/i18n/context'
 import { BookOpen, Loader2, Route, Save, Shield } from 'lucide-react'
+import { RestrictionsSkeleton } from '@/components/ui/skeletons'
 import { toast } from 'sonner'
 
 interface LinkedChild {
@@ -150,7 +151,7 @@ export default function ParentRestrictionsPage() {
   }
 
   if (loading && children.length === 0) {
-    return <div className="flex min-h-[400px] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+    return <RestrictionsSkeleton />
   }
 
   return (

@@ -6,6 +6,7 @@ import {
   GraduationCap, Plus, Loader2, Users, CheckCircle2, Eye, EyeOff, Trash2,
   ChevronRight, Layers, BarChart3, BookOpen, Search,
 } from "lucide-react"
+import { PathsListSkeleton } from "@/components/ui/skeletons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -170,7 +171,7 @@ export default function ReaderLearningPathsPage() {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+        <PathsListSkeleton />
       ) : paths.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 bg-card/50 border border-dashed border-border rounded-xl">
           <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">

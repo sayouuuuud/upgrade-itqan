@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Database, Download, Trash2, RefreshCcw, Loader2, CheckCircle, AlertTriangle, Archive } from 'lucide-react'
+import { SettingsSkeleton } from '@/components/ui/skeletons'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/lib/i18n/context'
 
@@ -97,7 +98,7 @@ export default function AdminBackupPage() {
         } finally { setActionLoading(null) }
     }
 
-    if (loading) return <div className="flex justify-center p-20"><Loader2 className="w-8 h-8 animate-spin text-[#1B5E3B]" /></div>
+    if (loading) return <SettingsSkeleton />
 
     const tableRows: { label: string, key: string }[] = [
         { label: isAr ? 'المستخدمون' : 'Users', key: 'users' },

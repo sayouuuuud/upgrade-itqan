@@ -24,6 +24,7 @@ import {
   Clock,
 } from 'lucide-react'
 import { Gavel } from 'lucide-react'
+import { CardListSkeleton } from '@/components/ui/skeletons'
 import MediaViewer from '@/components/media-viewer'
 import { cn } from '@/lib/utils'
 import { JudgesManager } from '@/components/competitions/judges-manager'
@@ -400,7 +401,7 @@ export default function AdminCompetitionsPage() {
         </div>
 
         {loadingEntries ? (
-          <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-amber-500" /></div>
+          <CardListSkeleton rows={3} />
         ) : entries.length === 0 ? (
           <div className="border-2 border-dashed border-border rounded-2xl p-16 text-center">
             <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />

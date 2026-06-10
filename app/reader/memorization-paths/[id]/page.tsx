@@ -7,6 +7,7 @@ import {
   ArrowRight, BookOpen, CheckCircle2, Clock, Eye, EyeOff, Loader2,
   Save, TrendingUp, Users,
 } from "lucide-react"
+import { PathDetailSkeleton } from "@/components/ui/skeletons"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -94,7 +95,7 @@ export default function ReaderMemorizationPathDetailPage() {
     }
   }
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+  if (loading) return <PathDetailSkeleton />
   if (!path) return <div className="p-6 text-center text-muted-foreground">المسار غير موجود.</div>
 
   const overall = stats?.overall || {}

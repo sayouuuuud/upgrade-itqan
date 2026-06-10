@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { Award, Plus, Trash2, Edit2, X, Loader2, Star } from 'lucide-react'
+import { SimpleListSkeleton } from '@/components/ui/skeletons'
 
 interface Badge {
   badge_type: string
@@ -121,7 +122,7 @@ export default function AdminBadgesPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-yellow-500" /></div>
+    return <SimpleListSkeleton rows={4} />
   }
 
   return (
@@ -262,7 +263,7 @@ export default function AdminBadgesPage() {
                 <button type="submit" disabled={saving}
                   className="flex-1 py-2.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2">
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                  {editItem ? 'حفظ التعديلات' : 'إضافة الشارة'}
+                  {editItem ? '��فظ التعديلات' : 'إضافة الشارة'}
                 </button>
               </div>
             </form>

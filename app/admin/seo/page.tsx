@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Globe, Save, Eye, Search, ChevronRight, Loader2, CheckCircle } from 'lucide-react'
+import { SettingsSkeleton } from '@/components/ui/skeletons'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -49,7 +50,7 @@ export default function AdminSeoPage() {
     const previewDesc = settings.seo_site_description || ''
     const previewUrl = settings.seo_canonical_base || 'https://itqaan.com'
 
-    if (loading) return <div className="flex justify-center p-20"><Loader2 className="w-8 h-8 animate-spin text-[#1B5E3B]" /></div>
+    if (loading) return <SettingsSkeleton />
 
     return (
         <div className="p-6 max-w-5xl mx-auto space-y-6" dir={isAr ? 'rtl' : 'ltr'}>

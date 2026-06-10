@@ -7,6 +7,7 @@ import {
   ArrowRight, GraduationCap, Eye, EyeOff, Loader2, Plus, Save, Trash2,
   Users, CheckCircle2, Clock, ChevronUp, ChevronDown, BarChart3,
 } from "lucide-react"
+import { PathDetailSkeleton } from "@/components/ui/skeletons"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -241,7 +242,7 @@ export default function AdminTajweedPathDetailPage() {
     await load()
   }
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+  if (loading) return <PathDetailSkeleton />
   if (!path) return <div className="p-6 text-center text-muted-foreground">{tp.notFound}</div>
 
   return (

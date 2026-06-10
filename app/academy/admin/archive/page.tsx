@@ -5,6 +5,7 @@ import {
   Archive, Search, BookOpen, RotateCcw, Users, Loader2,
   GraduationCap, AlertCircle, Filter, X, UserCheck, BookMarked
 } from 'lucide-react'
+import { TableSkeleton } from '@/components/ui/skeletons'
 
 type ItemType = 'course' | 'halaqah'
 type TabType = 'all' | 'courses' | 'halaqat'
@@ -299,7 +300,7 @@ export default function AdminUnifiedArchivePage() {
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="ابحث بالعنوان أو الاسم..."
+            placeholder="ابحث بالعنوان أو الاس��..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
@@ -333,9 +334,7 @@ export default function AdminUnifiedArchivePage() {
           </button>
         </div>
       ) : loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-7 h-7 animate-spin text-emerald-600" />
-        </div>
+        <TableSkeleton rows={5} cols={5} />
       ) : items.length === 0 ? (
         <div className="text-center py-16 bg-card rounded-2xl border border-border">
           <Archive className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-30" />

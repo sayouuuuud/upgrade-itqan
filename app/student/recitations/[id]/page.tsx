@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { ArrowRight, Mic, Clock, CheckCircle, Calendar, Loader2, User, Volume2, BookOpen, Play, Pause, ChevronLeft, ChevronRight, SkipBack, SkipForward, Award, Info } from "lucide-react"
+import { RecitationDetailSkeleton } from "@/components/ui/skeletons"
 import { useParams, useRouter } from "next/navigation"
 import { useI18n } from "@/lib/i18n/context"
 
@@ -137,7 +138,7 @@ export default function RecitationDetailPage() {
   }
 
   if (loading) return (
-    <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-[#1B5E3B]" /></div>
+    <RecitationDetailSkeleton />
   )
 
   if (notFound || !recitation) return (

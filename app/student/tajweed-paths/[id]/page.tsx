@@ -7,6 +7,7 @@ import {
   ArrowRight, GraduationCap, CheckCircle2, ChevronDown, ChevronUp, Loader2,
   Lock, Mic, Play, Trophy, Unlock, FileText, Video, Target, BookOpen
 } from "lucide-react"
+import { PathDetailSkeleton } from "@/components/ui/skeletons"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -274,7 +275,7 @@ export default function StudentTajweedPathDetail() {
     }
   }
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+  if (loading) return <PathDetailSkeleton />
   if (!path) return <div className="p-6 text-center text-muted-foreground">{tp.notFound}</div>
 
   const completed = enrollment?.stages_completed || 0
