@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { Search, BookOpen, Globe, Calendar, FileText, Loader2, Sparkles, Filter, LayoutGrid, ChevronDown } from "lucide-react"
+import { BookOpen, Globe, Calendar, FileText, Loader2, Filter, LayoutGrid, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useI18n } from "@/lib/i18n/context"
@@ -111,49 +111,7 @@ export default function PublicLibraryPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-background" dir="rtl">
-      {/* Premium Hero Section */}
-      <div className="relative overflow-hidden bg-background pt-24 pb-32 border-b border-border/40">
-        {/* Abstract Background Elements */}
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay pointer-events-none" />
-        
-        <div className="container mx-auto px-4 relative z-10 flex flex-col items-center text-center">
-          <Badge variant="outline" className="px-5 py-2 mb-8 bg-primary/5 text-primary border-primary/20 font-bold rounded-full gap-2 text-sm shadow-sm backdrop-blur-md hover:bg-primary/10 transition-colors cursor-default">
-            <Sparkles className="w-4 h-4 animate-pulse" />
-            {isAr ? "مكتبة إتقان الرقمية" : "Itqan Digital Library"}
-          </Badge>
-          
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-foreground tracking-tight leading-[1.1] mb-6 max-w-4xl drop-shadow-sm">
-            {lib?.title || "استكشف عوالم المعرفة"}
-          </h1>
-          
-          <p className="text-xl sm:text-2xl text-muted-foreground leading-relaxed max-w-2xl mb-14 font-medium">
-            {lib?.subtitle || "آلاف الكتب القيمة والمراجع العلمية بانتظارك لتعزيز معرفتك وتطوير مهاراتك."}
-          </p>
-
-          {/* Epic Search Bar */}
-          <div className="w-full max-w-3xl relative group">
-            <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-2xl transition-all duration-500 group-hover:bg-primary/30 group-hover:blur-3xl opacity-70" />
-            <div className="relative flex items-center bg-card/90 backdrop-blur-xl border-2 border-primary/20 rounded-3xl p-2.5 shadow-2xl shadow-black/5 transition-all duration-300 hover:border-primary/40 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10">
-              <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
-                <Search className="w-6 h-6 text-primary" />
-              </div>
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={lib?.searchPlaceholder || "ابحث بعنوان الكتاب، المؤلف، أو الموضوع..."}
-                className="flex-1 bg-transparent border-none shadow-none text-xl font-bold placeholder:text-muted-foreground/40 focus-visible:ring-0 px-4 h-14"
-              />
-              <Button size="lg" className="h-14 px-10 rounded-2xl font-black text-lg hidden sm:flex shadow-lg shadow-primary/25 transition-all duration-300 hover:scale-105 active:scale-95">
-                {search ? "جاري البحث..." : "بحث"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8 flex-1 flex flex-col -mt-12 relative z-20">
+      <div className="container mx-auto px-4 py-8 flex-1 flex flex-col">
         {/* Sleek Filters Section */}
         <div className="flex flex-col sm:flex-row gap-3 mb-12 bg-card/90 backdrop-blur-2xl border border-border/60 p-3 rounded-3xl shadow-xl shadow-black/5">
           <div className="flex items-center justify-center sm:justify-start gap-2 text-foreground/80 px-5 sm:border-l border-border/60">
