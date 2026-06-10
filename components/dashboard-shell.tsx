@@ -76,6 +76,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/reader/certificates', label: 'مركز الشهادات', icon: Award },
           { href: '/reader/schedule', label: t.reader.schedule, icon: Clock },
           { href: '/reader/chat', label: t.reader.chat, icon: MessageSquare },
+          { href: '/reader/parent-messages', label: 'رسائل أولياء الأمور', icon: Mail },
           { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
           { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
           { href: '/library', label: 'مكتبة الكتب', icon: BookOpen },
