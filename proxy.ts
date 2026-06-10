@@ -6,6 +6,19 @@ const apiPublicPaths = ["/api/auth", "/api/admin/homepage", "/api/admin/analytic
 // Academy public paths (for public lessons and invitations)
 const academyPublicPaths = ["/academy/public", "/academy/invite", "/academy/lesson"]
 
+// Shared academy paths that any authenticated user may reach regardless of
+// has_academy_access. The Fiqh Library is intentionally exposed to maqraa
+// readers/students from their dashboards, so it must bypass the academy-access
+// gate that otherwise bounces non-academy users out of /academy/*.
+function isFiqhLibraryPath(pathname: string) {
+  return (
+    pathname === "/academy/fiqh" ||
+    pathname.startsWith("/academy/fiqh/") ||
+    pathname === "/api/academy/fiqh" ||
+    pathname.startsWith("/api/academy/fiqh/")
+  )
+}
+
 export default async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
 
@@ -197,7 +210,7 @@ export default async function middleware(req: NextRequest) {
 
                 // Check if user has academy access before allowing them into /academy.
                 // NOTE: pending/rejected teachers are handled above and never reach this check.
-                if (pathname.startsWith("/academy") && !academyPublicPaths.some(p => pathname.startsWith(p))) {
+                if (pathname.startsWith("/academy") && !academyPublicPaths.some(p => pathname.startsWith(p)) && !isFiqhLibraryPath(pathname)) {
                     if (!hasAcademyAccess && sessionPayload.role !== 'admin') {
                         // Send to /student if they still have quran access, else home
                         const target = hasQuranAccess ? "/student" : "/"
