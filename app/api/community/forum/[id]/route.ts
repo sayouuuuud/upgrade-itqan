@@ -226,6 +226,15 @@ export async function DELETE(
       [id]
     ).catch(() => undefined)
 
+    // forum_posts.best_reply_id → forum_replies has SET NULL on delete, which
+    // creates a circular dependency when the post itself is being deleted
+    // (cascade tries to delete replies, which in turn tries to SET NULL on
+    // best_reply_id of the already-being-deleted post row). Clear it first.
+    await query(
+      `UPDATE forum_posts SET best_reply_id = NULL WHERE id = $1`,
+      [id]
+    )
+
     // forum_replies, forum_post_likes and forum_reply_likes all cascade via
     // ON DELETE CASCADE, so deleting the post is enough.
     const deleted = await query<{ id: string }>(
