@@ -15,6 +15,11 @@ async function loadHalaqa(id: string) {
     `SELECT
        h.*,
        u.name AS teacher_name,
+       CASE
+         WHEN h.path_type = 'tajweed' THEN (SELECT title FROM tajweed_paths WHERE id = h.path_id)
+         WHEN h.path_type = 'memorization' THEN (SELECT title FROM memorization_paths WHERE id = h.path_id)
+         ELSE NULL
+       END AS path_title,
        COALESCE((
          SELECT COUNT(*) FROM halaqat_students hs
          WHERE hs.halaqah_id = h.id AND hs.is_active = TRUE
@@ -132,6 +137,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     ['duration_minutes', body.duration_minutes],
     ['scope', body.scope],
     ['is_active', body.is_active],
+    // Path linking. When scope is set to 'public', clear the link.
+    [
+      'path_type',
+      body.scope === 'public'
+        ? null
+        : body.path_type === 'tajweed' || body.path_type === 'memorization'
+          ? body.path_type
+          : body.path_type === null
+            ? null
+            : undefined,
+    ],
+    ['path_id', body.scope === 'public' ? null : body.path_id !== undefined ? body.path_id || null : undefined],
+    ['auto_enroll', body.scope === 'public' ? false : body.auto_enroll !== undefined ? Boolean(body.auto_enroll) : undefined],
   ]
   for (const [col, val] of fields) {
     if (val !== undefined) {

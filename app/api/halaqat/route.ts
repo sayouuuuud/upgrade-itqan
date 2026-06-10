@@ -167,14 +167,24 @@ export async function POST(req: NextRequest) {
   const durationMinutes = body.duration_minutes
     ? Math.max(5, Math.min(360, Number(body.duration_minutes)))
     : 60
-  const scope = body.scope || 'public'
+
+  // Path linking: a halaqa bound to a learning path becomes visible to that
+  // path's students only (scope = 'path_only').
+  const pathType =
+    body.path_type === 'tajweed' || body.path_type === 'memorization'
+      ? body.path_type
+      : null
+  const pathId = pathType && body.path_id ? String(body.path_id) : null
+  const autoEnroll = pathId ? Boolean(body.auto_enroll) : false
+  const scope = pathId ? 'path_only' : body.scope || 'public'
 
   const inserted = await query<any>(
     `INSERT INTO halaqat (
        name, description, teacher_id, gender, max_students, meeting_link,
-       platform, scheduled_at, duration_minutes, scope, is_active, created_at
+       platform, scheduled_at, duration_minutes, scope,
+       path_id, path_type, auto_enroll, is_active, created_at
      )
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, TRUE, NOW())
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, TRUE, NOW())
      RETURNING *`,
     [
       name,
@@ -187,6 +197,9 @@ export async function POST(req: NextRequest) {
       scheduledAt,
       durationMinutes,
       scope,
+      pathId,
+      pathType,
+      autoEnroll,
     ]
   )
   const row = inserted[0]
@@ -194,6 +207,19 @@ export async function POST(req: NextRequest) {
     const roomName = halaqaRoomName(row.id)
     await query(`UPDATE halaqat SET livekit_room_name = $1 WHERE id = $2`, [roomName, row.id])
     row.livekit_room_name = roomName
+  }
+
+  // Auto-enroll: seed the halaqa with every active student in the linked path.
+  if (row && pathId && autoEnroll) {
+    await query(
+      `INSERT INTO halaqat_students (halaqah_id, student_id, joined_at, is_active)
+       SELECT $1, e.student_id, NOW(), TRUE
+       FROM ${pathType === 'tajweed' ? 'tajweed_path_enrollments' : 'memorization_path_enrollments'} e
+       WHERE e.path_id = $2
+         AND COALESCE(e.status, 'active') NOT IN ('dropped', 'cancelled')
+       ON CONFLICT DO NOTHING`,
+      [row.id, pathId]
+    ).catch((e) => console.error('[halaqat] auto-enroll failed', e))
   }
 
   return NextResponse.json({ data: row }, { status: 201 })

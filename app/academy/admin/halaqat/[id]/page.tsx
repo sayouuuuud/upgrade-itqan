@@ -12,7 +12,7 @@ export default async function AcademyAdminHalaqaDetailPage({
     <HalaqaDetail
       halaqaId={id}
       basePath="/academy/admin/halaqat"
-      studentsCatalogEndpoint="/api/academy/admin/students"
+      studentsCatalogEndpoint={`/api/halaqat/${id}/eligible-students`}
       platform="academy"
     />
   )

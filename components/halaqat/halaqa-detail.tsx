@@ -21,6 +21,7 @@ import {
   ShieldAlert,
 } from 'lucide-react'
 import { GENDER_LABELS, type HalaqaPlatform } from '@/lib/halaqat'
+import { HalaqaSessions } from '@/components/halaqat/halaqa-sessions'
 
 interface Halaqa {
   id: string
@@ -79,7 +80,7 @@ export function HalaqaDetail({
   const [students, setStudents] = useState<Student[]>([])
   const [availableStudents, setAvailableStudents] = useState<AvailableStudent[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'students' | 'overview'>('overview')
+  const [tab, setTab] = useState<'students' | 'overview' | 'sessions'>('overview')
   const [showAdd, setShowAdd] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [addingId, setAddingId] = useState<string | null>(null)
@@ -303,6 +304,16 @@ export function HalaqaDetail({
           نظرة عامة
         </button>
         <button
+          onClick={() => setTab('sessions')}
+          className={`px-4 py-2.5 font-bold text-sm border-b-2 -mb-px transition-colors ${
+            tab === 'sessions'
+              ? 'border-emerald-500 text-foreground'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          الجلسات
+        </button>
+        <button
           onClick={() => setTab('students')}
           className={`px-4 py-2.5 font-bold text-sm border-b-2 -mb-px transition-colors ${
             tab === 'students'
@@ -333,6 +344,8 @@ export function HalaqaDetail({
           />
         </div>
       )}
+
+      {tab === 'sessions' && <HalaqaSessions halaqaId={halaqaId} canManage={canManage} />}
 
       {tab === 'students' && (
         <div className="space-y-4">

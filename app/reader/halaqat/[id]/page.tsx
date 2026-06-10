@@ -12,7 +12,7 @@ export default async function ReaderHalaqaDetailPage({
     <HalaqaDetail
       halaqaId={id}
       basePath="/reader/halaqat"
-      studentsCatalogEndpoint="/api/admin/students"
+      studentsCatalogEndpoint={`/api/halaqat/${id}/eligible-students`}
       platform="maqraa"
     />
   )
