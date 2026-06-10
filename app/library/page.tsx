@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { BookOpen, Globe, Calendar, FileText, Loader2, Filter, LayoutGrid, ChevronDown } from "lucide-react"
+import { BookOpen, Globe, Calendar, FileText, Loader2, Filter, LayoutGrid, ChevronDown, Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 
 import { Card, CardContent } from "@/components/ui/card"
@@ -119,6 +119,16 @@ export default function PublicLibraryPage() {
             <span className="font-bold text-sm whitespace-nowrap">تصفية النتائج:</span>
           </div>
           
+          <div className="relative flex-1 group">
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none group-hover:text-primary transition-colors" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={lib?.searchPlaceholder || "ابحث بعنوان الكتاب، المؤلف..."}
+              className="w-full bg-muted/40 border-0 rounded-2xl pr-12 pl-4 h-14 text-base font-bold placeholder:font-normal hover:bg-muted/60 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/30 transition-all outline-none shadow-none"
+            />
+          </div>
+
           <div className="relative flex-1 group">
             <LayoutGrid className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none group-hover:text-primary transition-colors" />
             <select
