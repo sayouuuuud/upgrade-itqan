@@ -101,9 +101,7 @@ export default function TeacherCertificatesRequestsPage() {
 
         {/* Content */}
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-          </div>
+          <CertificatesSkeleton />
         ) : error ? (
           <div className="text-center py-20 text-red-500">
             <AlertCircle className="w-8 h-8 mx-auto mb-3 opacity-50" />
@@ -134,6 +132,60 @@ export default function TeacherCertificatesRequestsPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function CertificatesSkeleton() {
+  return (
+    <div className="grid gap-4" aria-busy="true" aria-label="جاري التحميل">
+      {/* Filter tabs skeleton */}
+      <div className="flex gap-2 pb-4 border-b border-border">
+        {[80, 130, 110, 90].map((w, i) => (
+          <div
+            key={i}
+            className="h-9 rounded-full bg-slate-200 dark:bg-white/10 animate-pulse"
+            style={{ width: w }}
+          />
+        ))}
+      </div>
+
+      {/* Card skeletons */}
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="bg-white dark:bg-[#111] border border-slate-200 dark:border-white/10 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row gap-6"
+        >
+          {/* Left: info */}
+          <div className="flex-1 space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-36 rounded-lg bg-slate-200 dark:bg-white/10 animate-pulse" />
+                  <div className="h-5 w-20 rounded-md bg-slate-200 dark:bg-white/10 animate-pulse" />
+                </div>
+                <div className="h-4 w-48 rounded-lg bg-slate-100 dark:bg-white/5 animate-pulse" />
+              </div>
+              <div className="h-7 w-24 rounded-md bg-slate-100 dark:bg-white/5 animate-pulse" />
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 dark:bg-white/5 rounded-xl p-4">
+              {[1, 2, 3, 4].map((j) => (
+                <div key={j} className="space-y-1.5">
+                  <div className="h-3 w-16 rounded bg-slate-200 dark:bg-white/10 animate-pulse" />
+                  <div className="h-4 w-24 rounded bg-slate-200 dark:bg-white/10 animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: action buttons */}
+          <div className="flex flex-col gap-3 min-w-[200px] border-t md:border-t-0 md:border-r border-slate-100 dark:border-white/10 pt-4 md:pt-0 md:pr-6">
+            <div className="h-11 w-full rounded-xl bg-slate-200 dark:bg-white/10 animate-pulse" />
+            <div className="h-11 w-full rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
