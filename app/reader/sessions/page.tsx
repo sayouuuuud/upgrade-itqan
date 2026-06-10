@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog"
 import {
   Plus, Send, Link2, Video, VideoOff, Copy, Check, Loader2,
-  MessageSquare, Calendar, Clock, ChevronDown, Sparkles, AlertCircle
+  MessageSquare, Calendar, Clock, ChevronDown, Sparkles, AlertCircle, ArrowUpRight
 } from "lucide-react"
 
 type Booking = {
@@ -338,6 +338,14 @@ export default function ReaderSessionsPage() {
                          {isAr ? "بانتظار الرابط" : "Link missing"}
                        </div>
                      )}
+                    <a
+                      href={`/reader/sessions/${session.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      title={isAr ? "فتح صفحة الجلسة" : "Open session page"}
+                      className="w-10 h-10 rounded-full flex items-center justify-center bg-muted/50 text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors"
+                    >
+                      <ArrowUpRight className="w-5 h-5" />
+                    </a>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-muted/50 text-muted-foreground transition-transform duration-300 ${isExpanded ? 'rotate-180 bg-primary/10 text-primary' : 'group-hover:bg-primary/5 group-hover:text-primary'}`}>
                       <ChevronDown className="w-5 h-5" />
                     </div>
