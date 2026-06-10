@@ -42,6 +42,7 @@ export interface HalaqaItem {
 }
 
 interface TeacherOption { id: string; name: string }
+interface PathOption { id: string; title: string; type: 'tajweed' | 'memorization' }
 
 export type HalaqatViewerRole = 'admin' | 'host' | 'student'
 
@@ -96,7 +97,10 @@ const emptyForm = {
   meeting_link: '',
   scheduled_at: '',
   duration_minutes: 60,
-  scope: 'public'
+  scope: 'public',
+  path_type: '' as '' | 'tajweed' | 'memorization',
+  path_id: '',
+  auto_enroll: false,
 }
 
 function formatRelativeFromNow(value: string | null): string | null {
@@ -125,6 +129,7 @@ export function HalaqatList({
 
   const [halaqat, setHalaqat] = useState<HalaqaItem[]>([])
   const [teachers, setTeachers] = useState<TeacherOption[]>([])
+  const [paths, setPaths] = useState<PathOption[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'live' | 'inactive'>('all')
@@ -162,8 +167,36 @@ export function HalaqatList({
     }
   }
 
+  async function fetchPaths() {
+    // Only maqraa halaqat can be bound to learning paths.
+    if (platform !== 'maqraa') return
+    try {
+      const [tajRes, memRes] = await Promise.all([
+        fetch('/api/reader/tajweed-paths'),
+        fetch('/api/reader/memorization-paths'),
+      ])
+      const merged: PathOption[] = []
+      if (tajRes.ok) {
+        const json = await tajRes.json()
+        for (const p of json.paths || []) {
+          merged.push({ id: p.id, title: p.title, type: 'tajweed' })
+        }
+      }
+      if (memRes.ok) {
+        const json = await memRes.json()
+        for (const p of json.paths || []) {
+          merged.push({ id: p.id, title: p.title, type: 'memorization' })
+        }
+      }
+      setPaths(merged)
+    } catch (e) {
+      console.error('Failed to fetch paths', e)
+    }
+  }
+
   useEffect(() => {
     fetchData()
+    fetchPaths()
     // Check if we should open modal automatically based on URL params
     const searchParams = new URLSearchParams(window.location.search)
     if (searchParams.get('new') === 'true' && canEdit) {
@@ -209,7 +242,10 @@ export function HalaqatList({
       meeting_link: h.meeting_link || '',
       scheduled_at: h.scheduled_at ? h.scheduled_at.slice(0, 16) : '',
       duration_minutes: h.duration_minutes || 60,
-      scope: (h as any).scope || 'public'
+      scope: (h as any).scope || 'public',
+      path_type: ((h as any).path_type as '' | 'tajweed' | 'memorization') || '',
+      path_id: (h as any).path_id || '',
+      auto_enroll: Boolean((h as any).auto_enroll),
     })
     setShowModal(true)
   }
@@ -229,6 +265,12 @@ export function HalaqatList({
       }
       if (!body.teacher_id) body.teacher_id = undefined
       if (!body.scheduled_at) body.scheduled_at = undefined
+      // Path binding only applies to path_only halaqat with a selected path.
+      if (body.scope !== 'path_only' || !body.path_type || !body.path_id) {
+        body.path_type = null
+        body.path_id = null
+        body.auto_enroll = false
+      }
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -385,6 +427,7 @@ export function HalaqatList({
           form={form}
           setForm={setForm}
           teachers={teachers}
+          paths={paths}
           saving={saving}
           isAdmin={isAdminViewer}
           platform={platform}
@@ -538,6 +581,7 @@ function HalaqaFormModal({
   form,
   setForm,
   teachers,
+  paths,
   saving,
   isAdmin,
   platform,
@@ -548,6 +592,7 @@ function HalaqaFormModal({
   form: typeof emptyForm
   setForm: (f: typeof emptyForm) => void
   teachers: TeacherOption[]
+  paths: PathOption[]
   saving: boolean
   isAdmin: boolean
   platform: HalaqaPlatform
@@ -669,6 +714,62 @@ function HalaqaFormModal({
               </label>
             </div>
           </div>
+
+          {form.scope === 'path_only' && platform === 'maqraa' && (
+            <div className="space-y-3 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+              <Field label="اربط الحلقة بمسار">
+                <select
+                  value={form.path_type && form.path_id ? `${form.path_type}:${form.path_id}` : ''}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    if (!v) {
+                      setForm({ ...form, path_type: '', path_id: '', auto_enroll: false })
+                      return
+                    }
+                    const [type, id] = v.split(':')
+                    setForm({ ...form, path_type: type as 'tajweed' | 'memorization', path_id: id })
+                  }}
+                  className="input"
+                >
+                  <option value="">— اختر مساراً —</option>
+                  <optgroup label="مسارات التجويد">
+                    {paths
+                      .filter((p) => p.type === 'tajweed')
+                      .map((p) => (
+                        <option key={`tajweed:${p.id}`} value={`tajweed:${p.id}`}>
+                          {p.title}
+                        </option>
+                      ))}
+                  </optgroup>
+                  <optgroup label="مسارات التحفيظ">
+                    {paths
+                      .filter((p) => p.type === 'memorization')
+                      .map((p) => (
+                        <option key={`memorization:${p.id}`} value={`memorization:${p.id}`}>
+                          {p.title}
+                        </option>
+                      ))}
+                  </optgroup>
+                </select>
+              </Field>
+              {form.path_id && (
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.auto_enroll}
+                    onChange={(e) => setForm({ ...form, auto_enroll: e.target.checked })}
+                    className="w-4 h-4 mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded"
+                  />
+                  <span>
+                    <span className="font-bold text-sm block">تسجيل طلاب المسار تلقائياً</span>
+                    <span className="text-xs text-muted-foreground">
+                      سيتم إضافة جميع طلاب المسار النشطين إلى الحلقة عند الإنشاء
+                    </span>
+                  </span>
+                </label>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="موعد البدء (اختياري)">
