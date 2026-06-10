@@ -46,7 +46,7 @@ function fmtDate(s: string) {
   }
 }
 
-export default function ReaderRecordingsPage() {
+export function ReaderRecordingsPanel() {
   const [data, setData] = useState<Recording[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -80,19 +80,7 @@ export default function ReaderRecordingsPage() {
   const filtered = useMemo(() => data, [data])
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 flex items-center justify-center">
-          <PlayCircle className="w-7 h-7 text-emerald-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-black text-foreground">تسجيلات الجلسات</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            استعرض تسجيلات حلقاتك وجلساتك الفردية السابقة التي قمت بها أو حضرتها.
-          </p>
-        </div>
-      </div>
-
+    <div dir="rtl" className="space-y-6">
       <Card className="border-border rounded-2xl">
         <CardContent className="pt-5 space-y-4">
           <div className="flex flex-col md:flex-row gap-3">

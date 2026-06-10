@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/dialog"
 import {
   Plus, Send, Link2, Video, VideoOff, Copy, Check, Loader2,
-  MessageSquare, Calendar, Clock, ChevronDown, Sparkles, AlertCircle, ArrowUpRight
+  MessageSquare, Calendar, Clock, ChevronDown, Sparkles, AlertCircle, ArrowUpRight, PlayCircle
 } from "lucide-react"
+import { ReaderRecordingsPanel } from "@/components/reader/recordings-panel"
 
 type Booking = {
   id: string
@@ -45,6 +46,7 @@ export default function ReaderSessionsPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [savingLink, setSavingLink] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [view, setView] = useState<"sessions" | "recordings">("sessions")
 
   // Reschedule dialog state
   const [rescheduleSession, setRescheduleSession] = useState<Booking | null>(null)
@@ -247,6 +249,34 @@ export default function ReaderSessionsPage() {
         </div>
       </div>
 
+      {/* View Tabs: Sessions / Recordings */}
+      <div className="flex flex-wrap items-center gap-2 p-1.5 bg-muted/50 rounded-2xl border border-border max-w-fit shadow-sm">
+        <button
+          onClick={() => setView("sessions")}
+          className={`flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition-all duration-300 ${view === "sessions"
+            ? "bg-[#0B3D2E] text-white shadow-md shadow-[#0B3D2E]/20"
+            : "text-muted-foreground hover:text-foreground hover:bg-card"
+            }`}
+        >
+          <Calendar className="w-4 h-4" />
+          {isAr ? "الجلسات" : "Sessions"}
+        </button>
+        <button
+          onClick={() => setView("recordings")}
+          className={`flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition-all duration-300 ${view === "recordings"
+            ? "bg-[#0B3D2E] text-white shadow-md shadow-[#0B3D2E]/20"
+            : "text-muted-foreground hover:text-foreground hover:bg-card"
+            }`}
+        >
+          <PlayCircle className="w-4 h-4" />
+          {isAr ? "التسجيلات" : "Recordings"}
+        </button>
+      </div>
+
+      {view === "recordings" ? (
+        <ReaderRecordingsPanel />
+      ) : (
+      <>
       {/* Elegant Filter Segment */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 bg-muted/50 rounded-2xl border border-border max-w-fit shadow-sm">
         {filterButtons.map((btn) => (
@@ -557,6 +587,8 @@ export default function ReaderSessionsPage() {
             )
           })}
         </div>
+      )}
+      </>
       )}
 
       {/* Reschedule Dialog */}
