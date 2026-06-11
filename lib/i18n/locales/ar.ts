@@ -210,6 +210,8 @@ export const ar = {
 
   // Reader Register
   readerRegister: {
+    city: 'المدينة *',
+    selectCity: 'اختر المدينة',
     title: 'تسجيل مقرئ جديد',
     desc: 'أكمل بياناتك للتسجيل كمقرئ في منصة إتقان',
     basicInfo: 'البيانات الأساسية',
@@ -267,6 +269,7 @@ export const ar = {
 
   // Student
   student: {
+    tajweedPaths: 'مسارات التجويد',
     dashboard: 'لوحة الطالب',
     mushaf: 'مصحفي',
     mushafDesc: 'اقرأ القرآن الكريم بالرسم العثماني، صفحة بصفحة وسورة بسورة',
@@ -556,6 +559,24 @@ export const ar = {
 
   // Reader
   reader: {
+    chatDesc: 'تواصل مع الطلاب حول التلاوات والجلسات.',
+    noMessagesInList: 'لا توجد رسائل حالياً.',
+    selectChatFromList: 'اختر محادثة من القائمة لعرض الرسائل.',
+    newRecitationBadge: 'تلاوة جديدة',
+    submittedOn: 'تم الإرسال:',
+    hafsNarrative: 'حفص عن عاصم',
+    quranTextLabel: 'النص القرآني',
+    masteredOption: 'متقن',
+    masteredOptionDesc: 'تلاوة صحيحة ومتقنة',
+    needsSessionOption: 'تحتاج جلسة',
+    needsSessionOptionDesc: 'تحتاج جلسة تصحيح مع المقرئ',
+    smartSuggestions: 'اقتراحات ذكية',
+    decisionSaved: 'تم حفظ القرار',
+    saveDecision: 'حفظ القرار',
+    savingNow: 'جاري الحفظ...',
+    audioNoteTooltip: 'ملاحظة صوتية',
+    insertAyahTooltip: 'إدراج آية',
+    quickTagsHeader: 'وسوم سريعة (تُضاف للملاحظات)',
     dashboard: 'لوحة المقرئ',
     sessionStatus: 'الحالة',
     upcoming: 'قادمة',
@@ -610,7 +631,7 @@ export const ar = {
     today: 'اليوم',
     scheduledSessions: 'جلسات تعليمية مجدولة',
     pendingReviews: 'طلبات بانتظار التقييم',
-    viewAll: 'عرض الكل',
+    viewAll: 'عرض ��لكل',
     listen: 'استماع',
     review: 'تقييم',
     noPendingReviewRequests: 'لا توجد طلبات بانتظار التقييم',
@@ -962,6 +983,7 @@ export const ar = {
       reviewsLabel: 'تلاوات',
       sessionsLabel: 'جلسات',
       ratingLabel: 'تقييم',
+      completionRateLabel: 'نسبة الإكمال',
       noReadersYet: 'لا يوجد مقرئين معتمدين حالياً.',
       editReader: 'تعديل بيانات المقرئ',
       name: 'الاسم',
@@ -1582,7 +1604,7 @@ export const ar = {
       customLanguageLabel: 'اسم اللغة (اختر "أخرى")',
       uploadPdf: 'رفع ملف PDF',
       replaceFile: 'استبدال الملف',
-      removeFile: 'حذف الملف',
+      removeFile: '��ذف الملف',
       preview: 'معاينة',
       bookCategories: 'تصنيفات الكتب',
       manageCategories: 'إدارة التصنيفات',

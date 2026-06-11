@@ -392,7 +392,8 @@ export async function POST(req: NextRequest) {
 
     const subjectCandidate = selectedSubject(body.subject, "fiqh")
     const subject = ACADEMY_SUBJECTS.includes(subjectCandidate) ? subjectCandidate : "fiqh"
-    const seed = body.seed_default_stages !== false
+    // Default: do NOT seed template stages. The teacher/admin builds stages themselves.
+    const seed = body.seed_default_stages === true
     const estimated = numericValue(body.estimated_days)
 
     const insertColumns = ["title"]
@@ -444,12 +445,16 @@ export async function POST(req: NextRequest) {
       values.push(typeof body.manager_id === "string" && body.manager_id ? body.manager_id : null)
     }
 
-    const simpleFields = ["target_audience", "promo_video_url", "certification_type", "enrollment_type"]
+    const simpleFields = ["target_audience", "promo_video_url", "certification_type"]
     for (const key of simpleFields) {
       if (source.columns.has(key)) {
         insertColumns.push(key)
         values.push(typeof body[key] === "string" ? body[key] : null)
       }
+    }
+    if (source.columns.has("enrollment_type")) {
+      insertColumns.push("enrollment_type")
+      values.push(body.enrollment_type === "approval" ? "approval" : "open")
     }
     if (source.columns.has("price")) {
       insertColumns.push("price")

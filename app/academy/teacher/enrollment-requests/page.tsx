@@ -27,16 +27,16 @@ export default function EnrollmentRequestsPage() {
     fetchRequests()
   }, [])
 
-  const handleAction = async (requestId: string, action: 'active' | 'rejected') => {
+  const handleAction = async (req: any, action: 'active' | 'rejected') => {
     try {
-      const res = await fetch(`/api/academy/teacher/enrollment-requests/${requestId}`, {
+      const res = await fetch(`/api/academy/teacher/enrollment-requests/${req.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: action })
+        body: JSON.stringify({ status: action, kind: req.kind })
       })
       if (res.ok) {
         // Update local state without fetching all again
-        setRequests(requests.map(req => req.id === requestId ? { ...req, status: action } : req))
+        setRequests(requests.map(r => r.id === req.id ? { ...r, status: action } : r))
       }
     } catch (e) {
       console.error(e)
@@ -59,7 +59,7 @@ export default function EnrollmentRequestsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">طلبات الانضمام</h1>
-          <p className="text-muted-foreground mt-1">إدارة طلبات الطلاب للالتحاق بدوراتك</p>
+          <p className="text-muted-foreground mt-1">إدارة طلبات الطلاب للالتحاق بدوراتك ومساراتك</p>
         </div>
       </div>
 
@@ -86,23 +86,26 @@ export default function EnrollmentRequestsPage() {
                       </h3>
                       <p className="text-xs text-muted-foreground mb-1">{req.student_email}</p>
                       <p className="text-sm font-medium flex items-center gap-1.5 mt-2 text-blue-700 dark:text-blue-400">
-                        <BookOpen className="w-4 h-4" />
+                        {req.kind === 'tajweed_path' ? <GraduationCap className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
                         {req.course_title}
+                        {req.kind === 'tajweed_path' && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">مسار</span>
+                        )}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(req.enrolled_at).toLocaleDateString('ar')}
+                        {req.enrolled_at ? new Date(req.enrolled_at).toLocaleDateString('ar') : '—'}
                       </p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2 shrink-0">
                       <button
-                        onClick={() => handleAction(req.id, 'active')}
+                        onClick={() => handleAction(req, 'active')}
                         className="p-2 bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 rounded-lg flex items-center gap-2 font-bold text-sm"
                       >
                         <CheckCircle2 className="w-4 h-4" />
                         قبول
                       </button>
                       <button
-                        onClick={() => handleAction(req.id, 'rejected')}
+                        onClick={() => handleAction(req, 'rejected')}
                         className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-lg flex items-center gap-2 font-bold text-sm"
                       >
                         <XCircle className="w-4 h-4" />

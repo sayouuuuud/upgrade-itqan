@@ -5,11 +5,12 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { 
   ArrowRight, Users, Award, TrendingUp, UserMinus, Percent, 
-  GraduationCap, Calendar, BarChart3, Loader2, Layers
+  GraduationCap, Calendar, BarChart3, Loader2, Layers, ClipboardCheck
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import PathStagesManager from '@/components/paths/path-stages-manager'
+import PathSubmissionsReview from '@/components/paths/path-submissions-review'
 
 interface PathDetails {
   id: string
@@ -71,7 +72,7 @@ export default function TeacherPathStatsPage() {
   const pathId = params.id as string
   const [data, setData] = useState<StatsApiResponse['data'] | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'content' | 'stats'>('content')
+  const [activeTab, setActiveTab] = useState<'content' | 'submissions' | 'stats'>('content')
 
   useEffect(() => {
     async function fetchStats() {
@@ -163,6 +164,18 @@ export default function TeacherPathStatsPage() {
           المحتوى والمراحل
         </button>
         <button
+          onClick={() => setActiveTab('submissions')}
+          className={cn(
+            'flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors',
+            activeTab === 'submissions'
+              ? 'bg-card text-emerald-600 shadow-sm'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          <ClipboardCheck className="w-4 h-4" />
+          مراجعة التسليمات
+        </button>
+        <button
           onClick={() => setActiveTab('stats')}
           className={cn(
             'flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors',
@@ -177,6 +190,10 @@ export default function TeacherPathStatsPage() {
       </div>
 
       {activeTab === 'content' && <PathStagesManager pathId={path.id} />}
+
+      {activeTab === 'submissions' && (
+        <PathSubmissionsReview apiBase={`/api/academy/teacher/paths/${path.id}`} />
+      )}
 
       {activeTab === 'stats' && (
       <div className="space-y-8">

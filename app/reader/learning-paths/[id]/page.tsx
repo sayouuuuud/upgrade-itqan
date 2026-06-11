@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import FileUploader from "@/components/academy/file-uploader"
+import PathSubmissionsReview from "@/components/paths/path-submissions-review"
 import { SURAHS } from "@/lib/data/surahs"
 import { juzName } from "@/lib/quran-data"
 import { useI18n } from "@/lib/i18n/context"
@@ -89,6 +90,9 @@ const initialStageForm = {
   estimated_minutes: 30,
   stage_type: "custom",
   halaqa_id: "",
+  require_audio: false,
+  require_file: false,
+  task_instructions: "",
   recitation_mode: "surah",
   surah_number: 1,
   ayah_from: 1,
@@ -209,6 +213,9 @@ export default function ReaderTajweedPathDetailPage() {
       estimated_minutes: stage.estimated_minutes || 30,
       stage_type: stage.stage_type || "custom",
       halaqa_id: stage.halaqa_id || "",
+      require_audio: (stage as any).require_audio ?? false,
+      require_file: (stage as any).require_file ?? false,
+      task_instructions: (stage as any).task_instructions || "",
       recitation_mode: stage.recitation_mode || "surah",
       surah_number: stage.surah_number || 1,
       ayah_from: stage.ayah_from || 1,
@@ -245,6 +252,9 @@ export default function ReaderTajweedPathDetailPage() {
         passage_text: stageForm.passage_text || null,
         estimated_minutes: stageForm.estimated_minutes,
         stage_type: stageForm.stage_type || "custom",
+        require_audio: !!stageForm.require_audio,
+        require_file: !!stageForm.require_file,
+        task_instructions: stageForm.task_instructions || null,
       }
       if (isRecitation) {
         body.recitation_mode = stageForm.recitation_mode
@@ -350,8 +360,9 @@ export default function ReaderTajweedPathDetailPage() {
 
       <Tabs defaultValue="stages" className="space-y-6">
         <TabsList className="bg-muted/50 p-1 rounded-xl">
-          <TabsTrigger value="stages" className="rounded-lg">{tp.tabs.stages} ({stages.length})</TabsTrigger>
-          <TabsTrigger value="funnel" className="rounded-lg">{tp.tabs.funnel}</TabsTrigger>
+              <TabsTrigger value="stages" className="rounded-lg">{tp.tabs.stages} ({stages.length})</TabsTrigger>
+              <TabsTrigger value="submissions" className="rounded-lg">مراجعة التسليمات</TabsTrigger>
+              <TabsTrigger value="funnel" className="rounded-lg">{tp.tabs.funnel}</TabsTrigger>
           <TabsTrigger value="settings" className="rounded-lg">{tp.tabs.settings}</TabsTrigger>
         </TabsList>
 
@@ -418,6 +429,10 @@ export default function ReaderTajweedPathDetailPage() {
               </div>
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="submissions" className="mt-0">
+          <PathSubmissionsReview apiBase={`/api/admin/tajweed-paths/${pathId}`} />
         </TabsContent>
 
         <TabsContent value="funnel" className="mt-0 space-y-6">
@@ -799,6 +814,31 @@ export default function ReaderTajweedPathDetailPage() {
                 </div>
               </>
             )}
+            <div className="md:col-span-2 space-y-3 rounded-xl border border-border/50 bg-muted/10 p-5">
+              <Label className="flex items-center gap-2 font-semibold">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" /> متطلبات الاجتياز والمراجعة
+              </Label>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" className="mt-1 h-4 w-4 accent-primary rounded" checked={stageForm.require_audio} onChange={e => setStageForm({ ...stageForm, require_audio: e.target.checked })} />
+                <span className="text-sm">
+                  <span className="font-bold block">يتطلب تسجيلاً صوتياً</span>
+                  <span className="text-xs text-muted-foreground">يرسل الطالب تلاوة صوتية وتراجعها أنت قبل اعتماد الاجتياز.</span>
+                </span>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" className="mt-1 h-4 w-4 accent-primary rounded" checked={stageForm.require_file} onChange={e => setStageForm({ ...stageForm, require_file: e.target.checked })} />
+                <span className="text-sm">
+                  <span className="font-bold block">يتطلب رفع ملف (مهمة تسليم)</span>
+                  <span className="text-xs text-muted-foreground">يرفع الطالب ملفاً مطلوباً وتراجعه أنت قبل اعتماد الاجتياز.</span>
+                </span>
+              </label>
+              {(stageForm.require_audio || stageForm.require_file) && (
+                <div className="space-y-1.5">
+                  <Label className="font-semibold text-sm">تعليمات التسليم للطالب (اختياري)</Label>
+                  <Textarea rows={2} value={stageForm.task_instructions} onChange={e => setStageForm({ ...stageForm, task_instructions: e.target.value })} placeholder="اشرح للطالب ما المطلوب تسليمه بالتحديد..." className="resize-none rounded-lg bg-background" />
+                </div>
+              )}
+            </div>
             <div className="space-y-1.5">
               <Label className="font-semibold">{tp.stageForm.estimatedMinutes}</Label>
               <Input type="number" min="1" value={stageForm.estimated_minutes} onChange={e => setStageForm({ ...stageForm, estimated_minutes: parseInt(e.target.value, 10) || 30 })} className="h-11 rounded-lg focus-visible:ring-primary/20" />

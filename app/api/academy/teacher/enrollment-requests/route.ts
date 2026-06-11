@@ -25,7 +25,34 @@ export async function GET(req: NextRequest) {
       ORDER BY e.enrolled_at DESC
     `
     const rows = await query(q, [session.sub])
-    return NextResponse.json({ data: rows })
+
+    // Also include pending enrollment requests for tajweed paths managed by this teacher.
+    let pathRows: any[] = []
+    try {
+      pathRows = (await query<any>(
+        `
+        SELECT tpe.id                AS id,
+               tpe.status            AS status,
+               tpe.started_at        AS enrolled_at,
+               u.name                AS student_name,
+               u.email               AS student_email,
+               tp.title              AS course_title,
+               tp.id                 AS path_id,
+               'tajweed_path'        AS kind
+        FROM tajweed_path_enrollments tpe
+        JOIN tajweed_paths tp ON tp.id = tpe.path_id
+        JOIN users u ON u.id = tpe.student_id
+        WHERE (tp.created_by = $1 OR tp.manager_id = $1)
+        ORDER BY tpe.started_at DESC
+        `,
+        [session.sub],
+      )) as any[]
+    } catch (err) {
+      // Table/columns may not exist in some environments — fail soft.
+      console.error('[teacher enrollment-requests] path query skipped:', err)
+    }
+
+    return NextResponse.json({ data: [...rows, ...pathRows] })
   } catch (error) {
     console.error('[API] Error fetching enrollments:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -17,6 +17,7 @@ import {
   DialogDescription, DialogFooter,
 } from "@/components/ui/dialog"
 import AudioRecorder from "@/components/applicant/audio-recorder"
+import FileUploader from "@/components/academy/file-uploader"
 import TajweedPdfViewer from "@/components/tajweed/pdf-viewer"
 import { useI18n } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
@@ -153,10 +154,13 @@ function StageAyahText({ stage }: { stage: Stage }) {
 
 type ProgressRow = {
   id?: string
-  status: "locked" | "unlocked" | "in_progress" | "completed"
+  status: "locked" | "unlocked" | "in_progress" | "pending_review" | "rejected" | "completed"
   audio_url?: string | null
+  file_url?: string | null
   recitation_id?: string | null
   notes?: string | null
+  reviewer_feedback?: string | null
+  submitted_at?: string | null
   started_at?: string | null
   completed_at?: string | null
 }
@@ -174,6 +178,9 @@ type Stage = {
   halaqa_name?: string | null
   halaqa_id?: string | null
   stage_type?: string | null
+  require_audio?: boolean | null
+  require_file?: boolean | null
+  task_instructions?: string | null
   recitation_mode?: string | null
   surah_number?: number | null
   ayah_from?: number | null
@@ -199,6 +206,7 @@ export default function StudentTajweedPathDetail() {
 
   const [completeDialog, setCompleteDialog] = useState<Stage | null>(null)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
+  const [fileUrl, setFileUrl] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   async function load() {
@@ -246,6 +254,7 @@ export default function StudentTajweedPathDetail() {
   function openComplete(stage: Stage) {
     setCompleteDialog(stage)
     setAudioUrl(stage.progress?.audio_url || null)
+    setFileUrl(stage.progress?.file_url || null)
   }
 
   async function submitComplete() {
@@ -254,6 +263,7 @@ export default function StudentTajweedPathDetail() {
     try {
       const body: any = {}
       if (audioUrl) body.audio_url = audioUrl
+      if (fileUrl) body.file_url = fileUrl
       const res = await fetch(
         `/api/student/tajweed-paths/${pathId}/stages/${completeDialog.id}/complete`,
         {
@@ -269,6 +279,7 @@ export default function StudentTajweedPathDetail() {
       }
       setCompleteDialog(null)
       setAudioUrl(null)
+      setFileUrl(null)
       await load()
     } finally {
       setSubmitting(false)
@@ -470,6 +481,16 @@ export default function StudentTajweedPathDetail() {
                         <Target className="w-3 h-3" /> {tp.statuses.inProgress}
                       </span>
                     )}
+                    {status === "pending_review" && (
+                      <span className="bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-400 px-2 py-0.5 rounded-md text-xs font-bold flex items-center gap-1 border border-sky-200 dark:border-sky-500/20">
+                        <Loader2 className="w-3 h-3" /> بانتظار مراجعة المُعلّم
+                      </span>
+                    )}
+                    {status === "rejected" && (
+                      <span className="bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-md text-xs font-bold flex items-center gap-1 border border-red-200 dark:border-red-500/20">
+                        <Target className="w-3 h-3" /> يلزم إعادة التسليم
+                      </span>
+                    )}
                   </div>
                   <div className="font-black text-lg text-foreground truncate group-hover:text-emerald-600 transition-colors">
                     {stage.title}
@@ -604,8 +625,28 @@ export default function StudentTajweedPathDetail() {
                       </div>
                     )}
 
+                    {stage.progress?.status === "rejected" && stage.progress?.reviewer_feedback && (
+                      <div className="rounded-2xl border border-red-200 bg-red-50/60 p-4 dark:border-red-900/40 dark:bg-red-950/20">
+                        <p className="font-bold text-sm text-red-700 dark:text-red-400 mb-1">ملاحظات المُعلّم</p>
+                        <p className="text-sm whitespace-pre-wrap text-red-900/90 dark:text-red-200/80">{stage.progress.reviewer_feedback}</p>
+                      </div>
+                    )}
+
                     <div className="pt-2 flex flex-wrap gap-3">
-                      {!isCompleted ? (
+                      {stage.progress?.status === "pending_review" ? (
+                        <Button disabled variant="outline" className="gap-2 rounded-xl bg-background">
+                          <Loader2 className="h-4 w-4" />
+                          بانتظار مراجعة المُعلّم
+                        </Button>
+                      ) : stage.progress?.status === "rejected" ? (
+                        <Button
+                          onClick={() => openComplete(stage)}
+                          className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg shadow-emerald-600/20"
+                        >
+                          <CheckCircle2 className="h-5 w-5" />
+                          إعادة التسليم
+                        </Button>
+                      ) : !isCompleted ? (
                         <Button 
                           onClick={() => openComplete(stage)} 
                           className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg shadow-emerald-600/20"
@@ -637,8 +678,8 @@ export default function StudentTajweedPathDetail() {
           <DialogHeader>
             <DialogTitle>{tp.detail.completeDialogTitle}: {completeDialog?.title}</DialogTitle>
             <DialogDescription>
-              {path.require_audio
-                ? tp.detail.requireAudioDescription
+              {(completeDialog?.require_audio || path.require_audio || completeDialog?.require_file)
+                ? "سيراجع المُعلّم تسليمك قبل اعتماد اجتياز هذه المرحلة."
                 : tp.detail.optionalAudioDescription}
             </DialogDescription>
           </DialogHeader>
@@ -648,23 +689,50 @@ export default function StudentTajweedPathDetail() {
                 {completeDialog.passage_text}
               </div>
             )}
-            <AudioRecorder
-              value={audioUrl}
-              onChange={setAudioUrl}
-              maxSeconds={600}
-              label={tp.detail.audioRecorderLabel}
-            />
+            {completeDialog?.task_instructions && (
+              <div className="rounded-md border border-amber-200 bg-amber-50/60 p-3 text-sm dark:border-amber-900/40 dark:bg-amber-950/20">
+                <p className="font-bold text-amber-800 dark:text-amber-300 mb-1">المطلوب في هذه المهمة</p>
+                <p className="whitespace-pre-wrap text-amber-900/90 dark:text-amber-200/80">{completeDialog.task_instructions}</p>
+              </div>
+            )}
+            {completeDialog?.progress?.status === "rejected" && completeDialog?.progress?.reviewer_feedback && (
+              <div className="rounded-md border border-red-200 bg-red-50/60 p-3 text-sm dark:border-red-900/40 dark:bg-red-950/20">
+                <p className="font-bold text-red-700 dark:text-red-400 mb-1">ملاحظات المُعلّم (يلزم إعادة التسليم)</p>
+                <p className="whitespace-pre-wrap text-red-900/90 dark:text-red-200/80">{completeDialog.progress.reviewer_feedback}</p>
+              </div>
+            )}
+            {(completeDialog?.require_audio || path.require_audio) && (
+              <AudioRecorder
+                value={audioUrl}
+                onChange={setAudioUrl}
+                maxSeconds={600}
+                label={tp.detail.audioRecorderLabel}
+              />
+            )}
+            {completeDialog?.require_file && (
+              <FileUploader
+                value={fileUrl}
+                onChange={setFileUrl}
+                label="ارفع الملف المطلوب للمراجعة"
+              />
+            )}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setCompleteDialog(null)}>{tp.actions.cancel}</Button>
             <Button
               onClick={submitComplete}
-              disabled={submitting || (path.require_audio && !audioUrl)}
+              disabled={
+                submitting ||
+                ((completeDialog?.require_audio || path.require_audio) && !audioUrl) ||
+                (completeDialog?.require_file && !fileUrl)
+              }
               className="gap-2"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               <CheckCircle2 className="h-4 w-4" />
-              {tp.actions.pass}
+              {(completeDialog?.require_audio || path.require_audio || completeDialog?.require_file)
+                ? "إرسال للمراجعة"
+                : tp.actions.pass}
             </Button>
           </DialogFooter>
         </DialogContent>

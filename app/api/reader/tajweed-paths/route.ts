@@ -85,16 +85,18 @@ export async function POST(req: NextRequest) {
     const title = (body.title || "").toString().trim()
     if (!title) return NextResponse.json({ error: "العنوان مطلوب" }, { status: 400 })
 
-    const seed = body.seed_default_stages !== false
+    // Default: do NOT seed template stages. The reader builds stages themselves.
+    const seed = body.seed_default_stages === true
     const subject: Subject = SUBJECTS.includes(body.subject) ? body.subject : "tajweed"
+    const enrollmentType = body.enrollment_type === "approval" ? "approval" : "open"
 
     let pathRow: any
     try {
       const inserted = (await query<any>(
         `INSERT INTO tajweed_paths (
             title, description, level, thumbnail_url, total_stages,
-            estimated_days, require_audio, is_published, created_by, subject
-          ) VALUES ($1, $2, $3, $4, 0, $5, $6, $7, $8, $9) RETURNING *`,
+            estimated_days, require_audio, is_published, created_by, subject, enrollment_type
+          ) VALUES ($1, $2, $3, $4, 0, $5, $6, $7, $8, $9, $10) RETURNING *`,
         [
           title,
           body.description || null,
@@ -105,6 +107,7 @@ export async function POST(req: NextRequest) {
           !!body.is_published,
           session!.sub,
           subject,
+          enrollmentType,
         ],
       )) as any[]
       pathRow = inserted[0]

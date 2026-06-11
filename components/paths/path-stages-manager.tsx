@@ -21,6 +21,9 @@ interface Stage {
   course_id: string | null
   halaqa_id: string | null
   lesson_id: string | null
+  require_audio?: boolean
+  require_file?: boolean
+  task_instructions?: string | null
   course_title?: string
   halaqa_title?: string
   lesson_title?: string
@@ -38,12 +41,16 @@ interface StageForm {
   course_id: string
   halaqa_id: string
   lesson_id: string
+  require_audio: boolean
+  require_file: boolean
+  task_instructions: string
 }
 
 const emptyStage: StageForm = {
   title: '', description: '', content: '', video_url: '',
   pdf_url: '', passage_text: '', estimated_minutes: 30,
-  stage_type: 'custom', course_id: '', halaqa_id: '', lesson_id: ''
+  stage_type: 'custom', course_id: '', halaqa_id: '', lesson_id: '',
+  require_audio: false, require_file: false, task_instructions: ''
 }
 
 export default function PathStagesManager({ pathId }: { pathId: string }) {
@@ -106,7 +113,10 @@ export default function PathStagesManager({ pathId }: { pathId: string }) {
       stage_type: s.stage_type || 'custom',
       course_id: s.course_id || '',
       halaqa_id: s.halaqa_id || '',
-      lesson_id: s.lesson_id || ''
+      lesson_id: s.lesson_id || '',
+      require_audio: s.require_audio ?? false,
+      require_file: s.require_file ?? false,
+      task_instructions: s.task_instructions || ''
     })
     setShowForm(true)
   }
@@ -240,6 +250,8 @@ export default function PathStagesManager({ pathId }: { pathId: string }) {
                       {s.video_url && <span className="inline-flex items-center gap-1 text-rose-500"><Video className="w-3 h-3" /> فيديو</span>}
                       {s.pdf_url && <span className="inline-flex items-center gap-1 text-blue-500"><FileText className="w-3 h-3" /> ملف</span>}
                       {s.passage_text && <span className="inline-flex items-center gap-1 text-emerald-600"><BookOpen className="w-3 h-3" /> مقطع</span>}
+                      {s.require_audio && <span className="inline-flex items-center gap-1 text-sky-600 bg-sky-50 dark:bg-sky-900/20 px-1.5 py-0.5 rounded border border-sky-100 dark:border-sky-900/30">تسجيل صوتي (مراجعة)</span>}
+                      {s.require_file && <span className="inline-flex items-center gap-1 text-violet-600 bg-violet-50 dark:bg-violet-900/20 px-1.5 py-0.5 rounded border border-violet-100 dark:border-violet-900/30">رفع ملف (مراجعة)</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -500,6 +512,48 @@ export default function PathStagesManager({ pathId }: { pathId: string }) {
                   </div>
                 </>
               )}
+              <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
+                <p className="text-sm font-bold flex items-center gap-1.5">
+                  <UploadCloud className="w-4 h-4 text-emerald-600" />
+                  متطلبات الاجتياز والمراجعة
+                </p>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.require_audio}
+                    onChange={(e) => setForm({ ...form, require_audio: e.target.checked })}
+                    className="mt-1 w-4 h-4 accent-emerald-600"
+                  />
+                  <span className="text-sm">
+                    <span className="font-bold">يتطلب تسجيلاً صوتياً</span>
+                    <span className="block text-xs text-muted-foreground">يرسل الطالب تلاوة صوتية وتراجعها أنت قبل اعتماد الاجتياز.</span>
+                  </span>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.require_file}
+                    onChange={(e) => setForm({ ...form, require_file: e.target.checked })}
+                    className="mt-1 w-4 h-4 accent-emerald-600"
+                  />
+                  <span className="text-sm">
+                    <span className="font-bold">يتطلب رفع ملف (مهمة تسليم)</span>
+                    <span className="block text-xs text-muted-foreground">يرفع الطالب ملفاً مطلوباً وتراجعه أنت قبل اعتماد الاجتياز.</span>
+                  </span>
+                </label>
+                {(form.require_audio || form.require_file) && (
+                  <div>
+                    <label className="text-xs font-bold block mb-1.5 text-muted-foreground">تعليمات التسليم للطالب (اختياري)</label>
+                    <textarea
+                      rows={2}
+                      value={form.task_instructions}
+                      onChange={(e) => setForm({ ...form, task_instructions: e.target.value })}
+                      placeholder="اشرح للطالب ما المطلوب تسليمه بالتحديد..."
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none text-sm"
+                    />
+                  </div>
+                )}
+              </div>
               <div>
                 <label className="text-sm font-bold block mb-1.5">المدة التقديرية (دقائق)</label>
                 <input

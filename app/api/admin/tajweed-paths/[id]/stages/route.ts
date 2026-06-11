@@ -50,8 +50,9 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       `INSERT INTO tajweed_path_stages (
           path_id, position, title, description, content,
           video_url, pdf_url, passage_text, estimated_minutes, course_id, halaqa_id,
-          stage_type, recitation_mode, surah_number, ayah_from, ayah_to, juz_number, page_from, page_to
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
+          stage_type, recitation_mode, surah_number, ayah_from, ayah_to, juz_number, page_from, page_to,
+          require_audio, require_file, task_instructions, lesson_id
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23) RETURNING *`,
       [
         id, position, title,
         body.description || null,
@@ -70,6 +71,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         body.juz_number || null,
         body.page_from || null,
         body.page_to || null,
+        body.require_audio === true,
+        body.require_file === true,
+        body.task_instructions || null,
+        body.lesson_id || null,
       ],
     )) as any[]
 

@@ -33,6 +33,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       `SELECT s.id, s.position, s.title, s.description, s.content,
               s.video_url, s.pdf_url, s.passage_text, s.estimated_minutes, s.created_at,
               s.stage_type, s.course_id, s.halaqa_id, s.lesson_id,
+              s.require_audio, s.require_file, s.task_instructions,
               c.title as course_title,
               h.name as halaqa_title,
               l.title as lesson_title
@@ -76,11 +77,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       `INSERT INTO tajweed_path_stages (
           path_id, position, title, description, content,
           video_url, pdf_url, passage_text, estimated_minutes,
-          stage_type, course_id, halaqa_id, lesson_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          stage_type, course_id, halaqa_id, lesson_id,
+          require_audio, require_file, task_instructions
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
         RETURNING id, position, title, description, content,
                   video_url, pdf_url, passage_text, estimated_minutes, created_at,
-                  stage_type, course_id, halaqa_id, lesson_id`,
+                  stage_type, course_id, halaqa_id, lesson_id,
+                  require_audio, require_file, task_instructions`,
       [
         id,
         position,
@@ -95,6 +98,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         body.course_id || null,
         body.halaqa_id || null,
         body.lesson_id || null,
+        body.require_audio === true,
+        body.require_file === true,
+        body.task_instructions || null,
       ],
     )
 

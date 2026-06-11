@@ -35,7 +35,8 @@ export async function PATCH(
     const allowed = [
       "title", "description", "content", "video_url",
       "pdf_url", "passage_text", "estimated_minutes",
-      "stage_type", "course_id", "halaqa_id", "lesson_id"
+      "stage_type", "course_id", "halaqa_id", "lesson_id",
+      "require_audio", "require_file", "task_instructions"
     ] as const
     const sets: string[] = []
     const values: unknown[] = []
@@ -44,7 +45,11 @@ export async function PATCH(
       if (key in body) {
         sets.push(`${key} = $${i++}`)
         const v = body[key]
-        values.push(v === "" ? null : v)
+        if (key === "require_audio" || key === "require_file") {
+          values.push(v === true)
+        } else {
+          values.push(v === "" ? null : v)
+        }
       }
     }
     if (sets.length === 0) return NextResponse.json({ error: "لا تعديلات" }, { status: 400 })
@@ -54,7 +59,8 @@ export async function PATCH(
          WHERE id = $${i++} AND path_id = $${i}
        RETURNING id, position, title, description, content,
                  video_url, pdf_url, passage_text, estimated_minutes, created_at,
-                 stage_type, course_id, halaqa_id, lesson_id`,
+                 stage_type, course_id, halaqa_id, lesson_id,
+                 require_audio, require_file, task_instructions`,
       values,
     )
     if (updated.length === 0) return NextResponse.json({ error: "المرحلة غير موجودة" }, { status: 404 })

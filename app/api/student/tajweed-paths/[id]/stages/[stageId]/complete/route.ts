@@ -42,10 +42,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     if (progress.status === "completed") {
       return NextResponse.json({ ok: true, status: "completed", already: true })
     }
+    if (progress.status === "pending_review") {
+      return NextResponse.json({ ok: true, status: "pending_review", already: true })
+    }
 
-    // Check if the stage has a course_id associated with it
+    // Check stage requirements (course link + audio/file review requirements)
     const stageInfoRows = (await query<any>(
-      `SELECT course_id FROM tajweed_path_stages WHERE id = $1 LIMIT 1`,
+      `SELECT course_id, require_audio, require_file FROM tajweed_path_stages WHERE id = $1 LIMIT 1`,
       [stageId]
     )) as any[]
     const stageInfo = stageInfoRows[0]
@@ -75,9 +78,43 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
     const audioUrl = body.audio_url || progress.audio_url || null
     const recitationId = body.recitation_id || progress.recitation_id || null
+    const fileUrl = body.file_url || progress.file_url || null
 
-    if (path.require_audio && !audioUrl && !recitationId) {
-      return NextResponse.json({ error: "هذا المسار يتطلب تسجيل صوتي" }, { status: 400 })
+    // Determine whether this stage needs reader/teacher review before completion.
+    const requiresAudio = path.require_audio || stageInfo.require_audio
+    const requiresFile = !!stageInfo.require_file
+    const needsReview = requiresAudio || requiresFile
+
+    if (requiresAudio && !audioUrl && !recitationId) {
+      return NextResponse.json({ error: "هذه المرحلة تتطلب تسجيلاً صوتياً" }, { status: 400 })
+    }
+    if (requiresFile && !fileUrl) {
+      return NextResponse.json({ error: "هذه المرحلة تتطلب رفع ملف للمراجعة" }, { status: 400 })
+    }
+
+    // Stages that need review are submitted for the reader/teacher to approve.
+    // They are NOT completed and do NOT unlock the next stage until approved.
+    if (needsReview) {
+      await query(
+        `UPDATE tajweed_path_progress
+            SET status = 'pending_review',
+                audio_url = $1,
+                recitation_id = $2,
+                file_url = $3,
+                notes = COALESCE($4, notes),
+                submitted_at = NOW(),
+                reviewed_by = NULL,
+                reviewed_at = NULL,
+                reviewer_feedback = NULL,
+                started_at = COALESCE(started_at, NOW())
+          WHERE id = $5`,
+        [audioUrl, recitationId, fileUrl, body.notes || null, progress.id],
+      )
+      await query(
+        `UPDATE tajweed_path_enrollments SET last_activity_at = NOW() WHERE id = $1`,
+        [enrollment.id],
+      )
+      return NextResponse.json({ ok: true, status: "pending_review", submitted: true })
     }
 
     await query(

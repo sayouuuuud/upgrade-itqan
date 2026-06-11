@@ -57,7 +57,7 @@ export default function ReaderLearningPathsPage() {
   const [form, setForm] = useState({
     title: "", description: "", level: "beginner",
     require_audio: false, estimated_days: "",
-    is_published: false,
+    is_published: false, enrollment_type: "open",
   })
 
   const filtered = paths.filter(p => {
@@ -105,6 +105,7 @@ export default function ReaderLearningPathsPage() {
           require_audio: form.require_audio,
           estimated_days: form.estimated_days ? parseInt(form.estimated_days, 10) : null,
           is_published: form.is_published,
+          enrollment_type: form.enrollment_type,
           seed_default_stages: false,
         }),
       })
@@ -115,7 +116,7 @@ export default function ReaderLearningPathsPage() {
       }
       toast.success(form.is_published ? "تم إنشاء المسار ونُشر للطلاب" : "تم إنشاء المسار كمسودة")
       setOpenCreate(false)
-      setForm({ title: "", description: "", level: "beginner", require_audio: false, estimated_days: "", is_published: false })
+      setForm({ title: "", description: "", level: "beginner", require_audio: false, estimated_days: "", is_published: false, enrollment_type: "open" })
       await load()
     } catch {
       toast.error("تعذّر الاتصال بالخادم")
@@ -385,6 +386,23 @@ export default function ReaderLearningPathsPage() {
                 <Label htmlFor="rt_aud" className="cursor-pointer font-semibold text-base block">تفعيل التقييم الصوتي الإلزامي</Label>
                 <p className="text-xs text-muted-foreground mt-0.5">يتطلب من الطالب رفع تسجيل صوتي لاجتياز كل مرحلة.</p>
               </div>
+            </div>
+            <div className="md:col-span-2 grid gap-2">
+              <Label className="font-semibold text-base">طريقة الالتحاق بالمسار</Label>
+              <Select value={form.enrollment_type} onValueChange={v => setForm({ ...form, enrollment_type: v })}>
+                <SelectTrigger className="h-11 rounded-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">التحاق مباشر — يبدأ الطالب فوراً</SelectItem>
+                  <SelectItem value="approval">يتطلب موافقتك — يصل طلب الالتحاق لمراجعتك</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {form.enrollment_type === "approval"
+                  ? "لن يبدأ الطالب المسار إلا بعد موافقتك على طلب الالتحاق."
+                  : "يدخل الطالب المسار ويبدأ المراحل مباشرة دون موافقة."}
+              </p>
             </div>
             <div className="md:col-span-2 flex items-start gap-3 rounded-xl border border-border/50 bg-emerald-500/5 p-4">
               <input id="rt_pub" type="checkbox" className="mt-1 h-4 w-4 accent-emerald-600 rounded" checked={form.is_published} onChange={e => setForm({ ...form, is_published: e.target.checked })} />
