@@ -14,7 +14,7 @@ import {
   LayoutDashboard, Mic, FileText, Calendar, Bell, User, LogOut,
   Menu, X, Users, Settings, BarChart3, ClipboardList, Clock, MessageSquare,
   Search, Plus, BookOpen, Award, UserCheck, CalendarCheck, CalendarDays,
-  MessagesSquare, Megaphone, ScrollText, PieChart, Star, ShieldCheck,
+  MessagesSquare, Megaphone, ScrollText, PieChart, Star, Medal, ShieldCheck,
   Globe, Home, Archive, Shield, Phone, BookMarked, FileEdit, Route, Target, GraduationCap, Mail,
   Trophy, PanelLeftClose, PanelLeftOpen, Library, Video
 } from 'lucide-react'
@@ -42,6 +42,8 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/student/halaqat', label: 'حلقاتي', icon: GraduationCap },
           { href: '/student/chat', label: t.student.chat, icon: MessageSquare },
           { href: '/student/certificates', label: t.student.certificates || t.student.certificate, icon: Award },
+          { href: '/student/points', label: 'نقاطي', icon: Star },
+          { href: '/student/badges', label: 'أوسمتي', icon: Medal },
           { href: '/student/wird', label: 'الورد اليومي', icon: BookMarked },
           { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
           { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
