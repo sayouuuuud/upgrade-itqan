@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useI18n } from "@/lib/i18n/context"
 import { enUS } from "date-fns/locale"
 import { cn } from "@/lib/utils"
+import { PageLoadingSkeleton } from "@/components/ui/page-loading-skeleton"
 
 
 type Slot = {
@@ -241,11 +242,7 @@ export default function ScheduleManagementPage() {
   }).sort((a, b) => a.start_time.localeCompare(b.start_time))
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    )
+    return <PageLoadingSkeleton />
   }
 
   return (

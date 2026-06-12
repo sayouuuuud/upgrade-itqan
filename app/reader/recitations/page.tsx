@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useI18n } from "@/lib/i18n/context"
 import { StatusBadge } from "@/components/status-badge"
 import { Search, Clock, Timer, Calendar, ChevronLeft, ChevronRight, CheckCircle, Play, Loader2 } from "lucide-react"
+import { PageLoadingSkeleton } from "@/components/ui/page-loading-skeleton"
 
 type TabFilter = "new" | "in_review" | "reviewed"
 
@@ -121,9 +122,7 @@ export default function ReaderRecitationsPage() {
       {/* Table */}
       <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         {loading ? (
-          <div className="p-12 flex justify-center text-muted-foreground">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
+          <PageLoadingSkeleton />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-right">

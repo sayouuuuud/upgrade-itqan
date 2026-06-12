@@ -12,6 +12,7 @@ import {
   MessageSquare, Calendar, Clock, ChevronDown, Sparkles, AlertCircle, ArrowUpRight, PlayCircle
 } from "lucide-react"
 import { ReaderRecordingsPanel } from "@/components/reader/recordings-panel"
+import { PageLoadingSkeleton } from "@/components/ui/page-loading-skeleton"
 
 type Booking = {
   id: string
@@ -295,13 +296,7 @@ export default function ReaderSessionsPage() {
 
       {/* Cards List */}
       {loading ? (
-        <div className="flex flex-col justify-center items-center py-32 space-y-4">
-          <div className="relative">
-            <div className="absolute inset-0 bg-[#0B3D2E]/20 blur-xl rounded-full" />
-            <Loader2 className="w-12 h-12 animate-spin text-[#0B3D2E] relative z-10" />
-          </div>
-          <p className="text-muted-foreground font-medium animate-pulse">{isAr ? "جاري تحميل الجلسات..." : "Loading sessions..."}</p>
-        </div>
+        <PageLoadingSkeleton />
       ) : filtered.length === 0 ? (
         <div className="bg-card/50 backdrop-blur-xl border border-border rounded-[2.5rem] py-32 text-center shadow-lg shadow-black/5 animate-in fade-in zoom-in-95 duration-500">
           <div className="w-24 h-24 bg-gradient-to-br from-muted to-muted/50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">

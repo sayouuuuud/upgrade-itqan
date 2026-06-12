@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n/context"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { PageLoadingSkeleton } from "@/components/ui/page-loading-skeleton"
 
 interface ReaderStats {
   pendingReviews: number
@@ -139,11 +140,7 @@ export default function ReaderDashboard() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1B5E3B]" />
-      </div>
-    )
+    return <PageLoadingSkeleton />
   }
 
   const kpis = [

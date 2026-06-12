@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Trophy, Users, Calendar, Loader2, ClipboardCheck, Clock, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PageLoadingSkeleton } from '@/components/ui/page-loading-skeleton'
 
 interface Competition {
   id: string
@@ -46,11 +47,7 @@ export default function ReaderCompetitionsPage() {
   const totalPending = competitions.reduce((sum, c) => sum + (c.pending_count || 0), 0)
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-      </div>
-    )
+    return <PageLoadingSkeleton />
   }
 
   return (

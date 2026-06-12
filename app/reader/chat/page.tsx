@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Send, Link2, MessageSquare, Loader2, Trash2, Edit2, PlusCircle, Search, ShieldAlert } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useSearchParams, useRouter } from "next/navigation"
+import { PageLoadingSkeleton } from "@/components/ui/page-loading-skeleton"
 
 type Conversation = {
   id: string
@@ -620,7 +621,7 @@ function ReaderChatContent() {
 
 export default function ReaderChatPage() {
   return (
-    <Suspense fallback={<div className="p-8 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+    <Suspense fallback={<PageLoadingSkeleton />}>
       <ReaderChatContent />
     </Suspense>
   )
