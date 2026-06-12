@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
   BookOpen, Plus, Loader2, Users, CheckCircle2, Eye, EyeOff, Trash2,
-  ArrowRight, ChevronRight, Settings, BarChart, Sparkles, AlertCircle, FileText
+  ArrowRight, ChevronRight, Settings, BarChart, Sparkles, AlertCircle, FileText, Route
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
