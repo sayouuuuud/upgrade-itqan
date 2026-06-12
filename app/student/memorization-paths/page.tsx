@@ -148,7 +148,7 @@ export default function StudentMemorizationPathsPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-start *:w-full">
               {enrolled.map(p => <EnrolledCard key={p.id} path={p} />)}
             </div>
           )}
@@ -176,7 +176,7 @@ export default function StudentMemorizationPathsPage() {
               <p className="text-lg font-bold text-foreground">لا توجد مسارات مطابقة للبحث</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-start *:w-full">
               {filteredAll.map(p => <BrowseCard key={p.id} path={p} />)}
             </div>
           )}
