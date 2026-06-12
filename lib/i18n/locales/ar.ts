@@ -1241,7 +1241,7 @@ export const ar = {
       total: 'الإجمالي',
       average: 'المتوسط',
       dailySuffix: 'يومياً',
-      views: 'المشاهد��ت',
+      views: 'المشاهدات',
       visitors: 'الزوار',
       last7Days: 'آخر 7 أيام',
       last30Days: 'آخر 30 يوم',
