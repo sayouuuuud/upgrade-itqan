@@ -469,47 +469,57 @@ export default function MushafPage() {
       <div className="-m-6 lg:-m-8 min-h-[calc(100vh-4rem)] flex flex-col bg-background/50 relative font-sans">
         {/* Floating Side Toolbar */}
         <div 
-          className={`fixed top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3 p-2 sm:p-2.5 rounded-full bg-card/70 backdrop-blur-2xl border border-border/50 shadow-2xl transition-all duration-700 ease-out hover:shadow-emerald-500/20 hover:scale-[1.02] ${isAr ? 'right-2 sm:right-6 animate-in slide-in-from-right-8' : 'left-2 sm:left-6 animate-in slide-in-from-left-8'}`}
+          dir={isAr ? 'ltr' : 'rtl'}
+          className={`fixed top-1/2 -translate-y-1/2 z-50 flex flex-col items-start gap-3 p-2 sm:p-2.5 rounded-3xl bg-card/70 backdrop-blur-2xl border border-border/50 shadow-2xl transition-all duration-700 ease-out hover:shadow-emerald-500/20 ${isAr ? 'left-2 sm:left-6 animate-in slide-in-from-left-8' : 'right-2 sm:right-6 animate-in slide-in-from-right-8'}`}
         >
           {/* Surah/Juz info */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" className="w-12 h-12 p-0 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
-                <BookOpen className="w-5 h-5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent side={isAr ? 'left' : 'right'} align="center" className="w-64 p-4 rounded-2xl shadow-2xl border-emerald-500/20 bg-card/95 backdrop-blur-xl animate-in zoom-in-95 duration-200">
-              <div className="text-lg font-black text-foreground mb-1 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-emerald-600" />
-                {t.student?.mushaf || 'مصحفي'}
+          <div className="group/item flex items-center h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg cursor-pointer transition-all duration-300 overflow-hidden hover:shadow-xl">
+            <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div 
+              dir={isAr ? 'rtl' : 'ltr'} 
+              className="whitespace-nowrap font-bold text-sm opacity-0 max-w-0 group-hover/item:max-w-[250px] group-hover/item:opacity-100 transition-all duration-500 overflow-hidden"
+            >
+              <div className="px-4">
+                {headerInfo ? (isAr ? `${stripSurahPrefix(headerInfo.surahName)} • الجزء ${toArabicDigits(headerInfo.juz)}` : `${headerInfo.surahEnglish} • Juz ${headerInfo.juz}`) : (t.student?.mushaf || 'مصحفي')}
               </div>
-              {headerInfo && (
-                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-2 p-2 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl flex items-center gap-2">
-                  {isAr ? stripSurahPrefix(headerInfo.surahName) : headerInfo.surahEnglish} 
-                  <span className="text-emerald-600/50">•</span>
-                  {isAr ? `الجزء ${toArabicDigits(headerInfo.juz)}` : `Juz ${headerInfo.juz}`}
-                </div>
-              )}
-            </PopoverContent>
-          </Popover>
+            </div>
+          </div>
 
           {/* Page indicator */}
           <div 
-            className="w-12 h-12 flex flex-col items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm font-black shadow-inner cursor-help transition-all hover:bg-emerald-100 dark:hover:bg-emerald-500/20" 
-            title={isAr ? `صفحة ${pageNumber} من ${TOTAL_PAGES}` : `Page ${pageNumber} of ${TOTAL_PAGES}`}
+            className="group/item flex items-center h-12 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 shadow-inner cursor-pointer transition-all duration-300 overflow-hidden hover:bg-emerald-100 dark:hover:bg-emerald-500/20" 
           >
-            {toArabicDigits(pageNumber)}
+            <div className="w-12 h-12 shrink-0 flex items-center justify-center font-black text-sm">
+              {toArabicDigits(pageNumber)}
+            </div>
+            <div 
+              dir={isAr ? 'rtl' : 'ltr'}
+              className="whitespace-nowrap font-bold text-sm opacity-0 max-w-0 group-hover/item:max-w-[200px] group-hover/item:opacity-100 transition-all duration-500 overflow-hidden"
+            >
+              <div className="px-4">
+                {isAr ? `صفحة ${toArabicDigits(pageNumber)} من ${toArabicDigits(TOTAL_PAGES)}` : `Page ${pageNumber} of ${TOTAL_PAGES}`}
+              </div>
+            </div>
           </div>
 
           {/* Reciter selector */}
           <Select value={reciterId} onValueChange={setReciterId}>
-            <SelectTrigger 
-              className="w-12 h-12 p-0 flex items-center justify-center rounded-full bg-muted/50 border-border hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all focus:ring-0 [&>svg:last-child]:hidden"
-              title={isAr ? "اختر القارئ" : "Select Reciter"}
-            >
-              <div><Mic2 className="w-5 h-5 text-emerald-600" /></div>
+            <SelectTrigger className="group/item flex items-center h-12 p-0 rounded-full bg-muted/50 border-border hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all focus:ring-0 [&>svg:last-child]:hidden overflow-hidden w-auto">
+              <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+                <Mic2 className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div 
+                dir={isAr ? 'rtl' : 'ltr'}
+                className="whitespace-nowrap font-bold text-sm opacity-0 max-w-0 group-hover/item:max-w-[250px] group-hover/item:opacity-100 transition-all duration-500 overflow-hidden"
+              >
+                <div className="px-4">
+                  {isAr ? currentReciter?.nameAr : currentReciter?.nameEn}
+                </div>
+              </div>
             </SelectTrigger>
-            <SelectContent side={isAr ? 'left' : 'right'} align="center" className="rounded-xl min-w-[200px]">
+            <SelectContent side={isAr ? 'right' : 'left'} align="center" className="rounded-xl min-w-[200px]">
               {RECITERS.map(r => (
                 <SelectItem key={r.id} value={r.id} className="font-bold cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-500/10 focus:bg-emerald-50 dark:focus:bg-emerald-500/10 rounded-lg my-0.5">
                   {isAr ? r.nameAr : r.nameEn}
@@ -521,18 +531,37 @@ export default function MushafPage() {
           {/* Progress Map */}
           <Link
             href="/student/mushaf-progress"
-            className="w-12 h-12 rounded-full bg-muted/50 border border-border hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 dark:hover:bg-emerald-500/20 dark:hover:border-emerald-500/30 flex items-center justify-center transition-all hover:-translate-y-1 shadow-sm"
-            title={isAr ? "خريطة التقدم" : "Progress Map"}
+            className="group/item flex items-center h-12 rounded-full bg-muted/50 border border-border hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 dark:hover:bg-emerald-500/20 dark:hover:border-emerald-500/30 transition-all overflow-hidden shadow-sm"
           >
-            <Map className="w-5 h-5" />
+            <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+              <Map className="w-5 h-5" />
+            </div>
+            <div 
+              dir={isAr ? 'rtl' : 'ltr'}
+              className="whitespace-nowrap font-bold text-sm opacity-0 max-w-0 group-hover/item:max-w-[200px] group-hover/item:opacity-100 transition-all duration-500 overflow-hidden"
+            >
+              <div className="px-4">
+                {isAr ? "خريطة التقدم" : "Progress Map"}
+              </div>
+            </div>
           </Link>
 
           {/* Surah Index */}
           <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" className="w-12 h-12 p-0 rounded-full bg-muted/50 border-border hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 dark:hover:bg-emerald-500/20 dark:hover:border-emerald-500/30 transition-all hover:-translate-y-1 shadow-sm" title={isAr ? "فهرس السور" : "Surah Index"}>
-                <List className="w-5 h-5" />
-              </Button>
+              <button className="group/item flex items-center h-12 rounded-full bg-muted/50 border border-border hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 dark:hover:bg-emerald-500/20 dark:hover:border-emerald-500/30 transition-all overflow-hidden shadow-sm">
+                <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+                  <List className="w-5 h-5" />
+                </div>
+                <div 
+                  dir={isAr ? 'rtl' : 'ltr'}
+                  className="whitespace-nowrap font-bold text-sm opacity-0 max-w-0 group-hover/item:max-w-[200px] group-hover/item:opacity-100 transition-all duration-500 overflow-hidden"
+                >
+                  <div className="px-4">
+                    {isAr ? "فهرس السور" : "Surah Index"}
+                  </div>
+                </div>
+              </button>
             </SheetTrigger>
             <SheetContent side={isAr ? 'left' : 'right'} className="w-80 sm:w-96 p-0 flex flex-col border-emerald-500/20">
               <div className="p-5 border-b border-border/50 bg-card">
