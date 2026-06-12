@@ -489,11 +489,17 @@ export default function MushafPage() {
               </div>
             </div>
 
-            {/* Right: Reciter + Page indicator + index button */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+            {/* Right: Page indicator + Reciter + icon buttons */}
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="flex items-center justify-center px-3 sm:px-4 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs sm:text-sm font-black tracking-wide whitespace-nowrap">
+                {isAr
+                  ? `${t.student?.pageNumber || 'صفحة'} ${toArabicDigits(pageNumber)} / ${toArabicDigits(TOTAL_PAGES)}`
+                  : `Page ${pageNumber} / ${TOTAL_PAGES}`}
+              </div>
+
               {/* Reciter selector */}
               <Select value={reciterId} onValueChange={setReciterId}>
-                <SelectTrigger className="h-10 rounded-xl text-xs sm:text-sm font-bold w-[160px] sm:w-[220px] bg-muted/50 border-border hover:bg-muted focus:ring-emerald-500">
+                <SelectTrigger className="h-10 rounded-xl text-xs sm:text-sm font-bold w-[150px] sm:w-[210px] bg-muted/50 border-border hover:bg-muted focus:ring-emerald-500">
                   <div className="flex items-center gap-2 min-w-0">
                     <Mic2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     <SelectValue placeholder={isAr ? 'اختر القارئ' : 'Select reciter'} />
@@ -508,12 +514,6 @@ export default function MushafPage() {
                 </SelectContent>
               </Select>
 
-              <div className="hidden sm:flex items-center justify-center px-4 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm font-black tracking-wide">
-                {isAr
-                  ? `${t.student?.pageNumber || 'صفحة'} ${toArabicDigits(pageNumber)} / ${toArabicDigits(TOTAL_PAGES)}`
-                  : `Page ${pageNumber} / ${TOTAL_PAGES}`}
-              </div>
-              
               <Link
                 href="/student/mushaf-progress"
                 className="w-10 h-10 rounded-xl bg-muted/50 border border-border hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 dark:hover:bg-emerald-500/20 dark:hover:border-emerald-500/30 flex items-center justify-center transition-all duration-300"
@@ -521,7 +521,7 @@ export default function MushafPage() {
               >
                 <Map className="w-5 h-5" />
               </Link>
-              
+
               <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
                 <SheetTrigger asChild>
                   <Button variant="outline" size="icon" className="w-10 h-10 rounded-xl bg-muted/50 border-border hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 dark:hover:bg-emerald-500/20 dark:hover:border-emerald-500/30 transition-all duration-300">
