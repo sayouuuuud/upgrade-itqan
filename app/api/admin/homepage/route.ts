@@ -30,17 +30,24 @@ export async function PUT(req: NextRequest) {
         }
 
         const { settings } = await req.json()
-        if (!settings) return NextResponse.json({ error: 'Missing settings' }, { status: 400 })
+        if (!settings || typeof settings !== 'object') {
+            return NextResponse.json({ error: 'Missing settings' }, { status: 400 })
+        }
 
+        let count = 0
         for (const [key, value] of Object.entries(settings)) {
+            // Skip undefined values — JSON.stringify(undefined) === "undefined",
+            // which is invalid JSON for a jsonb column and would abort the save.
+            if (value === undefined) continue
             await query(
                 `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public)
          VALUES ($1, $2::jsonb, 'homepage', $1, true)
          ON CONFLICT (setting_key) DO UPDATE SET setting_value = $2::jsonb, updated_at = NOW()`,
                 [key, JSON.stringify(value)]
             )
+            count++
         }
-        return NextResponse.json({ ok: true })
+        return NextResponse.json({ ok: true, count })
     } catch (e: any) {
         return NextResponse.json({ error: e.message }, { status: 500 })
     }

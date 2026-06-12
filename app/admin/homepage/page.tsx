@@ -42,6 +42,7 @@ export default function AdminHomepagePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/admin/homepage')
@@ -57,14 +58,31 @@ export default function AdminHomepagePage() {
 
   const handleSave = async () => {
     setSaving(true)
+    setError(null)
     try {
-      await fetch('/api/admin/homepage', {
+      const res = await fetch('/api/admin/homepage', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ settings }),
       })
+      let data: any = null
+      try {
+        data = await res.json()
+      } catch {
+        // non-JSON response
+      }
+      if (!res.ok || !data?.ok) {
+        throw new Error(
+          data?.error ||
+            (res.status === 401
+              ? tr('انتهت الجلسة، سجّل الدخول مرة أخرى', 'Session expired, please sign in again')
+              : `${res.status} ${res.statusText}`),
+        )
+      }
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
+    } catch (e: any) {
+      setError(e?.message || tr('فشل الحفظ', 'Save failed'))
     } finally {
       setSaving(false)
     }
@@ -99,6 +117,16 @@ export default function AdminHomepagePage() {
           {saved ? tr('تم الحفظ', 'Saved') : tr('حفظ التغييرات', 'Save changes')}
         </Button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-500/10 border border-red-300 dark:border-red-500/20 rounded-xl p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-500 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold text-red-800 dark:text-red-300">{tr('تعذّر حفظ التغييرات', 'Could not save changes')}</p>
+            <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+          </div>
+        </div>
+      )}
 
       {isMaintenance && (
         <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
