@@ -31,7 +31,7 @@ export async function GET(
      FROM enrollments e
      JOIN courses c ON c.id = e.course_id
      JOIN users u ON u.id = c.teacher_id
-     WHERE e.student_id = $1 AND e.status = 'active' AND u.role = 'teacher'
+     WHERE e.student_id = $1 AND LOWER(e.status) IN ('active', 'accepted', 'completed') AND u.role = 'teacher'
      GROUP BY u.id, u.name, u.email, u.avatar_url
      ORDER BY u.name`,
     [childId]

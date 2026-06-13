@@ -103,7 +103,7 @@ export async function GET(
   // Active enrollments count
   const enrollmentsStats = await queryOne<{ active_count: number }>(
     `SELECT COUNT(*)::int AS active_count FROM enrollments
-     WHERE student_id = $1 AND status = 'active'`,
+     WHERE student_id = $1 AND LOWER(status) IN ('active', 'accepted')`,
     [childId]
   )
 

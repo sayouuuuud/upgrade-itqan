@@ -323,7 +323,7 @@ export default function ParentChildrenPage() {
                   <div className="px-6 pb-4 grid grid-cols-4 gap-3">
                     <div className="text-center p-2 rounded-xl bg-muted/30">
                       <BookOpen className="w-4 h-4 text-blue-500 mx-auto mb-1" />
-                      <p className="text-sm font-bold text-foreground">{child.enrollments.active}</p>
+                      <p className="text-sm font-bold text-foreground">{child.enrollments.total}</p>
                       <p className="text-[10px] text-muted-foreground">
                         {isAr ? 'مقرر' : 'Courses'}
                       </p>

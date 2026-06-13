@@ -66,7 +66,7 @@ export async function GET(
       JOIN users u ON c.teacher_id = u.id
       LEFT JOIN lessons l ON l.course_id = c.id
       LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.enrollment_id = e.id
-      WHERE e.student_id = $1 AND e.status = 'active'
+      WHERE e.student_id = $1 AND LOWER(e.status) IN ('active', 'accepted', 'completed')
       GROUP BY c.id, c.title, c.level, u.name, e.status, e.enrolled_at
     `, [childId])
 
@@ -98,7 +98,7 @@ export async function GET(
       FROM enrollments e
       LEFT JOIN tasks t ON t.course_id = e.course_id
       LEFT JOIN task_submissions ts ON ts.task_id = t.id AND ts.student_id = e.student_id
-      WHERE e.student_id = $1 AND e.status = 'active'
+      WHERE e.student_id = $1 AND LOWER(e.status) IN ('active', 'accepted', 'completed')
     `, [childId])
 
     const weekly = await buildParentWeeklyReport(link[0], weekStart, weekEnd)

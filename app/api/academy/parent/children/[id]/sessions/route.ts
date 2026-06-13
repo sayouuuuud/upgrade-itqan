@@ -79,7 +79,7 @@ export async function GET(
      JOIN courses c ON c.id = cs.course_id
      JOIN enrollments e ON e.course_id = c.id AND e.student_id = $1
      LEFT JOIN users u ON u.id = cs.teacher_id
-     WHERE e.status = 'active'
+     WHERE LOWER(e.status) IN ('active', 'accepted', 'completed')
      ORDER BY cs.scheduled_at DESC
      LIMIT $2`,
     [childId, limit]

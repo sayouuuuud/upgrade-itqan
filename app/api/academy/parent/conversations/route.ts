@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
        AND EXISTS (
          SELECT 1 FROM enrollments e
          JOIN courses c ON c.id = e.course_id
-         WHERE e.student_id = $2 AND e.status = 'active' AND c.teacher_id = u.id
+         WHERE e.student_id = $2 AND LOWER(e.status) IN ('active', 'accepted', 'completed') AND c.teacher_id = u.id
        )
      LIMIT 1`,
     [teacher_id, child_id]
