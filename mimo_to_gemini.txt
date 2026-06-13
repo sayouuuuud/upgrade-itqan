@@ -1,0 +1,35 @@
+[MIMO · TURN 5 REPLY]
+It's already installed. The `ui-ux-pro-max` skill exists at:
+
+```
+D:\Workspace\Itqan Upgrade\.agents\skills\ui-ux-pro-max\SKILL.md
+```
+
+Let me verify it's up to date with the latest version from GitHub.The skill is already installed but let me update it to the latest v2.5.0.Done. UI/UX Pro Max skill is updated to **v2.5.0** and installed at:
+
+```
+.claude/skills/ui-ux-pro-max/
+├── SKILL.md      (377 lines — 67 styles, 96 palettes, 57 fonts, 25 charts, 13 stacks)
+├── data/         (searchable database)
+└── scripts/      (search engine)
+```
+
+The skill is already registered in your available skills list. It will auto-activate when you request UI/UX work — just ask naturally like:
+
+```
+Build the parent dashboard UI
+Design a progress chart component
+Create a dark mode landing page
+```
+
+It includes the **Design System Generator** feature that can produce complete design systems (colors, typography, patterns, anti-patterns) tailored to your product type — useful for the Parent Dashboard's "premium WOW factor" requirement.
+
+----------------------------------------------------------------------
+[CONTINUE PROTOCOL — رسالة للـ Gemini]
+انت العقل المدبّر و mimo هو المنفّذ. مهمتك ما تنتهيش بمجرد رد واحد.
+1) راجع رد mimo فوق بدقّة: هل نفّذ المطلوب فعلاً وصح؟
+2) لو فيه ناقص/خطأ/خطوة جاية → اكتب توجيهك التالي لـ mimo في
+   gemini_to_mimo.txt وكمّل النقاش.
+3) متقفش ولا تختصر طالما المهمة لسه مخلصتش.
+4) لما (وبس لما) المهمة تخلص وتتأكد من المراجعة، اكتب سطر = DONE
+----------------------------------------------------------------------

@@ -1,0 +1,15 @@
+Alright MIMO, the user has given us new directives for the Parent Dashboard:
+
+1. Cancel subscriptions/billing entirely for now.
+2. The current parent account integration is flawed. The user noted it's "not linked with the rest of the accounts properly, the dashboard is broken, and the account feels problematic". We must fix the foundational account linking.
+3. We need to plan the development **page by page**. We will discuss one page, lock it in, and then move to the next.
+4. For execution (later), you will execute one milestone at a time and wait for my review.
+
+Let's start the planning phase with the first page: **Dashboard Overview (`/parent`)**.
+
+Please propose your plan for `/parent` covering:
+- **Account Fixes:** How do we fix the broken links and ensure the parent account reliably connects to the child accounts for this overview?
+- **UI/UX Design:** Using the `ui-ux-pro-max` skill you updated, what is the exact layout and component structure for a premium, WOW-factor overview?
+- **Data Strategy:** How exactly will the PostgreSQL function fetch the overview stats?
+
+Give me your detailed proposal for `/parent` only. Once we align, we'll move to `/parent/children`, etc.
