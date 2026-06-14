@@ -106,8 +106,10 @@ export default function ParentMessagesPage() {
     if (!activeConv) return
     const conversationId = activeConv.id
     const platform = activeConv.platform
-    async function fetchMessages() {
-      setLoadingMessages(true)
+    let cancelled = false
+
+    async function fetchMessages(initial: boolean) {
+      if (initial) setLoadingMessages(true)
       try {
         const url =
           platform === 'maqraa'
@@ -115,15 +117,31 @@ export default function ParentMessagesPage() {
             : `/api/academy/conversations/${conversationId}/messages`
         const res = await fetch(url)
         const data = await res.json()
-        if (res.ok) setMessages(data.messages || [])
+        if (!cancelled && res.ok) {
+          const next: Message[] = data.messages || []
+          // Only update state when the message list actually changed,
+          // so background polling doesn't cause a visible refresh/scroll jump.
+          setMessages((prev) => {
+            if (
+              prev.length === next.length &&
+              prev[prev.length - 1]?.id === next[next.length - 1]?.id
+            ) {
+              return prev
+            }
+            return next
+          })
+        }
       } finally {
-        setLoadingMessages(false)
+        if (!cancelled && initial) setLoadingMessages(false)
       }
     }
 
-    fetchMessages()
-    const interval = setInterval(fetchMessages, 5000)
-    return () => clearInterval(interval)
+    fetchMessages(true)
+    const interval = setInterval(() => fetchMessages(false), 5000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
   }, [activeConv])
 
   useEffect(() => {
