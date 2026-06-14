@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState, use, useCallback } from 'react'
+import { useState, useEffect, use, useCallback } from 'react'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -19,7 +20,9 @@ import {
   Calendar,
   Mic,
   GraduationCap,
-  AlertTriangle,
+  ShieldCheck,
+  Lock,
+  Unlock,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
 import { SURAHS } from '@/lib/quran-surahs'
@@ -41,6 +44,12 @@ interface PathOption {
 interface CourseOption {
   id: string
   title: string
+}
+
+interface ChildInfo {
+  id: string
+  name: string
+  avatar_url: string | null
 }
 
 const FEATURES = [
@@ -74,6 +83,7 @@ export default function RestrictionsPage({
   const isAr = locale === 'ar'
   const ChevronIcon = isAr ? ChevronLeft : ChevronRight
 
+  const [child, setChild] = useState<ChildInfo | null>(null)
   const [restrictions, setRestrictions] = useState<Restriction[]>([])
   const [memPaths, setMemPaths] = useState<PathOption[]>([])
   const [tajPaths, setTajPaths] = useState<PathOption[]>([])
@@ -83,11 +93,11 @@ export default function RestrictionsPage({
   const [search, setSearch] = useState('')
 
   const load = useCallback(async () => {
-    setLoading(true)
     try {
       const res = await fetch(`/api/academy/parent/children/${id}/restrictions`)
       const data = await res.json()
       if (res.ok) {
+        setChild(data.child || null)
         setRestrictions(data.restrictions || [])
         setMemPaths(data.paths?.memorization || [])
         setTajPaths(data.paths?.tajweed || [])
@@ -107,9 +117,32 @@ export default function RestrictionsPage({
       (r) => r.restriction_type === type && r.target_id === targetId.toString()
     )
 
+  const countByType = (type: string) =>
+    restrictions.filter((r) => r.restriction_type === type).length
+
   const toggle = async (type: string, targetId: string, nextBlocked: boolean) => {
     const key = `${type}:${targetId}`
     setSavingKey(key)
+    // optimistic update
+    setRestrictions((prev) => {
+      if (nextBlocked) {
+        if (prev.some((r) => r.restriction_type === type && r.target_id === targetId.toString())) {
+          return prev
+        }
+        return [
+          ...prev,
+          {
+            id: `tmp-${key}`,
+            restriction_type: type,
+            target_id: targetId.toString(),
+            created_at: new Date().toISOString(),
+          },
+        ]
+      }
+      return prev.filter(
+        (r) => !(r.restriction_type === type && r.target_id === targetId.toString())
+      )
+    })
     try {
       const res = await fetch(`/api/academy/parent/children/${id}/restrictions`, {
         method: 'POST',
@@ -122,9 +155,12 @@ export default function RestrictionsPage({
       })
       if (res.ok) {
         await load()
-        toast.success(isAr ? 'تم الحفظ' : 'Saved')
+      } else {
+        await load()
+        toast.error(isAr ? 'حدث خطأ' : 'Error')
       }
     } catch {
+      await load()
       toast.error(isAr ? 'حدث خطأ' : 'Error')
     } finally {
       setSavingKey(null)
@@ -156,6 +192,17 @@ export default function RestrictionsPage({
     )
   }
 
+  const tabMeta = [
+    { value: 'features', label: isAr ? 'الميزات' : 'Features', count: countByType('feature') },
+    { value: 'courses', label: isAr ? 'الدورات' : 'Courses', count: countByType('course') },
+    { value: 'surahs', label: isAr ? 'السور' : 'Surahs', count: countByType('surah') },
+    {
+      value: 'paths',
+      label: isAr ? 'المسارات' : 'Paths',
+      count: countByType('memorization_path') + countByType('tajweed_path'),
+    },
+  ]
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Back Link */}
@@ -167,52 +214,74 @@ export default function RestrictionsPage({
         {isAr ? 'العودة لصفحة الابن' : 'Back to child'}
       </Link>
 
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase tracking-wider">
-          <Shield className="w-4 h-4" />
-          {isAr ? 'تقييد المحتوى' : 'Content Restrictions'}
-        </div>
-        <h1 className="text-3xl font-black text-foreground">
-          {isAr ? 'إعدادات المحتوى' : 'Content Settings'}
-        </h1>
-        <p className="text-muted-foreground max-w-2xl">
-          {isAr
-            ? 'تحكم في المحتوى المتاح لابنك. بشكل افتراضي يستطيع الوصول لكل المحتوى.'
-            : 'Control what content your child can access. By default, they can access everything.'}
-        </p>
-      </div>
+      {/* Hero */}
+      <div className="relative overflow-hidden rounded-3xl border border-amber-200/40 dark:border-amber-800/40 bg-gradient-to-br from-amber-50/60 via-amber-50/20 to-background dark:from-amber-950/20 dark:via-amber-950/5 p-6 md:p-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(245,158,11,0.08),transparent_55%)]" />
+        <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            {child && (
+              <Avatar className="w-14 h-14 shrink-0 ring-2 ring-background shadow-sm">
+                <AvatarImage src={child.avatar_url || undefined} />
+                <AvatarFallback className="bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold text-lg">
+                  {child.name?.charAt(0) || '?'}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <div className="min-w-0">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 text-[11px] font-bold uppercase tracking-wider mb-1.5">
+                <Shield className="w-3.5 h-3.5" />
+                {isAr ? 'تقييد المحتوى' : 'Content Control'}
+              </div>
+              <h1 className="text-2xl md:text-3xl font-black text-foreground truncate">
+                {child?.name || (isAr ? 'إعدادات المحتوى' : 'Content Settings')}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1 max-w-md text-pretty">
+                {isAr
+                  ? 'تحكم في المحتوى المتاح للابن. كل شيء متاح افتراضياً.'
+                  : 'Control what your child can access. Everything is allowed by default.'}
+              </p>
+            </div>
+          </div>
 
-      {/* Active Restrictions Banner */}
-      {blockedCount > 0 && (
-        <Card className="rounded-2xl border-amber-200/50 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/20">
-          <CardContent className="p-4 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-            <p className="text-sm text-foreground">
-              {isAr
-                ? `لديك ${blockedCount} تقييد نشط`
-                : `You have ${blockedCount} active restrictions`}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+          {/* Active count chip */}
+          <div
+            className={`flex items-center gap-3 rounded-2xl px-4 py-3 shrink-0 ${
+              blockedCount > 0
+                ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
+                : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+            }`}
+          >
+            {blockedCount > 0 ? (
+              <Lock className="w-6 h-6 shrink-0" />
+            ) : (
+              <ShieldCheck className="w-6 h-6 shrink-0" />
+            )}
+            <div>
+              <p className="text-2xl font-black leading-none">{blockedCount}</p>
+              <p className="text-[11px] font-medium mt-1">
+                {isAr ? 'تقييد نشط' : 'active limits'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Tabs */}
       <Tabs defaultValue="features" className="w-full">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
-          <TabsTrigger value="features" className="text-xs">
-            {isAr ? 'الميزات' : 'Features'}
-          </TabsTrigger>
-          <TabsTrigger value="courses" className="text-xs">
-            {isAr ? 'المقررات' : 'Courses'}
-          </TabsTrigger>
-          <TabsTrigger value="surahs" className="text-xs">
-            {isAr ? 'السور' : 'Surahs'}
-          </TabsTrigger>
-          <TabsTrigger value="paths" className="text-xs">
-            {isAr ? 'المسارات' : 'Paths'}
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-1">
+          <TabsList className="inline-flex w-auto">
+            {tabMeta.map((t) => (
+              <TabsTrigger key={t.value} value={t.value} className="text-xs sm:text-sm gap-1.5">
+                {t.label}
+                {t.count > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-amber-500 text-white text-[10px] font-bold">
+                    {t.count}
+                  </span>
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         {/* Features Tab */}
         <TabsContent value="features" className="mt-6">
@@ -225,44 +294,25 @@ export default function RestrictionsPage({
                 const colorClasses = {
                   blue: 'bg-blue-500/10 text-blue-500',
                   emerald: 'bg-emerald-500/10 text-emerald-500',
-                  violet: 'bg-violet-500/10 text-violet-500',
                 }
 
                 return (
-                  <div
+                  <RestrictionRow
                     key={feature.id}
-                    className="flex items-center gap-4 p-5 hover:bg-muted/20 transition-colors"
-                  >
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${colorClasses[feature.color]}`}
-                    >
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-sm text-foreground">
-                        {featureLabels[feature.id]?.[locale] || feature.id}
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {featureDescriptions[feature.id]?.[locale] || ''}
-                      </p>
-                    </div>
-                    <Switch
-                      checked={!blocked}
-                      disabled={savingKey === key}
-                      onCheckedChange={(checked) =>
-                        toggle('feature', feature.id, !checked)
-                      }
-                    />
-                  </div>
+                    icon={<Icon className="w-5 h-5" />}
+                    iconClass={colorClasses[feature.color]}
+                    title={featureLabels[feature.id]?.[locale] || feature.id}
+                    subtitle={featureDescriptions[feature.id]?.[locale] || ''}
+                    blocked={blocked}
+                    saving={savingKey === key}
+                    isAr={isAr}
+                    onToggle={(checked) => toggle('feature', feature.id, !checked)}
+                  />
                 )
               })}
             </CardContent>
           </Card>
-          <p className="text-xs text-muted-foreground mt-3 px-1">
-            {isAr
-              ? 'الميزات المفعلة متاحة للابن. أغل الميزة لمنع الوصول.'
-              : 'Enabled features are accessible to your child. Toggle off to restrict access.'}
-          </p>
+          <Hint isAr={isAr} />
         </TabsContent>
 
         {/* Courses Tab */}
@@ -270,59 +320,33 @@ export default function RestrictionsPage({
           <Card className="rounded-2xl border-border/50 overflow-hidden">
             <CardContent className="p-0">
               {courses.length === 0 ? (
-                <div className="p-12 text-center text-muted-foreground">
-                  <GraduationCap className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
-                  <p className="text-sm">
-                    {isAr ? 'الابن غير مسجل في أي مقرر.' : 'Your child is not enrolled in any courses.'}
-                  </p>
-                </div>
+                <EmptyRow
+                  icon={<GraduationCap className="w-10 h-10 text-muted-foreground/30" />}
+                  text={isAr ? 'الابن غير مسجل في أي دورة.' : 'Your child is not enrolled in any courses.'}
+                />
               ) : (
                 <div className="divide-y divide-border/50">
                   {courses.map((course) => {
                     const blocked = isBlocked('course', course.id)
                     const key = `course:${course.id}`
-
                     return (
-                      <div
+                      <RestrictionRow
                         key={course.id}
-                        className="flex items-center gap-4 p-5 hover:bg-muted/20 transition-colors"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                          <BookOpen className="w-5 h-5 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm text-foreground truncate">
-                            {course.title}
-                          </h4>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {blocked
-                              ? isAr
-                                ? 'محظور — الابن لا يستطيع الوصول'
-                                : 'Blocked — child cannot access'
-                              : isAr
-                              ? 'متاح — الابن يستطيع الوصول'
-                              : 'Accessible — child can access'}
-                          </p>
-                        </div>
-                        {blocked && (
-                          <Badge variant="destructive" className="text-[10px] shrink-0">
-                            {isAr ? 'محظور' : 'Blocked'}
-                          </Badge>
-                        )}
-                        <Switch
-                          checked={!blocked}
-                          disabled={savingKey === key}
-                          onCheckedChange={(checked) =>
-                            toggle('course', course.id, !checked)
-                          }
-                        />
-                      </div>
+                        icon={<BookOpen className="w-5 h-5 text-primary" />}
+                        iconClass="bg-primary/10"
+                        title={course.title}
+                        blocked={blocked}
+                        saving={savingKey === key}
+                        isAr={isAr}
+                        onToggle={(checked) => toggle('course', course.id, !checked)}
+                      />
                     )
                   })}
                 </div>
               )}
             </CardContent>
           </Card>
+          {courses.length > 0 && <Hint isAr={isAr} />}
         </TabsContent>
 
         {/* Surahs Tab */}
@@ -341,44 +365,24 @@ export default function RestrictionsPage({
 
           <Card className="rounded-2xl border-border/50 overflow-hidden">
             <CardContent className="p-0">
-              <div className="max-h-[50vh] overflow-y-auto">
-                <div className="divide-y divide-border/50">
-                  {filteredSurahs.map((s) => {
-                    const blocked = isBlocked('surah', s.number.toString())
-                    const key = `surah:${s.number}`
-
-                    return (
-                      <div
-                        key={s.number}
-                        className="flex items-center gap-4 p-4 hover:bg-muted/20 transition-colors"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                          <Mic className="w-5 h-5 text-emerald-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm text-foreground">
-                            {isAr ? s.name_ar : s.name_en}
-                          </h4>
-                          <p className="text-xs text-muted-foreground">
-                            {isAr ? 'سورة' : 'Surah'} {s.number}
-                          </p>
-                        </div>
-                        {blocked && (
-                          <Badge variant="destructive" className="text-[10px] shrink-0">
-                            {isAr ? 'محظورة' : 'Blocked'}
-                          </Badge>
-                        )}
-                        <Switch
-                          checked={!blocked}
-                          disabled={savingKey === key}
-                          onCheckedChange={(checked) =>
-                            toggle('surah', s.number.toString(), !checked)
-                          }
-                        />
-                      </div>
-                    )
-                  })}
-                </div>
+              <div className="max-h-[55vh] overflow-y-auto divide-y divide-border/50">
+                {filteredSurahs.map((s) => {
+                  const blocked = isBlocked('surah', s.number.toString())
+                  const key = `surah:${s.number}`
+                  return (
+                    <RestrictionRow
+                      key={s.number}
+                      icon={<Mic className="w-5 h-5 text-emerald-500" />}
+                      iconClass="bg-emerald-500/10"
+                      title={isAr ? s.name_ar : s.name_en}
+                      subtitle={`${isAr ? 'سورة' : 'Surah'} ${s.number}`}
+                      blocked={blocked}
+                      saving={savingKey === key}
+                      isAr={isAr}
+                      onToggle={(checked) => toggle('surah', s.number.toString(), !checked)}
+                    />
+                  )
+                })}
               </div>
             </CardContent>
           </Card>
@@ -386,113 +390,168 @@ export default function RestrictionsPage({
 
         {/* Paths Tab */}
         <TabsContent value="paths" className="mt-6 space-y-6">
-          {/* Memorization Paths */}
-          <div>
-            <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-primary" />
-              {isAr ? 'مسارات الحفظ' : 'Memorization Paths'}
-            </h3>
-            {memPaths.length === 0 ? (
-              <Card className="rounded-2xl border-border/50">
-                <CardContent className="p-8 text-center text-muted-foreground text-sm">
-                  {isAr ? 'لا توجد مسارات متاحة.' : 'No paths available.'}
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="rounded-2xl border-border/50 overflow-hidden">
-                <CardContent className="p-0 divide-y divide-border/50">
-                  {memPaths.map((p) => {
-                    const blocked = isBlocked('memorization_path', p.id)
-                    const key = `memorization_path:${p.id}`
-
-                    return (
-                      <div
-                        key={p.id}
-                        className="flex items-center gap-4 p-5 hover:bg-muted/20 transition-colors"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
-                          <GraduationCap className="w-5 h-5 text-violet-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm text-foreground">{p.title}</h4>
-                          {p.level && (
-                            <p className="text-xs text-muted-foreground mt-0.5">{p.level}</p>
-                          )}
-                        </div>
-                        {blocked && (
-                          <Badge variant="destructive" className="text-[10px] shrink-0">
-                            {isAr ? 'محظور' : 'Blocked'}
-                          </Badge>
-                        )}
-                        <Switch
-                          checked={!blocked}
-                          disabled={savingKey === key}
-                          onCheckedChange={(checked) =>
-                            toggle('memorization_path', p.id, !checked)
-                          }
-                        />
-                      </div>
-                    )
-                  })}
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Tajweed Paths */}
-          <div>
-            <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-primary" />
-              {isAr ? 'مسارات التجويد' : 'Tajweed Paths'}
-            </h3>
-            {tajPaths.length === 0 ? (
-              <Card className="rounded-2xl border-border/50">
-                <CardContent className="p-8 text-center text-muted-foreground text-sm">
-                  {isAr ? 'لا توجد مسارات متاحة.' : 'No paths available.'}
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="rounded-2xl border-border/50 overflow-hidden">
-                <CardContent className="p-0 divide-y divide-border/50">
-                  {tajPaths.map((p) => {
-                    const blocked = isBlocked('tajweed_path', p.id)
-                    const key = `tajweed_path:${p.id}`
-
-                    return (
-                      <div
-                        key={p.id}
-                        className="flex items-center gap-4 p-5 hover:bg-muted/20 transition-colors"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                          <BookOpen className="w-5 h-5 text-blue-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm text-foreground">{p.title}</h4>
-                          {p.level && (
-                            <p className="text-xs text-muted-foreground mt-0.5">{p.level}</p>
-                          )}
-                        </div>
-                        {blocked && (
-                          <Badge variant="destructive" className="text-[10px] shrink-0">
-                            {isAr ? 'محظور' : 'Blocked'}
-                          </Badge>
-                        )}
-                        <Switch
-                          checked={!blocked}
-                          disabled={savingKey === key}
-                          onCheckedChange={(checked) =>
-                            toggle('tajweed_path', p.id, !checked)
-                          }
-                        />
-                      </div>
-                    )
-                  })}
-                </CardContent>
-              </Card>
-            )}
-          </div>
+          <PathGroup
+            title={isAr ? 'مسارات الحفظ' : 'Memorization Paths'}
+            icon={<GraduationCap className="w-5 h-5 text-violet-500" />}
+            paths={memPaths}
+            type="memorization_path"
+            iconClass="bg-violet-500/10"
+            isBlocked={isBlocked}
+            savingKey={savingKey}
+            isAr={isAr}
+            onToggle={toggle}
+          />
+          <PathGroup
+            title={isAr ? 'مسارات التجويد' : 'Tajweed Paths'}
+            icon={<BookOpen className="w-5 h-5 text-blue-500" />}
+            paths={tajPaths}
+            type="tajweed_path"
+            iconClass="bg-blue-500/10"
+            isBlocked={isBlocked}
+            savingKey={savingKey}
+            isAr={isAr}
+            onToggle={toggle}
+          />
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+function RestrictionRow({
+  icon,
+  iconClass,
+  title,
+  subtitle,
+  blocked,
+  saving,
+  isAr,
+  onToggle,
+}: {
+  icon: React.ReactNode
+  iconClass: string
+  title: string
+  subtitle?: string
+  blocked: boolean
+  saving: boolean
+  isAr: boolean
+  onToggle: (checked: boolean) => void
+}) {
+  return (
+    <div
+      className={`flex items-center gap-4 p-4 sm:p-5 transition-colors ${
+        blocked ? 'bg-amber-50/40 dark:bg-amber-950/10' : 'hover:bg-muted/20'
+      }`}
+    >
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconClass}`}>
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="font-bold text-sm text-foreground truncate">{title}</h4>
+        <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+          {blocked ? (
+            <>
+              <Lock className="w-3 h-3 text-amber-500" />
+              {subtitle || (isAr ? 'محظور — لا يمكن الوصول' : 'Blocked — cannot access')}
+            </>
+          ) : (
+            <>
+              <Unlock className="w-3 h-3 text-emerald-500" />
+              {subtitle || (isAr ? 'متاح — يمكن الوصول' : 'Allowed — can access')}
+            </>
+          )}
+        </p>
+      </div>
+      {blocked && (
+        <Badge variant="destructive" className="text-[10px] shrink-0 hidden sm:inline-flex">
+          {isAr ? 'محظور' : 'Blocked'}
+        </Badge>
+      )}
+      {saving ? (
+        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground shrink-0" />
+      ) : (
+        <Switch checked={!blocked} onCheckedChange={onToggle} />
+      )}
+    </div>
+  )
+}
+
+function PathGroup({
+  title,
+  icon,
+  paths,
+  type,
+  iconClass,
+  isBlocked,
+  savingKey,
+  isAr,
+  onToggle,
+}: {
+  title: string
+  icon: React.ReactNode
+  paths: PathOption[]
+  type: string
+  iconClass: string
+  isBlocked: (type: string, id: string) => boolean
+  savingKey: string | null
+  isAr: boolean
+  onToggle: (type: string, id: string, next: boolean) => void
+}) {
+  return (
+    <div>
+      <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
+        {icon}
+        {title}
+      </h3>
+      {paths.length === 0 ? (
+        <Card className="rounded-2xl border-border/50">
+          <CardContent className="p-8 text-center text-muted-foreground text-sm">
+            {isAr ? 'لا توجد مسارات متاحة.' : 'No paths available.'}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="rounded-2xl border-border/50 overflow-hidden">
+          <CardContent className="p-0 divide-y divide-border/50">
+            {paths.map((p) => {
+              const blocked = isBlocked(type, p.id)
+              const key = `${type}:${p.id}`
+              return (
+                <RestrictionRow
+                  key={p.id}
+                  icon={icon}
+                  iconClass={iconClass}
+                  title={p.title}
+                  subtitle={p.level || undefined}
+                  blocked={blocked}
+                  saving={savingKey === key}
+                  isAr={isAr}
+                  onToggle={(checked) => onToggle(type, p.id, !checked)}
+                />
+              )
+            })}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
+
+function EmptyRow({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div className="p-12 flex flex-col items-center justify-center text-center gap-3">
+      {icon}
+      <p className="text-sm text-muted-foreground">{text}</p>
+    </div>
+  )
+}
+
+function Hint({ isAr }: { isAr: boolean }) {
+  return (
+    <p className="text-xs text-muted-foreground mt-3 px-1 flex items-center gap-1.5">
+      <Unlock className="w-3.5 h-3.5 text-emerald-500" />
+      {isAr
+        ? 'المفتاح المفعّل يعني أن المحتوى متاح. أطفئه للحظر.'
+        : 'A toggle that is on means the content is accessible. Turn it off to block.'}
+    </p>
   )
 }

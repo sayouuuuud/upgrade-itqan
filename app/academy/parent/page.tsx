@@ -184,7 +184,7 @@ export default function ParentDashboard() {
                   {isAr ? 'المقررات' : 'Courses'}
                 </p>
                 <h3 className="text-2xl font-black text-foreground">
-                  {children.reduce((sum, c) => sum + c.enrollments.active, 0)}
+                  {children.reduce((sum, c) => sum + c.enrollments.total, 0)}
                 </h3>
               </div>
             </div>
@@ -324,7 +324,7 @@ export default function ParentDashboard() {
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                               <BookOpen className="w-3.5 h-3.5" />
                               <span className="font-medium">
-                                {child.enrollments.active} {isAr ? 'مقرر' : 'courses'}
+                                {child.enrollments.total} {isAr ? 'مقرر' : 'courses'}
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

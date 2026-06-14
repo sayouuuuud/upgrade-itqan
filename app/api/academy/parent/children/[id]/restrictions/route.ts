@@ -57,7 +57,13 @@ export async function GET(
     [childId]
   )
 
+  const child = await queryOne<{ id: string; name: string; avatar_url: string | null }>(
+    `SELECT id::text, name, avatar_url FROM users WHERE id = $1`,
+    [childId]
+  )
+
   return NextResponse.json({
+    child,
     restrictions,
     paths: {
       memorization: memorizationPaths,
