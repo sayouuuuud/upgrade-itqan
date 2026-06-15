@@ -34,6 +34,17 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 
+interface PendingRequest {
+  id: string
+  child_id: string
+  child_name: string
+  child_email: string
+  child_avatar: string | null
+  relation: string
+  status: string
+  linked_at: string
+}
+
 interface DashboardOverview {
   parent: {
     id: string
@@ -88,25 +99,64 @@ export default function ParentChildrenPage() {
   const { locale } = useI18n()
   const isAr = locale === 'ar'
   const [overview, setOverview] = useState<DashboardOverview | null>(null)
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [unlinkingChild, setUnlinkingChild] = useState<DashboardOverview['children'][0] | null>(null)
+  const [cancellingPending, setCancellingPending] = useState<string | null>(null)
   const [unlinkLoading, setUnlinkLoading] = useState(false)
 
   useEffect(() => {
-    fetchOverview()
+    fetchAll()
   }, [])
 
-  const fetchOverview = async () => {
+  const fetchAll = async () => {
     try {
-      const res = await fetch('/api/academy/parent/overview')
-      if (res.ok) {
-        const data = await res.json()
-        setOverview(data)
+      const [overviewRes, pendingRes] = await Promise.all([
+        fetch('/api/academy/parent/overview'),
+        fetch('/api/academy/parent/children?status=pending'),
+      ])
+      if (overviewRes.ok) setOverview(await overviewRes.json())
+      if (pendingRes.ok) {
+        const d = await pendingRes.json()
+        setPendingRequests(d.children || [])
       }
     } catch {
       // ignore
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleCancelPending = async (childId: string) => {
+    setCancellingPending(childId)
+    try {
+      const res = await fetch('/api/academy/parent/children', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ child_id: childId }),
+      })
+      if (res.ok) {
+        setPendingRequests((prev) => prev.filter((r) => r.child_id !== childId))
+        setOverview((prev) =>
+          prev
+            ? {
+                ...prev,
+                summary: {
+                  ...prev.summary,
+                  pending_requests: Math.max(0, prev.summary.pending_requests - 1),
+                },
+              }
+            : prev
+        )
+        toast.success(isAr ? 'تم إلغاء الطلب' : 'Request cancelled')
+      } else {
+        const d = await res.json()
+        toast.error(d.error || (isAr ? 'حدث خطأ' : 'Error'))
+      }
+    } catch {
+      toast.error(isAr ? 'حدث خطأ في الاتصال' : 'Connection error')
+    } finally {
+      setCancellingPending(null)
     }
   }
 
@@ -125,15 +175,16 @@ export default function ParentChildrenPage() {
 
       if (res.ok) {
         toast.success(data.message || (isAr ? 'تم إلغاء الربط بنجاح' : 'Successfully unlinked'))
+        const removedId = unlinkingChild.child_id
         setOverview((prev) => {
           if (!prev) return prev
           return {
             ...prev,
             summary: {
               ...prev.summary,
-              active_count: prev.summary.active_count - 1,
+              active_count: Math.max(0, prev.summary.active_count - 1),
             },
-            children: prev.children.filter((c) => c.child_id !== unlinkingChild.child_id),
+            children: prev.children.filter((c) => c.child_id !== removedId),
           }
         })
       } else {
@@ -163,7 +214,7 @@ export default function ParentChildrenPage() {
   const children = overview?.children || []
   const summary = overview?.summary
   const hasChildren = children.length > 0
-  const hasPending = (summary?.pending_requests || 0) > 0
+  const hasPending = pendingRequests.length > 0
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12" dir={isAr ? 'rtl' : 'ltr'}>
@@ -194,28 +245,69 @@ export default function ParentChildrenPage() {
         </Button>
       </div>
 
-      {/* Pending Requests Alert */}
-      {hasPending && (
-        <Card className="rounded-2xl border-amber-200/50 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/20">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
-                <Clock className="w-6 h-6 text-amber-500" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-foreground mb-1">
-                  {isAr ? 'طلبات ربط معلقة' : 'Pending Link Requests'}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {isAr
-                    ? `لديك ${summary?.pending_requests} طلب ربط في انتظار موافقة الأبناء. سيتم تفعيل الحسابات تلقائياً بعد الموافقة.`
-                    : `You have ${summary?.pending_requests} link requests awaiting student approval. Accounts will be activated automatically upon approval.`}
-                </p>
-              </div>
-              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-1" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Pending Requests Section */}
+      {pendingRequests.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-amber-500" />
+            <h2 className="text-base font-bold text-foreground">
+              {isAr ? 'طلبات الربط المعلقة' : 'Pending Link Requests'}
+            </h2>
+            <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs font-bold">
+              {pendingRequests.length}
+            </Badge>
+          </div>
+          <Card className="rounded-2xl border-amber-200/40 dark:border-amber-800/40 bg-amber-50/30 dark:bg-amber-950/10">
+            <CardContent className="p-4 space-y-3">
+              <p className="text-xs text-amber-700/70 dark:text-amber-400/70 mb-4">
+                {isAr
+                  ? 'هذه الطلبات في انتظار موافقة الطلاب من لوحة تحكمهم.'
+                  : 'These requests are awaiting student approval from their dashboard.'}
+              </p>
+              {pendingRequests.map((req) => (
+                <div
+                  key={req.id}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-background/60 border border-border/40"
+                >
+                  <Avatar className="w-10 h-10 shrink-0">
+                    <AvatarImage src={req.child_avatar || undefined} />
+                    <AvatarFallback className="bg-amber-500/10 text-amber-600 font-bold text-sm">
+                      {req.child_name?.charAt(0) || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-foreground truncate">{req.child_name}</p>
+                    <p className="text-xs text-muted-foreground" dir="ltr">{req.child_email}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-[10px] shrink-0">
+                    {relationLabels[req.relation]?.[locale] || req.relation}
+                  </Badge>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] gap-1">
+                      <Clock className="w-3 h-3" />
+                      {isAr ? 'معلق' : 'Pending'}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive rounded-lg"
+                      disabled={cancellingPending === req.child_id}
+                      onClick={() => handleCancelPending(req.child_id)}
+                    >
+                      {cancellingPending === req.child_id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : isAr ? (
+                        'إلغاء'
+                      ) : (
+                        'Cancel'
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Empty State */}
