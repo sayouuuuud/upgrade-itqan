@@ -32,7 +32,7 @@ export async function GET(
     }
 
     // ---- Augment the RPC payload with richer data the page needs ----
-    const [bookings, courseSessions, certificates, series, memPaths, tajPaths, weekly] =
+    const [bookings, courseSessions, certificates, series, memPaths, tajPaths, weekly, taskGrades, competitionEntries] =
       await Promise.all([
         // 1) Recitation bookings (1-to-1 sessions)
         query<{
@@ -211,6 +211,80 @@ export async function GET(
            SELECT day_offset, cnt AS count FROM per_day ORDER BY day_offset`,
           [childId]
         ),
+        // 8) Task grades (submissions to assigned tasks, with scores)
+        query<{
+          id: string
+          task_title: string | null
+          task_type: string | null
+          course_title: string | null
+          teacher_name: string | null
+          status: string | null
+          score: number | null
+          max_score: number | null
+          feedback: string | null
+          submitted_at: string | null
+          graded_at: string | null
+          due_date: string | null
+        }>(
+          `SELECT ts.id,
+                  t.title AS task_title,
+                  COALESCE(t.task_type, t.type) AS task_type,
+                  c.title AS course_title,
+                  u.name AS teacher_name,
+                  ts.status,
+                  COALESCE(ts.score, ts.auto_score) AS score,
+                  t.max_score,
+                  ts.feedback,
+                  ts.submitted_at,
+                  ts.graded_at,
+                  t.due_date
+           FROM task_submissions ts
+           JOIN tasks t ON t.id = ts.task_id
+           LEFT JOIN courses c ON c.id = t.course_id
+           LEFT JOIN users u ON u.id = COALESCE(t.teacher_id, t.assigned_by)
+           WHERE ts.student_id = $1
+           ORDER BY ts.graded_at DESC NULLS LAST, ts.submitted_at DESC NULLS LAST
+           LIMIT 100`,
+          [childId]
+        ),
+        // 9) Competition entries the child participated in
+        query<{
+          id: string
+          competition_id: string
+          competition_title: string | null
+          competition_type: string | null
+          comp_status: string | null
+          start_date: string | null
+          end_date: string | null
+          score: number | null
+          rank: number | null
+          entry_status: string | null
+          feedback: string | null
+          submitted_at: string | null
+          evaluated_at: string | null
+          is_winner: boolean
+        }>(
+          `SELECT ce.id,
+                  ce.competition_id,
+                  comp.title AS competition_title,
+                  comp.type AS competition_type,
+                  comp.status AS comp_status,
+                  comp.start_date,
+                  comp.end_date,
+                  ce.score,
+                  ce.rank,
+                  ce.status AS entry_status,
+                  ce.feedback,
+                  ce.submitted_at,
+                  ce.evaluated_at,
+                  (comp.winner_id = ce.student_id) AS is_winner
+           FROM competition_entries ce
+           JOIN competitions comp ON comp.id = ce.competition_id
+           WHERE ce.student_id = $1
+           ORDER BY comp.start_date DESC NULLS LAST, ce.submitted_at DESC NULLS LAST
+           LIMIT 100`,
+          [childId]
+        ),
       ])
 
     const schedule = [...bookings, ...courseSessions].sort(
@@ -225,6 +299,8 @@ export async function GET(
       certificates,
       series,
       paths,
+      task_grades: taskGrades,
+      competitions: competitionEntries,
       // Override the RPC weekly activity with the richer one when available.
       weekly_activity:
         weekly && weekly.length > 0 ? weekly : detail.weekly_activity,

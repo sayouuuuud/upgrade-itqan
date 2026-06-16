@@ -35,6 +35,8 @@ import {
   GraduationCap,
   Download,
   Pencil,
+  ClipboardList,
+  Medal,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
 import { toast } from 'sonner'
@@ -89,6 +91,38 @@ interface PathItem {
   completed: number
   total: number | null
   last_activity_at: string | null
+}
+
+interface TaskGrade {
+  id: string
+  task_title: string | null
+  task_type: string | null
+  course_title: string | null
+  teacher_name: string | null
+  status: string | null
+  score: number | null
+  max_score: number | null
+  feedback: string | null
+  submitted_at: string | null
+  graded_at: string | null
+  due_date: string | null
+}
+
+interface CompetitionEntry {
+  id: string
+  competition_id: string
+  competition_title: string | null
+  competition_type: string | null
+  comp_status: string | null
+  start_date: string | null
+  end_date: string | null
+  score: number | null
+  rank: number | null
+  entry_status: string | null
+  feedback: string | null
+  submitted_at: string | null
+  evaluated_at: string | null
+  is_winner: boolean
 }
 
 interface ChildDetail {
@@ -153,6 +187,8 @@ interface ChildDetail {
   certificates: CertificateItem[]
   series: SeriesItem[]
   paths: PathItem[]
+  task_grades: TaskGrade[]
+  competitions: CompetitionEntry[]
 }
 
 const relationLabels: Record<string, { ar: string; en: string }> = {
@@ -291,6 +327,8 @@ export default function ChildDetailPage({
     certificates,
     series,
     paths,
+    task_grades,
+    competitions,
   } = detail
 
   const hasAcademy = child.has_academy_access
@@ -334,9 +372,11 @@ export default function ChildDetailPage({
   const tabs: Array<{ value: string; label: string }> = [
     { value: 'overview', label: isAr ? 'نظرة' : 'Overview' },
     { value: 'courses', label: isAr ? 'الدورات' : 'Courses' },
+    { value: 'tasks', label: isAr ? 'الواجبات والدرجات' : 'Tasks & Grades' },
     { value: 'series', label: isAr ? 'السلاسل والمسارات' : 'Series & Paths' },
     { value: 'schedule', label: isAr ? 'المواعيد' : 'Schedule' },
     { value: 'certificates', label: isAr ? 'الشهادات' : 'Certificates' },
+    ...(showQuran ? [{ value: 'competitions', label: isAr ? 'المسابقات' : 'Competitions' }] : []),
     ...(showQuran ? [{ value: 'recitations', label: isAr ? 'التلاوات' : 'Recitations' }] : []),
     { value: 'badges', label: isAr ? 'الشارات' : 'Badges' },
   ]
@@ -615,6 +655,150 @@ export default function ChildDetailPage({
           </Card>
         </TabsContent>
 
+        {/* Tasks & Grades Tab */}
+        <TabsContent value="tasks" className="mt-6 space-y-6">
+          {/* Grades summary */}
+          {(() => {
+            const graded = task_grades.filter(
+              (t) => t.score != null && (t.status === 'graded' || t.graded_at)
+            )
+            const avg =
+              graded.length > 0
+                ? Math.round(
+                    graded.reduce((s, t) => {
+                      const pct = t.max_score && t.max_score > 0 ? (t.score! / t.max_score) * 100 : t.score!
+                      return s + pct
+                    }, 0) / graded.length
+                  )
+                : null
+            return (
+              <div className="grid grid-cols-3 gap-4">
+                <StatCard
+                  icon={<ClipboardList className="w-5 h-5 text-blue-500" />}
+                  tint="bg-blue-500/10"
+                  label={isAr ? 'الواجبات' : 'Tasks'}
+                  value={task_grades.length}
+                  sub={isAr ? 'إجمالي' : 'total'}
+                />
+                <StatCard
+                  icon={<Award className="w-5 h-5 text-emerald-500" />}
+                  tint="bg-emerald-500/10"
+                  label={isAr ? 'مُصححة' : 'Graded'}
+                  value={graded.length}
+                  sub={isAr ? 'تم تقييمها' : 'evaluated'}
+                />
+                <Card className="rounded-2xl border-border/50">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                        <TrendingUp className="w-5 h-5 text-amber-500" />
+                      </div>
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        {isAr ? 'المعدل' : 'Average'}
+                      </span>
+                    </div>
+                    <div className="text-3xl font-black text-foreground">
+                      {avg != null ? `${avg}%` : '—'}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )
+          })()}
+
+          <Card className="rounded-2xl border-border/50">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                <ClipboardList className="w-5 h-5 text-primary" />
+                {isAr ? 'الواجبات المُسلَّمة ودرجاتها' : 'Submitted Tasks & Grades'}
+              </h3>
+              {task_grades.length === 0 ? (
+                <EmptyState
+                  icon={<ClipboardList className="w-10 h-10 text-muted-foreground/30" />}
+                  text={isAr ? 'لا توجد واجبات مُسلَّمة بعد.' : 'No submitted tasks yet.'}
+                />
+              ) : (
+                <div className="space-y-3">
+                  {task_grades.map((t) => {
+                    const isGraded = t.score != null && (t.status === 'graded' || !!t.graded_at)
+                    const pct =
+                      isGraded && t.max_score && t.max_score > 0
+                        ? Math.round((t.score! / t.max_score) * 100)
+                        : null
+                    const scoreTone =
+                      pct == null
+                        ? 'text-muted-foreground'
+                        : pct >= 80
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : pct >= 50
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-red-600 dark:text-red-400'
+                    return (
+                      <div
+                        key={t.id}
+                        className="p-4 rounded-xl border border-border/50 hover:border-primary/20 transition-colors"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <ClipboardList className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-sm text-foreground truncate">
+                              {t.task_title || (isAr ? 'واجب' : 'Task')}
+                            </h4>
+                            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                              {t.course_title ? `${t.course_title} · ` : ''}
+                              {t.teacher_name || ''}
+                            </p>
+                          </div>
+                          <div className="text-end shrink-0">
+                            {isGraded ? (
+                              <>
+                                <div className={`text-lg font-black ${scoreTone}`}>
+                                  {t.score}
+                                  {t.max_score ? (
+                                    <span className="text-xs text-muted-foreground font-medium">
+                                      /{t.max_score}
+                                    </span>
+                                  ) : null}
+                                </div>
+                                {pct != null && (
+                                  <span className={`text-[11px] font-bold ${scoreTone}`}>{pct}%</span>
+                                )}
+                              </>
+                            ) : (
+                              <Badge variant="secondary" className="text-[10px]">
+                                {isAr ? 'بانتظار التصحيح' : 'Awaiting grade'}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        {t.feedback && (
+                          <div className="mt-3">
+                            <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-2.5 leading-relaxed">
+                              <span className="font-bold text-foreground">
+                                {isAr ? 'ملاحظة المعلم: ' : 'Teacher note: '}
+                              </span>
+                              {t.feedback}
+                            </p>
+                          </div>
+                        )}
+                        <p className="text-[10px] text-muted-foreground/60 mt-2">
+                          {isGraded && t.graded_at
+                            ? `${isAr ? 'صُححت' : 'Graded'} ${fmtDate(t.graded_at, isAr)}`
+                            : t.submitted_at
+                              ? `${isAr ? 'سُلِّمت' : 'Submitted'} ${fmtDate(t.submitted_at, isAr)}`
+                              : ''}
+                        </p>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Series & Paths Tab */}
         <TabsContent value="series" className="mt-6 space-y-6">
           {/* Learning Paths */}
@@ -848,6 +1032,120 @@ export default function ChildDetailPage({
             </Card>
           )}
         </TabsContent>
+
+        {/* Competitions Tab */}
+        {showQuran && (
+          <TabsContent value="competitions" className="mt-6">
+            <Card className="rounded-2xl border-border/50">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-amber-500" />
+                  {isAr ? 'المسابقات المُشارَك بها' : 'Competitions Joined'}
+                </h3>
+                {competitions.length === 0 ? (
+                  <EmptyState
+                    icon={<Trophy className="w-10 h-10 text-muted-foreground/30" />}
+                    text={isAr ? 'لم يشارك في أي مسابقة بعد.' : 'No competitions joined yet.'}
+                  />
+                ) : (
+                  <div className="space-y-3">
+                    {competitions.map((c) => {
+                      const evaluated = c.score != null || c.rank != null
+                      const isPodium = c.rank != null && c.rank >= 1 && c.rank <= 3
+                      const rankTint =
+                        c.rank === 1
+                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                          : c.rank === 2
+                            ? 'bg-slate-400/10 text-slate-600 dark:text-slate-300'
+                            : c.rank === 3
+                              ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                              : 'bg-muted text-muted-foreground'
+                      return (
+                        <div
+                          key={c.id}
+                          className="p-4 rounded-xl border border-border/50 hover:border-amber-300/40 dark:hover:border-amber-700/40 transition-colors"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                                isPodium ? rankTint : 'bg-amber-500/10'
+                              }`}
+                            >
+                              {isPodium ? (
+                                <Medal className="w-5 h-5" />
+                              ) : (
+                                <Trophy className="w-5 h-5 text-amber-500" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="font-bold text-sm text-foreground truncate">
+                                  {c.competition_title || (isAr ? 'مسابقة' : 'Competition')}
+                                </h4>
+                                {c.is_winner && (
+                                  <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20 text-[9px] gap-1">
+                                    <Trophy className="w-2.5 h-2.5" />
+                                    {isAr ? 'الفائز' : 'Winner'}
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-muted-foreground mt-0.5">
+                                {c.start_date ? fmtDate(c.start_date, isAr) : ''}
+                                {c.comp_status
+                                  ? ` · ${
+                                      c.comp_status === 'active'
+                                        ? isAr ? 'جارية' : 'Active'
+                                        : c.comp_status === 'completed' || c.comp_status === 'ended'
+                                          ? isAr ? 'منتهية' : 'Ended'
+                                          : c.comp_status
+                                    }`
+                                  : ''}
+                              </p>
+                            </div>
+                            <div className="text-end shrink-0">
+                              {evaluated ? (
+                                <>
+                                  {c.rank != null && (
+                                    <div
+                                      className={`text-xs font-black px-2 py-0.5 rounded-lg ${rankTint}`}
+                                    >
+                                      {isAr ? `المركز ${c.rank}` : `Rank #${c.rank}`}
+                                    </div>
+                                  )}
+                                  {c.score != null && (
+                                    <div className="text-lg font-black text-foreground mt-1">
+                                      {Number(c.score)}
+                                      <span className="text-[10px] text-muted-foreground font-medium">
+                                        {' '}
+                                        {isAr ? 'نقطة' : 'pts'}
+                                      </span>
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <Badge variant="secondary" className="text-[10px]">
+                                  {isAr ? 'قيد التقييم' : 'Pending'}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          {c.feedback && (
+                            <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-2.5 leading-relaxed mt-3">
+                              <span className="font-bold text-foreground">
+                                {isAr ? 'ملاحظة المحكّم: ' : 'Judge note: '}
+                              </span>
+                              {c.feedback}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
         {/* Recitations Tab */}
         {showQuran && (
