@@ -100,6 +100,32 @@ UPDATE memorization_paths SET status = 'published' WHERE is_published = TRUE AND
 
 CREATE INDEX IF NOT EXISTS idx_memorization_paths_status ON memorization_paths(status);
 
+-- ====================== LEARNING PATHS (Academy) ======================
+ALTER TABLE learning_paths
+  ADD COLUMN IF NOT EXISTS is_published BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'draft',
+  ADD COLUMN IF NOT EXISTS rejection_reason TEXT,
+  ADD COLUMN IF NOT EXISTS reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS submitted_for_review_at TIMESTAMPTZ;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.constraint_column_usage
+    WHERE table_name = 'learning_paths' AND constraint_name = 'chk_learning_paths_status'
+  ) THEN
+    ALTER TABLE learning_paths ADD CONSTRAINT chk_learning_paths_status
+      CHECK (status IN ('draft', 'pending_review', 'published', 'rejected'));
+  END IF;
+END;
+$$;
+
+-- Backfill: existing paths are assumed published (admin created & live).
+UPDATE learning_paths SET status = 'published', is_published = TRUE WHERE status = 'draft';
+
+CREATE INDEX IF NOT EXISTS idx_learning_paths_status ON learning_paths(status);
+
 -- ---------------------------------------------------------------------
 -- DONE.
 -- ---------------------------------------------------------------------

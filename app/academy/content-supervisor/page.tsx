@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   BookOpen, Clock, CheckCircle, XCircle, ArrowLeft,
-  FileCheck, Loader2, GraduationCap, Library, Route,
+  FileCheck, Loader2, GraduationCap, Library, Route, BookMarked,
 } from 'lucide-react'
 
 interface Counts {
@@ -38,6 +38,7 @@ const QUEUES: QueueInfo[] = [
   { key: 'courses', label: 'الدورات', href: '/academy/content-supervisor/courses', icon: GraduationCap, endpoint: '/api/academy/supervisor/courses?status=pending' },
   { key: 'series', label: 'السلاسل', href: '/academy/content-supervisor/series', icon: Library, endpoint: '/api/academy/supervisor/series?status=pending' },
   { key: 'paths', label: 'مسارات المقرئ', href: '/academy/content-supervisor/paths', icon: Route, endpoint: '/api/academy/supervisor/paths?status=pending' },
+  { key: 'academy-paths', label: 'مسارات الأكاديمية', href: '/academy/content-supervisor/academy-paths', icon: BookMarked, endpoint: '/api/academy/supervisor/academy-paths?status=pending' },
 ]
 
 export default function ContentSupervisorDashboard() {
