@@ -46,6 +46,27 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }
     }
 
+    // Publishing a series routes it through content-supervisor review instead
+    // of going live directly. Un-publishing stays a direct action.
+    if (body.is_published === true) {
+      try {
+        const submitted = await query(
+          `UPDATE series
+              SET status = 'pending_review', is_published = FALSE,
+                  submitted_for_review_at = NOW(), updated_at = NOW()
+            WHERE id = $1 RETURNING *`,
+          [id],
+        )
+        if (submitted.length === 0) {
+          return NextResponse.json({ error: 'Series not found' }, { status: 404 })
+        }
+        return NextResponse.json({ data: submitted[0], submitted_for_review: true })
+      } catch (err: any) {
+        if (err?.code !== '42703') throw err
+        // review columns not migrated yet → fall through to legacy publish
+      }
+    }
+
     const result = await query(`
       UPDATE series SET
         title = COALESCE($1, title),

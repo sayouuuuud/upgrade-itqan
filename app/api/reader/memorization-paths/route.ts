@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
             level, thumbnail_url, total_units, estimated_days,
             require_audio, is_published, created_by
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, FALSE, $12
           ) RETURNING *`,
         [
           title,
@@ -188,7 +188,6 @@ export async function POST(req: NextRequest) {
           totalUnits,
           body.estimated_days || null,
           !!body.require_audio,
-          !!body.is_published,
           session!.sub,
         ],
       )) as any[]
@@ -225,6 +224,22 @@ export async function POST(req: NextRequest) {
           ) VALUES ${placeholders.join(", ")}`,
         values,
       )
+    }
+
+    // Reader content goes through content-supervisor review before publishing.
+    // Requesting publish submits the path for review instead of going live.
+    if (body.is_published === true) {
+      try {
+        const submitted = (await query<any>(
+          `UPDATE memorization_paths
+              SET status = 'pending_review', submitted_for_review_at = NOW()
+            WHERE id = $1 RETURNING *`,
+          [pathRow.id],
+        )) as any[]
+        if (submitted[0]) pathRow = submitted[0]
+      } catch (err: any) {
+        if (err?.code !== "42703") throw err
+      }
     }
 
     return NextResponse.json({ path: pathRow, total_units: totalUnits }, { status: 201 })

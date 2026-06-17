@@ -90,13 +90,18 @@ export async function POST(req: NextRequest) {
     const subject: Subject = SUBJECTS.includes(body.subject) ? body.subject : "tajweed"
     const enrollmentType = body.enrollment_type === "approval" ? "approval" : "open"
 
+    // Reader content must be reviewed by a content supervisor before it goes
+    // live. A reader can never publish directly: requesting publish submits the
+    // path for review instead.
+    const wantsPublish = !!body.is_published
+
     let pathRow: any
     try {
       const inserted = (await query<any>(
         `INSERT INTO tajweed_paths (
             title, description, level, thumbnail_url, total_stages,
             estimated_days, require_audio, is_published, created_by, subject, enrollment_type
-          ) VALUES ($1, $2, $3, $4, 0, $5, $6, $7, $8, $9, $10) RETURNING *`,
+          ) VALUES ($1, $2, $3, $4, 0, $5, $6, FALSE, $7, $8, $9) RETURNING *`,
         [
           title,
           body.description || null,
@@ -104,7 +109,6 @@ export async function POST(req: NextRequest) {
           body.thumbnail_url || null,
           body.estimated_days || null,
           !!body.require_audio,
-          !!body.is_published,
           session!.sub,
           subject,
           enrollmentType,
@@ -114,6 +118,21 @@ export async function POST(req: NextRequest) {
     } catch (err: any) {
       if (err?.code === "42P01") return NextResponse.json({ error: "migration_not_applied" }, { status: 409 })
       throw err
+    }
+
+    if (wantsPublish) {
+      try {
+        const submitted = (await query<any>(
+          `UPDATE tajweed_paths
+              SET status = 'pending_review', submitted_for_review_at = NOW()
+            WHERE id = $1 RETURNING *`,
+          [pathRow.id],
+        )) as any[]
+        if (submitted[0]) pathRow = submitted[0]
+      } catch (err: any) {
+        // Review columns not migrated yet — leave as unpublished draft.
+        if (err?.code !== "42703") throw err
+      }
     }
 
     let totalStages = 0

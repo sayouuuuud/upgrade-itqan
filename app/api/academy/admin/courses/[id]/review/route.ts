@@ -21,7 +21,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession()
-  if (!session || !['academy_admin', 'admin'].includes(session.role)) {
+  const REVIEW_ROLES = ['academy_admin', 'admin', 'supervisor', 'content_supervisor']
+  const canReview =
+    !!session &&
+    (REVIEW_ROLES.includes(session.role) ||
+      (Array.isArray((session as any).academy_roles) &&
+        (session as any).academy_roles.some((r: string) => REVIEW_ROLES.includes(r))))
+  if (!canReview) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

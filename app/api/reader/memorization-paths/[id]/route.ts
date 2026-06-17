@@ -84,6 +84,22 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     const owned = await loadOwnedPath(id, session!.sub)
     if (!owned) return NextResponse.json({ error: "غير موجود" }, { status: 404 })
 
+    // A reader cannot publish directly. Requesting publish submits for review.
+    if (body.is_published === true) {
+      try {
+        const submitted = (await query(
+          `UPDATE memorization_paths
+              SET status = 'pending_review', is_published = FALSE,
+                  submitted_for_review_at = NOW()
+            WHERE id = $1 RETURNING *`,
+          [id],
+        )) as any[]
+        return NextResponse.json({ path: submitted[0], submitted_for_review: true })
+      } catch (err: any) {
+        if (err?.code !== "42703") throw err
+      }
+    }
+
     const allowed = ["title", "description", "level", "thumbnail_url", "is_published", "is_active", "require_audio", "estimated_days"] as const
     const sets: string[] = []
     const params: any[] = []

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   BookOpen, Clock, CheckCircle, XCircle, ArrowLeft,
-  TrendingUp, FileCheck, Loader2,
+  FileCheck, Loader2, GraduationCap, Library, Route, BookMarked,
 } from 'lucide-react'
 
 interface Counts {
@@ -13,6 +13,8 @@ interface Counts {
   rejected: number
   all: number
 }
+
+const EMPTY: Counts = { pending: 0, approved: 0, rejected: 0, all: 0 }
 
 interface RecentLesson {
   id: string
@@ -23,30 +25,62 @@ interface RecentLesson {
   created_at: string
 }
 
+interface QueueInfo {
+  key: string
+  label: string
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  endpoint: string
+}
+
+const QUEUES: QueueInfo[] = [
+  { key: 'lessons', label: 'الدروس', href: '/academy/content-supervisor/lessons', icon: BookOpen, endpoint: '/api/academy/supervisor/content?status=pending' },
+  { key: 'courses', label: 'الدورات', href: '/academy/content-supervisor/courses', icon: GraduationCap, endpoint: '/api/academy/supervisor/courses?status=pending' },
+  { key: 'series', label: 'السلاسل', href: '/academy/content-supervisor/series', icon: Library, endpoint: '/api/academy/supervisor/series?status=pending' },
+  { key: 'paths', label: 'مسارات المقرئ', href: '/academy/content-supervisor/paths', icon: Route, endpoint: '/api/academy/supervisor/paths?status=pending' },
+  { key: 'academy-paths', label: 'مسارات الأكاديمية', href: '/academy/content-supervisor/academy-paths', icon: BookMarked, endpoint: '/api/academy/supervisor/academy-paths?status=pending' },
+]
+
 export default function ContentSupervisorDashboard() {
-  const [counts, setCounts] = useState<Counts>({ pending: 0, approved: 0, rejected: 0, all: 0 })
+  const [countsByQueue, setCountsByQueue] = useState<Record<string, Counts>>({})
   const [recent, setRecent] = useState<RecentLesson[]>([])
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
 
   useEffect(() => {
-    fetch('/api/academy/supervisor/content?status=pending')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d) {
-          setCounts(d.counts || counts)
-          setRecent((d.data || []).slice(0, 5))
-        }
+    Promise.all(
+      QUEUES.map(q =>
+        fetch(q.endpoint)
+          .then(r => (r.ok ? r.json() : null))
+          .then(d => ({ key: q.key, data: d }))
+          .catch(() => ({ key: q.key, data: null })),
+      ),
+    )
+      .then(results => {
+        const map: Record<string, Counts> = {}
+        results.forEach(({ key, data }) => {
+          map[key] = (data && data.counts) || EMPTY
+          if (key === 'lessons' && data?.data) setRecent((data.data || []).slice(0, 5))
+        })
+        setCountsByQueue(map)
       })
       .finally(() => setLoading(false))
+
     fetch('/api/auth/me')
-      .then(r => r.ok ? r.json() : null)
+      .then(r => (r.ok ? r.json() : null))
       .then(d => { if (d?.user?.name) setName(d.user.name) })
       .catch(() => {})
   }, [])
 
-  const reviewedTotal = counts.approved + counts.rejected
-  const completionRate = counts.all > 0 ? Math.round((reviewedTotal / counts.all) * 100) : 0
+  const totals = Object.values(countsByQueue).reduce(
+    (acc, c) => ({
+      pending: acc.pending + c.pending,
+      approved: acc.approved + c.approved,
+      rejected: acc.rejected + c.rejected,
+      all: acc.all + c.all,
+    }),
+    { ...EMPTY },
+  )
 
   if (loading) {
     return (
@@ -62,7 +96,7 @@ export default function ContentSupervisorDashboard() {
       <div>
         <h1 className="text-2xl font-black text-foreground">{name ? `مرحباً، ${name}` : 'لوحة التحكم'}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          مشرف المحتوى — مراجعة دروس المعلمين واعتمادها قبل النشر
+          مشرف المحتوى — مراجعة محتوى المعلمين والمقرئين واعتماده قبل النشر
         </p>
       </div>
 
@@ -70,52 +104,65 @@ export default function ContentSupervisorDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="بانتظار المراجعة"
-          value={counts.pending}
+          value={totals.pending}
           icon={Clock}
           color="text-amber-600 dark:text-amber-400"
           bg="bg-amber-500/10"
         />
         <StatCard
           label="معتمدة"
-          value={counts.approved}
+          value={totals.approved}
           icon={CheckCircle}
           color="text-emerald-600 dark:text-emerald-400"
           bg="bg-emerald-500/10"
         />
         <StatCard
           label="مرفوضة"
-          value={counts.rejected}
+          value={totals.rejected}
           icon={XCircle}
           color="text-rose-600 dark:text-rose-400"
           bg="bg-rose-500/10"
         />
         <StatCard
-          label="إجمالي الدروس"
-          value={counts.all}
+          label="إجمالي المحتوى"
+          value={totals.all}
           icon={BookOpen}
           color="text-primary"
           bg="bg-primary/10"
         />
       </div>
 
-      {/* Completion progress */}
-      <div className="bg-card border border-border rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-primary" />
-            <h2 className="font-bold text-foreground">معدل المراجعة</h2>
-          </div>
-          <span className="text-2xl font-black text-primary">{completionRate}%</span>
+      {/* Review queues */}
+      <div>
+        <h2 className="font-bold text-foreground mb-3">طوابير المراجعة</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {QUEUES.map(q => {
+            const pending = countsByQueue[q.key]?.pending ?? 0
+            const Icon = q.icon
+            return (
+              <Link
+                key={q.key}
+                href={q.href}
+                className="bg-card border border-border rounded-2xl p-5 hover:border-primary/50 hover:shadow-sm transition-all group"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  {pending > 0 && (
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                      {pending}
+                    </span>
+                  )}
+                </div>
+                <p className="font-bold text-foreground group-hover:text-primary transition-colors">{q.label}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {pending > 0 ? `${pending} بانتظار المراجعة` : 'لا جديد'}
+                </p>
+              </Link>
+            )
+          })}
         </div>
-        <div className="h-3 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all"
-            style={{ width: `${completionRate}%` }}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground mt-3">
-          تم مراجعة {reviewedTotal} من {counts.all} درس إجمالاً
-        </p>
       </div>
 
       {/* Pending lessons preview */}

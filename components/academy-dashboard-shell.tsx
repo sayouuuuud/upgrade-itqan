@@ -248,10 +248,14 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
       sections: [
         {
           items: [
-            { href: '/academy/content-supervisor', label: t.academyAdmin?.sidebarDashboard, icon: LayoutDashboard },
-            { href: '/academy/content-supervisor/lessons', label: t.academyAdmin?.sidebarContentLessons, icon: BookOpen },
-            { href: '/academy/content-supervisor/archive', label: t.academyAdmin?.sidebarContentArchive, icon: Archive },
-            { href: '/academy/content-supervisor/messages', label: t.academyAdmin?.sidebarContentMessages, icon: MessageSquare },
+            { href: '/academy/content-supervisor', label: t.academyAdmin?.sidebarDashboard || 'لوحة التحكم', icon: LayoutDashboard },
+            { href: '/academy/content-supervisor/lessons', label: t.academyAdmin?.sidebarContentLessons || 'الدروس', icon: BookOpen },
+            { href: '/academy/content-supervisor/courses', label: t.academy?.courses || 'الدورات', icon: GraduationCap },
+            { href: '/academy/content-supervisor/series', label: t.academy?.series || 'السلاسل', icon: Library },
+            { href: '/academy/content-supervisor/paths', label: t.academy?.readerPaths || 'مسارات المقرئ', icon: Route },
+            { href: '/academy/content-supervisor/academy-paths', label: t.academy?.academyPaths || 'مسارات الأكاديمية', icon: GraduationCap },
+            { href: '/academy/content-supervisor/archive', label: t.academyAdmin?.sidebarContentArchive || 'أرشيف الدورات', icon: Archive },
+            { href: '/academy/content-supervisor/messages', label: t.academyAdmin?.sidebarContentMessages || 'الرسائل', icon: MessageSquare },
           ]
         },
         {

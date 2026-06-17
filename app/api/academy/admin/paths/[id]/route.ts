@@ -10,6 +10,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params
   try {
     const body = await req.json()
+
+    // Publishing routes through content-supervisor review instead of going live directly.
+    // Un-publishing is still a direct admin action.
+    if (body.is_published === true) {
+      try {
+        const submitted = await query(
+          `UPDATE learning_paths
+              SET status = 'pending_review', is_published = FALSE,
+                  submitted_for_review_at = NOW()
+            WHERE id = $1 RETURNING *`,
+          [id],
+        )
+        if (submitted.length === 0) return NextResponse.json({ error: 'Path not found' }, { status: 404 })
+        return NextResponse.json({ data: submitted[0], submitted_for_review: true })
+      } catch (err: any) {
+        if (err?.code !== '42703') throw err
+        // columns not yet migrated → fall through to legacy update
+      }
+    }
+
     const result = await query(`
       UPDATE learning_paths SET title = COALESCE($1, title), description = COALESCE($2, description),
         subject = COALESCE($3, subject), level = COALESCE($4, level), 
