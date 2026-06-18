@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 
@@ -108,11 +109,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   values.push(id)
-  const result = await query(
+  const result = await query<{ public_slug: string; is_published: boolean }>(
     `UPDATE public_lessons SET ${sets.join(', ')} WHERE id = $${values.length} RETURNING *`,
     values
   )
-  return NextResponse.json({ data: result[0] })
+  const updated = result[0]
+  // Revalidate sitemap + lesson page on every teacher edit so Search Console
+  // sees the latest content without waiting for the next build.
+  if (updated?.public_slug) {
+    revalidatePath('/sitemap.xml')
+    revalidatePath(`/lessons/${updated.public_slug}`)
+  }
+  return NextResponse.json({ data: updated })
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
