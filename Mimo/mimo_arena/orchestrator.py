@@ -378,7 +378,10 @@ class Orchestrator:
                         persona=persona_id, task_id=task_id)
             missions.set_task_status(task_id, "done" if ok else "failed",
                                      answer=verdict["answer"], summary=verdict["summary"])
-            self._emit(worker.id, "executor", reply,
+            # The trailing JSON verdict line is an internal control envelope — it
+            # lives in meta, so strip it from the human-facing bubble text.
+            display = self._strip_verdict(reply)
+            self._emit(worker.id, "executor", display,
                        meta={"final": True, "streamed": True,
                              "persona": persona_id, "roles": p_roles, **verdict})
         finally:
@@ -456,6 +459,37 @@ class Orchestrator:
             self.broadcast(ev)
 
         return worker.ask(prompt, on_chunk=on_chunk, cwd=cwd, model=model)
+
+    @staticmethod
+    def _strip_verdict(reply: str) -> str:
+        """Remove the trailing JSON verdict line from the human-facing reply.
+
+        Workers are asked to end with a control envelope like
+        {"status":"done","answer":"yes","summary":"..."}. That belongs in meta,
+        not in the chat bubble, so we drop the last JSON-only line. Any earlier
+        prose is preserved. Falls back to the original text if nothing is left.
+        """
+        if not reply:
+            return reply
+        lines = reply.rstrip().splitlines()
+        # Walk backwards, dropping trailing blank lines and a single JSON line
+        # that looks like our verdict envelope.
+        while lines:
+            last = lines[-1].strip()
+            if not last:
+                lines.pop()
+                continue
+            if last.startswith("{") and last.endswith("}") and (
+                '"status"' in last or '"answer"' in last or '"summary"' in last
+            ):
+                try:
+                    json.loads(last)
+                    lines.pop()
+                except Exception:
+                    pass
+            break
+        cleaned = "\n".join(lines).strip()
+        return cleaned or reply.strip()
 
     @staticmethod
     def _parse_verdict(reply: str, ok: bool) -> dict:
