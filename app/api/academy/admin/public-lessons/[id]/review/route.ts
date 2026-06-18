@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 import { createNotification } from '@/lib/notifications'
@@ -55,14 +54,6 @@ export async function POST(
     return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
   }
   const lesson = result[0]
-
-  // Revalidate sitemap + lesson page so Google picks up the change immediately
-  if (action === 'approve' && lesson.public_slug) {
-    revalidatePath('/sitemap.xml')
-    revalidatePath(`/lessons/${lesson.public_slug}`)
-  } else if (action === 'reject' && lesson.public_slug) {
-    revalidatePath('/sitemap.xml')
-  }
 
   await createNotification({
     userId: lesson.teacher_id,
