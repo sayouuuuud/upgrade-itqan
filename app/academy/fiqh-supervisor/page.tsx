@@ -17,8 +17,9 @@ interface Stats {
 interface RecentQuestion {
   id: string
   question: string
-  student_name: string
-  category: string
+  asker_name: string | null
+  is_anonymous: boolean
+  category_name_ar: string | null
   answer: string | null
   is_published: boolean
   asked_at: string
@@ -33,18 +34,24 @@ export default function FiqhSupervisorDashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const [allRes, meRes] = await Promise.all([
-          fetch('/api/academy/fiqh?filter=all'),
+        // Use the supervisor inbox view — it returns the questions assigned to
+        // this supervisor plus aggregate `counts` per bucket. The default
+        // (library) view would only show published, anonymised public Q&A.
+        const [inboxRes, meRes] = await Promise.all([
+          fetch('/api/academy/fiqh?view=inbox&status=all'),
           fetch('/api/auth/me'),
         ])
-        if (allRes.ok) {
-          const d = await allRes.json()
+        if (inboxRes.ok) {
+          const d = await inboxRes.json()
           const qs: RecentQuestion[] = d.questions || []
+          const c = d.counts || {}
+          const total = c.all ?? qs.length
+          const open = c.open ?? 0
           setStats({
-            total:      qs.length,
-            unanswered: qs.filter(q => q.answer === null).length,
-            answered:   qs.filter(q => q.answer !== null).length,
-            published:  qs.filter(q => q.is_published).length,
+            total,
+            unanswered: open,
+            answered:   Math.max(total - open, 0),
+            published:  c.published ?? 0,
           })
           setRecent(qs.slice(0, 5))
         }
@@ -156,8 +163,10 @@ export default function FiqhSupervisorDashboard() {
                     </p>
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                       <User className="w-3 h-3" />
-                      <span>{q.student_name}</span>
-                      <span className="px-1.5 py-0.5 bg-muted rounded-full">{q.category}</span>
+                      <span>{q.is_anonymous ? 'سائل مجهول' : q.asker_name || '—'}</span>
+                      {q.category_name_ar && (
+                        <span className="px-1.5 py-0.5 bg-muted rounded-full">{q.category_name_ar}</span>
+                      )}
                     </div>
                   </div>
                   <span className={`shrink-0 px-2.5 py-1 text-xs font-bold rounded-full ${
