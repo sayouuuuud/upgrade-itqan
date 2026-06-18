@@ -227,22 +227,60 @@ class MimoWorker:
             self.current_task = message
         self.last_beat = time.time()
         run_cwd = cwd or str(config.ROOT)
-        cmd = [
-            config.MIMO_BIN, "run", message,
-            "--attach", f"http://{config.HOST}:{self.port}",
-            "--dangerously-skip-permissions",
-            "--format", "json",
-        ]
+
+        base_flags = ["--dangerously-skip-permissions", "--format", "json"]
         model = (model or "").strip()
         if model:
-            cmd += ["--model", model]
-        if self._session_started:
-            cmd.append("--continue")
+            base_flags += ["--model", model]
+        cont = ["--continue"] if self._session_started else []
+
+        # Primary invocation: attach to this worker's `mimo serve` session.
+        attached_cmd = ([config.MIMO_BIN, "run", message,
+                         "--attach", f"http://{config.HOST}:{self.port}"]
+                        + base_flags + cont)
+        # Fallback: a standalone `mimo run` (no --attach). Used when the attached
+        # run returns nothing — e.g. when the reply streams out of the serve
+        # process instead of this invocation. This mirrors the standalone CLI.
+        standalone_cmd = [config.MIMO_BIN, "run", message] + base_flags + cont
 
         task_timeout = float(settings.get("task.timeout", config.TASK_TIMEOUT))
+        try:
+            out, raw_lines, err_text, code = self._stream_run(
+                attached_cmd, run_cwd, on_chunk, task_timeout)
+
+            # If the attached run produced nothing readable, retry standalone.
+            if not out:
+                self._dump_raw(message, attached_cmd, raw_lines, err_text, code)
+                out2, raw2, err2, code2 = self._stream_run(
+                    standalone_cmd, run_cwd, on_chunk, task_timeout)
+                if out2:
+                    out = out2
+                else:
+                    self._dump_raw(message, standalone_cmd, raw2, err2, code2)
+                    out = (f"[{self.id}] produced no readable output "
+                           f"(mimo exit {code}/{code2}). "
+                           f"Raw saved to {self._raw_debug_file().name}.")
+
+            self._session_started = True
+            self.last_output = out
+            return out
+        finally:
+            with self._mu:
+                self.busy = False
+                self.current_task = None
+
+    def _stream_run(self, cmd: list[str], run_cwd: str,
+                    on_chunk: Optional[Callable[[str], None]],
+                    task_timeout: float) -> tuple[str, list[str], str, Optional[int]]:
+        """Run one mimo command, streaming text via on_chunk.
+
+        Returns (clean_text, raw_stdout_lines, stderr_text, returncode). The
+        text is recovered through several fallbacks (live chunks → full-buffer
+        reparse → plain lines → stderr) so schema drift can't swallow a reply.
+        """
         chunks: list[str] = []
-        raw_lines: list[str] = []   # every stdout line, for fallback parsing
-        plain_lines: list[str] = []  # lines that weren't valid JSON events
+        raw_lines: list[str] = []
+        plain_lines: list[str] = []
         proc: Optional[subprocess.Popen] = None
         try:
             proc = subprocess.Popen(
@@ -262,8 +300,8 @@ class MimoWorker:
                 try:
                     obj = json.loads(line)
                 except Exception:
-                    # Not a JSON event line — keep it as a plain-text fallback in
-                    # case mimo ignored --format json or printed a plain message.
+                    # Not a JSON event line — keep as plain-text fallback in case
+                    # mimo ignored --format json or printed a plain message.
                     plain_lines.append(line)
                     if time.time() > deadline:
                         raise subprocess.TimeoutExpired(cmd, task_timeout)
@@ -282,39 +320,20 @@ class MimoWorker:
             proc.wait(timeout=10)
 
             out = strip_ansi("".join(chunks)).strip()
-
-            # ── empty-reply recovery ────────────────────────────────────────
-            # If the per-line stream yielded no text, the event schema may have
-            # changed or mimo emitted multi-line / plain output. Re-parse the
-            # whole buffer, then fall back to plain lines, then stderr — and
-            # always dump the raw output so the real schema can be inspected.
             if not out:
-                full_raw = "\n".join(raw_lines)
-                out = extract_text(full_raw)
+                out = extract_text("\n".join(raw_lines))
             if not out and plain_lines:
                 out = strip_ansi("\n".join(plain_lines)).strip()
             err_text = ""
             if not out:
                 err_text = strip_ansi((proc.stderr.read() if proc.stderr else "") or "").strip()
                 out = err_text
-            if not out:
-                self._dump_raw(message, cmd, raw_lines, err_text, proc.returncode)
-                out = (f"[{self.id}] produced no readable output "
-                       f"(mimo exit {proc.returncode}). "
-                       f"Raw saved to {self._raw_debug_file().name}.")
-
-            self._session_started = True
-            self.last_output = out
-            return out
+            return out, raw_lines, err_text, proc.returncode
         except subprocess.TimeoutExpired:
             if proc and proc.poll() is None:
                 proc.kill()
             self.last_output = f"[{self.id}] task timed out after {task_timeout}s"
             raise
-        finally:
-            with self._mu:
-                self.busy = False
-                self.current_task = None
             self.last_beat = time.time()
 
     def stop(self) -> None:
