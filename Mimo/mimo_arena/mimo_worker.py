@@ -228,38 +228,49 @@ class MimoWorker:
         self.last_beat = time.time()
         run_cwd = cwd or str(config.ROOT)
 
-        base_flags = ["--dangerously-skip-permissions", "--format", "json"]
         model = (model or "").strip()
-        if model:
-            base_flags += ["--model", model]
         cont = ["--continue"] if self._session_started else []
 
-        # Primary invocation: attach to this worker's `mimo serve` session.
-        attached_cmd = ([config.MIMO_BIN, "run", message,
-                         "--attach", f"http://{config.HOST}:{self.port}"]
-                        + base_flags + cont)
-        # Fallback: a standalone `mimo run` (no --attach). Used when the attached
-        # run returns nothing — e.g. when the reply streams out of the serve
-        # process instead of this invocation. This mirrors the standalone CLI.
-        standalone_cmd = [config.MIMO_BIN, "run", message] + base_flags + cont
+        def build(*, attach: bool, with_model: bool) -> list[str]:
+            c = [config.MIMO_BIN, "run", message]
+            if attach:
+                c += ["--attach", f"http://{config.HOST}:{self.port}"]
+            c += ["--dangerously-skip-permissions", "--format", "json"]
+            if with_model and model:
+                c += ["--model", model]
+            return c + cont
 
         task_timeout = float(settings.get("task.timeout", config.TASK_TIMEOUT))
         try:
+            # 1) Attach to this worker's `mimo serve` session.
             out, raw_lines, err_text, code = self._stream_run(
-                attached_cmd, run_cwd, on_chunk, task_timeout)
+                build(attach=True, with_model=True), run_cwd, on_chunk, task_timeout)
 
-            # If the attached run produced nothing readable, retry standalone.
+            # 2) If nothing came back, retry as a standalone `mimo run` — the
+            # reply may stream out of the serve process instead of this call.
             if not out:
-                self._dump_raw(message, attached_cmd, raw_lines, err_text, code)
-                out2, raw2, err2, code2 = self._stream_run(
-                    standalone_cmd, run_cwd, on_chunk, task_timeout)
-                if out2:
-                    out = out2
+                self._dump_raw(message, build(attach=True, with_model=True),
+                               raw_lines, err_text, code)
+                out, raw_lines, err_text, code = self._stream_run(
+                    build(attach=False, with_model=True), run_cwd, on_chunk, task_timeout)
+
+            # 3) If the configured model is invalid (e.g. "SAYED" with no model
+            # id), mimo raises ProviderModelNotFoundError. Retry once WITHOUT
+            # --model so mimo uses its own default and the user still gets a
+            # reply, then prepend a note about fixing the setting.
+            if model and self._is_model_error(out):
+                bad = self._humanize_model_error(out, model)
+                out_nomodel, raw2, err2, code2 = self._stream_run(
+                    build(attach=False, with_model=False), run_cwd, on_chunk, task_timeout)
+                if out_nomodel and not self._is_model_error(out_nomodel):
+                    out = f"{bad}\n\n---\n{out_nomodel}"
                 else:
-                    self._dump_raw(message, standalone_cmd, raw2, err2, code2)
-                    out = (f"[{self.id}] produced no readable output "
-                           f"(mimo exit {code}/{code2}). "
-                           f"Raw saved to {self._raw_debug_file().name}.")
+                    out = bad
+
+            if not out:
+                out = (f"[{self.id}] produced no readable output "
+                       f"(mimo exit {code}). "
+                       f"Raw saved to {self._raw_debug_file().name}.")
 
             self._session_started = True
             self.last_output = out
@@ -268,6 +279,32 @@ class MimoWorker:
             with self._mu:
                 self.busy = False
                 self.current_task = None
+
+    @staticmethod
+    def _is_model_error(text: str) -> bool:
+        if not text:
+            return False
+        t = text.lower()
+        return ("providermodelnotfounderror" in t
+                or "modelnotfounderror" in t
+                or ("provider" in t and "not found" in t and "model" in t))
+
+    @staticmethod
+    def _humanize_model_error(text: str, model: str) -> str:
+        """Turn mimo's ProviderModelNotFoundError stack trace into a clear,
+        actionable message instead of a raw dump."""
+        prov = ""
+        m = re.search(r'providerID:\s*"([^"]*)"', text or "")
+        if m:
+            prov = m.group(1)
+        detail = f'provider "{prov}"' if prov else f'model "{model}"'
+        return ("⚠ Invalid model configuration: "
+                f'{detail} could not be resolved by mimo.\n'
+                f'The configured value was "{model}". '
+                'Set a valid model in Settings → Models using the '
+                'provider/model format (e.g. "anthropic/claude-3-5-sonnet" or '
+                '"google/gemini-2.0-flash"). '
+                'Falling back to mimo\'s default model for this reply.')
 
     def _stream_run(self, cmd: list[str], run_cwd: str,
                     on_chunk: Optional[Callable[[str], None]],
