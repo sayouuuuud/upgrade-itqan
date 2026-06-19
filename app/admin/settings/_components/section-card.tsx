@@ -7,16 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { useI18n } from "@/lib/i18n/context"
 
 interface SectionCardProps {
   icon: LucideIcon
   title: string
   description?: string
   onReset?: () => void
+  resetLabel?: string
   children: ReactNode
 }
 
-export function SectionCard({ icon: Icon, title, description, onReset, children }: SectionCardProps) {
+export function SectionCard({ icon: Icon, title, description, onReset, resetLabel, children }: SectionCardProps) {
+  const { t } = useI18n()
+  const a = t.admin
   return (
     <Card className="border-border">
       <CardHeader className="bg-muted/30 border-b border-border">
@@ -33,7 +37,7 @@ export function SectionCard({ icon: Icon, title, description, onReset, children 
           {onReset && (
             <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground">
               <RotateCcw className="w-4 h-4 ml-1" />
-              استعادة
+              {resetLabel || a.scRestore}
             </Button>
           )}
         </div>

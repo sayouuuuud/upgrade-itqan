@@ -25,7 +25,8 @@ const ICONS: Record<string, LucideIcon> = {
 }
 
 export default function SupervisorTasksPage() {
-  const { locale } = useI18n()
+  const { t, locale } = useI18n()
+  const a = t.admin
   const isAr = locale === "ar"
   const [tasks, setTasks] = useState<Task[]>([])
   const [total, setTotal] = useState(0)
@@ -59,12 +60,10 @@ export default function SupervisorTasksPage() {
         </div>
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-foreground text-balance">
-            {isAr ? "مهامي والمعلّقات" : "My Tasks & Pending"}
+            {a.svtTitle}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {isAr
-              ? "كل ما يحتاج إجراءً منك في مكان واحد"
-              : "Everything needing your action in one place"}
+            {a.svtDesc}
           </p>
         </div>
       </header>
@@ -79,10 +78,10 @@ export default function SupervisorTasksPage() {
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <CheckCircle2 className="h-12 w-12 text-primary/60" />
           <p className="mt-3 font-medium text-foreground">
-            {isAr ? "لا توجد مهام معلّقة" : "No pending tasks"}
+            {a.svtNoTasks}
           </p>
           <p className="text-sm text-muted-foreground">
-            {isAr ? "أحسنت، كل شيء على ما يرام" : "All caught up. Great work!"}
+            {a.svtAllCaughtUp}
           </p>
         </div>
       ) : (

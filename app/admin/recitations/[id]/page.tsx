@@ -15,6 +15,7 @@ import Link from "next/link"
 
 export default function AdminRecitationDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { t } = useI18n()
+    const a = t.admin
     const router = useRouter()
     const isAr = t.locale === "ar"
     const { id } = use(params)
@@ -57,10 +58,10 @@ export default function AdminRecitationDetailsPage({ params }: { params: Promise
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ status: newStatus, internal_notes: internalNotes })
             })
-            if (!res.ok) throw new Error(isAr ? "فشل التحديث" : "Failed to update")
+            if (!res.ok) throw new Error(a.rcdUpdateFailed)
             const json = await res.json()
             setData(json.data)
-            alert(isAr ? "تم التحديث بنجاح" : "Updated successfully")
+            alert(a.rcdUpdateSuccess)
         } catch (err: any) {
             alert(err.message)
         } finally {
@@ -168,22 +169,22 @@ export default function AdminRecitationDetailsPage({ params }: { params: Promise
                             <CardHeader className="pb-3 border-b border-border/50 bg-muted/20">
                                 <CardTitle className="text-lg font-black text-foreground flex items-center gap-2">
                                     <Award className="w-5 h-5 text-primary" />
-                                    {isAr ? "تقييم المقرئ والملاحظات" : "Evaluator's Feedback & Verdict"}
+                                    {a.rcdEvaluatorFeedback}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 space-y-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="p-4 bg-muted/30 rounded-xl border border-border/50">
-                                        <span className="text-sm text-muted-foreground block mb-1">{isAr ? "القرار النهائي" : "Final Verdict"}</span>
+                                        <span className="text-sm text-muted-foreground block mb-1">{a.rcdFinalVerdict}</span>
                                         <span className="font-bold text-foreground">
-                                            {data.verdict === 'mastered' ? (isAr ? "متقن" : "Mastered") :
-                                             data.verdict === 'needs_session' ? (isAr ? "يحتاج جلسة مصححة" : "Needs Session") :
+                                            {data.verdict === 'mastered' ? a.rcdMastered :
+                                             data.verdict === 'needs_session' ? a.rcdNeedsSession :
                                              data.verdict}
                                         </span>
                                     </div>
                                     {data.overall_score && (
                                     <div className="p-4 bg-muted/30 rounded-xl border border-border/50">
-                                        <span className="text-sm text-muted-foreground block mb-1">{isAr ? "التقييم العام" : "Overall Score"}</span>
+                                        <span className="text-sm text-muted-foreground block mb-1">{a.rcdOverallScore}</span>
                                         <span className="font-bold text-foreground">{data.overall_score}/100</span>
                                     </div>
                                     )}
@@ -193,7 +194,7 @@ export default function AdminRecitationDetailsPage({ params }: { params: Promise
                                     <div className="p-5 bg-blue-500/5 rounded-xl border border-blue-500/10">
                                         <h3 className="font-bold mb-3 flex items-center gap-2 text-blue-600 dark:text-blue-400">
                                             <MessageSquare className="w-4 h-4" />
-                                            {isAr ? "ملاحظات المقرئ المكتوبة" : "Evaluator's Written Feedback"}
+                                            {a.rcdWrittenFeedback}
                                         </h3>
                                         <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{data.detailed_feedback}</p>
                                     </div>
@@ -203,7 +204,7 @@ export default function AdminRecitationDetailsPage({ params }: { params: Promise
                                     <div className="p-5 bg-destructive/5 rounded-xl border border-destructive/10">
                                         <h3 className="font-bold mb-3 flex items-center gap-2 text-destructive">
                                             <AlertCircle className="w-4 h-4" />
-                                            {isAr ? "الكلمات التي أخطأ فيها" : "Mistakes In Words"}
+                                            {a.rcdMistakesWords}
                                         </h3>
                                         <div className="flex flex-wrap gap-2 mt-3">
                                             {data.wordMistakes.map((word: string, i: number) => (
@@ -226,32 +227,32 @@ export default function AdminRecitationDetailsPage({ params }: { params: Promise
                     <Card className="border-primary/20 shadow-2xl shadow-primary/5 rounded-3xl bg-primary/5 border">
                         <CardHeader className="pb-3 border-b border-primary/10">
                             <CardTitle className="text-sm font-black text-primary uppercase tracking-widest">
-                                {isAr ? "إدارة التسميع" : "Recitation Management"}
+                                {a.rcdManagement}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-4 space-y-4">
                             <div className="space-y-2">
-                                <label className="text-xs font-black text-muted-foreground uppercase">{isAr ? "الحالة" : "Status"}</label>
+                                <label className="text-xs font-black text-muted-foreground uppercase">{a.rcdStatus}</label>
                                 <select 
                                     value={newStatus}
                                     onChange={(e) => setNewStatus(e.target.value)}
                                     className="w-full p-2.5 bg-card border border-border rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
                                 >
-                                    <option value="pending">{isAr ? "قيد الانتظار" : "Pending"}</option>
-                                    <option value="in_review">{isAr ? "قيد المراجعة" : "In Review"}</option>
-                                    <option value="reviewed">{isAr ? "تمت المراجعة" : "Reviewed"}</option>
-                                    <option value="mastered">{isAr ? "متقن" : "Mastered"}</option>
-                                    <option value="needs_session">{isAr ? "يحتاج جلسة" : "Needs Session"}</option>
-                                    <option value="cancelled">{isAr ? "ملغي" : "Cancelled"}</option>
+                                    <option value="pending">{a.rcdPending}</option>
+                                    <option value="in_review">{a.rcdInReview}</option>
+                                    <option value="reviewed">{a.rcdReviewed}</option>
+                                    <option value="mastered">{a.rcdMastered}</option>
+                                    <option value="needs_session">{a.rcdNeedsSessionShort}</option>
+                                    <option value="cancelled">{a.rcdCancelled}</option>
                                 </select>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-black text-muted-foreground uppercase">{isAr ? "ملاحظات داخلية" : "Internal Notes"}</label>
+                                <label className="text-xs font-black text-muted-foreground uppercase">{a.rcdInternalNotes}</label>
                                 <textarea 
                                     value={internalNotes}
                                     onChange={(e) => setInternalNotes(e.target.value)}
-                                    placeholder={isAr ? "ملاحظات لا يراها الطالب..." : "Private notes..."}
+                                    placeholder={a.rcdNotesPlaceholder}
                                     className="w-full h-24 p-2.5 bg-card border border-border rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                                 />
                             </div>
@@ -261,7 +262,7 @@ export default function AdminRecitationDetailsPage({ params }: { params: Promise
                                 disabled={updating}
                                 className="w-full h-12 bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20"
                             >
-                                {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : (isAr ? "حفظ التغييرات" : "Save Changes")}
+                                {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : a.rcdSaveChanges}
                             </Button>
                         </CardContent>
                     </Card>

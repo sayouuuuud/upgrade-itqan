@@ -21,6 +21,7 @@ import { TableSkeleton } from "@/components/admin/skeletons"
 
 export default function AdminUsersPage() {
   const { t, locale } = useI18n()
+  const a = t.admin
   const router = useRouter()
   const isAr = locale === "ar"
 
@@ -294,7 +295,7 @@ export default function AdminUsersPage() {
                     <td colSpan={7} className="px-6 py-20 text-center">
                       <div className="flex flex-col items-center justify-center text-muted-foreground">
                         <Users className="w-12 h-12 opacity-20 mb-4" />
-                        <p className="font-bold">{isAr ? "لا توجد نتائج" : "No results found"}</p>
+                        <p className="font-bold">{a.usNoResults}</p>
                       </div>
                     </td>
                   </tr>
@@ -365,12 +366,12 @@ export default function AdminUsersPage() {
                         <div className="flex gap-1 mt-1">
                           {user.has_quran_access !== false && (
                             <Badge variant="outline" className="text-[8px] px-1 py-0 border-emerald-500/30 text-emerald-500 bg-emerald-500/5">
-                              {isAr ? "قرآن" : "Quran"}
+                              {a.usQuran}
                             </Badge>
                           )}
                           {user.has_academy_access !== false && (
                             <Badge variant="outline" className="text-[8px] px-1 py-0 border-blue-500/30 text-blue-500 bg-blue-500/5">
-                              {isAr ? "أكاديمية" : "Academy"}
+                              {a.usAcademy}
                             </Badge>
                           )}
                         </div>
@@ -439,10 +440,10 @@ export default function AdminUsersPage() {
         {/* Footer info and pagination */}
         <div className="bg-muted/30 px-6 py-5 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-            {isAr ? "إجمالي المستخدمين" : "Total users"}: <span className="text-foreground">{pagination?.totalUsers || 0}</span>
+            {a.usTotalUsers}: <span className="text-foreground">{pagination?.totalUsers || 0}</span>
             {pagination && (
               <span className="mr-4">
-                {isAr ? "صفحة" : "Page"} {pagination.currentPage} {isAr ? "من" : "of"} {pagination.totalPages}
+                {a.usPage.replace('{page}', String(pagination.currentPage)).replace('{total}', String(pagination.totalPages))}
               </span>
             )}
           </div>
@@ -457,7 +458,7 @@ export default function AdminUsersPage() {
                 className="rounded-xl font-black text-xs h-8 px-3"
               >
                 <ChevronRight className={`w-4 h-4 ${isAr ? "ml-1" : "mr-1"}`} />
-                {isAr ? "السابق" : "Previous"}
+                {a.usPrevious}
               </Button>
 
               <div className="flex items-center gap-1">
@@ -495,7 +496,7 @@ export default function AdminUsersPage() {
                 disabled={!pagination.hasNextPage || loading}
                 className="rounded-xl font-black text-xs h-8 px-3"
               >
-                {isAr ? "التالي" : "Next"}
+                {a.usNext}
                 <ChevronLeft className={`w-4 h-4 ${isAr ? "mr-1" : "ml-1"}`} />
               </Button>
             </div>
@@ -529,7 +530,7 @@ export default function AdminUsersPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{isAr ? "كلمة المرور" : t.auth.password}</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{a.usPassword}</Label>
               <Input
                 className="rounded-2xl h-11 bg-muted/30 border-border focus:bg-card font-bold"
                 type="password"
@@ -575,7 +576,7 @@ export default function AdminUsersPage() {
             
             <div className="md:col-span-2 p-4 bg-muted/20 rounded-2xl border border-border/50 space-y-3">
               <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                {isAr ? "صلاحيات الوصول للمنصات" : "Platform Access Permissions"}
+                {a.usPlatformAccess}
               </Label>
               <div className="flex flex-wrap gap-6">
                 <label className="flex items-center gap-2 cursor-pointer group">
@@ -586,7 +587,7 @@ export default function AdminUsersPage() {
                     className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
                   />
                   <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {isAr ? "منصة القرآن" : "Quran Platform"}
+                    {a.usQuranPlatform}
                   </span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
@@ -597,7 +598,7 @@ export default function AdminUsersPage() {
                     className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
                   />
                   <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {isAr ? "الأكاديمية" : "Academy"}
+                    {a.usAcademyPlatform}
                   </span>
                 </label>
               </div>
@@ -685,7 +686,7 @@ export default function AdminUsersPage() {
 
             <div className="md:col-span-2 p-4 bg-muted/20 rounded-2xl border border-border/50 space-y-3">
               <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                {isAr ? "صلاحيات الوصول للمنصات" : "Platform Access Permissions"}
+                {a.usPlatformAccess}
               </Label>
               <div className="flex flex-wrap gap-6">
                 <label className="flex items-center gap-2 cursor-pointer group">
@@ -696,7 +697,7 @@ export default function AdminUsersPage() {
                     className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
                   />
                   <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {isAr ? "منصة القرآن" : "Quran Platform"}
+                    {a.usQuranPlatform}
                   </span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
@@ -707,7 +708,7 @@ export default function AdminUsersPage() {
                     className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
                   />
                   <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {isAr ? "الأكاديمية" : "Academy"}
+                    {a.usAcademyPlatform}
                   </span>
                 </label>
               </div>

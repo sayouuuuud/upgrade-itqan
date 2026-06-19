@@ -31,29 +31,29 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
       {
         items: [
           { href: '/student', label: t.student.dashboard, icon: LayoutDashboard },
-          { href: '/student/submit', label: t.student.submitTask || "تسليم تلاوة", icon: Mic || null },
+          { href: '/student/submit', label: t.student.submitTask || t.admin.sidebarSubmitTask, icon: Mic || null },
           { href: '/student/recitations', label: t.student.recitations, icon: FileText },
-          { href: '/student/memorization-paths', label: t.student.memorizationPaths || 'مسارات الحفظ', icon: Route },
-          { href: '/student/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },
-          { href: '/student/mushaf', label: t.student.mushaf || "مصحفي", icon: BookOpen },
-          { href: '/student/mushaf-progress', label: 'خريطة مصحفي', icon: Target },
-          { href: '/student/competitions', label: 'المسابقات', icon: Trophy },
+          { href: '/student/memorization-paths', label: t.student.memorizationPaths || t.admin.sidebarMemorizationPaths, icon: Route },
+          { href: '/student/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || t.admin.sidebarTajweedPaths, icon: GraduationCap },
+          { href: '/student/mushaf', label: t.student.mushaf || t.admin.sidebarMyMushaf, icon: BookOpen },
+          { href: '/student/mushaf-progress', label: t.admin.sidebarMushafMap, icon: Target },
+          { href: '/student/competitions', label: t.admin.sidebarCompetitions, icon: Trophy },
           { href: '/student/sessions', label: t.student.sessions, icon: CalendarCheck },
-          { href: '/student/halaqat', label: 'حلقاتي', icon: GraduationCap },
+          { href: '/student/halaqat', label: t.admin.sidebarMyHalaqat, icon: GraduationCap },
           { href: '/student/chat', label: t.student.chat, icon: MessageSquare },
           { href: '/student/certificates', label: t.student.certificates || t.student.certificate, icon: Award },
-          { href: '/student/points', label: 'نقاطي', icon: Star },
-          { href: '/student/badges', label: 'أوسمتي', icon: Medal },
-          { href: '/student/wird', label: 'الورد اليومي', icon: BookMarked },
-          { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
-          { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
-          { href: '/library', label: 'مكتبة الكتب', icon: BookOpen },
+          { href: '/student/points', label: t.admin.sidebarMyPoints, icon: Star },
+          { href: '/student/badges', label: t.admin.sidebarMyBadges, icon: Medal },
+          { href: '/student/wird', label: t.admin.sidebarDailyWird, icon: BookMarked },
+          { href: '/community/maqraa/forum', label: t.admin.sidebarMaqraaForum || t.admin.sidebarForum, icon: MessagesSquare },
+          { href: '/academy/fiqh', label: t.admin.sidebarFiqhLibrary || t.academy?.fiqhLibrary, icon: Library },
+          { href: '/library', label: t.admin.sidebarBooksLibrary || t.academy?.booksLibrary, icon: BookOpen },
         ]
       },
       {
         title: t.shell.account,
         items: [
-          { href: '/student/family', label: 'ولي الأمر والعائلة', icon: Users },
+          { href: '/student/family', label: t.admin.sidebarGuardianFamily, icon: Users },
           { href: '/student/notifications', label: t.student.notifications, icon: Bell },
           { href: '/student/profile', label: t.student.profile, icon: User },
         ]
@@ -66,22 +66,22 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
       {
         items: [
           { href: '/reader', label: t.reader.dashboard, icon: LayoutDashboard },
-          { href: '/reader/calendar', label: t.reader.calendar || 'التقويم', icon: Calendar },
+          { href: '/reader/calendar', label: t.reader.calendar || t.admin.calendar, icon: Calendar },
           { href: '/reader/recitations', label: t.reader.reviewList, icon: ClipboardList },
-          { href: '/reader/students', label: 'طلابي', icon: Users },
-          { href: '/reader/enrollment-requests', label: 'طلبات الالتحاق', icon: UserCheck },
-          { href: '/reader/memorization-paths', label: t.reader.memorizationPaths || 'مسارات الحفظ', icon: Route },
-          { href: '/reader/learning-paths', label: 'مسارات التعلم', icon: GraduationCap },
-          { href: '/reader/competitions', label: 'تحكيم المسابقات', icon: Trophy },
-          { href: '/reader/sessions', label: t.reader.sessions || "الجلسات", icon: Calendar },
-          { href: '/reader/halaqat', label: 'حلقاتي', icon: GraduationCap },
-          { href: '/reader/certificates', label: 'مركز الشهادات', icon: Award },
+          { href: '/reader/students', label: t.admin.sidebarMyStudents, icon: Users },
+          { href: '/reader/enrollment-requests', label: t.admin.sidebarEnrollmentRequests, icon: UserCheck },
+          { href: '/reader/memorization-paths', label: t.reader.memorizationPaths || t.admin.sidebarMemorizationPaths, icon: Route },
+          { href: '/reader/learning-paths', label: t.admin.sidebarLearningPaths, icon: GraduationCap },
+          { href: '/reader/competitions', label: t.admin.sidebarJudgeCompetitions, icon: Trophy },
+          { href: '/reader/sessions', label: t.reader.sessions || t.admin.sidebarMySessions, icon: Calendar },
+          { href: '/reader/halaqat', label: t.admin.sidebarMyHalaqat, icon: GraduationCap },
+          { href: '/reader/certificates', label: t.admin.sidebarCertificatesCenter, icon: Award },
           { href: '/reader/schedule', label: t.reader.schedule, icon: Clock },
           { href: '/reader/chat', label: t.reader.chat, icon: MessageSquare },
-          { href: '/reader/parent-messages', label: 'رسائل أولياء الأمور', icon: Mail },
-          { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
-          { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
-          { href: '/library', label: 'مكتبة الكتب', icon: BookOpen },
+          { href: '/reader/parent-messages', label: t.admin.sidebarParentMessages, icon: Mail },
+          { href: '/community/maqraa/forum', label: t.admin.sidebarMaqraaForum || t.admin.sidebarForum, icon: MessagesSquare },
+          { href: '/academy/fiqh', label: t.admin.sidebarFiqhLibrary || t.academy?.fiqhLibrary, icon: Library },
+          { href: '/library', label: t.admin.sidebarBooksLibrary || t.academy?.booksLibrary, icon: BookOpen },
           { href: '/reader/notifications', label: t.student.notifications, icon: Bell },
           { href: '/reader/profile', label: t.reader.profile, icon: User },
         ]
@@ -97,33 +97,33 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
         ]
       },
       {
-        title: 'المستخدمون والصلاحيات', items: [
+        title: t.admin.sidebarUsersPermissions, items: [
           { href: '/admin/users', label: t.admin.users, icon: Users },
-          { href: '/admin/supervisors', label: 'إدارة المشرفين', icon: Shield },
-          { href: '/admin/invitations', label: t.admin.invitations || 'الدعوات', icon: Mail },
+          { href: '/admin/supervisors', label: t.admin.sidebarManageSupervisors, icon: Shield },
+          { href: '/admin/invitations', label: t.admin.sidebarInvitations || t.admin.invitations, icon: Mail },
           { href: '/admin/readers', label: t.admin.readers, icon: BookOpen },
           { href: '/admin/reader-applications', label: t.admin.readerApplications, icon: UserCheck },
         ]
       },
       {
-        title: 'العملية التعليمية', items: [
+        title: t.admin.sidebarEducationalProcess, items: [
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
-          { href: '/admin/memorization-paths', label: t.admin.memorizationPaths || 'مسارات الحفظ', icon: Route },
-          { href: '/admin/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || 'مسارات التجويد', icon: GraduationCap },
+          { href: '/admin/memorization-paths', label: t.admin.sidebarMemorizationPaths || t.admin.memorizationPaths, icon: Route },
+          { href: '/admin/tajweed-paths', label: t.admin.sidebarTajweedPaths || t.tajweedPaths?.tajweedTitle, icon: GraduationCap },
           { href: '/admin/bookings', label: t.admin.bookings, icon: CalendarDays },
-          { href: '/admin/halaqat', label: 'الحلقات', icon: GraduationCap },
-          { href: '/admin/video-settings', label: 'إعدادات البث والفيديو', icon: Video },
+          { href: '/admin/halaqat', label: t.admin.sidebarHalaqat, icon: GraduationCap },
+          { href: '/admin/video-settings', label: t.admin.sidebarVideoBroadcast, icon: Video },
           { href: '/admin/certificates', label: t.admin.certificates.title, icon: Award },
         ]
       },
       {
-        title: 'المجتمع والتفاعل', items: [
-          { href: '/admin/competitions', label: 'مسابقات المقرأة', icon: Trophy },
+        title: t.admin.sidebarCommunity, items: [
+          { href: '/admin/competitions', label: t.admin.sidebarCompetitions, icon: Trophy },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
-          { href: '/community/maqraa/admin', label: 'منتدى المقرأة', icon: MessagesSquare },
-          { href: '/community/maqraa/admin/manage', label: 'إدارة المنتدى', icon: Shield },
-          { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
-          { href: '/admin/library/books', label: 'مكتبة الكتب', icon: BookOpen },
+          { href: '/community/maqraa/admin', label: t.admin.sidebarForum, icon: MessagesSquare },
+          { href: '/community/maqraa/admin/manage', label: t.admin.sidebarManageForum, icon: Shield },
+          { href: '/academy/fiqh', label: t.admin.sidebarFiqhLibrary || t.academy?.fiqhLibrary, icon: Library },
+          { href: '/admin/library/books', label: t.admin.sidebarBooksLibrary || t.academy?.booksLibrary, icon: BookOpen },
         ]
       },
       {
@@ -156,18 +156,18 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
       {
         items: [
           { href: '/admin', label: t.admin.dashboard, icon: LayoutDashboard },
-          { href: '/admin/supervisor-tasks', label: 'مهامي والمعلّقات', icon: ListChecks },
+          { href: '/admin/supervisor-tasks', label: t.admin.sidebarSupervisorTasks, icon: ListChecks },
           { href: '/admin/users', label: t.admin.users, icon: Users },
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
-          { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
-          { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
+          { href: '/community/maqraa/forum', label: t.admin.sidebarForum || t.academy?.forum, icon: MessagesSquare },
+          { href: '/academy/fiqh', label: t.admin.sidebarFiqhLibrary || t.academy?.fiqhLibrary, icon: Library },
         ]
       },
       {
         title: t.shell.account,
         items: [
-          { href: '/admin/activity-logs', label: 'سجل نشاطي', icon: ScrollText },
+          { href: '/admin/activity-logs', label: t.admin.sidebarActivityLog, icon: ScrollText },
           { href: '/admin/profile', label: t.student.profile, icon: User },
         ]
       }
@@ -179,20 +179,20 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
       {
         items: [
           { href: '/admin', label: t.admin.dashboard, icon: LayoutDashboard },
-          { href: '/admin/supervisor-tasks', label: 'مهامي والمعلّقات', icon: ListChecks },
+          { href: '/admin/supervisor-tasks', label: t.admin.sidebarSupervisorTasks, icon: ListChecks },
           { href: '/admin/readers', label: t.admin.readers, icon: BookOpen },
           { href: '/admin/reader-applications', label: t.admin.readerApplications, icon: UserCheck },
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
-          { href: '/community/maqraa/forum', label: 'منتدى المقرأة', icon: MessagesSquare },
-          { href: '/community/maqraa/admin/manage', label: 'إدارة المنتدى', icon: Shield },
-          { href: '/academy/fiqh', label: 'المكتبة الفقهية', icon: Library },
+          { href: '/community/maqraa/forum', label: t.admin.sidebarForum || t.academy?.forum, icon: MessagesSquare },
+          { href: '/community/maqraa/admin/manage', label: t.admin.sidebarManageForum, icon: Shield },
+          { href: '/academy/fiqh', label: t.admin.sidebarFiqhLibrary || t.academy?.fiqhLibrary, icon: Library },
         ]
       },
       {
         title: t.shell.account,
         items: [
-          { href: '/admin/activity-logs', label: 'سجل نشاطي', icon: ScrollText },
+          { href: '/admin/activity-logs', label: t.admin.sidebarActivityLog, icon: ScrollText },
           { href: '/admin/profile', label: t.student.profile, icon: User },
         ]
       }
@@ -311,7 +311,7 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
           ...items.slice(0, idx + 1),
           {
             href: '/student/certificates#data-required',
-            label: 'إكمال بيانات الشهادة',
+            label: t.admin.sidebarCompleteCertData,
             icon: Award,
             badge: pendingCerts,
           } as NavItem,
@@ -337,7 +337,7 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
         sections: [
           {
             items: [
-              { href: '/reader/pending', label: t.reader?.applicationStatus || 'طلب الانضمام', icon: FileEdit },
+              { href: '/reader/pending', label: t.reader?.applicationStatus || t.admin.sidebarJoinApplication, icon: FileEdit },
             ],
           },
         ] as NavSection[],
@@ -378,7 +378,7 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
               "font-black text-primary leading-none tracking-tight",
               collapsed ? "text-2xl" : "text-3xl"
             )}>
-              {collapsed ? "إ" : "إتقان"}
+              {collapsed ? "إ" : t.appName}
             </span>
           </Link>
 
