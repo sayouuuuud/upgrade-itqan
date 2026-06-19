@@ -100,8 +100,8 @@ export default function AdminDashboard() {
   if (data && (data as any).error) {
     return (
       <div className="flex flex-col items-center justify-center p-20 gap-4">
-        <div className="text-red-500 font-bold text-xl">حدث خطأ أثناء تحميل البيانات</div>
-        <div className="text-muted-foreground">يرجى المحاولة مرة أخرى أو التواصل مع الدعم.</div>
+        <div className="text-red-500 font-bold text-xl">{t.admin.dashLoadError}</div>
+        <div className="text-muted-foreground">{t.admin.dashLoadErrorHint}</div>
         <code className="bg-red-50 text-red-800 p-2 rounded text-sm">{(data as any).message}</code>
       </div>
     )

@@ -20,6 +20,7 @@ import { downloadCsv } from "@/lib/csv-export"
 
 export default function AdminRecitationsPage() {
   const { t, locale } = useI18n()
+  const a = t.admin
   const isAr = locale === "ar"
 
   const [recitations, setRecitations] = useState<any[]>([])
@@ -107,7 +108,7 @@ export default function AdminRecitationsPage() {
 
   const handleExport = () => {
     const headers = [
-      "ID", t.auth.student, isAr ? "البريد" : "Email", t.admin.surahAyahs,
+      "ID", t.auth.student, a.rcEmailHeader, t.admin.surahAyahs,
       t.admin.assignedReader, t.admin.sessionReader, t.reader.status, t.admin.submissionDate,
     ]
     const rows = recitations.map((rec) => [
@@ -222,7 +223,7 @@ export default function AdminRecitationsPage() {
               variant="ghost"
               className="h-12 px-6 text-xs font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 hover:bg-rose-500/5 rounded-2xl shrink-0"
             >
-              {isAr ? "مسح التصفية" : "Reset Filters"}
+              {a.rcResetFilters}
             </Button>
           )}
         </div>
@@ -370,7 +371,7 @@ export default function AdminRecitationsPage() {
               {t.admin.assignReader}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-bold">
-              {isAr ? "اختر قارئاً من القائمة لتعيينه لهذه التلاوة" : "Select a reader from the list to assign to this recitation"}
+              {a.rcSelectReader}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-6">
@@ -378,7 +379,7 @@ export default function AdminRecitationsPage() {
               <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder={isAr ? "بحث بالاسم أو الإيميل أو الـ ID..." : "Search by name, email or ID..."}
+                placeholder={a.rcSearchPlaceholder}
                 value={readerSearchQuery}
                 onChange={(e) => setReaderSearchQuery(e.target.value)}
                 className="w-full h-11 pr-11 pl-4 rounded-2xl border-border bg-muted/30 focus:bg-card focus:ring-4 focus:ring-primary/10 transition-all font-bold"
@@ -440,7 +441,7 @@ export default function AdminRecitationsPage() {
               onClick={() => handleReassign("")}
               disabled={processing}
             >
-              {isAr ? "إزالة تعيين القارئ الحالي" : "Unassign Reader"}
+              {a.rcUnassignReader}
             </button>
           </div>
         </div>

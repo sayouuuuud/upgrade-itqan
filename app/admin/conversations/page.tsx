@@ -113,7 +113,7 @@ function SupervisionTab({ isAr, t }: { isAr: boolean, t: any }) {
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-all" />
                 <Input
                     className="pr-10 bg-card border-border focus:bg-card transition-all rounded-xl"
-                    placeholder={isAr ? 'البحث باسم الطالب أو المقرئ...' : 'Search by student or reader name...'}
+                    placeholder={a.cvSearchPlaceholder}
                     value={search}
                     onChange={e => { setSearch(e.target.value); setPage(1) }}
                 />
@@ -129,7 +129,7 @@ function SupervisionTab({ isAr, t }: { isAr: boolean, t: any }) {
                 {loading ? (
                     <TableSkeleton rows={5} cols={4} />
                 ) : conversations.length === 0 ? (
-                    <div className="p-12 text-center text-gray-400 font-medium">{isAr ? 'لا توجد محادثات' : 'No conversations found'}</div>
+                    <div className="p-12 text-center text-gray-400 font-medium">{a.cvNoConversations}</div>
                 ) : (
                     <div className="divide-y divide-border">
                         {conversations.map(c => (
@@ -147,11 +147,11 @@ function SupervisionTab({ isAr, t }: { isAr: boolean, t: any }) {
                                             <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> {c.reader_name}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-muted-foreground truncate mb-2">{c.last_message_preview || (isAr ? 'لا توجد رسائل بعد' : 'No messages yet')}</p>
+                                    <p className="text-sm text-muted-foreground truncate mb-2">{c.last_message_preview || a.cvNoMessagesYet}</p>
                                     <div className="flex items-center gap-4">
                                         <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
                                             <MessageCircle className="w-3 h-3" />
-                                            {c.message_count} {isAr ? 'رسالة' : 'messages'}
+                                            {c.message_count} {a.cvMessages}
                                         </span>
                                         {c.last_message_at && (
                                             <span className="text-[11px] font-bold text-muted-foreground">
@@ -159,20 +159,20 @@ function SupervisionTab({ isAr, t }: { isAr: boolean, t: any }) {
                                             </span>
                                         )}
                                         <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${c.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
-                                            {c.is_active ? (isAr ? 'نشطة' : 'Active') : (isAr ? 'مغلقة' : 'Closed')}
+                                            {c.is_active ? a.cvActive : a.cvClosed}
                                         </span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                     <Button variant="outline" size="sm" onClick={() => openConvo(c)} className="rounded-xl border-border hover:bg-muted h-9 px-4 font-bold text-xs gap-2">
                                         <MessageCircle className="w-3.5 h-3.5" />
-                                        {isAr ? 'عرض' : 'View'}
+                                        {a.cvView}
                                     </Button>
                                     <Button
                                         variant="ghost" size="sm"
                                         onClick={() => toggleActive(c.id, c.is_active || false)}
                                         className={`rounded-xl h-9 w-9 p-0 ${c.is_active ? 'hover:bg-red-500/10 hover:text-red-500' : 'hover:bg-emerald-500/10 hover:text-emerald-500'}`}
-                                        title={c.is_active ? (isAr ? 'إغلاق المحادثة' : 'Close Conversation') : (isAr ? 'فتح المحادثة' : 'Open Conversation')}
+                                        title={c.is_active ? a.cvCloseConversation : a.cvOpenConversation}
                                     >
                                         {c.is_active
                                             ? <XCircle className="w-4 h-4" />
@@ -187,7 +187,7 @@ function SupervisionTab({ isAr, t }: { isAr: boolean, t: any }) {
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between p-5 border-t border-border bg-muted/10">
                         <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-xl font-bold">{t.previous}</Button>
-                        <span className="text-sm font-bold text-muted-foreground">{isAr ? `صفحة ${page} من ${totalPages}` : `Page ${page} of ${totalPages}`}</span>
+                        <span className="text-sm font-bold text-muted-foreground">{a.cvPage.replace('{page}', String(page)).replace('{total}', String(totalPages))}</span>
                         <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-xl font-bold">{t.next}</Button>
                     </div>
                 )}
@@ -201,7 +201,7 @@ function SupervisionTab({ isAr, t }: { isAr: boolean, t: any }) {
                                 <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary">
                                     <Shield className="w-5 h-5" />
                                 </div>
-                                <span>{isAr ? 'تفاصيل المحادثة' : 'Conversation Details'}</span>
+                                <span>{a.cvConversationDetails}</span>
                             </div>
                             <span className="text-sm font-bold text-muted-foreground">{selectedConvo ? `${selectedConvo.student_name} ↔ ${selectedConvo.reader_name}` : ''}</span>
                         </DialogTitle>
@@ -213,7 +213,7 @@ function SupervisionTab({ isAr, t }: { isAr: boolean, t: any }) {
                                 <p className="text-muted-foreground font-bold text-sm tracking-wide">{t.loading}</p>
                             </div>
                         ) : messages.length === 0 ? (
-                            <p className="text-center text-muted-foreground font-bold text-sm py-12">{isAr ? 'لا توجد رسائل' : 'No messages'}</p>
+                            <p className="text-center text-muted-foreground font-bold text-sm py-12">{a.cvNoMessages}</p>
                         ) : (
                             messages.map(m => (
                                 <div key={m.id} className={`flex gap-3 ${m.sender_role === 'reader' ? '' : 'flex-row-reverse'}`}>
@@ -225,7 +225,7 @@ function SupervisionTab({ isAr, t }: { isAr: boolean, t: any }) {
                                         : 'bg-card border border-blue-500/10 text-blue-100 rounded-tl-none'}`}>
                                         <div className="flex items-center justify-between gap-4 mb-1.5">
                                             <span className={`text-[11px] font-black uppercase tracking-wider ${m.sender_role === 'reader' ? 'text-emerald-400' : 'text-blue-400'}`}>
-                                                {m.sender_name} · {m.sender_role === 'reader' ? (isAr ? 'مقرئ' : 'Reader') : (isAr ? 'طالب' : 'Student')}
+                                                {m.sender_name} · {m.sender_role === 'reader' ? a.cvReader : a.cvStudent}
                                             </span>
                                             <span className="text-[10px] font-bold text-muted-foreground">
                                                 {new Date(m.created_at).toLocaleTimeString(isAr ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
@@ -276,7 +276,7 @@ function ContactMessagesTab({ isAr, t }: { isAr: boolean, t: any }) {
     }
 
     const deleteMessage = async (id: string) => {
-        if (!confirm(isAr ? 'هل أنت متأكد من حذف هذه الرسالة؟' : 'Are you sure you want to delete this message?')) return
+        if (!confirm(a.cvDeleteMessageConfirm)) return
         const res = await fetch(`/api/admin/contact-messages?id=${id}`, {
             method: 'DELETE',
         })
@@ -297,7 +297,7 @@ function ContactMessagesTab({ isAr, t }: { isAr: boolean, t: any }) {
                 {loading ? (
                     <div className="flex justify-center p-16"><Loader2 className="w-7 h-7 animate-spin text-primary" /></div>
                 ) : messages.length === 0 ? (
-                    <div className="p-12 text-center text-muted-foreground font-medium">{isAr ? 'لا توجد رسائل' : 'No messages found'}</div>
+                    <div className="p-12 text-center text-muted-foreground font-medium">{a.cvNoMessages}</div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse">
@@ -466,7 +466,7 @@ function DirectChatTab({ isAr, t }: { isAr: boolean, t: any }) {
             id: `tmp-${Date.now()}`,
             message_text: text,
             sender_id: currentUserId || "",
-            sender_name: isAr ? "أنت" : "You",
+            sender_name: a.cvYou,
             sender_role: "admin",
             sender_avatar: null,
             created_at: new Date().toISOString(),
@@ -485,9 +485,9 @@ function DirectChatTab({ isAr, t }: { isAr: boolean, t: any }) {
         } finally { setSending(false) }
     }
 
-    const getOtherPartyName = (c: Conversation) => c.student_name || c.reader_name || (isAr ? "مستخدم" : "User")
+    const getOtherPartyName = (c: Conversation) => c.student_name || c.reader_name || a.cvUser
     const getOtherPartyAvatar = (c: Conversation) => c.student_avatar || c.reader_avatar
-    const getOtherPartyRole = (c: Conversation) => c.student_id ? (isAr ? "طالب" : "Student") : (isAr ? "مقرئ" : "Reader")
+    const getOtherPartyRole = (c: Conversation) => c.student_id ? a.cvStudent : a.cvReader
 
     if (loading) return <ConversationsSkeleton />
 
@@ -505,7 +505,7 @@ function DirectChatTab({ isAr, t }: { isAr: boolean, t: any }) {
                         <div className="p-10 text-center space-y-3">
                             <MessageSquare className="w-10 h-10 text-muted mx-auto" />
                             <p className="text-xs font-bold text-muted-foreground leading-relaxed">
-                                {isAr ? "اذهب لصفحة المستخدم لبدء محادثة" : "Go to user profile to start chat"}
+                                {a.cvGoToProfile}
                             </p>
                         </div>
                     ) : (
@@ -548,7 +548,7 @@ function DirectChatTab({ isAr, t }: { isAr: boolean, t: any }) {
                         <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center border border-border shadow-inner">
                             <MessageSquare className="w-10 h-10 opacity-30" />
                         </div>
-                        <p className="text-sm font-black tracking-widest uppercase">{isAr ? "اختر محادثة للبدء" : "Select a conversation to start"}</p>
+                        <p className="text-sm font-black tracking-widest uppercase">{a.cvSelectConversation}</p>
                     </div>
                 ) : (
                     <>
@@ -573,7 +573,7 @@ function DirectChatTab({ isAr, t }: { isAr: boolean, t: any }) {
                             ) : messages.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-10 gap-3">
                                     <MessageSquare className="w-12 h-12 opacity-20" />
-                                    <p className="text-xs font-black uppercase tracking-widest">{isAr ? "ابدأ المحادثة..." : "Start the conversation..."}</p>
+                                    <p className="text-xs font-black uppercase tracking-widest">{a.cvStartConversation}</p>
                                 </div>
                             ) : (
                                 messages.map(m => {
@@ -612,7 +612,7 @@ function DirectChatTab({ isAr, t }: { isAr: boolean, t: any }) {
                                 value={text}
                                 onChange={e => setText(e.target.value)}
                                 onKeyDown={e => e.key === "Enter" && sendMessage()}
-                                placeholder={isAr ? "اكتب رسالتك..." : "Type your message..."}
+                                placeholder={a.cvTypeMessage}
                                 className="flex-1 bg-muted/30 border border-border rounded-2xl px-5 py-2.5 h-12 text-right text-sm font-bold text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary/20 focus:bg-card outline-none placeholder:text-muted-foreground transition-all"
                             />
                         </div>
@@ -732,7 +732,7 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
             id: `tmp-${Date.now()}`,
             message_text: text,
             sender_id: currentUserId || "",
-            sender_name: isAr ? "أنت" : "You",
+            sender_name: a.cvYou,
             sender_role: "admin",
             sender_avatar: null,
             created_at: new Date().toISOString(),
@@ -756,9 +756,9 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
         } finally { setSending(false) }
     }
 
-    const getOtherPartyName = (c: Conversation) => c.student_name || c.reader_name || (isAr ? "مستخدم" : "User")
+    const getOtherPartyName = (c: Conversation) => c.student_name || c.reader_name || a.cvUser
     const getOtherPartyAvatar = (c: Conversation) => c.student_avatar || c.reader_avatar
-    const getOtherPartyRole = (c: Conversation) => c.student_id ? (isAr ? "طالب" : "Student") : (isAr ? "مقرئ" : "Reader")
+    const getOtherPartyRole = (c: Conversation) => c.student_id ? a.cvStudent : a.cvReader
 
     if (loading) return <ConversationsSkeleton />
 
@@ -768,7 +768,7 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
             <div className="w-full lg:w-72 shrink-0 bg-card border border-border rounded-3xl overflow-hidden flex flex-col shadow-sm h-[350px] lg:h-full">
                 <div className="px-5 py-4 border-b border-border bg-muted/30">
                     <p className="font-black text-sm text-foreground tracking-wide uppercase">
-                        {isAr ? "تذاكر الدعم" : "Support Tickets"} <span className="text-muted-foreground font-bold ml-1">({conversations.length})</span>
+                        {a.cvSupportTickets} <span className="text-muted-foreground font-bold ml-1">({conversations.length})</span>
                     </p>
                 </div>
                 <div className="overflow-y-auto flex-1">
@@ -776,7 +776,7 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
                         <div className="p-10 text-center space-y-3">
                             <Shield className="w-10 h-10 text-muted mx-auto" />
                             <p className="text-xs font-bold text-muted-foreground leading-relaxed">
-                                {isAr ? "لا توجد تذاكر حالياً" : "No tickets yet"}
+                                {a.cvNoTickets}
                             </p>
                         </div>
                     ) : (
@@ -827,7 +827,7 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
                         <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center border border-border shadow-inner">
                             <Shield className="w-10 h-10 opacity-30" />
                         </div>
-                        <p className="text-sm font-black tracking-widest uppercase">{isAr ? "اختر تذكرة للبدء" : "Select a ticket to start"}</p>
+                        <p className="text-sm font-black tracking-widest uppercase">{a.cvSelectTicket}</p>
                     </div>
                 ) : (
                     <>
@@ -843,7 +843,7 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
                                     <div className="flex items-center gap-2">
                                         <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-tighter">{getOtherPartyRole(activeConv)}</p>
                                         <span className="text-[10px] text-muted-foreground font-black">·</span>
-                                        <p className="text-[10px] font-black text-orange-400 uppercase tracking-tighter">{isAr ? "تذكرة رقم" : "Ticket #"}{activeConv.id.slice(-4)}</p>
+                                        <p className="text-[10px] font-black text-orange-400 uppercase tracking-tighter">{a.cvTicketNumber}{activeConv.id.slice(-4)}</p>
                                     </div>
                                 </div>
                             </div>
@@ -854,7 +854,7 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
                                         value={activeConv.assigned_supervisor_id || ""}
                                         onChange={(e) => delegateTicket(activeConv.id, e.target.value)}
                                     >
-                                        <option value="">{isAr ? "تعيين مشرف" : "Assign Supervisor"}</option>
+                                        <option value="">{a.cvAssignSupervisor}</option>
                                         {supervisors.map(s => (
                                             <option key={s.id} value={s.id}>{s.full_name}</option>
                                         ))}
@@ -865,8 +865,8 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
                                     value={activeConv.ticket_status || "open"}
                                     onChange={(e) => updateTicketStatus(activeConv.id, e.target.value)}
                                 >
-                                    <option value="open">{isAr ? "مفتوحة" : "Open"}</option>
-                                    <option value="resolved">{isAr ? "تم الحل" : "Resolved"}</option>
+                                    <option value="open">{a.cvOpen}</option>
+                                    <option value="resolved">{a.cvResolved}</option>
                                 </select>
                             </div>
                         </div>
@@ -879,7 +879,7 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
                                 </div>
                             ) : messages.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                                    <p className="text-xs font-black uppercase tracking-widest">{isAr ? "لا توجد رسائل..." : "No messages yet..."}</p>
+                                    <p className="text-xs font-black uppercase tracking-widest">{a.cvNoMessagesDots}</p>
                                 </div>
                             ) : (
                                 messages.map(m => {
@@ -917,7 +917,7 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
                                 onChange={e => setText(e.target.value)}
                                 onKeyDown={e => e.key === "Enter" && sendMessage()}
                                 disabled={activeConv.ticket_status === 'resolved'}
-                                placeholder={activeConv.ticket_status === 'resolved' ? (isAr ? "التذكرة مغلقة" : "Ticket Resolved") : (isAr ? "اكتب ردك..." : "Type your reply...")}
+                                placeholder={activeConv.ticket_status === 'resolved' ? a.cvTicketResolved : a.cvTypeReply}
                                 className="flex-1 bg-muted/30 border border-border rounded-2xl px-5 py-2.5 h-12 text-right text-sm font-bold text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary/20 focus:bg-card outline-none placeholder:text-muted-foreground transition-all"
                             />
                         </div>
@@ -930,6 +930,7 @@ function TicketsTab({ isAr, t }: { isAr: boolean, t: any }) {
 
 const AdminConversationsContent = () => {
     const { t, locale } = useI18n()
+    const a = t.admin
     const searchParams = useSearchParams()
     const isAr = locale === "ar"
 
@@ -959,7 +960,7 @@ const AdminConversationsContent = () => {
                         {t.admin.directChat}
                     </TabsTrigger>
                     <TabsTrigger value="tickets" className="rounded-xl px-8 font-black text-xs uppercase transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                        {isAr ? "التذاكر" : "Tickets"}
+                        {a.cvTickets}
                     </TabsTrigger>
                     <TabsTrigger value="contact" className="rounded-xl px-8 font-black text-xs uppercase transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                         {t.admin.contactMessages}

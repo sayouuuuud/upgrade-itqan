@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { SectionCard, ToggleRow } from "./section-card"
 import type { MaqraahSettings } from "../hooks/use-maqraah-settings"
+import { useI18n } from "@/lib/i18n/context"
 
 interface Props {
   settings: MaqraahSettings
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export function SecuritySettings({ settings, onUpdate, onReset }: Props) {
+  const { t } = useI18n()
+  const a = t.admin
   const ipWhitelist = settings.maqraah_security_admin_ip_whitelist || []
   const policy = settings.maqraah_security_password_policy || {}
 
@@ -31,10 +34,10 @@ export function SecuritySettings({ settings, onUpdate, onReset }: Props) {
 
   return (
     <div className="space-y-6">
-      <SectionCard icon={Shield} title="الجلسات والدخول" description="ضبط مهلة الجلسة ومحاولات الدخول" onReset={onReset}>
+      <SectionCard icon={Shield} title={a.secSessionsLogin} description={a.secSessionsLoginDesc} onReset={onReset}>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
-            <Label className="text-sm">مهلة الجلسة (دقائق)</Label>
+            <Label className="text-sm">{a.secSessionTimeout}</Label>
             <Input
               type="number"
               min={5}
@@ -43,7 +46,7 @@ export function SecuritySettings({ settings, onUpdate, onReset }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm">أقصى محاولات دخول</Label>
+            <Label className="text-sm">{a.secMaxLoginAttempts}</Label>
             <Input
               type="number"
               min={1}
@@ -52,7 +55,7 @@ export function SecuritySettings({ settings, onUpdate, onReset }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm">مدة الحظر (دقائق)</Label>
+            <Label className="text-sm">{a.secLockDuration}</Label>
             <Input
               type="number"
               min={1}
@@ -63,9 +66,9 @@ export function SecuritySettings({ settings, onUpdate, onReset }: Props) {
         </div>
       </SectionCard>
 
-      <SectionCard icon={KeyRound} title="سياسة كلمة المرور" description="شروط كلمات مرور المستخدمين">
+      <SectionCard icon={KeyRound} title={a.secPasswordPolicy} description={a.secPasswordPolicyDesc}>
         <div className="space-y-2 max-w-xs">
-          <Label className="text-sm">الحد الأدنى لعدد الأحرف</Label>
+          <Label className="text-sm">{a.secMinLength}</Label>
           <Input
             type="number"
             min={6}
@@ -75,49 +78,49 @@ export function SecuritySettings({ settings, onUpdate, onReset }: Props) {
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <ToggleRow
-            label="حرف كبير (A-Z)"
+            label={a.secUppercase}
             checked={policy.require_uppercase ?? true}
             onChange={(v) => updatePolicy({ require_uppercase: v })}
           />
           <ToggleRow
-            label="حرف صغير (a-z)"
+            label={a.secLowercase}
             checked={policy.require_lowercase ?? true}
             onChange={(v) => updatePolicy({ require_lowercase: v })}
           />
           <ToggleRow
-            label="أرقام (0-9)"
+            label={a.secNumbers}
             checked={policy.require_numbers ?? true}
             onChange={(v) => updatePolicy({ require_numbers: v })}
           />
           <ToggleRow
-            label="رموز خاصة (!@#)"
+            label={a.secSpecialChars}
             checked={policy.require_special ?? false}
             onChange={(v) => updatePolicy({ require_special: v })}
           />
         </div>
       </SectionCard>
 
-      <SectionCard icon={Lock} title="حماية لوحة الإدارة" description="إجراءات أمنية إضافية للمشرفين">
+      <SectionCard icon={Lock} title={a.secAdminProtection} description={a.secAdminProtectionDesc}>
         <ToggleRow
-          label="المصادقة الثنائية للمشرفين"
-          description="إلزام المشرفين باستخدام 2FA"
+          label={a.secTwoFactor}
+          description={a.secTwoFactorDesc}
           checked={settings.maqraah_security_admin_2fa ?? false}
           onChange={(v) => onUpdate({ maqraah_security_admin_2fa: v })}
         />
         <div className="space-y-2">
-          <Label className="text-sm">قائمة IP المسموح بها للوحة الإدارة</Label>
+          <Label className="text-sm">{a.secIpWhitelist}</Label>
           <Textarea
             dir="ltr"
             rows={3}
             value={ipWhitelist.join("\n")}
             onChange={(e) => updateIps(e.target.value)}
-            placeholder="192.168.1.1&#10;10.0.0.5"
+            placeholder={a.secIpWhitelistPlaceholder}
           />
-          <p className="text-[11px] text-muted-foreground">اتركه فارغاً للسماح من أي IP. عنوان واحد في كل سطر.</p>
+          <p className="text-[11px] text-muted-foreground">{a.secIpWhitelistHint}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label className="text-sm">حد الرفع اليومي (ميجابايت)</Label>
+            <Label className="text-sm">{a.secDailyUploadLimit}</Label>
             <Input
               type="number"
               min={0}
@@ -126,7 +129,7 @@ export function SecuritySettings({ settings, onUpdate, onReset }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm">حد طلبات API (في الدقيقة)</Label>
+            <Label className="text-sm">{a.secApiRateLimit}</Label>
             <Input
               type="number"
               min={0}
@@ -137,10 +140,10 @@ export function SecuritySettings({ settings, onUpdate, onReset }: Props) {
         </div>
       </SectionCard>
 
-      <SectionCard icon={Activity} title="سجل النشاط" description="تتبع إجراءات المستخدمين والمشرفين">
+      <SectionCard icon={Activity} title={a.secActivityLogs} description={a.secActivityLogsDesc}>
         <ToggleRow
-          label="تفعيل سجل النشاط"
-          description="تسجيل العمليات الحساسة للمراجعة"
+          label={a.secEnableActivityLogs}
+          description={a.secActivityLogsHint}
           checked={settings.maqraah_security_activity_logs_enabled ?? true}
           onChange={(v) => onUpdate({ maqraah_security_activity_logs_enabled: v })}
         />

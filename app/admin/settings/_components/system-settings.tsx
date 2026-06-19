@@ -25,6 +25,7 @@ import { AvatarUpload } from "@/components/avatar-upload"
 import { toast } from "sonner"
 import type { MaqraahSettings } from "../hooks/use-maqraah-settings"
 import { SectionCard } from "./section-card"
+import { useI18n } from "@/lib/i18n/context"
 
 interface Props {
   settings: MaqraahSettings
@@ -33,32 +34,33 @@ interface Props {
   onReset: () => void
 }
 
-const timezones = [
-  { value: "Asia/Riyadh", label: "الرياض (GMT+3)" },
-  { value: "Asia/Dubai", label: "دبي (GMT+4)" },
-  { value: "Africa/Cairo", label: "القاهرة (GMT+2)" },
-  { value: "Asia/Amman", label: "عمّان (GMT+3)" },
-  { value: "Asia/Beirut", label: "بيروت (GMT+2)" },
-  { value: "Asia/Baghdad", label: "بغداد (GMT+3)" },
-  { value: "Asia/Kuwait", label: "الكويت (GMT+3)" },
-  { value: "Europe/London", label: "لندن (GMT+0)" },
-]
-
-const strategies = [
-  { value: "least_booked_today", label: "الأقل حجزاً اليوم" },
-  { value: "least_total_bookings", label: "الأقل حجوزاً إجمالاً" },
-  { value: "random", label: "عشوائي" },
-]
-
 type BrandingField = "logoUrl" | "faviconUrl" | "dashboardLogoUrl"
 
 export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props) {
+  const { t } = useI18n()
+  const a = t.admin
   const branding = settings.branding || {}
   const contact = settings.contact_info || {}
 
+  const timezones = [
+    { value: "Asia/Riyadh", label: a.tzRiyadh },
+    { value: "Asia/Dubai", label: a.tzDubai },
+    { value: "Africa/Cairo", label: a.tzCairo },
+    { value: "Asia/Amman", label: a.tzAmman },
+    { value: "Asia/Beirut", label: a.tzBeirut },
+    { value: "Asia/Baghdad", label: a.tzBaghdad },
+    { value: "Asia/Kuwait", label: a.tzKuwait },
+    { value: "Europe/London", label: a.tzLondon },
+  ]
+
+  const strategies = [
+    { value: "least_booked_today", label: a.ssStrategyLeastBookedToday },
+    { value: "least_total_bookings", label: a.ssStrategyLeastTotal },
+    { value: "random", label: a.ssStrategyRandom },
+  ]
+
   const [uploadingField, setUploadingField] = useState<BrandingField | null>(null)
 
-  // Admin profile (self-contained, saved via /api/admin/profile)
   const [profile, setProfile] = useState({ name: "", email: "", password: "", avatar_url: "" })
   const [profileSaving, setProfileSaving] = useState(false)
 
@@ -96,7 +98,7 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
     const res = await fetch("/api/upload", { method: "POST", body: formData })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      throw new Error(err.error || "فشل رفع الملف")
+      throw new Error(err.error || a.ssImageUploadFailed)
     }
     const data = await res.json()
     return data.url || data.imageUrl || null
@@ -106,7 +108,7 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
     const file = e.target.files?.[0]
     if (!file) return
     if (file.size > 4 * 1024 * 1024) {
-      toast.error("حجم الملف يجب أن يكون أقل من 4MB")
+      toast.error(a.ssImageSizeError)
       return
     }
     setUploadingField(field)
@@ -114,10 +116,10 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
       const url = await uploadFile(file)
       if (url) {
         updateBranding(field, url)
-        toast.success("تم رفع الملف")
+        toast.success(a.ssImageUploaded)
       }
     } catch (err: any) {
-      toast.error(err.message || "فشل رفع الملف")
+      toast.error(err.message || a.ssImageUploadFailed)
     } finally {
       setUploadingField(null)
       e.target.value = ""
@@ -134,28 +136,27 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
       })
       if (res.ok) {
         setProfile((p) => ({ ...p, password: "" }))
-        toast.success("تم حفظ بيانات الحساب")
+        toast.success(a.ssProfileSaved)
       } else {
         const d = await res.json().catch(() => ({}))
-        toast.error(d.error || "فشل حفظ بيانات الحساب")
+        toast.error(d.error || a.ssProfileSaveFailed)
       }
     } catch {
-      toast.error("حدث خطأ أثناء الحفظ")
+      toast.error(a.ssProfileSaveError)
     } finally {
       setProfileSaving(false)
     }
   }
 
   const imageFields: { field: BrandingField; label: string; hint: string }[] = [
-    { field: "logoUrl", label: "الشعار الرئيسي", hint: "يظهر في الواجهة العامة وصفحات الدخول" },
-    { field: "dashboardLogoUrl", label: "شعار لوحة التحكم", hint: "يظهر داخل لوحات التحكم" },
-    { field: "faviconUrl", label: "أيقونة الموقع (Favicon)", hint: "أيقونة التبويب في المتصفح" },
+    { field: "logoUrl", label: a.ssLogoMain, hint: a.ssLogoMainHint },
+    { field: "dashboardLogoUrl", label: a.ssLogoDashboard, hint: a.ssLogoDashboardHint },
+    { field: "faviconUrl", label: a.ssFavicon, hint: a.ssFaviconHint },
   ]
 
   return (
     <div className="space-y-6">
-      {/* Admin Profile */}
-      <SectionCard icon={User} title="حساب المشرف" description="بيانات الدخول الخاصة بك">
+      <SectionCard icon={User} title={a.ssAdminProfile} description={a.ssAdminProfileDesc}>
         <div className="flex items-center gap-4">
           <AvatarUpload
             currentUrl={profile.avatar_url}
@@ -168,26 +169,26 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ avatar_url: url }),
               })
-              toast.success("تم تحديث الصورة")
+              toast.success(a.ssImageUpdated)
             }}
           />
           <div>
-            <p className="text-sm font-semibold text-foreground">الصورة الشخصية</p>
-            <p className="text-xs text-muted-foreground mt-0.5">اضغط لتحديث صورتك</p>
+            <p className="text-sm font-semibold text-foreground">{a.ssPhotoLabel}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{a.ssPhotoHint}</p>
           </div>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label className="text-sm">الاسم الكامل</Label>
+            <Label className="text-sm">{a.ssFullName}</Label>
             <Input
               value={profile.name}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-              placeholder="الاسم الكامل"
+              placeholder={a.ssFullNamePlaceholder}
               className="h-11"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm">البريد الإلكتروني</Label>
+            <Label className="text-sm">{a.ssEmail}</Label>
             <Input
               type="email"
               dir="ltr"
@@ -198,13 +199,13 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <Label className="text-sm">كلمة مرور جديدة</Label>
+            <Label className="text-sm">{a.ssNewPassword}</Label>
             <Input
               type="password"
               dir="ltr"
               value={profile.password}
               onChange={(e) => setProfile({ ...profile, password: e.target.value })}
-              placeholder="اتركها فارغة للإبقاء على الحالية"
+              placeholder={a.ssNewPasswordPlaceholder}
               className="h-11"
             />
           </div>
@@ -212,26 +213,25 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
         <div className="flex justify-end">
           <Button onClick={handleProfileSave} disabled={profileSaving}>
             {profileSaving ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
-            حفظ بيانات الحساب
+            {a.ssSaveProfile}
           </Button>
         </div>
       </SectionCard>
 
-      {/* Identity */}
-      <SectionCard icon={Globe} title="هوية النظام" description="اسم ووصف المنصة" onReset={onReset}>
+      <SectionCard icon={Globe} title={a.ssIdentity} description={a.ssIdentityDesc} onReset={onReset}>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label className="font-medium text-sm">اسم المنصة</Label>
+            <Label className="font-medium text-sm">{a.ssPlatformName}</Label>
             <Input
               value={settings.maqraah_general_name || ""}
               onChange={(e) => onUpdate({ maqraah_general_name: e.target.value })}
-              placeholder="مقرأة إتقان"
+              placeholder={a.ssPlatformNamePlaceholder}
               className="h-11"
             />
-            <p className="text-[11px] text-muted-foreground">يظهر في العنوان والإيميلات</p>
+            <p className="text-[11px] text-muted-foreground">{a.ssPlatformNameHint}</p>
           </div>
           <div className="space-y-2">
-            <Label className="font-medium text-sm">رابط الموقع (App URL)</Label>
+            <Label className="font-medium text-sm">{a.ssAppUrl}</Label>
             <Input
               dir="ltr"
               value={settings.app_url || ""}
@@ -239,31 +239,30 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
               placeholder="https://your-domain.com"
               className="h-11"
             />
-            <p className="text-[11px] text-muted-foreground">يُستخدم في روابط الدعوات والإيميلات</p>
+            <p className="text-[11px] text-muted-foreground">{a.ssAppUrlHint}</p>
           </div>
         </div>
         <div className="space-y-2">
-          <Label className="font-medium text-sm">وصف المنصة</Label>
+          <Label className="font-medium text-sm">{a.ssPlatformDescription}</Label>
           <Textarea
             value={settings.maqraah_general_description || ""}
             onChange={(e) => onUpdate({ maqraah_general_description: e.target.value })}
-            placeholder="وصف مختصر يظهر في نتائج البحث..."
+            placeholder={a.ssPlatformDescPlaceholder}
             className="min-h-[90px] resize-none"
           />
-          <p className="text-[11px] text-muted-foreground">للـ SEO meta description</p>
+          <p className="text-[11px] text-muted-foreground">{a.ssPlatformDescHint}</p>
         </div>
         {metadata.maqraah_general_name?.modifiedBy && (
           <p className="text-[11px] text-muted-foreground border-t pt-3 mt-2">
-            آخر تعديل بواسطة: {metadata.maqraah_general_name.modifiedBy}
+            {a.ssLastModifiedBy} {metadata.maqraah_general_name.modifiedBy}
             {metadata.maqraah_general_name.updatedAt && (
-              <> • {new Date(metadata.maqraah_general_name.updatedAt).toLocaleString("ar-EG")}</>
+              <> • {new Date(metadata.maqraah_general_name.updatedAt).toLocaleString(t.locale === "ar" ? "ar-EG" : "en-US")}</>
             )}
           </p>
         )}
       </SectionCard>
 
-      {/* Branding / Logos */}
-      <SectionCard icon={ImageIcon} title="الشعارات والأيقونات" description="شعار المنصة ولوحة التحكم وأيقونة الموقع">
+      <SectionCard icon={ImageIcon} title={a.ssBranding} description={a.ssBrandingDesc}>
         <div className="grid gap-5 md:grid-cols-3">
           {imageFields.map(({ field, label, hint }) => (
             <div key={field} className="space-y-2">
@@ -280,7 +279,7 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
                       type="button"
                       onClick={() => updateBranding(field, "")}
                       className="absolute -top-2 -left-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90"
-                      aria-label={`حذف ${label}`}
+                      aria-label={a.ssDeleteImage.replace('{label}', label)}
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -307,13 +306,12 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
         </div>
       </SectionCard>
 
-      {/* Contact */}
-      <SectionCard icon={Mail} title="معلومات التواصل" description="بيانات الاتصال الرسمية (تظهر للعامة)">
+      <SectionCard icon={Mail} title={a.ssContact} description={a.ssContactDesc}>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label className="font-medium text-sm flex items-center gap-2">
               <Mail className="w-4 h-4" />
-              البريد الرسمي
+              {a.ssOfficialEmail}
             </Label>
             <Input
               type="email"
@@ -327,7 +325,7 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
           <div className="space-y-2">
             <Label className="font-medium text-sm flex items-center gap-2">
               <Phone className="w-4 h-4" />
-              رقم الهاتف / واتساب
+              {a.ssPhone}
             </Label>
             <Input
               dir="ltr"
@@ -340,25 +338,24 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
           <div className="space-y-2 md:col-span-2">
             <Label className="font-medium text-sm flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              العنوان
+              {a.ssAddress}
             </Label>
             <Input
               value={contact.address || ""}
               onChange={(e) => updateContact("address", e.target.value)}
-              placeholder="المدينة، الدولة"
+              placeholder={a.ssAddressPlaceholder}
               className="h-11"
             />
           </div>
         </div>
       </SectionCard>
 
-      {/* Localization */}
-      <SectionCard icon={Clock} title="التوطين" description="المنطقة الزمنية واللغة">
+      <SectionCard icon={Clock} title={a.ssLocalization} description={a.ssLocalizationDesc}>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
             <Label className="font-medium text-sm flex items-center gap-2">
               <Clock className="w-4 h-4" />
-              المنطقة الزمنية
+              {a.ssTimezone}
             </Label>
             <Select
               value={settings.maqraah_general_timezone || "Asia/Riyadh"}
@@ -375,12 +372,12 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[11px] text-muted-foreground">مهم للجلسات والتذكيرات</p>
+            <p className="text-[11px] text-muted-foreground">{a.ssTimezoneHint}</p>
           </div>
           <div className="space-y-2">
             <Label className="font-medium text-sm flex items-center gap-2">
               <Languages className="w-4 h-4" />
-              اللغة الافتراضية
+              {a.ssDefaultLanguage}
             </Label>
             <Select
               value={settings.maqraah_general_language || "ar"}
@@ -390,15 +387,15 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ar">العربية</SelectItem>
-                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="ar">{a.ssArabic}</SelectItem>
+                <SelectItem value="en">{a.ssEnglish}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label className="font-medium text-sm flex items-center gap-2">
               <ArrowLeftRight className="w-4 h-4" />
-              اتجاه الواجهة
+              {a.ssInterfaceDirection}
             </Label>
             <Select
               value={settings.maqraah_general_direction || "rtl"}
@@ -408,18 +405,17 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="rtl">من اليمين لليسار (RTL)</SelectItem>
-                <SelectItem value="ltr">من اليسار لليمين (LTR)</SelectItem>
+                <SelectItem value="rtl">{a.ssRtl}</SelectItem>
+                <SelectItem value="ltr">{a.ssLtr}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
       </SectionCard>
 
-      {/* Reader assignment */}
-      <SectionCard icon={Shuffle} title="توزيع المقرئين" description="كيفية إسناد الطلاب للمقرئين عند الحجز">
+      <SectionCard icon={Shuffle} title={a.ssReaderAssignment} description={a.ssReaderAssignmentDesc}>
         <div className="space-y-2 max-w-sm">
-          <Label className="font-medium text-sm">استراتيجية التوزيع</Label>
+          <Label className="font-medium text-sm">{a.ssAssignmentStrategy}</Label>
           <Select
             value={settings.reader_assignment_strategy || "least_booked_today"}
             onValueChange={(v) => onUpdate({ reader_assignment_strategy: v })}
@@ -435,7 +431,7 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
               ))}
             </SelectContent>
           </Select>
-          <p className="text-[11px] text-muted-foreground">تُطبَّق على الحجوزات الجديدة</p>
+          <p className="text-[11px] text-muted-foreground">{a.ssAssignmentHint}</p>
         </div>
       </SectionCard>
     </div>

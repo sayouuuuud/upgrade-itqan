@@ -180,14 +180,13 @@ export function GamificationSettings({ settings, onUpdate, onReset }: Gamificati
 
           {/* Example */}
           <div className="mt-4 p-3 bg-success/10 text-success rounded-lg text-sm">
-            مثال: إذا سجّل طالب تلاوة (
-            {(settings as any).academy_gamification_points_recitation ?? 10} نقطة) وعنده Streak 7+ أيام، يحصل
-            على{" "}
+            {a.gmExampleText1}
+            {(settings as any).academy_gamification_points_recitation ?? 10}{a.gmExampleText2}
+            {" "}
             {Math.round(
               ((settings as any).academy_gamification_points_recitation ?? 10) *
                 (settings.academy_gamification_streak_multiplier ?? 1.5)
-            )}{" "}
-            نقطة
+            )}{a.gmExamplePoints}
           </div>
         </CardContent>
       </Card>
@@ -213,8 +212,8 @@ export function GamificationSettings({ settings, onUpdate, onReset }: Gamificati
                 <div className="flex-1">
                   <Label className="font-medium">{level.label}</Label>
                   <p className="text-xs text-muted-foreground">
-                    {index === 0 ? "من 0 إلى" : "من"} {(settings as any)[levelsConfig[index - 1]?.key] ?? (index === 0 ? 0 : "")}
-                    {index < levelsConfig.length - 1 ? " إلى" : "+"}
+                    {index === 0 ? a.gmRangeFrom : a.gmRangeFromLabel} {(settings as any)[levelsConfig[index - 1]?.key] ?? (index === 0 ? 0 : "")}
+                    {index < levelsConfig.length - 1 ? ` ${a.gmRangeTo}` : "+"}
                   </p>
                 </div>
                 <Input

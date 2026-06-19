@@ -13,12 +13,12 @@ import {
 } from "lucide-react"
 
 const STATUS_OPTIONS = [
-    { value: '', label: 'الكل', labelEn: 'All' },
-    { value: 'pending', label: 'بانتظار التأكيد', labelEn: 'Pending' },
-    { value: 'confirmed', label: 'مؤكد', labelEn: 'Confirmed' },
-    { value: 'completed', label: 'مكتمل', labelEn: 'Completed' },
-    { value: 'cancelled', label: 'ملغي', labelEn: 'Cancelled' },
-    { value: 'no_show', label: 'لم يحضر', labelEn: 'No Show' },
+    { value: '', key: 'bkgStatusAll' },
+    { value: 'pending', key: 'bkgStatusPending' },
+    { value: 'confirmed', key: 'bkgStatusConfirmed' },
+    { value: 'completed', key: 'bkgStatusCompleted' },
+    { value: 'cancelled', key: 'bkgStatusCancelled' },
+    { value: 'no_show', key: 'bkgStatusNoShow' },
 ]
 
 const STATUS_COLOR: Record<string, string> = {
@@ -32,6 +32,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default function AdminBookingsPage() {
     const { t, locale } = useI18n()
+    const a = t.admin
     const isAr = locale === "ar"
 
     const [bookings, setBookings] = useState<any[]>([])
@@ -113,19 +114,19 @@ export default function AdminBookingsPage() {
         <div className="space-y-8" dir={isAr ? "rtl" : "ltr"}>
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-black text-foreground">{isAr ? 'الجلسات والحجوزات' : 'Sessions & Bookings'}</h1>
-                <p className="text-muted-foreground font-bold mt-1 tracking-wide">{isAr ? 'إدارة ومتابعة جميع الجلسات المحجوزة' : 'Manage and track all booked sessions'}</p>
+                <h1 className="text-3xl font-black text-foreground">{a.bkgTitle}</h1>
+                <p className="text-muted-foreground font-bold mt-1 tracking-wide">{a.bkgDesc}</p>
             </div>
 
             {/* Stats Cards */}
             {stats && (
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                     {[
-                        { label: isAr ? 'اليوم' : 'Today', value: stats.today, color: 'bg-blue-500/10 text-blue-400', icon: CalendarDays },
-                        { label: isAr ? 'بانتظار التأكيد' : 'Pending', value: stats.pending, color: 'bg-orange-500/10 text-orange-400', icon: Clock },
-                        { label: isAr ? 'مؤكدة' : 'Confirmed', value: stats.confirmed, color: 'bg-emerald-500/10 text-emerald-400', icon: CheckCircle },
-                        { label: isAr ? 'مكتملة' : 'Completed', value: stats.completed, color: 'bg-purple-500/10 text-purple-400', icon: Users },
-                        { label: isAr ? 'ملغية' : 'Cancelled', value: stats.cancelled, color: 'bg-red-500/10 text-red-500', icon: XCircle },
+                        { label: a.bkgToday, value: stats.today, color: 'bg-blue-500/10 text-blue-400', icon: CalendarDays },
+                        { label: a.bkgPending, value: stats.pending, color: 'bg-orange-500/10 text-orange-400', icon: Clock },
+                        { label: a.bkgConfirmed, value: stats.confirmed, color: 'bg-emerald-500/10 text-emerald-400', icon: CheckCircle },
+                        { label: a.bkgCompleted, value: stats.completed, color: 'bg-purple-500/10 text-purple-400', icon: Users },
+                        { label: a.bkgCancelled, value: stats.cancelled, color: 'bg-red-500/10 text-red-500', icon: XCircle },
                     ].map(s => (
                         <div key={s.label} className="bg-card border border-border rounded-3xl p-5 shadow-sm transition-all hover:border-primary/20">
                             <div className="flex items-start justify-between">
@@ -170,27 +171,27 @@ export default function AdminBookingsPage() {
             <div className="bg-card border border-border rounded-3xl shadow-sm overflow-hidden">
                 <div className="p-5 border-b border-border bg-muted/30 flex items-center justify-between">
                     <h3 className="font-bold text-foreground">
-                        {isAr ? 'قائمة الحجوزات' : 'Bookings List'}
-                        <span className="text-muted-foreground font-normal text-sm mr-2">({total} {isAr ? 'إجمالي' : 'total'})</span>
+                        {a.bkgBookingsList}
+                        <span className="text-muted-foreground font-normal text-sm mr-2">({total} {a.bkgTotal})</span>
                     </h3>
                 </div>
 
                 {loading ? (
                     <div className="flex justify-center p-16"><Loader2 className="w-7 h-7 animate-spin text-primary" /></div>
                 ) : bookings.length === 0 ? (
-                    <div className="p-12 text-center text-muted-foreground font-medium">{isAr ? 'لا توجد حجوزات تطابق الفلاتر' : 'No bookings match the filters'}</div>
+                    <div className="p-12 text-center text-muted-foreground font-medium">{a.bkgNoResults}</div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-border text-muted-foreground bg-muted/50 text-[11px] font-black uppercase tracking-widest">
-                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{isAr ? 'الطالب' : 'Student'}</th>
-                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{isAr ? 'المقرئ' : 'Reader'}</th>
-                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{isAr ? 'التاريخ والوقت' : 'Date & Time'}</th>
-                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{isAr ? 'المدة' : 'Duration'}</th>
-                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{isAr ? 'الحالة' : 'Status'}</th>
-                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{isAr ? 'رابط الجلسة' : 'Session Link'}</th>
-                                    <th className="text-center py-4 px-6 font-black whitespace-nowrap">{isAr ? 'إجراء' : 'Action'}</th>
+                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{a.bkgStudent}</th>
+                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{a.bkgReader}</th>
+                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{a.bkgDateTime}</th>
+                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{a.bkgDuration}</th>
+                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{a.bkgStatus}</th>
+                                    <th className="text-right py-4 px-6 font-black whitespace-nowrap">{a.bkgSessionLink}</th>
+                                    <th className="text-center py-4 px-6 font-black whitespace-nowrap">{a.bkgAction}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border border-b border-border">
@@ -201,17 +202,17 @@ export default function AdminBookingsPage() {
                                         <td className="py-4 px-6 text-muted-foreground text-xs font-bold">
                                             {new Date(b.scheduled_at).toLocaleString(isAr ? 'ar-SA' : 'en-US', { dateStyle: 'short', timeStyle: 'short' })}
                                         </td>
-                                        <td className="py-4 px-6 text-muted-foreground font-bold">{b.duration_minutes} {isAr ? 'د' : 'min'}</td>
+                                        <td className="py-4 px-6 text-muted-foreground font-bold">{b.duration_minutes} {a.bkgMinutes}</td>
                                         <td className="py-4 px-6">
                                             <span className={`text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider ${STATUS_COLOR[b.status] || 'bg-muted text-muted-foreground'}`}>
-                                                {STATUS_OPTIONS.find(s => s.value === b.status)?.label || b.status}
+                                                {STATUS_OPTIONS.find(s => s.value === b.status)?.key ? a[STATUS_OPTIONS.find(s => s.value === b.status)!.key as keyof typeof a] : b.status}
                                             </span>
                                         </td>
                                         <td className="py-4 px-6">
                                             {b.meeting_link ? (
                                                 <a href={b.meeting_link} target="_blank" rel="noreferrer"
                                                     className="text-primary text-xs font-black flex items-center gap-1.5 hover:underline">
-                                                    <ExternalLink className="w-3.5 h-3.5" /> {isAr ? 'رابط' : 'Link'}
+                                                    <ExternalLink className="w-3.5 h-3.5" /> {a.bkgLink}
                                                 </a>
                                             ) : (
                                                 <span className="text-muted-foreground text-xs">—</span>
@@ -220,7 +221,7 @@ export default function AdminBookingsPage() {
                                         <td className="py-4 px-6 text-center">
                                             <Button variant="ghost" size="sm" onClick={() => openEdit(b)} className="rounded-xl border border-border hover:bg-muted font-bold text-xs h-9">
                                                 <Edit className="w-3.5 h-3.5 ml-1" />
-                                                {isAr ? 'تعديل' : 'Edit'}
+                                                {a.bkgEdit}
                                             </Button>
                                         </td>
                                     </tr>
@@ -234,7 +235,7 @@ export default function AdminBookingsPage() {
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between p-5 border-t border-border bg-muted/10">
                         <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="rounded-xl font-bold">{t.previous}</Button>
-                        <span className="text-sm font-bold text-muted-foreground">{isAr ? `صفحة ${page} من ${totalPages}` : `Page ${page} of ${totalPages}`}</span>
+                        <span className="text-sm font-bold text-muted-foreground">{a.bkgPage.replace('{page}', String(page)).replace('{total}', String(totalPages))}</span>
                         <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="rounded-xl font-bold">{t.next}</Button>
                     </div>
                 )}
@@ -244,46 +245,46 @@ export default function AdminBookingsPage() {
             <Dialog open={!!editBooking} onOpenChange={() => setEditBooking(null)}>
                 <DialogContent className="max-w-md rounded-3xl border-none shadow-2xl bg-card">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-black text-foreground">{isAr ? 'تعديل الحجز' : 'Edit Booking'}</DialogTitle>
+                        <DialogTitle className="text-xl font-black text-foreground">{a.bkgEditBooking}</DialogTitle>
                     </DialogHeader>
                     {editBooking && (
                         <div className="space-y-4 py-4">
                             <div className="p-4 rounded-2xl bg-muted/30 border border-border space-y-2">
                                 <p className="text-sm font-bold text-foreground flex items-center justify-between">
-                                    <span className="text-muted-foreground">{isAr ? 'الطالب:' : 'Student:'}</span>
+                                    <span className="text-muted-foreground">{a.bkgStudentLabel}</span>
                                     {editBooking.student_name}
                                 </p>
                                 <p className="text-sm font-bold text-foreground flex items-center justify-between">
-                                    <span className="text-muted-foreground">{isAr ? 'المقرئ:' : 'Reader:'}</span>
+                                    <span className="text-muted-foreground">{a.bkgReaderLabel}</span>
                                     {editBooking.reader_name}
                                 </p>
                                 <p className="text-sm font-bold text-foreground flex items-center justify-between">
-                                    <span className="text-muted-foreground">{isAr ? 'الوقت:' : 'Time:'}</span>
+                                    <span className="text-muted-foreground">{a.bkgTimeLabel}</span>
                                     {new Date(editBooking.scheduled_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
                                 </p>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest">{isAr ? 'الحالة' : 'Status'}</label>
+                                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest">{a.bkgStatus}</label>
                                 <select
                                     className="w-full h-11 rounded-2xl border border-border bg-muted/30 px-4 text-sm font-bold text-foreground focus:ring-4 focus:ring-primary/10 outline-none"
                                     value={editStatus}
                                     onChange={e => setEditStatus(e.target.value)}
                                 >
                                     {STATUS_OPTIONS.filter(s => s.value).map(o => (
-                                        <option key={o.value} value={o.value}>{isAr ? o.label : o.labelEn}</option>
+                                        <option key={o.value} value={o.value}>{a[o.key as keyof typeof a]}</option>
                                     ))}
                                 </select>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest">{isAr ? 'تغيير المقرئ (اختياري)' : 'Change Reader (Optional)'}</label>
+                                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest">{a.bkgChangeReader}</label>
                                 <div className="space-y-2">
                                     <div className="relative">
                                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
                                         <Input
                                             className="h-9 rounded-xl bg-muted/20 border-border text-xs focus:bg-card pr-9"
-                                            placeholder={isAr ? "بحث باسم المقرئ أو إيميله..." : "Search reader name or email..."}
+                                            placeholder={a.bkgSearchReader}
                                             value={readerSearchQuery}
                                             onChange={e => setReaderSearchQuery(e.target.value)}
                                         />
@@ -293,7 +294,7 @@ export default function AdminBookingsPage() {
                                         value={editReaderId}
                                         onChange={e => setEditReaderId(e.target.value)}
                                     >
-                                        <option value="">{isAr ? 'بدون تغيير (المقرئ الحالي)' : 'No change (keep current reader)'}</option>
+                                        <option value="">{a.bkgNoChange}</option>
                                         {availableReaders.filter(r => 
                                             !readerSearchQuery || 
                                             r.name.toLowerCase().includes(readerSearchQuery.toLowerCase()) || 
@@ -305,12 +306,12 @@ export default function AdminBookingsPage() {
                                     </select>
                                 </div>
                                 {editReaderId && (
-                                    <p className="text-[10px] font-bold text-orange-400 mt-1">⚠️ {isAr ? 'سيتم إشعار الطالب والمقرئ الجديد عند الحفظ.' : 'Student and new reader will be notified.'}</p>
+                                    <p className="text-[10px] font-bold text-orange-400 mt-1">⚠️ {a.bkgNotifyHint}</p>
                                 )}
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest">{isAr ? 'رابط الجلسة' : 'Session Link'}</label>
+                                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest">{a.bkgSessionLink}</label>
                                 <div className="flex gap-2">
                                     <Input
                                         className="rounded-2xl h-11 bg-muted/30 border-border focus:bg-card font-medium"
@@ -330,10 +331,10 @@ export default function AdminBookingsPage() {
                         </div>
                     )}
                     <DialogFooter className="gap-2">
-                        <Button variant="outline" onClick={() => setEditBooking(null)} className="rounded-2xl font-black">{isAr ? 'إلغاء' : 'Cancel'}</Button>
+                        <Button variant="outline" onClick={() => setEditBooking(null)} className="rounded-2xl font-black">{a.bkgCancel}</Button>
                         <Button onClick={handleSave} className="rounded-2xl font-black bg-primary text-primary-foreground hover:bg-primary/90" disabled={saving}>
                             {saving ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
-                            {isAr ? 'حفظ التغييرات' : 'Save Changes'}
+                            {a.bkgSaveChanges}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

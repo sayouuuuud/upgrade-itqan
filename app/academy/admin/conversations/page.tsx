@@ -205,7 +205,7 @@ function SupervisionTab({ a, t, dateLocale }: { a: any, t: any, dateLocale: stri
                                 </div>
                                 <span>{a.convConversationDetails}</span>
                             </div>
-                            <span className="text-sm font-bold text-muted-foreground">{selectedConvo ? `${selectedConvo.parent_name || selectedConvo.student_name || a.convUser} ↔ ${selectedConvo.teacher_name || "الأكاديمية"}` : ''}</span>
+                            <span className="text-sm font-bold text-muted-foreground">{selectedConvo ? `${selectedConvo.parent_name || selectedConvo.student_name || a.convUser} ↔ ${selectedConvo.teacher_name || a.convAcademyFallback}` : ''}</span>
                         </DialogTitle>
                     </DialogHeader>
                     <div className="flex-1 overflow-y-auto p-6 space-y-4 min-h-0 text-right bg-muted/10">

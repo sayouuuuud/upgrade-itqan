@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function AdminReadersPage() {
     const { t, locale } = useI18n()
+    const a = t.admin
     const isAr = locale === 'ar'
     const router = useRouter()
 
@@ -204,10 +205,10 @@ export default function AdminReadersPage() {
                                         
                                         <div className="flex flex-wrap gap-2 mb-4">
                                             <Badge variant="outline" className={`text-[9px] font-bold h-6 rounded-lg border-border ${r.is_accepting_recitations ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 'bg-muted text-muted-foreground'}`}>
-                                                {r.is_accepting_recitations ? t.reader.active : t.reader.inactive} {isAr ? "للتقييم" : "Evaluation"}
+                                                {r.is_accepting_recitations ? t.reader.active : t.reader.inactive} {a.rdEvaluation}
                                             </Badge>
                                             <Badge variant="outline" className={`text-[9px] font-bold h-6 rounded-lg border-border ${r.is_accepting_students ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' : 'bg-muted text-muted-foreground'}`}>
-                                                {r.is_accepting_students ? t.admin.adminReaders.sessionsActive : t.reader.inactive} {isAr ? "للجلسات" : "Sessions"}
+                                                {r.is_accepting_students ? t.admin.adminReaders.sessionsActive : t.reader.inactive} {a.rdSessions}
                                             </Badge>
                                             <Badge variant="secondary" className="text-[9px] font-bold h-6 rounded-lg px-2 bg-muted/50 text-muted-foreground border-border uppercase">
                                                 {r.gender === 'male' ? t.auth.male : r.gender === 'female' ? t.auth.female : '---'}
@@ -276,7 +277,7 @@ export default function AdminReadersPage() {
                                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400">
                                             <Clock className="w-3 h-3" />
                                             <span className="text-[10px] font-black">
-                                                {r.waiting_sessions_count} {isAr ? "بانتظار جلسة" : "Waiting for session"}
+                                                {r.waiting_sessions_count} {a.rdWaitingSession}
                                             </span>
                                         </div>
                                     )}
@@ -284,7 +285,7 @@ export default function AdminReadersPage() {
                                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400">
                                             <AlertCircle className="w-3 h-3" />
                                             <span className="text-[10px] font-black">
-                                                {r.pending_reviews_count} {isAr ? "تقييم معلق" : "Pending review"}
+                                                {r.pending_reviews_count} {a.rdPendingReview}
                                             </span>
                                         </div>
                                     )}
@@ -295,11 +296,11 @@ export default function AdminReadersPage() {
                                 <div className="mt-4 pt-4 border-t border-dashed border-border flex items-center gap-2 group-hover:bg-primary/5 -mx-6 px-6 py-3 transition-colors">
                                     <BookOpen className="w-3.5 h-3.5 text-primary/60 shrink-0" />
                                     <p className="text-[10px] font-bold text-muted-foreground line-clamp-1 leading-relaxed">
-                                        <span className="text-foreground/80">{isAr ? "المؤهل العلمي:" : "Qualification:"}</span> {r.qualification}
+                                        <span className="text-foreground/80">{a.rdQualification}</span> {r.qualification}
                                         {r.memorized_parts && (
                                           <>
                                             <span className="mx-2 opacity-30">·</span>
-                                            <span className="text-primary truncate">{isAr ? `حافظ لـ ${r.memorized_parts} جزء` : `Memorized ${r.memorized_parts} Juza'`}</span>
+                                            <span className="text-primary truncate">{a.bkgMemorizedParts.replace('{count}', String(r.memorized_parts))}</span>
                                           </>
                                         )}
                                     </p>
@@ -328,7 +329,7 @@ export default function AdminReadersPage() {
                         onClick={() => setPage(p => p - 1)} 
                         className="rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all px-4"
                     >
-                        {isAr ? "السابق" : "Prev"}
+                        {a.rdPrevious}
                     </Button>
                     <div className="flex flex-col items-center">
                         <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t.admin.adminReaders.page}</span>
@@ -341,7 +342,7 @@ export default function AdminReadersPage() {
                         onClick={() => setPage(p => p + 1)} 
                         className="rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all px-4"
                     >
-                        {isAr ? "التالي" : "Next"}
+                        {a.rdNext}
                     </Button>
                 </div>
             )}
@@ -418,7 +419,7 @@ export default function AdminReadersPage() {
 
                         <div className="border-t border-border pt-8 mt-4">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary mb-5 block border-b border-primary/10 pb-2 w-fit">
-                              {isAr ? "التحكم وتصاريح الحساب" : "Account Permissions & Controls"}
+                              {a.rdAccountPermissions}
                             </Label>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className={`flex items-center gap-3 p-4 border rounded-2xl transition-all cursor-pointer group/opt ${editForm.is_active ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-muted border-border'}`} onClick={() => setEditForm((f: any) => ({ ...f, is_active: !f.is_active }))}>

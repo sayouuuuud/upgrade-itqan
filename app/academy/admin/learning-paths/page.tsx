@@ -67,6 +67,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/lib/i18n/context"
 
 type Subject = "fiqh" | "aqeedah" | "seerah" | "tafsir"
 type SubjectTab = "all" | Subject
@@ -134,24 +135,30 @@ type CreateForm = {
   thumbnail_url: string
 }
 
-const SUBJECTS: { value: Subject; label: string; tone: string }[] = [
-  { value: "fiqh", label: "الفقه", tone: "bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700" },
-  { value: "aqeedah", label: "العقيدة", tone: "bg-violet-50 text-violet-800 border-violet-200 dark:bg-violet-900/20 dark:text-violet-300 dark:border-violet-700" },
-  { value: "seerah", label: "السيرة", tone: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-700" },
-  { value: "tafsir", label: "التفسير", tone: "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700" },
-]
-
-const SUBJECT_LABELS: Record<Subject, string> = {
-  fiqh: "الفقه",
-  aqeedah: "العقيدة",
-  seerah: "السيرة",
-  tafsir: "التفسير",
+function getSubjects(a: any) {
+  return [
+    { value: "fiqh" as Subject, label: a.lpSubjects.fiqh, tone: "bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700" },
+    { value: "aqeedah" as Subject, label: a.lpSubjects.aqeedah, tone: "bg-violet-50 text-violet-800 border-violet-200 dark:bg-violet-900/20 dark:text-violet-300 dark:border-violet-700" },
+    { value: "seerah" as Subject, label: a.lpSubjects.seerah, tone: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-700" },
+    { value: "tafsir" as Subject, label: a.lpSubjects.tafsir, tone: "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700" },
+  ]
 }
 
-const LEVEL_LABELS: Record<Level, string> = {
-  beginner: "مبتدئ",
-  intermediate: "متوسط",
-  advanced: "متقدم",
+function getSubjectLabels(a: any): Record<Subject, string> {
+  return {
+    fiqh: a.lpSubjects.fiqh,
+    aqeedah: a.lpSubjects.aqeedah,
+    seerah: a.lpSubjects.seerah,
+    tafsir: a.lpSubjects.tafsir,
+  }
+}
+
+function getLevelLabels(a: any): Record<Level, string> {
+  return {
+    beginner: a.courseLevel.beginner,
+    intermediate: a.lpIntermediate,
+    advanced: a.courseLevel.advanced,
+  }
 }
 
 const LEVEL_BADGE_CLS: Record<Level, string> = {
@@ -206,6 +213,11 @@ function parseFloatSafe(value: string | undefined) {
 }
 
 export default function AcademyAdminLearningPathsPage() {
+  const { t } = useI18n()
+  const a = t.academyAdmin
+  const SUBJECTS = useMemo(() => getSubjects(a), [a])
+  const SUBJECT_LABELS = useMemo(() => getSubjectLabels(a), [a])
+  const LEVEL_LABELS = useMemo(() => getLevelLabels(a), [a])
   const [paths, setPaths] = useState<LearningPath[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -233,14 +245,14 @@ export default function AcademyAdminLearningPathsPage() {
     try {
       const response = await fetch("/api/admin/tajweed-paths?include_stats=1&scope=academy", { cache: "no-store" })
       const payload = await readJson<PathsPayload>(response)
-      if (!response.ok) throw new Error(apiErrorMessage(payload, "تعذر تحميل مسارات التعلم"))
+      if (!response.ok) throw new Error(apiErrorMessage(payload, a.lpPathLoadError))
 
       setPaths(Array.isArray(payload.paths) ? payload.paths : [])
-      setWarning(payload.warning || payload.notice ? "تم تحميل البيانات المتاحة فقط. بعض التفاصيل قد تكون ناقصة." : null)
+      setWarning(payload.warning || payload.notice ? a.lpPartialDataLoaded : null)
     } catch (loadError) {
       setPaths([])
       setWarning(null)
-      toast.error(loadError instanceof Error ? loadError.message : "تعذر تحميل مسارات التعلم")
+      toast.error(loadError instanceof Error ? loadError.message : a.lpPathLoadError)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -302,11 +314,11 @@ export default function AcademyAdminLearningPathsPage() {
 
   async function handleThumbnailUpload(file: File) {
     if (!file.type.startsWith("image/")) {
-      toast.error("يجب اختيار ملف صورة")
+      toast.error(a.lpImageRequired)
       return
     }
     if (file.size > 4 * 1024 * 1024) {
-      toast.error("الحجم الأقصى للصورة 4MB")
+      toast.error(a.lpImageMaxSize)
       return
     }
     setUploadingThumb(true)
@@ -316,12 +328,12 @@ export default function AcademyAdminLearningPathsPage() {
       const res = await fetch("/api/upload", { method: "POST", body: fd })
       const json = await readJson<{ url?: string; error?: string; details?: string }>(res)
       if (!res.ok || !json.url) {
-        const errMsg = json.details ? `${json.error || "فشل رفع الصورة"}: ${json.details}` : (json.error || "فشل رفع الصورة")
+        const errMsg = json.details ? `${json.error || a.lpImageUploadFailed}: ${json.details}` : (json.error || a.lpImageUploadFailed)
         toast.error(errMsg)
         return
       }
       setForm(prev => ({ ...prev, thumbnail_url: json.url || "" }))
-      toast.success("تم رفع الصورة")
+      toast.success(a.lpImageUploaded)
     } finally {
       setUploadingThumb(false)
       if (fileInputRef.current) fileInputRef.current.value = ""
@@ -330,7 +342,7 @@ export default function AcademyAdminLearningPathsPage() {
 
   async function submit() {
     if (!form.title.trim()) {
-      toast.error("اسم المسار مطلوب")
+      toast.error(a.lpPathNameRequired)
       return
     }
     setCreating(true)
@@ -352,15 +364,15 @@ export default function AcademyAdminLearningPathsPage() {
         }),
       })
       const payload = await readJson<{ error?: string }>(response)
-      if (!response.ok) throw new Error(apiErrorMessage(payload, "تعذر إنشاء المسار"))
+      if (!response.ok) throw new Error(apiErrorMessage(payload, a.lpPathCreateError))
 
-      toast.success("تم إنشاء المسار بنجاح")
+      toast.success(a.lpPathCreatedSuccessfully)
       setOpenCreate(false)
       setForm(emptyForm())
       setCreateTab("basic")
       await loadPaths()
     } catch (submitError) {
-      toast.error(submitError instanceof Error ? submitError.message : "تعذر إنشاء المسار")
+      toast.error(submitError instanceof Error ? submitError.message : a.lpPathCreateError)
     } finally {
       setCreating(false)
     }
@@ -375,11 +387,11 @@ export default function AcademyAdminLearningPathsPage() {
         body: JSON.stringify({ is_published: !path.is_published }),
       })
       const payload = await readJson<{ error?: string }>(response)
-      if (!response.ok) throw new Error(apiErrorMessage(payload, "تعذر تحديث حالة النشر"))
-      toast.success(!path.is_published ? "تم نشر المسار" : "تم إلغاء نشر المسار")
+      if (!response.ok) throw new Error(apiErrorMessage(payload, a.lpPathUpdateError))
+      toast.success(!path.is_published ? a.lpPathPublished : a.lpPathUnpublished)
       await loadPaths()
     } catch (publishError) {
-      toast.error(publishError instanceof Error ? publishError.message : "تعذر تحديث حالة النشر")
+      toast.error(publishError instanceof Error ? publishError.message : a.lpPathUpdateError)
     } finally {
       setActionId(null)
     }
@@ -387,13 +399,13 @@ export default function AcademyAdminLearningPathsPage() {
 
   async function toggleArchive(path: LearningPath) {
     if (path.kind !== "tajweed" && path.kind !== undefined) {
-      toast.error("الأرشفة غير متاحة للمسارات القديمة")
+      toast.error(a.lpArchiveNotAvailable)
       return
     }
     const willArchive = path.is_active !== false
     if (!confirm(willArchive
-      ? `أرشفة مسار «${path.title}»؟ لن يظهر للطلاب الجدد.`
-      : `إعادة تفعيل مسار «${path.title}»؟`)) return
+      ? a.lpArchivePathConfirm.replace('{title}', path.title)
+      : a.lpUnarchivePathConfirm.replace('{title}', path.title))) return
     setActionId(`archive-${path.id}`)
     try {
       const response = await fetch(`/api/admin/tajweed-paths/${path.id}`, {
@@ -402,27 +414,27 @@ export default function AcademyAdminLearningPathsPage() {
         body: JSON.stringify({ is_active: !willArchive }),
       })
       const payload = await readJson<{ error?: string }>(response)
-      if (!response.ok) throw new Error(apiErrorMessage(payload, "تعذر تحديث حالة الأرشفة"))
-      toast.success(willArchive ? "تم أرشفة المسار" : "تم تفعيل المسار")
+      if (!response.ok) throw new Error(apiErrorMessage(payload, a.lpPathUpdateError))
+      toast.success(willArchive ? a.lpPathArchived : a.lpPathActivated)
       await loadPaths()
     } catch (archiveError) {
-      toast.error(archiveError instanceof Error ? archiveError.message : "تعذر تحديث حالة الأرشفة")
+      toast.error(archiveError instanceof Error ? archiveError.message : a.lpPathUpdateError)
     } finally {
       setActionId(null)
     }
   }
 
   async function remove(path: LearningPath) {
-    if (!confirm(`هل تريد حذف مسار «${path.title}» نهائياً؟ هذا الإجراء لا يمكن التراجع عنه.`)) return
+    if (!confirm(a.lpDeletePathConfirm.replace('{title}', path.title))) return
     setActionId(`delete-${path.id}`)
     try {
       const response = await fetch(`/api/admin/tajweed-paths/${path.id}`, { method: "DELETE" })
       const payload = await readJson<{ error?: string }>(response)
-      if (!response.ok) throw new Error(apiErrorMessage(payload, "تعذر حذف المسار"))
-      toast.success("تم حذف المسار نهائياً")
+      if (!response.ok) throw new Error(apiErrorMessage(payload, a.lpPathDeleteError))
+      toast.success(a.lpPathDeleted)
       await loadPaths()
     } catch (deleteError) {
-      toast.error(deleteError instanceof Error ? deleteError.message : "تعذر حذف المسار")
+      toast.error(deleteError instanceof Error ? deleteError.message : a.lpPathDeleteError)
     } finally {
       setActionId(null)
     }
@@ -447,29 +459,29 @@ export default function AcademyAdminLearningPathsPage() {
           <DropdownMenuItem asChild>
             <Link href={`/academy/admin/learning-paths/${path.id}`} className="cursor-pointer gap-2">
               <Settings className="h-4 w-4" />
-              <span>{isLegacy ? "تعديل" : "إدارة المسار"}</span>
+              <span>{isLegacy ? a.lpEdit : a.lpManagePath}</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => togglePublish(path)} className="cursor-pointer gap-2">
             {path.is_published ? (
-              <><EyeOff className="h-4 w-4" /> إلغاء النشر</>
+              <><EyeOff className="h-4 w-4" /> {a.lpUnpublish}</>
             ) : (
-              <><Eye className="h-4 w-4" /> نشر للطلاب</>
+              <><Eye className="h-4 w-4" /> {a.lpPublishToStudents}</>
             )}
           </DropdownMenuItem>
           {!isLegacy && (
             <DropdownMenuItem onClick={() => toggleArchive(path)} className="cursor-pointer gap-2">
               {isArchived ? (
-                <><ArchiveRestore className="h-4 w-4" /> إعادة تفعيل</>
+                <><ArchiveRestore className="h-4 w-4" /> {a.lpReactivate}</>
               ) : (
-                <><Archive className="h-4 w-4" /> أرشفة (إخفاء)</>
+                <><Archive className="h-4 w-4" /> {a.lpArchiveHide}</>
               )}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => remove(path)} className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer gap-2">
-            <Trash2 className="h-4 w-4" /> حذف المسار
+            <Trash2 className="h-4 w-4" /> {a.lpDeletePath}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -483,12 +495,12 @@ export default function AcademyAdminLearningPathsPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             <Badge variant="outline" className="gap-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700 py-1.5 px-3">
-              <GraduationCap className="h-4 w-4" /> إدارة الأكاديمية - المسارات التعليمية
+              <GraduationCap className="h-4 w-4" /> {a.lpBreadcrumbTitle}
             </Badge>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">لوحة المسارات (Academy)</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">{a.lpPageTitle}</h1>
               <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-                أنشئ مسارات تعلم متدرجة في الفقه، العقيدة، السيرة، والتفسير. يمكنك إدارة المحتوى والمراحل، وتعيين المدراء، ومتابعة إنجاز الطلاب من خلال هذه الواجهة.
+                {a.lpPageDescription}
               </p>
             </div>
           </div>
@@ -513,10 +525,10 @@ export default function AcademyAdminLearningPathsPage() {
             </div>
             <Button variant="outline" onClick={loadPaths} disabled={refreshing} className="gap-2 shadow-sm">
               {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
-              تحديث
+              {a.lpUpdate}
             </Button>
             <Button onClick={() => setOpenCreate(true)} className="gap-2 shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white">
-              <Plus className="h-4 w-4" /> إنشاء مسار جديد
+              <Plus className="h-4 w-4" /> {a.lpCreateNewPath}
             </Button>
           </div>
         </div>
@@ -532,13 +544,13 @@ export default function AcademyAdminLearningPathsPage() {
 
         {/* Stats Dashboard - Premium Look */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
-          <StatCard icon={<BookOpen className="h-5 w-5 text-white" />} iconBg="bg-emerald-500" value={summary.total} label="إجمالي المسارات" />
-          <StatCard icon={<Eye className="h-5 w-5 text-white" />} iconBg="bg-blue-500" value={summary.published} label="منشورة للطلاب" />
-          <StatCard icon={<EyeOff className="h-5 w-5 text-white" />} iconBg="bg-slate-400" value={summary.drafts} label="مسودات (غير منشورة)" />
-          <StatCard icon={<Users className="h-5 w-5 text-white" />} iconBg="bg-violet-500" value={summary.enrolled} label="إجمالي المسجلين" />
-          <StatCard icon={<CheckCircle2 className="h-5 w-5 text-white" />} iconBg="bg-teal-500" value={summary.completed} label="مكتمل بنجاح" />
-          <StatCard icon={<BarChart3 className="h-5 w-5 text-white" />} iconBg="bg-amber-500" value={`${summary.avgProgress}%`} label="متوسط الإنجاز العام" />
-          <StatCard icon={<AlertCircle className="h-5 w-5 text-white" />} iconBg={summary.empty > 0 ? "bg-red-500" : "bg-emerald-400"} value={summary.empty} label="مسارات فارغة (تنبيه)" tone={summary.empty > 0 ? "warn" : undefined} />
+          <StatCard icon={<BookOpen className="h-5 w-5 text-white" />} iconBg="bg-emerald-500" value={summary.total} label={a.lpTotalPaths} />
+          <StatCard icon={<Eye className="h-5 w-5 text-white" />} iconBg="bg-blue-500" value={summary.published} label={a.lpPublishedToStudents} />
+          <StatCard icon={<EyeOff className="h-5 w-5 text-white" />} iconBg="bg-slate-400" value={summary.drafts} label={a.lpDraftsUnpublished} />
+          <StatCard icon={<Users className="h-5 w-5 text-white" />} iconBg="bg-violet-500" value={summary.enrolled} label={a.lpTotalEnrolled} />
+          <StatCard icon={<CheckCircle2 className="h-5 w-5 text-white" />} iconBg="bg-teal-500" value={summary.completed} label={a.lpCompletedSuccessfully} />
+          <StatCard icon={<BarChart3 className="h-5 w-5 text-white" />} iconBg="bg-amber-500" value={`${summary.avgProgress}%`} label={a.lpAverageProgress} />
+          <StatCard icon={<AlertCircle className="h-5 w-5 text-white" />} iconBg={summary.empty > 0 ? "bg-red-500" : "bg-emerald-400"} value={summary.empty} label={a.lpEmptyPathsWarning} tone={summary.empty > 0 ? "warn" : undefined} />
         </div>
       </div>
 
@@ -548,7 +560,7 @@ export default function AcademyAdminLearningPathsPage() {
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="ابحث بعنوان المسار، الوصف، أو اسم المدير..."
+            placeholder={a.lpSearchPlaceholder}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full pr-9 pl-3 py-2 rounded-lg border-transparent bg-transparent hover:bg-muted/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm transition-colors"
@@ -561,19 +573,19 @@ export default function AcademyAdminLearningPathsPage() {
             value={statusFilter}
             onChange={v => setStatusFilter(v as StatusFilter)}
             options={[
-              { value: "all", label: "كل الحالات" },
-              { value: "published", label: "منشورة" },
-              { value: "draft", label: "مسودات" },
+              { value: "all", label: a.lpAllStatuses },
+              { value: "published", label: a.lpPublishedFilter },
+              { value: "draft", label: a.lpDraftsFilter },
             ]}
           />
           <FilterSelect
             value={levelFilter}
             onChange={v => setLevelFilter(v as "all" | Level)}
             options={[
-              { value: "all", label: "كل المستويات" },
-              { value: "beginner", label: "مبتدئ" },
-              { value: "intermediate", label: "متوسط" },
-              { value: "advanced", label: "متقدم" },
+              { value: "all", label: a.lpAllLevels },
+              { value: "beginner", label: a.lpBeginner },
+              { value: "intermediate", label: a.lpIntermediate },
+              { value: "advanced", label: a.lpAdvancedFilter },
             ]}
           />
           {managers.length > 0 && (
@@ -581,7 +593,7 @@ export default function AcademyAdminLearningPathsPage() {
               value={managerFilter}
               onChange={setManagerFilter}
               options={[
-                { value: "all", label: "كل المدراء" },
+                { value: "all", label: a.lpAllManagers },
                 ...managers.map(m => ({ value: m.id, label: m.name || m.email })),
               ]}
             />
@@ -592,7 +604,7 @@ export default function AcademyAdminLearningPathsPage() {
       {/* Subject Tabs */}
       <Tabs value={subjectTab} onValueChange={value => setSubjectTab(isSubjectTab(value) ? value : "all")}>
         <TabsList className="flex h-auto flex-wrap gap-1 bg-transparent p-0">
-          <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-foreground data-[state=active]:text-background shadow-sm border border-transparent data-[state=inactive]:border-border data-[state=inactive]:bg-background">الكل ({paths.length})</TabsTrigger>
+          <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-foreground data-[state=active]:text-background shadow-sm border border-transparent data-[state=inactive]:border-border data-[state=inactive]:bg-background">{a.lpTabAll.replace('{count}', String(paths.length))}</TabsTrigger>
           {SUBJECTS.map(subject => (
             <TabsTrigger key={subject.value} value={subject.value} className="rounded-full data-[state=active]:bg-foreground data-[state=active]:text-background shadow-sm border border-transparent data-[state=inactive]:border-border data-[state=inactive]:bg-background">
               {subject.label} ({paths.filter(path => path.subject === subject.value).length})
@@ -606,7 +618,7 @@ export default function AcademyAdminLearningPathsPage() {
         <Card className="flex min-h-[300px] items-center justify-center p-10 text-muted-foreground rounded-2xl border-dashed">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-            <p>جاري تحميل المسارات...</p>
+            <p>{a.lpLoadingPaths}</p>
           </div>
         </Card>
       ) : visiblePaths.length === 0 ? (
@@ -616,22 +628,22 @@ export default function AcademyAdminLearningPathsPage() {
           </div>
           {paths.length === 0 ? (
             <>
-              <h2 className="text-xl font-bold">لا توجد مسارات تعليمية حتى الآن</h2>
+              <h2 className="text-xl font-bold">{a.lpNoPathsYet}</h2>
               <p className="mx-auto mt-2 max-w-md text-muted-foreground">
-                ابدأ رحلة الأكاديمية بإنشاء أول مسار تعليمي لطلابك. يمكنك تخصيص المراحل وإضافة شهادات ودورات.
+                {a.lpNoPathsDesc}
               </p>
               <Button className="mt-6 gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={() => setOpenCreate(true)}>
-                <Plus className="h-4 w-4" /> إنشاء مسار جديد
+              <Plus className="h-4 w-4" /> {a.lpCreateNewPath}
               </Button>
             </>
           ) : (
             <>
-              <h2 className="text-xl font-bold">لا توجد نتائج تطابق الفلاتر الحالية</h2>
+              <h2 className="text-xl font-bold">{a.lpNoMatchingResults}</h2>
               <p className="mx-auto mt-2 max-w-md text-muted-foreground">
-                جرب تخفيف الفلاتر أو تغيير نص البحث للعثور على المسار المطلوب.
+                {a.lpNoMatchingDesc}
               </p>
               <Button variant="outline" className="mt-6" onClick={() => { setSearch(""); setSubjectTab("all"); setLevelFilter("all"); setStatusFilter("all"); setManagerFilter("all"); }}>
-                مسح الفلاتر
+                {a.lpClearFilters}
               </Button>
             </>
           )}
@@ -668,23 +680,23 @@ export default function AcademyAdminLearningPathsPage() {
                   {/* Badges */}
                   <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
                     {path.is_published ? (
-                      <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm border-none backdrop-blur-md">
-                        منشور
+                        <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm border-none backdrop-blur-md">
+                        {a.lpPublishedBadge}
                       </Badge>
                     ) : (
                       <Badge className="bg-slate-800/80 hover:bg-slate-800 text-white shadow-sm border-none backdrop-blur-md">
-                        مسودة
+                        {a.lpDraftBadge}
                       </Badge>
                     )}
                     {isArchived && (
                       <Badge className="bg-red-500/90 text-white border-none shadow-sm backdrop-blur-md">
-                        مؤرشف
+                        {a.lpArchivedBadge}
                       </Badge>
                     )}
                   </div>
                   
                   <div className="absolute bottom-3 right-3 left-3 flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Badge variant="secondary" className="bg-white/90 text-black border-none shadow-sm">{path.total_stages || 0} مرحلة</Badge>
+                    <Badge variant="secondary" className="bg-white/90 text-black border-none shadow-sm">{path.total_stages || 0} {a.lpStage}</Badge>
                   </div>
                 </div>
 
@@ -693,24 +705,24 @@ export default function AcademyAdminLearningPathsPage() {
                   <div className="flex flex-wrap gap-2 mb-3">
                     <Badge variant="outline" className={cn("text-[10px] px-2 py-0 border-transparent", subjectTone(subject))}>{SUBJECT_LABELS[subject] || subject}</Badge>
                     <Badge variant="outline" className={cn("text-[10px] px-2 py-0 border-transparent", LEVEL_BADGE_CLS[level])}>{LEVEL_LABELS[level] || level}</Badge>
-                    {isLegacy && <Badge variant="outline" className="text-[10px] px-2 py-0 opacity-50">قديم</Badge>}
+                    {isLegacy && <Badge variant="outline" className="text-[10px] px-2 py-0 opacity-50">{a.lpLegacy}</Badge>}
                   </div>
 
                   <Link href={`/academy/admin/learning-paths/${path.id}`} className="font-bold text-lg hover:text-emerald-600 line-clamp-2 leading-tight mb-2 transition-colors">
                     {path.title}
                   </Link>
                   <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                    {path.description || "لا يوجد وصف متوفر لهذا المسار حالياً."}
+                    {path.description || a.lpNoDescription}
                   </p>
 
                   {/* Meta Stats */}
                   <div className="grid grid-cols-2 gap-2 mb-4 py-3 border-y border-border/50">
                     <div className="flex flex-col">
-                      <span className="text-[10px] uppercase text-muted-foreground mb-1 font-semibold">المسجلون</span>
+                      <span className="text-[10px] uppercase text-muted-foreground mb-1 font-semibold">{a.lpEnrolledLabel}</span>
                       <span className="text-sm font-medium flex items-center gap-1.5"><Users className="h-3.5 w-3.5 text-blue-500" /> {enrolled}</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[10px] uppercase text-muted-foreground mb-1 font-semibold">الإنجاز</span>
+                      <span className="text-[10px] uppercase text-muted-foreground mb-1 font-semibold">{a.lpAchievementLabel}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">{avgProgress}%</span>
                         <Progress value={avgProgress} className="h-1.5 w-12" />
@@ -729,7 +741,7 @@ export default function AcademyAdminLearningPathsPage() {
                           <span className="truncate max-w-[100px]">{path.manager_name}</span>
                         </div>
                       ) : (
-                        <span className="opacity-50">بدون مدير</span>
+                        <span className="opacity-50">{a.lpNoManager}</span>
                       )}
                     </div>
                     <div className="flex items-center gap-1">
@@ -753,13 +765,13 @@ export default function AcademyAdminLearningPathsPage() {
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow>
-                  <TableHead className="w-[300px]">المسار</TableHead>
-                  <TableHead>التصنيف</TableHead>
-                  <TableHead>المراحل</TableHead>
-                  <TableHead>الطلاب والإنجاز</TableHead>
-                  <TableHead>المدير</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="text-right">إجراءات</TableHead>
+                  <TableHead className="w-[300px]">{a.lpTablePath}</TableHead>
+                  <TableHead>{a.lpTableCategory}</TableHead>
+                  <TableHead>{a.lpTableStages}</TableHead>
+                  <TableHead>{a.lpTableStudentsProgress}</TableHead>
+                  <TableHead>{a.lpTableManager}</TableHead>
+                  <TableHead>{a.lpTableStatus}</TableHead>
+                  <TableHead className="text-right">{a.lpTableActions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -789,7 +801,7 @@ export default function AcademyAdminLearningPathsPage() {
                               {path.title}
                             </Link>
                             {path.estimated_days ? (
-                              <span className="text-[10px] text-muted-foreground mt-0.5">{path.estimated_days} يوم</span>
+                              <span className="text-[10px] text-muted-foreground mt-0.5">{path.estimated_days} {a.lpDays}</span>
                             ) : null}
                           </div>
                         </div>
@@ -805,8 +817,8 @@ export default function AcademyAdminLearningPathsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1 w-24">
-                          <span className="text-xs font-medium flex items-center gap-1.5"><Users className="h-3 w-3 text-blue-500" /> {enrolled} طالب</span>
-                          <div className="flex items-center gap-1.5" title={`${avgProgress}% إنجاز`}>
+                          <span className="text-xs font-medium flex items-center gap-1.5"><Users className="h-3 w-3 text-blue-500" /> {enrolled} {a.lpStudents}</span>
+                          <div className="flex items-center gap-1.5" title={`${avgProgress}% ${a.lpProgressLabel}`}>
                             <Progress value={avgProgress} className="h-1.5 flex-1" />
                             <span className="text-[10px] text-muted-foreground">{avgProgress}%</span>
                           </div>
@@ -825,11 +837,11 @@ export default function AcademyAdminLearningPathsPage() {
                       <TableCell>
                         <div className="flex flex-col gap-1 items-start">
                           {path.is_published ? (
-                            <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none">منشور</Badge>
+                            <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none">{a.lpPublishedBadge}</Badge>
                           ) : (
-                            <Badge variant="secondary" className="bg-slate-100 text-slate-700">مسودة</Badge>
+                            <Badge variant="secondary" className="bg-slate-100 text-slate-700">{a.lpDraftBadge}</Badge>
                           )}
-                          {isArchived && <Badge variant="destructive" className="text-[10px] py-0 px-1.5">مؤرشف</Badge>}
+                          {isArchived && <Badge variant="destructive" className="text-[10px] py-0 px-1.5">{a.lpArchivedBadge}</Badge>}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
@@ -853,10 +865,10 @@ export default function AcademyAdminLearningPathsPage() {
                 <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600">
                   <Plus className="h-4 w-4" />
                 </div>
-                إنشاء مسار تعليمي جديد
+                {a.lpCreateNewLearningPath}
               </DialogTitle>
               <DialogDescription className="pt-1">
-                إعداد مسار جديد بالأكاديمية. يمكنك دائماً التعديل وإضافة المحتوى لاحقاً.
+                {a.lpCreateNewLearningPathDesc}
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -864,9 +876,9 @@ export default function AcademyAdminLearningPathsPage() {
           <Tabs value={createTab} onValueChange={setCreateTab} className="flex flex-col">
             <div className="px-6 pt-4">
               <TabsList className="w-full grid grid-cols-3 bg-muted/50 p-1 rounded-lg">
-                <TabsTrigger value="basic" className="rounded-md">المعلومات الأساسية</TabsTrigger>
-                <TabsTrigger value="media" className="rounded-md">الوسائط</TabsTrigger>
-                <TabsTrigger value="settings" className="rounded-md">الإعدادات</TabsTrigger>
+                <TabsTrigger value="basic" className="rounded-md">{a.lpBasicInfo}</TabsTrigger>
+                <TabsTrigger value="media" className="rounded-md">{a.lpMedia}</TabsTrigger>
+                <TabsTrigger value="settings" className="rounded-md">{a.lpSettingsLabel}</TabsTrigger>
               </TabsList>
             </div>
 
@@ -874,31 +886,31 @@ export default function AcademyAdminLearningPathsPage() {
               <TabsContent value="basic" className="m-0 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="path-title" className="text-sm font-semibold mb-1.5 block">عنوان المسار <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="path-title" className="text-sm font-semibold mb-1.5 block">{a.lpPathTitle} <span className="text-red-500">*</span></Label>
                     <Input
                       id="path-title"
                       value={form.title}
                       onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="مثال: مسار الفقه الأساسي للمبتدئين"
+                      placeholder={a.lpPathTitlePlaceholder}
                       className="bg-muted/20"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="path-desc" className="text-sm font-semibold mb-1.5 block">الوصف الموجز</Label>
+                    <Label htmlFor="path-desc" className="text-sm font-semibold mb-1.5 block">{a.lpShortDescription}</Label>
                     <Textarea
                       id="path-desc"
                       rows={4}
                       value={form.description}
                       onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="وصف مختصر لأهداف ومخرجات هذا المسار التعلمي..."
+                      placeholder={a.lpShortDescriptionPlaceholder}
                       className="bg-muted/20 resize-none"
                     />
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-semibold mb-1.5 block">التخصص</Label>
+                      <Label className="text-sm font-semibold mb-1.5 block">{a.lpSelectSubjectPlaceholder}</Label>
                       <Select value={form.subject} onValueChange={value => setForm(prev => ({ ...prev, subject: value as Subject }))}>
                         <SelectTrigger className="bg-muted/20"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -907,13 +919,13 @@ export default function AcademyAdminLearningPathsPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold mb-1.5 block">مستوى الصعوبة</Label>
+                      <Label className="text-sm font-semibold mb-1.5 block">{a.lpDifficultyLevel}</Label>
                       <Select value={form.level} onValueChange={value => setForm(prev => ({ ...prev, level: value as Level }))}>
                         <SelectTrigger className="bg-muted/20"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="beginner">مبتدئ (تأسيسي)</SelectItem>
-                          <SelectItem value="intermediate">متوسط</SelectItem>
-                          <SelectItem value="advanced">متقدم (تخصصي)</SelectItem>
+                          <SelectItem value="beginner">{a.lpBeginnerFundamental}</SelectItem>
+                          <SelectItem value="intermediate">{a.lpIntermediate}</SelectItem>
+                          <SelectItem value="advanced">{a.lpAdvancedSpecialized}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -926,11 +938,11 @@ export default function AcademyAdminLearningPathsPage() {
                   <div className="mx-auto w-full max-w-sm aspect-[16/9] bg-background shadow-sm rounded-lg overflow-hidden border border-border/50 mb-4 relative flex items-center justify-center">
                     {form.thumbnail_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={form.thumbnail_url} alt="معاينة" className="w-full h-full object-cover" />
+                      <img src={form.thumbnail_url} alt={a.lpImagePreview} className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-center p-4">
                         <ImageIcon className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
-                        <span className="text-sm text-muted-foreground">صورة الغلاف (16:9)</span>
+                        <span className="text-sm text-muted-foreground">{a.lpCoverImage}</span>
                       </div>
                     )}
                   </div>
@@ -946,19 +958,19 @@ export default function AcademyAdminLearningPathsPage() {
                       }}
                       disabled={uploadingThumb || creating}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      aria-label="رفع صورة الغلاف"
+                      aria-label={a.lpUploadCoverImage}
                     />
                     <Button type="button" variant="secondary" disabled={uploadingThumb || creating} className="gap-2 px-6">
                       {uploadingThumb ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-                      {form.thumbnail_url ? "تغيير الصورة الحالية" : "اختيار ورفع صورة"}
+                      {form.thumbnail_url ? a.lpChangeCurrentImage : a.lpSelectAndUploadImage}
                     </Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-3">الصيغ المدعومة: JPG, PNG, WebP — الحجم الأقصى: 4MB</p>
+                  <p className="text-[11px] text-muted-foreground mt-3">{a.lpSupportedFormats}</p>
                   
                   {form.thumbnail_url && (
                     <div className="mt-3">
                       <button type="button" onClick={() => setForm(prev => ({ ...prev, thumbnail_url: "" }))} className="text-xs text-red-500 hover:text-red-700 underline underline-offset-2">
-                        إزالة الصورة نهائياً
+                        {a.lpRemoveImagePermanently}
                       </button>
                     </div>
                   )}
@@ -968,11 +980,11 @@ export default function AcademyAdminLearningPathsPage() {
               <TabsContent value="settings" className="m-0 space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-semibold mb-1.5 block">المدير المسؤول</Label>
+                    <Label className="text-sm font-semibold mb-1.5 block">{a.lpPathManager}</Label>
                     <Select value={form.manager_id || "none"} onValueChange={value => setForm(prev => ({ ...prev, manager_id: value === "none" ? "" : value }))}>
-                      <SelectTrigger className="bg-muted/20"><SelectValue placeholder="اختيار مدير" /></SelectTrigger>
+                      <SelectTrigger className="bg-muted/20"><SelectValue placeholder={a.lpSelectManager} /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">-- بدون تخصيص (للجميع) --</SelectItem>
+                        <SelectItem value="none">-- {a.lpNoManagerAssignment} --</SelectItem>
                         {managers.map(m => (
                           <SelectItem key={m.id} value={m.id}>
                             {m.name} <span className="text-muted-foreground text-xs mx-1">({m.email})</span>
@@ -980,17 +992,17 @@ export default function AcademyAdminLearningPathsPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-[11px] text-muted-foreground mt-1.5">المدير لديه صلاحية إدارة المسار ومتابعة الطلاب.</p>
+                    <p className="text-[11px] text-muted-foreground mt-1.5">{a.lpManagerPathHint}</p>
                   </div>
                   <div>
-                    <Label htmlFor="path-days" className="text-sm font-semibold mb-1.5 block">المدة التقديرية للإنجاز (بالأيام)</Label>
+                    <Label htmlFor="path-days" className="text-sm font-semibold mb-1.5 block">{a.lpEstimatedDurationDays}</Label>
                     <Input
                       id="path-days"
                       type="number"
                       min={0}
                       value={form.estimated_days}
                       onChange={e => setForm(prev => ({ ...prev, estimated_days: e.target.value }))}
-                      placeholder="مثال: 30"
+                      placeholder="30"
                       className="bg-muted/20"
                     />
                   </div>
@@ -998,7 +1010,7 @@ export default function AcademyAdminLearningPathsPage() {
 
                 <div className="bg-muted/30 p-4 rounded-xl border border-border/50 space-y-3">
                   <h4 className="text-sm font-semibold flex items-center gap-2 mb-2">
-                    <Settings className="h-4 w-4 text-muted-foreground" /> إعدادات متقدمة
+                    <Settings className="h-4 w-4 text-muted-foreground" /> {a.lpAdvancedSettings}
                   </h4>
                   
                   <label className="flex items-start gap-3 cursor-pointer group">
@@ -1006,8 +1018,8 @@ export default function AcademyAdminLearningPathsPage() {
                       <input type="checkbox" className="h-4 w-4 accent-emerald-600 rounded border-gray-300" checked={form.seed_default_stages} onChange={e => setForm(prev => ({ ...prev, seed_default_stages: e.target.checked }))} />
                     </div>
                     <div>
-                      <span className="text-sm font-medium group-hover:text-emerald-700 transition-colors">بناء مراحل افتراضية</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">يقوم النظام بتوليد هيكل أساسي للمراحل بناءً على التخصص لتسريع العمل.</p>
+                      <span className="text-sm font-medium group-hover:text-emerald-700 transition-colors">{a.lpBuildDefaultStages}</span>
+                      <p className="text-xs text-muted-foreground mt-0.5">{a.lpBuildDefaultStagesDesc}</p>
                     </div>
                   </label>
                   
@@ -1016,8 +1028,8 @@ export default function AcademyAdminLearningPathsPage() {
                       <input type="checkbox" className="h-4 w-4 accent-emerald-600 rounded border-gray-300" checked={form.require_audio} onChange={e => setForm(prev => ({ ...prev, require_audio: e.target.checked }))} />
                     </div>
                     <div>
-                      <span className="text-sm font-medium group-hover:text-emerald-700 transition-colors">تفعيل التسميع الصوتي</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">يُطلب من الطالب تسجيل مقاطع صوتية لاجتياز بعض المراحل.</p>
+                      <span className="text-sm font-medium group-hover:text-emerald-700 transition-colors">{a.lpEnableAudioRecording}</span>
+                      <p className="text-xs text-muted-foreground mt-0.5">{a.lpEnableAudioRecordingDesc}</p>
                     </div>
                   </label>
 
@@ -1026,8 +1038,8 @@ export default function AcademyAdminLearningPathsPage() {
                       <input type="checkbox" className="h-4 w-4 accent-emerald-600 rounded border-gray-300" checked={form.is_published} onChange={e => setForm(prev => ({ ...prev, is_published: e.target.checked }))} />
                     </div>
                     <div>
-                      <span className="text-sm font-medium group-hover:text-emerald-700 transition-colors">نشر فوراً بعد الإنشاء</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">سيكون المسار مرئياً للطلاب فور الضغط على زر الإنشاء.</p>
+                      <span className="text-sm font-medium group-hover:text-emerald-700 transition-colors">{a.lpPublishAfterCreation}</span>
+                      <p className="text-xs text-muted-foreground mt-0.5">{a.lpPublishAfterCreationDesc}</p>
                     </div>
                   </label>
                 </div>
@@ -1037,16 +1049,16 @@ export default function AcademyAdminLearningPathsPage() {
 
           <div className="bg-muted/30 px-6 py-4 border-t border-border/50">
             <DialogFooter className="flex justify-between sm:justify-between w-full">
-              <Button variant="ghost" onClick={() => setOpenCreate(false)} disabled={creating}>إلغاء الأمر</Button>
+              <Button variant="ghost" onClick={() => setOpenCreate(false)} disabled={creating}>{a.lpCancelCreation}</Button>
               <div className="flex gap-2">
                 {createTab !== "settings" ? (
-                  <Button type="button" variant="secondary" onClick={() => setCreateTab(createTab === "basic" ? "media" : "settings")}>
-                    التالي
+                    <Button type="button" variant="secondary" onClick={() => setCreateTab(createTab === "basic" ? "media" : "settings")}>
+                    {a.lpNext}
                   </Button>
                 ) : null}
                 <Button onClick={submit} disabled={creating || uploadingThumb || !form.title.trim()} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white min-w-[120px]">
                   {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                  اعتماد وإنشاء
+                  {a.lpApproveAndCreate}
                 </Button>
               </div>
             </DialogFooter>

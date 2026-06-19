@@ -49,7 +49,7 @@ export function MaintenanceSettings({ settings, onUpdate }: MaintenanceSettingsP
     try {
       const res = await fetch("/api/academy/admin/settings/clear-cache", { method: "POST" })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "فشل")
+      if (!res.ok) throw new Error(data.error || a.mtErrorFallback)
       toast.success(data.message || a.mtCacheClearedSuccess)
     } catch (err: any) {
       toast.error(err.message || a.mtCacheClearedFailed)
@@ -124,7 +124,7 @@ export function MaintenanceSettings({ settings, onUpdate }: MaintenanceSettingsP
             <Textarea
               value={settings.academy_maintenance_message || ""}
               onChange={(e) => onUpdate({ academy_maintenance_message: e.target.value })}
-              placeholder="المنصة تحت الصيانة، سنعود قريباً..."
+              placeholder={a.mtMaintenancePlaceholder}
               className="min-h-[100px] resize-none"
             />
             <p className="text-[11px] text-muted-foreground">{a.mtMessageHint}</p>
@@ -188,7 +188,7 @@ export function MaintenanceSettings({ settings, onUpdate }: MaintenanceSettingsP
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                  <AlertDialogCancel>{a.mtCancel}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleClearCache}>{a.mtConfirmClear}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -223,7 +223,7 @@ export function MaintenanceSettings({ settings, onUpdate }: MaintenanceSettingsP
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                  <AlertDialogCancel>{a.mtCancel}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleBackup}>{a.mtConfirmExport}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

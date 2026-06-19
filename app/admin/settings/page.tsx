@@ -29,6 +29,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/lib/i18n/context"
 import { useMaqraahSettings } from "./hooks/use-maqraah-settings"
 import {
   SystemSettings,
@@ -43,20 +44,23 @@ import {
   MaintenanceSettings,
 } from "./_components"
 
-const tabs = [
-  { id: "system", label: "إعدادات النظام", icon: Globe, prefix: "maqraah_general_", keywords: ["اسم", "شعار", "رابط", "وصف", "لغة", "توقيت", "حساب", "تواصل", "بريد"] },
-  { id: "readers", label: "المقرئون والطلبات", icon: Users, prefix: "maqraah_readers_", keywords: ["مقرئ", "طلب", "موافقة", "إجازة", "توزيع", "تقديم"] },
-  { id: "halaqat", label: "الحلقات والجلسات", icon: BookOpen, prefix: "maqraah_halaqat_", keywords: ["حلقة", "جلسة", "تذكير", "تسجيل", "حضور", "فيديو"] },
-  { id: "recitations", label: "التلاوات والتقييم", icon: Mic, prefix: "maqraah_recitations_", keywords: ["تلاوة", "تقييم", "صوت", "رواية", "تجويد", "درجة"] },
-  { id: "paths", label: "مسارات الحفظ والتجويد", icon: Route, prefix: "maqraah_paths_", keywords: ["حفظ", "تجويد", "مسار", "ورد", "هدف", "مرحلة"] },
-  { id: "gamification", label: "النقاط والمستويات", icon: Trophy, prefix: "maqraah_points_", keywords: ["نقاط", "مستوى", "شارة", "streak", "leaderboard"] },
-  { id: "competitions", label: "المسابقات والشهادات", icon: Award, prefix: "maqraah_competitions_", keywords: ["مسابقة", "شهادة", "توقيع", "قالب", "إصدار"] },
-  { id: "notifications", label: "الإشعارات والبريد", icon: Bell, prefix: "maqraah_notifications_", keywords: ["إشعار", "بريد", "smtp", "إيميل", "تذكير", "تقرير"] },
-  { id: "security", label: "الأمان والخصوصية", icon: Shield, prefix: "maqraah_security_", keywords: ["أمان", "كلمة سر", "2fa", "ip", "جلسة", "rate limit"] },
-  { id: "maintenance", label: "الصيانة", icon: Wrench, prefix: "maqraah_maintenance_", keywords: ["صيانة", "cache", "backup", "نسخة احتياطية", "تخزين"] },
+const getTabs = (a: any) => [
+  { id: "system", label: a.setTabSystem, icon: Globe, prefix: "maqraah_general_", keywords: ["name", "logo", "link", "description", "language", "timezone", "account", "contact", "email", "اسم", "شعار", "رابط", "وصف", "لغة", "توقيت", "حساب", "تواصل", "بريد"] },
+  { id: "readers", label: a.setTabReaders, icon: Users, prefix: "maqraah_readers_", keywords: ["reader", "application", "approval", "ijazah", "assignment", "مقرئ", "طلب", "موافقة", "إجازة", "توزيع", "تقديم"] },
+  { id: "halaqat", label: a.setTabHalaqat, icon: BookOpen, prefix: "maqraah_halaqat_", keywords: ["halaqa", "session", "reminder", "recording", "attendance", "video", "حلقة", "جلسة", "تذكير", "تسجيل", "حضور", "فيديو"] },
+  { id: "recitations", label: a.setTabRecitations, icon: Mic, prefix: "maqraah_recitations_", keywords: ["recitation", "evaluation", "audio", "riwayah", "tajweed", "score", "تلاوة", "تقييم", "صوت", "رواية", "تجويد", "درجة"] },
+  { id: "paths", label: a.setTabPaths, icon: Route, prefix: "maqraah_paths_", keywords: ["memorization", "tajweed", "path", "wird", "target", "stage", "حفظ", "تجويد", "مسار", "ورد", "هدف", "مرحلة"] },
+  { id: "gamification", label: a.setTabGamification, icon: Trophy, prefix: "maqraah_points_", keywords: ["points", "level", "badge", "streak", "leaderboard", "نقاط", "مستوى", "شارة"] },
+  { id: "competitions", label: a.setTabCompetitions, icon: Award, prefix: "maqraah_competitions_", keywords: ["competition", "certificate", "signature", "template", "issue", "مسابقة", "شهادة", "توقيع", "قالب", "إصدار"] },
+  { id: "notifications", label: a.setTabNotifications, icon: Bell, prefix: "maqraah_notifications_", keywords: ["notification", "email", "smtp", "reminder", "report", "إشعار", "بريد", "إيميل", "تذكير", "تقرير"] },
+  { id: "security", label: a.setTabSecurity, icon: Shield, prefix: "maqraah_security_", keywords: ["security", "password", "2fa", "ip", "session", "rate limit", "أمان", "كلمة سر", "جلسة"] },
+  { id: "maintenance", label: a.setTabMaintenance, icon: Wrench, prefix: "maqraah_maintenance_", keywords: ["maintenance", "cache", "backup", "storage", "صيانة", "نسخة احتياطية", "تخزين"] },
 ]
 
 export default function MaqraahAdminSettingsPage() {
+  const { t } = useI18n()
+  const a = t.admin
+  const tabs = getTabs(a)
   const {
     settings,
     metadata,
@@ -230,7 +234,7 @@ export default function MaqraahAdminSettingsPage() {
               <Settings className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">إعدادات النظام</h1>
+              <h1 className="text-xl font-bold text-foreground">{a.setTabSystem}</h1>
               <p className="text-xs text-muted-foreground">
                 {tabs.find((t) => t.id === activeTab)?.label}
               </p>
@@ -240,7 +244,7 @@ export default function MaqraahAdminSettingsPage() {
           <div className="flex items-center gap-3">
             {hasUnsavedChanges && (
               <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
-                {unsavedCount} تغيير غير محفوظ
+                {unsavedCount} {a.setUnsavedChanges}
               </span>
             )}
             <Button
@@ -250,11 +254,11 @@ export default function MaqraahAdminSettingsPage() {
               className="gap-2"
             >
               <X className="w-4 h-4" />
-              إلغاء
+              {a.setCancel}
             </Button>
             <Button onClick={saveChanges} disabled={!hasUnsavedChanges || saving} className="gap-2">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              حفظ التغييرات
+              {a.setSaveChanges}
             </Button>
           </div>
         </div>
@@ -270,7 +274,7 @@ export default function MaqraahAdminSettingsPage() {
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="بحث في الإعدادات..."
+                  placeholder={a.setSearchPlaceholder}
                   className="pr-10 h-10"
                 />
               </div>

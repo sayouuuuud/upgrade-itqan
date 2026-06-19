@@ -26,7 +26,8 @@ type Supervisor = {
 type PoolUser = { id: string; name: string; email: string; is_active: boolean }
 
 export default function AdminSupervisorsPage() {
-  const { locale } = useI18n()
+  const { t, locale } = useI18n()
+  const a = t.admin
   const isAr = locale === "ar"
 
   const [supervisors, setSupervisors] = useState<Supervisor[]>([])
@@ -108,8 +109,8 @@ export default function AdminSupervisorsPage() {
 
   const roleLabel = (role: string) =>
     role === "student_supervisor"
-      ? isAr ? "مشرف طلاب" : "Student Supervisor"
-      : isAr ? "مشرف مقرئين" : "Reciter Supervisor"
+      ? a.svStudentSupervisor
+      : a.svReciterSupervisor
 
   return (
     <div className="p-4 md:p-6 space-y-6" dir={isAr ? "rtl" : "ltr"}>
@@ -119,7 +120,7 @@ export default function AdminSupervisorsPage() {
         </div>
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-foreground text-balance">
-            {isAr ? "إدارة المشرفين" : "Manage Supervisors"}
+            {a.svManage}
           </h1>
           <p className="text-sm text-muted-foreground">
             {isAr
@@ -139,7 +140,7 @@ export default function AdminSupervisorsPage() {
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <Shield className="h-10 w-10 text-muted-foreground/50" />
           <p className="mt-3 text-sm text-muted-foreground">
-            {isAr ? "لا يوجد مشرفون بعد" : "No supervisors yet"}
+            {a.svNoSupervisors}
           </p>
         </div>
       ) : (
@@ -167,7 +168,7 @@ export default function AdminSupervisorsPage() {
                   {count === 0 ? (
                     <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-500">
                       <Globe className="h-4 w-4" />
-                      {isAr ? "نطاق كامل (الكل)" : "Full scope (all)"}
+                      {a.svFullScope}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-foreground">
@@ -186,7 +187,7 @@ export default function AdminSupervisorsPage() {
                   onClick={() => openManage(s)}
                 >
                   <Settings2 className="h-4 w-4" />
-                  {isAr ? "تحديد النطاق" : "Set scope"}
+                  {a.svSetScope}
                 </Button>
               </div>
             )
@@ -198,7 +199,7 @@ export default function AdminSupervisorsPage() {
         <DialogContent className="max-w-lg" dir={isAr ? "rtl" : "ltr"}>
           <DialogHeader>
             <DialogTitle>
-              {isAr ? "تحديد نطاق الإشراف" : "Set Supervision Scope"} — {active?.name}
+              {a.svSetScopeTitle} — {active?.name}
             </DialogTitle>
             <DialogDescription>
               {isAr
@@ -212,7 +213,7 @@ export default function AdminSupervisorsPage() {
             <Input
               value={poolSearch}
               onChange={(e) => setPoolSearch(e.target.value)}
-              placeholder={isAr ? "بحث بالاسم أو البريد..." : "Search by name or email..."}
+              placeholder={a.svSearchPlaceholder}
               className="ltr:pl-9 rtl:pr-9"
             />
           </div>
@@ -224,7 +225,7 @@ export default function AdminSupervisorsPage() {
               </div>
             ) : filteredPool.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted-foreground">
-                {isAr ? "لا يوجد مستخدمون" : "No users found"}
+                {a.svNoUsers}
               </p>
             ) : (
               filteredPool.map((u) => (
@@ -242,7 +243,7 @@ export default function AdminSupervisorsPage() {
                   </div>
                   {!u.is_active && (
                     <Badge variant="outline" className="text-xs">
-                      {isAr ? "معطّل" : "Inactive"}
+                      {a.svInactive}
                     </Badge>
                   )}
                 </label>
@@ -258,11 +259,11 @@ export default function AdminSupervisorsPage() {
 
           <DialogFooter className="gap-2">
             <Button variant="ghost" onClick={() => setActive(null)} disabled={saving}>
-              {isAr ? "إلغاء" : "Cancel"}
+              {a.bkgCancel}
             </Button>
             <Button onClick={save} disabled={saving} className="gap-2">
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isAr ? "حفظ النطاق" : "Save scope"}
+              {a.svSaveScope}
             </Button>
           </DialogFooter>
         </DialogContent>

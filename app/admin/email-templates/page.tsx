@@ -13,6 +13,7 @@ import { Mail, Edit, Check, Loader2, Eye } from "lucide-react"
 
 export default function AdminEmailTemplatesPage() {
     const { t } = useI18n()
+    const a = t.admin
     const isAr = t.locale === 'ar'
 
     const [templates, setTemplates] = useState<any[]>([])
@@ -143,7 +144,7 @@ export default function AdminEmailTemplatesPage() {
                         <Mail className="w-10 h-10 text-muted-foreground" />
                     </div>
                     <p className="text-lg font-medium text-foreground mb-1">
-                        {searchTerm ? t.admin.noTemplatesFound : (isAr ? 'لا توجد قوالب بريد' : 'No Email Templates')}
+                        {searchTerm ? t.admin.noTemplatesFound : a.etNoTemplates}
                     </p>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto">
                         {t.admin.noTemplatesDesc}
@@ -175,7 +176,7 @@ export default function AdminEmailTemplatesPage() {
                                                 ${tmpl.is_active ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground border-border'}`}>
                                                 {tmpl.is_active
                                                     ? t.active
-                                                    : (isAr ? 'معطل' : 'Inactive')}
+                                                    : a.etInactive}
                                             </span>
                                         </div>
                                     </div>

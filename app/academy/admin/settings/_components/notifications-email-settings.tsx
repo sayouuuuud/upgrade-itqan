@@ -225,7 +225,7 @@ export function NotificationsEmailSettings({
               <Input
                 value={smtp.fromName || ""}
                 onChange={(e) => updateSmtp({ fromName: e.target.value })}
-                placeholder="أكاديمية إتقان"
+                placeholder={a.neFromNamePlaceholder}
                 className="h-11"
               />
             </div>

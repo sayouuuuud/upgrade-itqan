@@ -390,7 +390,7 @@ export default function AcademyAdminLearningPathDetailPage() {
       <Tabs defaultValue="stages" className="space-y-4">
         <TabsList>
           <TabsTrigger value="stages">{tp.tabs.stages} ({stages.length})</TabsTrigger>
-          <TabsTrigger value="landing">صفحة الهبوط (Landing)</TabsTrigger>
+          <TabsTrigger value="landing">{a.lpLandingPageTab}</TabsTrigger>
           <TabsTrigger value="funnel">{tp.tabs.funnel}</TabsTrigger>
           <TabsTrigger value="settings">{tp.tabs.settings}</TabsTrigger>
         </TabsList>
@@ -416,8 +416,8 @@ export default function AcademyAdminLearningPathDetailPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold">{s.title}</h3>
                       <Badge variant="outline" className="text-xs">{s.estimated_minutes} {tp.metadata.minutesShort}</Badge>
-                      {s.course_id && <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 border-blue-200">دورة تدريبية</Badge>}
-                      {s.halaqa_id && <Badge variant="secondary" className="text-xs bg-emerald-100 text-emerald-800 border-emerald-200">حلقة مرتبطة</Badge>}
+                      {s.course_id && <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 border-blue-200">{a.lpLinkedCourseBadge}</Badge>}
+                      {s.halaqa_id && <Badge variant="secondary" className="text-xs bg-emerald-100 text-emerald-800 border-emerald-200">{a.lpLinkedHalaqaBadge}</Badge>}
                       {s.video_url && <Badge variant="secondary" className="text-xs">{tp.metadata.videoBadge}</Badge>}
                       {s.pdf_url && <Badge variant="secondary" className="text-xs">{tp.metadata.pdfBadge}</Badge>}
                     </div>
@@ -684,16 +684,16 @@ export default function AcademyAdminLearningPathDetailPage() {
               <Textarea rows={2} value={edit.prerequisites.join(', ')} onChange={e => setEdit({ ...edit, prerequisites: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder={a.lpPrerequisitesPlaceholder} />
             </div>
             <div className="space-y-1">
-              <Label>الفئة المستهدفة (Target Audience)</Label>
-              <Textarea rows={2} value={edit.target_audience} onChange={e => setEdit({ ...edit, target_audience: e.target.value })} placeholder="لمن هذا المسار؟" />
+              <Label>{a.lpTargetAudience}</Label>
+              <Textarea rows={2} value={edit.target_audience} onChange={e => setEdit({ ...edit, target_audience: e.target.value })} placeholder={a.lpTargetAudiencePlaceholder} />
             </div>
             <div className="space-y-1">
-              <Label>ماذا ستتعلم؟ (What you will learn) - افصل بينها بفاصلة</Label>
-              <Textarea rows={3} value={edit.what_you_will_learn.join(', ')} onChange={e => setEdit({ ...edit, what_you_will_learn: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="إتقان مخارج الحروف، التلاوة الصحيحة..." />
+              <Label>{a.lpWhatYouWillLearn}</Label>
+              <Textarea rows={3} value={edit.what_you_will_learn.join(', ')} onChange={e => setEdit({ ...edit, what_you_will_learn: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder={a.lpWhatYouWillLearnPlaceholder} />
             </div>
             <div className="space-y-1">
-              <Label>المتطلبات السابقة (Prerequisites) - افصل بينها بفاصلة</Label>
-              <Textarea rows={2} value={edit.prerequisites.join(', ')} onChange={e => setEdit({ ...edit, prerequisites: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="الق��رة على قراءة الحروف العربية..." />
+              <Label>{a.lpPrerequisites}</Label>
+              <Textarea rows={2} value={edit.prerequisites.join(', ')} onChange={e => setEdit({ ...edit, prerequisites: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder={a.lpPrerequisitesPlaceholder} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -743,7 +743,7 @@ export default function AcademyAdminLearningPathDetailPage() {
             <div className="space-y-4 rounded-xl border border-border/50 bg-card/50 p-5">
               <h4 className="text-sm font-semibold flex items-center gap-2 text-primary">
                 <LayoutTemplate className="h-4 w-4" />
-                المعلومات الأساسية
+                {a.lpBasicInfoSection}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="md:col-span-2 space-y-1.5">
@@ -765,7 +765,7 @@ export default function AcademyAdminLearningPathDetailPage() {
             <div className="space-y-4 rounded-xl border border-border/50 bg-card/50 p-5">
               <h4 className="text-sm font-semibold flex items-center gap-2 text-primary">
                 <FileText className="h-4 w-4" />
-                المحتوى والوسائط
+                {a.lpContentMediaSection}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="md:col-span-2 space-y-1.5">
@@ -779,7 +779,7 @@ export default function AcademyAdminLearningPathDetailPage() {
                     {tp.stageForm.videoUrl}
                   </Label>
                   <div className="flex gap-2">
-                    <Input className="bg-background shadow-sm border-input/50 text-left font-mono text-xs" dir="ltr" value={stageForm.video_url} onChange={e => setStageForm({ ...stageForm, video_url: e.target.value })} placeholder="رابط خارجي أو قم بالرفع..." />
+                    <Input className="bg-background shadow-sm border-input/50 text-left font-mono text-xs" dir="ltr" value={stageForm.video_url} onChange={e => setStageForm({ ...stageForm, video_url: e.target.value })} placeholder={a.lpExternalLinkOrUpload} />
                     <div className="relative shrink-0">
                       <input
                         type="file"
@@ -804,7 +804,7 @@ export default function AcademyAdminLearningPathDetailPage() {
                     {tp.stageForm.pdfUrl}
                   </Label>
                   <div className="flex gap-2">
-                    <Input className="bg-background shadow-sm border-input/50 text-left font-mono text-xs" dir="ltr" value={stageForm.pdf_url} onChange={e => setStageForm({ ...stageForm, pdf_url: e.target.value })} placeholder="رابط خارجي أو قم بالرفع..." />
+                    <Input className="bg-background shadow-sm border-input/50 text-left font-mono text-xs" dir="ltr" value={stageForm.pdf_url} onChange={e => setStageForm({ ...stageForm, pdf_url: e.target.value })} placeholder={a.lpExternalLinkOrUpload} />
                     <div className="relative shrink-0">
                       <input
                         type="file"
@@ -829,7 +829,7 @@ export default function AcademyAdminLearningPathDetailPage() {
             <div className="space-y-4 rounded-xl border border-border/50 bg-card/50 p-5">
               <h4 className="text-sm font-semibold flex items-center gap-2 text-primary">
                 <LinkIcon className="h-4 w-4" />
-                التطبيق المتقدم والربط
+                {a.lpAdvancedApplicationSection}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="md:col-span-1 space-y-1.5">

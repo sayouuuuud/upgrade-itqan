@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils"
 import type { MaqraahSettings } from "../hooks/use-maqraah-settings"
 import { SectionCard, ToggleRow } from "./section-card"
+import { useI18n } from "@/lib/i18n/context"
 
 interface Props {
   settings: MaqraahSettings
@@ -16,18 +17,21 @@ interface Props {
 }
 
 const audioFormats = ["mp3", "m4a", "ogg", "wav", "aac"]
-const riwayatList = [
-  { value: "hafs", label: "حفص عن عاصم" },
-  { value: "warsh", label: "ورش عن نافع" },
-  { value: "qalun", label: "قالون عن نافع" },
-  { value: "duri", label: "الدوري عن أبي عمرو" },
-  { value: "shubah", label: "شعبة عن عاصم" },
-  { value: "bazzi", label: "البزي عن ابن كثير" },
-]
 
 export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
+  const { t } = useI18n()
+  const a = t.admin
   const formats = settings.maqraah_recitations_allowed_audio_formats || []
   const riwayat = settings.maqraah_recitations_available_riwayat || []
+
+  const riwayatList = [
+    { value: "hafs", label: a.rhHafs },
+    { value: "warsh", label: a.rhWarsh },
+    { value: "qalun", label: a.rhQalun },
+    { value: "duri", label: a.rhDuri },
+    { value: "shubah", label: a.rhShubah },
+    { value: "bazzi", label: a.rhBazzi },
+  ]
 
   const toggleFormat = (f: string) => {
     const next = formats.includes(f) ? formats.filter((x) => x !== f) : [...formats, f]
@@ -41,14 +45,9 @@ export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
 
   return (
     <div className="space-y-6">
-      <SectionCard
-        icon={Mic}
-        title="التلاوات الصوتية"
-        description="الصيغ المسموحة وحدود الحجم"
-        onReset={onReset}
-      >
+      <SectionCard icon={Mic} title={a.rsetAudioRecitations} description={a.rsetAudioRecitationsDesc} onReset={onReset}>
         <div className="space-y-2">
-          <Label className="font-medium text-sm">صيغ الصوت المسموحة</Label>
+          <Label className="font-medium text-sm">{a.rsetAllowedFormats}</Label>
           <div className="flex flex-wrap gap-2">
             {audioFormats.map((f) => (
               <button
@@ -70,27 +69,23 @@ export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label className="font-medium text-sm">أقصى حجم تسجيل صوتي (MB)</Label>
+            <Label className="font-medium text-sm">{a.rsetMaxAudioSize}</Label>
             <Input
               type="number"
               min={1}
               value={settings.maqraah_recitations_max_audio_size_mb ?? 25}
-              onChange={(e) =>
-                onUpdate({ maqraah_recitations_max_audio_size_mb: Number(e.target.value) })
-              }
+              onChange={(e) => onUpdate({ maqraah_recitations_max_audio_size_mb: Number(e.target.value) })}
               className="h-11"
             />
           </div>
           <div className="space-y-2">
-            <Label className="font-medium text-sm">أقصى حجم فيديو (MB)</Label>
+            <Label className="font-medium text-sm">{a.rsetMaxVideoSize}</Label>
             <Input
               type="number"
               min={1}
               disabled={!settings.maqraah_recitations_allow_video}
               value={settings.maqraah_recitations_max_video_size_mb ?? 100}
-              onChange={(e) =>
-                onUpdate({ maqraah_recitations_max_video_size_mb: Number(e.target.value) })
-              }
+              onChange={(e) => onUpdate({ maqraah_recitations_max_video_size_mb: Number(e.target.value) })}
               className="h-11"
             />
           </div>
@@ -98,23 +93,23 @@ export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
 
         <div className="grid gap-4 md:grid-cols-2">
           <ToggleRow
-            label="السماح بتلاوات فيديو"
-            description="بالإضافة للتسجيل الصوتي"
+            label={a.rsetAllowVideo}
+            description={a.rsetAllowVideoDesc}
             checked={settings.maqraah_recitations_allow_video ?? false}
             onChange={(v) => onUpdate({ maqraah_recitations_allow_video: v })}
           />
           <ToggleRow
-            label="السماح بإعادة التلاوة"
-            description="إعادة الإرسال بعد التقييم"
+            label={a.rsetAllowRetry}
+            description={a.rsetAllowRetryDesc}
             checked={settings.maqraah_recitations_allow_retry ?? true}
             onChange={(v) => onUpdate({ maqraah_recitations_allow_retry: v })}
           />
         </div>
       </SectionCard>
 
-      <SectionCard icon={BookOpen} title="الروايات" description="الروايات المتاحة للتلاوة">
+      <SectionCard icon={BookOpen} title={a.rsetRiwayat} description={a.rsetRiwayatDesc}>
         <div className="space-y-2">
-          <Label className="font-medium text-sm">الرواية الافتراضية</Label>
+          <Label className="font-medium text-sm">{a.rsetDefaultRiwayah}</Label>
           <Select
             value={settings.maqraah_recitations_default_riwayah || "hafs"}
             onValueChange={(v) => onUpdate({ maqraah_recitations_default_riwayah: v })}
@@ -133,7 +128,7 @@ export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
         </div>
 
         <div className="space-y-2">
-          <Label className="font-medium text-sm">الروايات المتاحة</Label>
+          <Label className="font-medium text-sm">{a.rsetAvailableRiwayat}</Label>
           <div className="flex flex-wrap gap-2">
             {riwayatList.map((r) => (
               <button
@@ -154,10 +149,10 @@ export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
         </div>
       </SectionCard>
 
-      <SectionCard icon={Star} title="التقييم" description="سلم وقواعد تقييم التلاوات">
+      <SectionCard icon={Star} title={a.rsetEvaluation} description={a.rsetEvaluationDesc}>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label className="font-medium text-sm">سلم التقييم</Label>
+            <Label className="font-medium text-sm">{a.rsetRatingScale}</Label>
             <Select
               value={String(settings.maqraah_recitations_rating_scale ?? 5)}
               onValueChange={(v) => onUpdate({ maqraah_recitations_rating_scale: Number(v) })}
@@ -166,42 +161,40 @@ export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="5">من 5</SelectItem>
-                <SelectItem value="10">من 10</SelectItem>
-                <SelectItem value="100">من 100</SelectItem>
+                <SelectItem value="5">{a.rsetScaleOf.replace('{scale}', '5')}</SelectItem>
+                <SelectItem value="10">{a.rsetScaleOf.replace('{scale}', '10')}</SelectItem>
+                <SelectItem value="100">{a.rsetScaleOf.replace('{scale}', '100')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label className="font-medium text-sm">درجة النجاح</Label>
+            <Label className="font-medium text-sm">{a.rsetPassingScore}</Label>
             <Input
               type="number"
               min={1}
               value={settings.maqraah_recitations_passing_score ?? 3}
-              onChange={(e) =>
-                onUpdate({ maqraah_recitations_passing_score: Number(e.target.value) })
-              }
+              onChange={(e) => onUpdate({ maqraah_recitations_passing_score: Number(e.target.value) })}
               className="h-11"
             />
             <p className="text-[11px] text-muted-foreground flex items-center gap-1">
               <Badge variant="secondary" className="text-[10px]">
-                من {settings.maqraah_recitations_rating_scale ?? 5}
+                {a.rsetScaleOf.replace('{scale}', String(settings.maqraah_recitations_rating_scale ?? 5))}
               </Badge>
-              الحد الأدنى لاعتماد التلاوة
+              {a.rsetPassingScoreHint}
             </p>
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <ToggleRow
-            label="إلزام ملاحظات المقرئ"
-            description="كتابة ملاحظة مع كل تقييم"
+            label={a.rsetRequireFeedback}
+            description={a.rsetRequireFeedbackDesc}
             checked={settings.maqraah_recitations_require_feedback ?? true}
             onChange={(v) => onUpdate({ maqraah_recitations_require_feedback: v })}
           />
           <ToggleRow
-            label="تتبع أخطاء التجويد"
-            description="تسجيل الأخطاء لكل تلاوة"
+            label={a.rsetTrackTajweed}
+            description={a.rsetTrackTajweedDesc}
             checked={settings.maqraah_recitations_track_tajweed_errors ?? true}
             onChange={(v) => onUpdate({ maqraah_recitations_track_tajweed_errors: v })}
           />

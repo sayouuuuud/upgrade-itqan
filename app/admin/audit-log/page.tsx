@@ -54,6 +54,7 @@ const actionTypeLabels: Record<string, { ar: string; en: string; color: string }
 
 export default function AuditLogPage() {
   const { t, locale } = useI18n()
+  const a = t.admin
   const isAr = locale === 'ar'
   
   const [logs, setLogs] = useState<AuditLogEntry[]>([])
@@ -136,7 +137,7 @@ export default function AuditLogPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Shield className="w-6 h-6 text-primary" />
-            {isAr ? 'سجل التدقيق' : 'Audit Log'}
+            {a.alTitle}
           </h1>
           <p className="text-muted-foreground mt-1">
             {isAr 
@@ -146,7 +147,7 @@ export default function AuditLogPage() {
         </div>
         <Button onClick={fetchLogs} variant="outline" className="gap-2">
           <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
-          {isAr ? 'تحديث' : 'Refresh'}
+          {a.alRefresh}
         </Button>
       </div>
 
@@ -157,7 +158,7 @@ export default function AuditLogPage() {
             <div className="relative flex-1">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder={isAr ? 'ابحث في السجل...' : 'Search logs...'}
+                placeholder={a.alSearchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pr-10"
@@ -165,10 +166,10 @@ export default function AuditLogPage() {
             </div>
             <Select value={selectedType} onValueChange={(v) => { setSelectedType(v); setPage(0); }}>
               <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder={isAr ? 'نوع الإجراء' : 'Action Type'} />
+                <SelectValue placeholder={a.alActionType} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{isAr ? 'جميع الإجراءات' : 'All Actions'}</SelectItem>
+                <SelectItem value="all">{a.alAllActions}</SelectItem>
                 {actionTypes.map((at) => (
                   <SelectItem key={at.type} value={at.type}>
                     {getActionLabel(at.type).label} ({at.count})
@@ -184,7 +185,7 @@ export default function AuditLogPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">
-            {isAr ? 'السجلات' : 'Entries'}
+            {a.alEntries}
             <Badge variant="secondary" className="mr-2">
               {total}
             </Badge>
@@ -199,7 +200,7 @@ export default function AuditLogPage() {
             <div className="text-center py-12">
               <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
               <p className="text-muted-foreground">
-                {isAr ? 'لا توجد سجلات' : 'No log entries found'}
+                {a.alNoEntries}
               </p>
             </div>
           ) : (
@@ -234,7 +235,7 @@ export default function AuditLogPage() {
                         <div className="flex items-center gap-4 text-sm">
                           <div className="flex items-center gap-1.5">
                             <User className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">{isAr ? 'بواسطة:' : 'By:'}</span>
+                            <span className="text-muted-foreground">{a.alBy}</span>
                             <span className="font-medium">{log.admin_name || log.admin_email}</span>
                           </div>
                           
@@ -242,7 +243,7 @@ export default function AuditLogPage() {
                             <>
                               <ArrowRight className="w-4 h-4 text-muted-foreground" />
                               <div className="flex items-center gap-1.5">
-                                <span className="text-muted-foreground">{isAr ? 'على:' : 'On:'}</span>
+                                <span className="text-muted-foreground">{a.alOn}</span>
                                 <span className="font-medium">{log.target_user_name || log.target_user_email}</span>
                               </div>
                             </>
