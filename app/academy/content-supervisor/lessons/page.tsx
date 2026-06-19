@@ -218,6 +218,7 @@ function StatusBadge({ status, isAr }: { status: string; isAr: boolean }) {
   const config: Record<string, { labelAr: string; labelEn: string; cls: string; Icon: any }> = {
     pending_review: { labelAr: 'بانتظار المراجعة', labelEn: 'Pending Review', cls: 'bg-amber-500/10 text-amber-700 border border-amber-500/20 dark:text-amber-400',     Icon: Clock },
     approved:       { labelAr: 'معتمد',          labelEn: 'Approved',       cls: 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 dark:text-emerald-400', Icon: CheckCircle },
+    published:      { labelAr: 'منشور',          labelEn: 'Published',      cls: 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 dark:text-emerald-400', Icon: CheckCircle },
     rejected:       { labelAr: 'مرفوض',          labelEn: 'Rejected',       cls: 'bg-rose-500/10 text-rose-700 border border-rose-500/20 dark:text-rose-400',          Icon: XCircle },
     draft:          { labelAr: 'مسودة',          labelEn: 'Draft',          cls: 'bg-muted text-muted-foreground border border-border/50',                            Icon: BookOpen },
   }

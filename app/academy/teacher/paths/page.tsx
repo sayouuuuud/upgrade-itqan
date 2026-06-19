@@ -331,7 +331,7 @@ export default function TeacherPathsPage() {
           <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <BookOpen className="w-10 h-10 text-emerald-600/50" />
           </div>
-          <h2 className="text-xl font-bold mb-3">لا توجد مسارات تعليمية ��عد</h2>
+          <h2 className="text-xl font-bold mb-3">لا توجد مسارات تعليمية بعد</h2>
           <p className="text-muted-foreground font-medium mb-8 max-w-sm mx-auto leading-relaxed">
             المسار التعليمي هو سلسلة من الدورات. ابدأ بإنشاء مسارك الأول ثم أضف إليه الدورات من صفحة تفاصيل المسار.
           </p>

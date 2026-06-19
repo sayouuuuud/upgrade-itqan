@@ -39,7 +39,7 @@ export default function TeacherPublicLessonsPage() {
     if (res.ok) setLessons(lessons.filter(l => l.id !== id))
   }
 
-  if (loading) return <div className="text-center py-12">جاري التحميل...</div>
+  if (loading) return <div className="text-center py-12">جارٍ التحميل...</div>
 
   const upcoming = lessons.filter(l => new Date(l.scheduled_at) > new Date())
   const past = lessons.filter(l => new Date(l.scheduled_at) <= new Date())
@@ -53,7 +53,7 @@ export default function TeacherPublicLessonsPage() {
             الدروس العامة
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            افتح درساً عاماً برابط قابل للمشاركة على السوشيال ميديا — أي حد بيدخل الرابط يقدر يحضر بدون تسجيل.
+            افتح درساً عاماً برابط قابل للمشاركة عبر وسائل التواصل الاجتماعي — يمكن لأي شخص الحضور دون تسجيل.
           </p>
         </div>
         <Button asChild>

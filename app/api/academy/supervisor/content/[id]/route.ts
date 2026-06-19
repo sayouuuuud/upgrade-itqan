@@ -83,7 +83,12 @@ export async function PATCH(
     return NextResponse.json({ error: 'سبب الرفض مطلوب' }, { status: 400 })
   }
 
-  const newStatus = action === 'approve' ? 'approved' : 'rejected'
+  // NOTE: students only see lessons with status = 'published' (see
+  // app/api/academy/student/**). The rest of the system (admin course review,
+  // teacher lesson edit) also normalizes approval to 'published'. Using
+  // 'approved' here would leave the lesson invisible to students even though
+  // is_published is true — so we publish on approve to stay consistent.
+  const newStatus = action === 'approve' ? 'published' : 'rejected'
   const isPublished = action === 'approve'
 
   try {

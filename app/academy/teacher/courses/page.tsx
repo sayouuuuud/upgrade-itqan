@@ -106,8 +106,8 @@ export default function TeacherCoursesPage() {
   const handleToggleArchive = async (course: Course) => {
     const willDeactivate = course.is_active !== false
     const msg = willDeactivate
-      ? 'تعطيل الدورة؟ هتختفي من الطلاب الجدد لكن الحاليين هيكملوا عادي.'
-      : 'إعادة تفعيل الدورة؟ هتظهر للطلاب الجدد تاني.'
+      ? 'تعطيل الدورة؟ ستختفي من قائمة الطلاب الجدد بينما يكمل الطلاب الحاليون دراستهم.'
+      : 'إعادة تفعيل الدورة؟ ستظهر للطلاب الجدد مجدداً.'
     if (!confirm(msg)) return
     setArchivingId(course.id)
     try {
