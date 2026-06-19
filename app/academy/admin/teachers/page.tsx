@@ -139,7 +139,7 @@ export default function AdminTeachersPage() {
                 {hasRejectionHistory && (
                   <div>
                     <button onClick={() => toggleRejectionHistory(teacher.id)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors w-full">
-                      <History className="w-3.5 h-3.5 text-red-500" /><span className="font-medium text-red-600 dark:text-red-400">{a.teachersRejectionHistory.replace('{count}', String(teacher.rejection_count)).replace('{time}', (teacher.rejection_count ?? 0) === 1 ? 'مرة' : 'مرات')}</span>
+                      <History className="w-3.5 h-3.5 text-red-500" /><span className="font-medium text-red-600 dark:text-red-400">{a.teachersRejectionHistory.replace('{count}', String(teacher.rejection_count)).replace('{time}', (teacher.rejection_count ?? 0) === 1 ? a.teachersOnce : a.teachersTimes)}</span>
                       {teacher.last_rejected_at && <span className="text-muted-foreground mr-auto">{a.teachersLastRejection} {new Date(teacher.last_rejected_at).toLocaleDateString(dateLocale)}</span>}
                       {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mr-auto" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>

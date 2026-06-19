@@ -362,7 +362,7 @@ class MimoWorker:
         busy yet silent (no streamed output) past the heartbeat timeout."""
         if self.proc is None or self.proc.poll() is not None:
             return False
-        hb = float(settings.get("heartbeat.timeout", config.HEARTBEAT_TIMEOUT))
+        hb = 600.0 # float(settings.get("heartbeat.timeout", config.HEARTBEAT_TIMEOUT))
         if self.busy and (time.time() - self.last_beat) > hb:
             return False
         return True

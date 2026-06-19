@@ -90,12 +90,12 @@ type AcademyUserData = {
 }
 
 const SPECIALIZATIONS = [
-    { key: 'sira',    label: 'السيرة النبوية' },
-    { key: 'fiqh',    label: 'الفقه' },
-    { key: 'aqeedah', label: 'العقيدة' },
-    { key: 'tajweed', label: 'التجويد' },
-    { key: 'tafseer', label: 'التفسير' },
-    { key: 'arabic',  label: 'اللغة العربية' },
+    { key: 'sira',    labelKey: 'uprSpecSira' },
+    { key: 'fiqh',    labelKey: 'uprSpecFiqh' },
+    { key: 'aqeedah', labelKey: 'uprSpecAqeedah' },
+    { key: 'tajweed', labelKey: 'uprSpecTajweed' },
+    { key: 'tafseer', labelKey: 'uprSpecTafseer' },
+    { key: 'arabic',  labelKey: 'uprSpecArabic' },
 ]
 
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -498,8 +498,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                     disabled={isUpdatingAccess}
                                 >
                                     <option value="both">{a.uprPlatformNone}</option>
-                                    <option value="quran">{isAr ? 'القرآن الكريم' : 'Quran Platform'}</option>
-                                    <option value="academy">{isAr ? 'الأكاديمية' : 'Academy'}</option>
+                                    <option value="quran">{a.uprQuranPlatform}</option>
+                                    <option value="academy">{a.uprAcademyPlatform}</option>
                                 </select>
                             </div>
                         </CardContent>
@@ -520,7 +520,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-wrap gap-3">
-                                {SPECIALIZATIONS.map(({ key, label }) => {
+                                {SPECIALIZATIONS.map(({ key, labelKey }) => {
                                     const active = userSpecs.find(s => s.specialization === key)
                                     const saving = specSaving === key
                                     return (
@@ -544,7 +544,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                             ) : (
                                                 <Plus className="w-3.5 h-3.5" />
                                             )}
-                                            {label}
+                                            {a[labelKey as keyof typeof a]}
                                             {active && active.set_by !== 'admin' && (
                                                 <span className="text-[10px] opacity-60">{a.uprUserLabel}</span>
                                             )}

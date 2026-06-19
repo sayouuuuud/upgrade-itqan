@@ -297,7 +297,7 @@ export default function AcademySupervisorsPage() {
   const getRoleLabel = (role: string) => {
     if (role === 'fiqh_supervisor') return { ar: a.supvFiqhSupervisor, en: ROLE_LABELS.fiqh_supervisor.en }
     if (role === 'content_supervisor') return { ar: a.supvContentSupervisor, en: ROLE_LABELS.content_supervisor.en }
-    return { ar: 'مشرف عام', en: 'General Supervisor' }
+    return { ar: a.supvGeneralSupervisor, en: 'General Supervisor' }
   }
 
   return (

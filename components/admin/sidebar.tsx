@@ -80,7 +80,7 @@ export function AdminSidebar({
         type="button"
         onClick={() => setOpen(true)}
         className="lg:hidden fixed top-4 right-4 z-40 p-2 rounded-xl bg-card border border-border shadow-sm text-muted-foreground hover:text-foreground"
-        aria-label="فتح القائمة الجانبية"
+        aria-label="Open menu"
       >
         <Menu className="w-5 h-5" />
       </button>
@@ -112,7 +112,7 @@ export function AdminSidebar({
               <button
                 className="lg:hidden p-1 text-muted-foreground hover:text-foreground"
                 onClick={() => setOpen(false)}
-                aria-label="إغلاق"
+                aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>

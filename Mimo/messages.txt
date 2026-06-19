@@ -1,0 +1,65 @@
+[scout (scout)] Good, thanks! What can I help you with?
+[you (user)] how r u
+[system (system)] Scout is analyzing the project...
+[scout (scout)] Hi! How can I help you today?
+[you (user)] hi
+[system (system)] Scout is analyzing the project...
+[scout (scout)] Let me explore the project structure to understand what we're working with.## Project Analysis Complete
+
+### 1. Project Map
+
+**MIMO Arena** is a multi-agent command center with 3 core roles:
+- **Maestro (Gemini)** — orchestrates via JSON bridge files
+- **Scout** — analyzes project, creates execution plans
+- **Executors** — N parallel workers with file locking
+
+**Core Modules** (11 Python files + 1 JS + 1 HTML):
+
+| Module | Responsibility |
+|--------|----------------|
+| `server.py` | FastAPI REST/WebSocket API |
+| `orchestrator.py` | Worker management, task distribution, bridge protocol |
+| `mimo_worker.py` | MIMO process lifecycle, streaming, health |
+| `locks.py` | File-lock manager (TTL, FIFO queue, auto-release) |
+| `missions.py` | Mission state machine + audit log |
+| `personas.py` | Agent roles, skill injection, prompts |
+| `settings.py` | Runtime settings with DB persistence |
+| `config.py` | Central config, env vars |
+| `db.py` | SQLite (WAL mode, per-thread) |
+| `chat_store.py` | Persistent chat storage |
+| `isolation.py` | Git worktree isolation |
+
+### 2. Execution Plan — 15 Independent Tasks
+
+| Task | Persona | Files | Complexity |
+|------|---------|-------|------------|
+| Database Layer | `coder` | `db.py` | Low |
+| File Locking | `coder` | `locks.py` | Medium |
+| Persona System | `coder` | `personas.py` | Medium |
+| Settings & Config | `coder` | `settings.py`, `config.py` | Low |
+| Mission Tracking | `coder` | `missions.py` | Medium |
+| Chat Store | `coder` | `chat_store.py` | Low |
+| Git Isolation | `coder` | `isolation.py` | Medium |
+| Worker Process | `coder` | `mimo_worker.py` | High |
+| Orchestrator | `coder` | `orchestrator.py` | High |
+| Server & API | `coder` | `server.py` | Medium |
+| UI Layout | `designer` | `index.html` | Medium |
+| CSS Design System | `designer` | `index.html` (CSS) | Medium |
+| JS Logic | `coder` | `app.js` | High |
+| Real-time Features | `coder` | `app.js` | High |
+| Entry Point | `coder` | `run.py`, `config.py` | Low |
+
+### 3. Parallelism Strategy
+
+**Phase 1 (Foundation)**: Tasks 4, 6, 7, 8, 9, 10 — fully independent
+**Phase 2 (Core)**: Tasks 5, 3 — depend on Phase 1
+**Phase 3 (Integration)**: Tasks 2, 1 — depend on Phase 2
+**Phase 4 (Frontend)**: Tasks 11-14 — can parallel with backend
+**Phase 5**: Entry point + testing
+
+Full details saved to `PROJECT_MAP.md`.
+[executor-1 (executor)] Hi there! 👋
+
+{"status":"done","answer":"yes","summary":"Greeted the user."}
+[system (system)] executor-1 executing (attempt 1/3)...
+[you (user)] say hi

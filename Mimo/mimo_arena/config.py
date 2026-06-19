@@ -52,7 +52,7 @@ LOCK_WAIT_TIMEOUT = float(os.environ.get("MIMO_LOCK_WAIT", "120"))
 
 # --- Reliability ------------------------------------------------------------
 # A worker that misses heartbeats for longer than this is auto-restarted.
-HEARTBEAT_TIMEOUT = float(os.environ.get("MIMO_HEARTBEAT_TIMEOUT", "60"))
+HEARTBEAT_TIMEOUT = float(os.environ.get("MIMO_HEARTBEAT_TIMEOUT", "600"))
 # How many times a failed/timed-out task is retried before marked failed.
 TASK_MAX_RETRIES = int(os.environ.get("MIMO_TASK_RETRIES", "2"))
 

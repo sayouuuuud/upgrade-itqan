@@ -20,15 +20,15 @@ interface GeneralSettingsProps {
 }
 
 const timezones = [
-  { value: "Asia/Riyadh", label: "الرياض (GMT+3)" },
-  { value: "Asia/Dubai", label: "دبي (GMT+4)" },
-  { value: "Africa/Cairo", label: "القاهرة (GMT+2)" },
-  { value: "Asia/Amman", label: "عمّان (GMT+3)" },
-  { value: "Asia/Beirut", label: "بيروت (GMT+2)" },
-  { value: "Asia/Baghdad", label: "بغداد (GMT+3)" },
-  { value: "Asia/Kuwait", label: "الكويت (GMT+3)" },
-  { value: "Europe/London", label: "لندن (GMT+0)" },
-  { value: "America/New_York", label: "نيويورك (GMT-5)" },
+  { value: "Asia/Riyadh", label: "tzRiyadh" },
+  { value: "Asia/Dubai", label: "tzDubai" },
+  { value: "Africa/Cairo", label: "tzCairo" },
+  { value: "Asia/Amman", label: "tzAmman" },
+  { value: "Asia/Beirut", label: "tzBeirut" },
+  { value: "Asia/Baghdad", label: "tzBaghdad" },
+  { value: "Asia/Kuwait", label: "tzKuwait" },
+  { value: "Europe/London", label: "tzLondon" },
+  { value: "America/New_York", label: "tzNewYork" },
 ]
 
 export function GeneralSettings({ settings, metadata, onUpdate, onReset }: GeneralSettingsProps) {
@@ -318,7 +318,7 @@ export function GeneralSettings({ settings, metadata, onUpdate, onReset }: Gener
                 <SelectContent>
                   {timezones.map((tz) => (
                     <SelectItem key={tz.value} value={tz.value}>
-                      {tz.label}
+                      {a[tz.label as keyof typeof a]}
                     </SelectItem>
                   ))}
                 </SelectContent>

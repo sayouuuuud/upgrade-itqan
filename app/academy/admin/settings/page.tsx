@@ -63,15 +63,15 @@ export default function AcademyAdminSettingsPage() {
   const a = t.academyAdmin
 
   const tabs = [
-    { id: "general", label: a.settingsGeneral, icon: Globe, keywords: ["اسم", "شعار", "رابط", "وصف", "لغة", "توقيت"] },
-    { id: "registration", label: a.settingsRegistration, icon: UserPlus, keywords: ["تسجيل", "طالب", "أستاذ", "موافقة", "حقول"] },
-    { id: "courses", label: a.settingsCourses, icon: Video, keywords: ["دورة", "فيديو", "ملف", "تخزين", "تحميل", "علامة مائية"] },
-    { id: "sessions", label: a.settingsLiveSessions, icon: VideoIcon, keywords: ["جلسة", "فيديو", "تذكير", "zoom", "livekit"] },
-    { id: "gamification", label: a.settingsGamification, icon: Trophy, keywords: ["نقاط", "مستوى", "شارة", "streak", "leaderboard"] },
-    { id: "notifications", label: a.settingsNotifications, icon: Bell, keywords: ["إشعار", "بريد", "smtp", "إيميل", "تذكير"] },
-    { id: "forum", label: a.settingsForum, icon: MessageSquare, keywords: ["منتدى", "فقه", "سؤال", "موضوع", "كلمات ممنوعة"] },
-    { id: "security", label: a.settingsSecurity, icon: Shield, keywords: ["أمان", "كلمة سر", "2fa", "ip", "جلسة", "rate limit"] },
-    { id: "maintenance", label: a.settingsMaintenance, icon: Wrench, keywords: ["صيانة", "cache", "backup", "نسخة احتياطية"] },
+    { id: "general", label: a.settingsGeneral, icon: Globe, keywords: a.settingsKeywordsGeneral },
+    { id: "registration", label: a.settingsRegistration, icon: UserPlus, keywords: a.settingsKeywordsRegistration },
+    { id: "courses", label: a.settingsCourses, icon: Video, keywords: a.settingsKeywordsCourses },
+    { id: "sessions", label: a.settingsLiveSessions, icon: VideoIcon, keywords: a.settingsKeywordsSessions },
+    { id: "gamification", label: a.settingsGamification, icon: Trophy, keywords: a.settingsKeywordsGamification },
+    { id: "notifications", label: a.settingsNotifications, icon: Bell, keywords: a.settingsKeywordsNotifications },
+    { id: "forum", label: a.settingsForum, icon: MessageSquare, keywords: a.settingsKeywordsForum },
+    { id: "security", label: a.settingsSecurity, icon: Shield, keywords: a.settingsKeywordsSecurity },
+    { id: "maintenance", label: a.settingsMaintenance, icon: Wrench, keywords: a.settingsKeywordsMaintenance },
   ]
 
   const [activeTab, setActiveTab] = useState("general")

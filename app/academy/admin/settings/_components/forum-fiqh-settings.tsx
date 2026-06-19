@@ -176,7 +176,7 @@ export function ForumFiqhSettings({ settings, onUpdate, onReset }: ForumFiqhSett
                     className="h-11"
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    يظهر للطالب: &quot;الرد المتوقع خلال {settings.academy_fiqh_response_days ?? 3} أيام&quot;
+                    {a.ffResponseDaysPreview.replace('{days}', String(settings.academy_fiqh_response_days ?? 3))}
                   </p>
                 </div>
 
