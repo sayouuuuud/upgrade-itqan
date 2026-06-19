@@ -59,7 +59,7 @@ export default function ParentProgressPage() {
   }, [])
 
   if (loading) {
-    return <div className="p-8 text-center">{isAr ? "جاري التحميل..." : "Loading..."}</div>
+    return <div className="p-8 text-center">{isAr ? 'جاري التحميل...' : 'Loading...'}</div>
   }
 
 

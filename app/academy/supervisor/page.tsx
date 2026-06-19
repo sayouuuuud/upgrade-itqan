@@ -36,7 +36,7 @@ export default function AcademySupervisorDashboard() {
       try {
         const [coursesRes, fiqhRes, meRes] = await Promise.all([
           fetch('/api/academy/admin/courses?include_lessons=true&lesson_status=pending_review'),
-          fetch('/api/academy/fiqh?filter=all'),
+          fetch('/api/academy/fiqh?view=inbox&status=all'),
           fetch('/api/auth/me'),
         ])
 
@@ -65,9 +65,9 @@ export default function AcademySupervisorDashboard() {
         let fiqhTotal = 0
         if (fiqhRes.ok) {
           const d = await fiqhRes.json()
-          const qs = d.questions || []
-          fiqhTotal = qs.length
-          fiqhUnanswered = qs.filter((q: any) => q.answer === null).length
+          const c = d.counts || {}
+          fiqhTotal = c.all ?? (d.questions || []).length
+          fiqhUnanswered = c.open ?? (d.questions || []).filter((q: any) => q.answer === null).length
         }
 
         if (meRes.ok) {

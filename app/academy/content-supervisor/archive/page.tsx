@@ -79,7 +79,7 @@ export default function ContentSupervisorArchivePage() {
             {isAr ? 'لا توجد دورات في الأرشيف' : 'No archived courses'}
           </h3>
           <p className="text-muted-foreground">
-            {isAr ? 'الأرشيف بيظهر فقط الدورات اللي في تخصصك' : 'Only courses in your specialization show up here'}
+            {isAr ? 'يظهر الأرشيف الدورات المتعلقة بتخصصك فقط' : 'Only courses in your specialization appear here'}
           </p>
         </div>
       ) : (
