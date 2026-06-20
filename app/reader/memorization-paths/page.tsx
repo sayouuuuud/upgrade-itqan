@@ -8,6 +8,7 @@ import {
   ChevronRight, AlertTriangle, Layers, Sparkles, Mic, ArrowUpDown, Hash,
 } from "lucide-react"
 import { toast } from "sonner"
+import { useI18n } from "@/lib/i18n/context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -41,14 +42,7 @@ type Path = {
   stats?: { enrolled: string; active: string; completed: string; avg_progress: string }
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  juz: "بالأجزاء", surah: "بالسور", hizb: "بالأحزاب", page: "بالصفحات", custom: "مخصص",
-}
 const RANGE_MAX: Record<string, number> = { juz: 30, surah: 114, hizb: 60, page: 604 }
-const UNIT_WORD: Record<string, string> = { juz: "جزء", surah: "سورة", hizb: "حزب", page: "صفحة" }
-const LEVEL_LABELS: Record<string, string> = {
-  beginner: "مبتدئ", intermediate: "متوسط", advanced: "متقدم",
-}
 
 // Quick presets to spare readers from manual range setup.
 type Preset = {
@@ -61,14 +55,10 @@ type Preset = {
   direction: "asc" | "desc"
   level: string
 }
-const PRESETS: Preset[] = [
-  { key: "juz30", label: "جزء عمّ", description: "السور القصيرة (النبأ → الناس)", unit_type: "surah", range_from: 78, range_to: 114, direction: "desc", level: "beginner" },
-  { key: "juz29", label: "جزء تبارك", description: "من سورة الملك", unit_type: "surah", range_from: 67, range_to: 77, direction: "desc", level: "beginner" },
-  { key: "full_surah", label: "المصحف كامل (بالسور)", description: "الفاتحة → الناس، 114 سورة", unit_type: "surah", range_from: 1, range_to: 114, direction: "desc", level: "advanced" },
-  { key: "full_juz", label: "المصحف كامل (بالأجزاء)", description: "30 جزءاً بالترتيب", unit_type: "juz", range_from: 1, range_to: 30, direction: "desc", level: "advanced" },
-]
 
 export default function ReaderMemorizationPathsPage() {
+  const { t } = useI18n()
+  const tp = (t as any).pages?.memorizationPaths || {}
   const [paths, setPaths] = useState<Path[]>([])
   const [loading, setLoading] = useState(true)
   const [openCreate, setOpenCreate] = useState(false)
@@ -100,8 +90,16 @@ export default function ReaderMemorizationPathsPage() {
     from >= 1 && to >= 1 && from <= max && to <= max
   // Units are generated inclusively regardless of order (server clamps/sorts).
   const unitCount = rangeValid ? Math.abs(to - from) + 1 : 0
-  const unitWord = UNIT_WORD[form.unit_type] || "وحدة"
+  const unitWord = tp.unitWords?.[form.unit_type as keyof typeof tp.unitWords] || "وحدة"
   const canSubmit = !!form.title.trim() && rangeValid && unitCount > 0
+
+  // Get presets with translated labels
+  const PRESETS: Preset[] = [
+    { key: "juz30", label: tp.presets?.juz30Label || "", description: tp.presets?.juz30Desc || "", unit_type: "surah", range_from: 78, range_to: 114, direction: "desc", level: "beginner" },
+    { key: "juz29", label: tp.presets?.juz29Label || "", description: tp.presets?.juz29Desc || "", unit_type: "surah", range_from: 67, range_to: 77, direction: "desc", level: "beginner" },
+    { key: "full_surah", label: tp.presets?.fullSurahLabel || "", description: tp.presets?.fullSurahDesc || "", unit_type: "surah", range_from: 1, range_to: 114, direction: "desc", level: "advanced" },
+    { key: "full_juz", label: tp.presets?.fullJuzLabel || "", description: tp.presets?.fullJuzDesc || "", unit_type: "juz", range_from: 1, range_to: 30, direction: "desc", level: "advanced" },
+  ]
 
   function applyPreset(p: Preset) {
     setForm(f => ({
@@ -259,7 +257,7 @@ export default function ReaderMemorizationPathsPage() {
           </div>
           <h3 className="text-lg font-bold">لم تنشئ أي مسار بعد</h3>
           <p className="text-sm text-muted-foreground mt-1 mb-5 max-w-md mx-auto">
-            أنشئ خطة حفظ متتابعة لطلابك خلال ثوانٍ — اختر قالباً جاهزاً مثل «جزء عمّ» أو حدّد المدى بنفسك.
+            أنشئ خطة حفظ متتابعة لطلابك خلال ثوانٍ — اختر قالباً جاهزاً مثل «جزء عمّ» أو ��دّد المدى بنفسك.
           </p>
           <Button onClick={() => setOpenCreate(true)} className="gap-2">
             <Plus className="h-4 w-4" /> إنشاء مسار جديد
