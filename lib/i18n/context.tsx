@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import { ar } from './locales/ar'
 import { en } from './locales/en'
 
@@ -8,6 +8,8 @@ export type Locale = 'ar' | 'en'
 export type Translations = {
   [key: string]: any
 }
+
+const LOCALE_STORAGE_KEY = 'app-locale'
 
 const translations: Record<Locale, Translations> = { ar: ar as Translations, en: en as Translations }
 
@@ -21,11 +23,26 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined)
 
+function getSavedLocale(): Locale {
+  if (typeof window === 'undefined') return 'ar'
+  const saved = localStorage.getItem(LOCALE_STORAGE_KEY)
+  if (saved === 'ar' || saved === 'en') return saved
+  return 'ar'
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('ar')
 
+  useEffect(() => {
+    const saved = getSavedLocale()
+    setLocaleState(saved)
+    document.documentElement.lang = saved
+    document.documentElement.dir = saved === 'ar' ? 'rtl' : 'ltr'
+  }, [])
+
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale)
+    localStorage.setItem(LOCALE_STORAGE_KEY, newLocale)
     document.documentElement.lang = newLocale
     document.documentElement.dir = newLocale === 'ar' ? 'rtl' : 'ltr'
   }, [])
