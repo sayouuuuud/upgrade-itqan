@@ -306,7 +306,6 @@ export default function TeacherDashboard() {
                 </div>
                 <h2 className="text-lg font-bold">{t.academy?.upcomingSessions || 'الجلسات القادمة'}</h2>
               </div>
-              <Link href="/academy/teacher/schedule" className="text-xs font-bold text-purple-600 hover:text-purple-700">الجدول</Link>
             </div>
 
             {sessions.length === 0 ? (

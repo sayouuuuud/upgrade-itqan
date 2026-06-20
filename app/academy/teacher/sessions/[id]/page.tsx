@@ -194,11 +194,11 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
 
       {/* Back link */}
       <Link
-        href="/academy/teacher/schedule"
+        href="/academy/teacher"
         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-muted-foreground transition-all hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/50 backdrop-blur-sm -ml-2"
       >
         <ArrowRight className="h-4 w-4" />
-        العودة إلى الجدول
+        العودة إلى لوحة التحكم
       </Link>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">

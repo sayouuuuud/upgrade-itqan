@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, Mail, Lock, Save, Loader2, CheckCircle, Eye, EyeOff, ShieldCheck, Sparkles } from 'lucide-react'
+import { User, Mail, Lock, Save, Loader2, CheckCircle, Eye, EyeOff, ShieldCheck } from 'lucide-react'
 import { AvatarUpload } from '@/components/avatar-upload'
+import { useI18n } from '@/lib/i18n/context'
 
 interface Profile {
   id: string
@@ -13,6 +14,7 @@ interface Profile {
 }
 
 export default function FiqhSupervisorProfilePage() {
+  const { t, dir } = useI18n()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -61,8 +63,8 @@ export default function FiqhSupervisorProfilePage() {
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault()
     setPwError('')
-    if (newPw !== confirmPw) { setPwError('كلمتا المرور غير متطابقتين'); return }
-    if (newPw.length < 8)    { setPwError('كلمة المرور يجب أن تكون 8 أحرف على الأقل'); return }
+    if (newPw !== confirmPw) { setPwError(t?.fiqhSupervisorProfile?.errPwMismatch || 'كلمتا المرور غير متطابقتين'); return }
+    if (newPw.length < 8)    { setPwError(t?.fiqhSupervisorProfile?.errPwMinLength || 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'); return }
     setPwSaving(true)
     try {
       const res = await fetch('/api/auth/change-password', {
@@ -72,7 +74,7 @@ export default function FiqhSupervisorProfilePage() {
       })
       if (!res.ok) {
         const d = await res.json()
-        setPwError(d.error || 'حدث خطأ')
+        setPwError(d.error || t?.fiqhSupervisorProfile?.errGeneric || 'حدث خطأ')
         return
       }
       setPwSaved(true)
@@ -91,13 +93,13 @@ export default function FiqhSupervisorProfilePage() {
           <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           <Loader2 className="absolute inset-0 m-auto w-10 h-10 animate-spin text-primary opacity-50" />
         </div>
-        <p className="text-xl font-black text-muted-foreground animate-pulse">جاري تحميل الملف الشخصي...</p>
+        <p className="text-xl font-black text-muted-foreground animate-pulse">{t?.fiqhSupervisorProfile?.loadingProfile}</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 relative min-h-screen pb-20" dir="rtl">
+    <div className="max-w-4xl mx-auto space-y-8 relative min-h-screen pb-20" dir={dir}>
       
       {/* Decorative Background */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full filter blur-[120px] pointer-events-none -z-10 animate-pulse-slow" />
@@ -112,9 +114,9 @@ export default function FiqhSupervisorProfilePage() {
             <User className="w-10 h-10 text-primary" />
           </div>
           <div className="text-center md:text-right">
-            <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">إعدادات الحساب</h1>
+            <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">{t?.fiqhSupervisorProfile?.pageTitle}</h1>
             <p className="text-muted-foreground font-medium mt-2 max-w-lg">
-              إدارة بياناتك الشخصية، صورة العرض، وكلمة المرور الخاصة بك كمشرف فقهي في الأكاديمية.
+              {t?.fiqhSupervisorProfile?.pageSubtitle}
             </p>
           </div>
         </div>
@@ -132,8 +134,8 @@ export default function FiqhSupervisorProfilePage() {
                 <ShieldCheck className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <h2 className="font-black text-2xl text-foreground">البيانات الشخصية</h2>
-                <p className="text-sm font-bold text-primary">المعلومات الأساسية لحسابك</p>
+                <h2 className="font-black text-2xl text-foreground">{t?.fiqhSupervisorProfile?.secPersonalTitle}</h2>
+                <p className="text-sm font-bold text-primary">{t?.fiqhSupervisorProfile?.secPersonalSubtitle}</p>
               </div>
             </div>
 
@@ -149,8 +151,8 @@ export default function FiqhSupervisorProfilePage() {
                     />
                   </div>
                   <div className="text-center sm:text-right space-y-1">
-                    <h3 className="font-black text-lg text-foreground">الصورة الشخصية</h3>
-                    <p className="text-sm font-medium text-muted-foreground">صورة واضحة تساعد الطلاب على التعرف عليك.</p>
+                    <h3 className="font-black text-lg text-foreground">{t?.fiqhSupervisorProfile?.avatarTitle}</h3>
+                    <p className="text-sm font-medium text-muted-foreground">{t?.fiqhSupervisorProfile?.avatarSubtitle}</p>
                   </div>
                 </div>
               </div>
@@ -158,7 +160,7 @@ export default function FiqhSupervisorProfilePage() {
               {/* Form Inputs */}
               <div className="space-y-6">
                 <div className="space-y-2 relative group/input">
-                  <label className="text-sm font-black text-foreground pr-2 block">الاسم الكامل</label>
+                  <label className="text-sm font-black text-foreground pr-2 block">{t?.fiqhSupervisorProfile?.labelName}</label>
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-500 rounded-2xl opacity-0 group-focus-within/input:opacity-20 transition duration-500 blur" />
                   <input
                     type="text"
@@ -169,7 +171,7 @@ export default function FiqhSupervisorProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-black text-foreground pr-2 block">البريد الإلكتروني</label>
+                  <label className="text-sm font-black text-foreground pr-2 block">{t?.fiqhSupervisorProfile?.labelEmail}</label>
                   <div className="flex items-center gap-3 px-5 py-4 bg-muted/50 border border-border rounded-2xl shadow-inner opacity-80 cursor-not-allowed">
                     <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
                     <span className="text-sm font-bold text-muted-foreground font-mono">{profile?.email}</span>
@@ -180,7 +182,7 @@ export default function FiqhSupervisorProfilePage() {
               {saved && (
                 <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-700 dark:text-emerald-400 font-bold shadow-inner">
                   <CheckCircle className="w-5 h-5 shrink-0" />
-                  تم حفظ التحديثات بنجاح
+                  {t?.fiqhSupervisorProfile?.msgProfileSaved}
                 </div>
               )}
 
@@ -190,7 +192,7 @@ export default function FiqhSupervisorProfilePage() {
                 className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-base hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-1 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:translate-y-0"
               >
                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+                {saving ? t?.fiqhSupervisorProfile?.btnSavingProfile : t?.fiqhSupervisorProfile?.btnSaveProfile}
               </button>
             </form>
           </div>
@@ -207,18 +209,18 @@ export default function FiqhSupervisorProfilePage() {
                   <Lock className="w-7 h-7 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                  <h2 className="font-black text-xl text-foreground">تغيير كلمة المرور</h2>
-                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400 mt-1">حماية حسابك بخطوات بسيطة</p>
+                  <h2 className="font-black text-xl text-foreground">{t?.fiqhSupervisorProfile?.secPasswordTitle}</h2>
+                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400 mt-1">{t?.fiqhSupervisorProfile?.secPasswordSubtitle}</p>
                 </div>
               </div>
 
               <form onSubmit={handleChangePassword} className="space-y-6">
                 {[
-                  { label: 'كلمة المرور الحالية', value: currentPw, setter: setCurrentPw },
-                  { label: 'كلمة المرور الجديدة', value: newPw,     setter: setNewPw     },
-                  { label: 'تأكيد كلمة المرور',   value: confirmPw, setter: setConfirmPw  },
+                  { label: t?.fiqhSupervisorProfile?.labelCurrentPw || 'كلمة المرور الحالية', value: currentPw, setter: setCurrentPw },
+                  { label: t?.fiqhSupervisorProfile?.labelNewPw || 'كلمة المرور الجديدة', value: newPw,     setter: setNewPw     },
+                  { label: t?.fiqhSupervisorProfile?.labelConfirmPw || 'تأكيد كلمة المرور',   value: confirmPw, setter: setConfirmPw  },
                 ].map(({ label, value, setter }, idx) => (
-                  <div key={label} className="space-y-2 relative group/input">
+                  <div key={idx} className="space-y-2 relative group/input">
                     <label className="text-sm font-black text-foreground pr-2 block">{label}</label>
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl opacity-0 group-focus-within/input:opacity-20 transition duration-500 blur" />
                     <div className="relative">
@@ -243,14 +245,14 @@ export default function FiqhSupervisorProfilePage() {
 
                 {pwError && (
                   <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-2xl text-destructive font-bold text-sm shadow-inner">
-                    <Sparkles className="w-5 h-5 shrink-0" />
+                    <CheckCircle className="w-5 h-5 shrink-0 text-destructive" />
                     {pwError}
                   </div>
                 )}
                 {pwSaved && (
                   <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-700 dark:text-emerald-400 font-bold text-sm shadow-inner">
                     <CheckCircle className="w-5 h-5 shrink-0" />
-                    تم تغيير كلمة المرور بنجاح
+                    {t?.fiqhSupervisorProfile?.msgPwSaved}
                   </div>
                 )}
 
@@ -260,7 +262,7 @@ export default function FiqhSupervisorProfilePage() {
                   className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-base transition-all shadow-lg shadow-amber-500/20 hover:shadow-xl hover:-translate-y-1 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:translate-y-0"
                 >
                   {pwSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Lock className="w-5 h-5" />}
-                  {pwSaving ? 'جاري التغيير...' : 'تأكيد التغيير'}
+                  {pwSaving ? t?.fiqhSupervisorProfile?.btnPwSaving : t?.fiqhSupervisorProfile?.btnPwSave}
                 </button>
               </form>
             </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { BookOpen, Eye, CheckCircle, XCircle, Clock, Filter, Video, Mic, FileText, CheckCircle2, ShieldAlert, Sparkles, FolderOpen } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/context'
 
 interface PendingLesson {
     id: string
@@ -18,6 +19,7 @@ interface PendingLesson {
 }
 
 export default function SupervisorContentPage() {
+    const { t, dir, locale } = useI18n()
     const [lessons, setLessons] = useState<PendingLesson[]>([])
     const [loading, setLoading] = useState(true)
     const [statusFilter, setStatusFilter] = useState<string>('pending_review')
@@ -42,7 +44,7 @@ export default function SupervisorContentPage() {
                                     ...lesson,
                                     course_id: course.id,
                                     course_name: course.title,
-                                    teacher_name: course.teacher_name || 'غير محدد',
+                                    teacher_name: course.teacher_name || t?.supervisorContent?.unspecified || 'غير محدد',
                                     teacher_id: course.teacher_id,
                                 })
                             }
@@ -83,23 +85,23 @@ export default function SupervisorContentPage() {
     
     const getTypeLabel = (type: string) => {
         switch (type) {
-            case 'video': return 'فيديو'
-            case 'audio': return 'مقطع صوتي'
-            default: return 'نص مقروء'
+            case 'video': return t?.supervisorContent?.typeVideo || 'فيديو'
+            case 'audio': return t?.supervisorContent?.typeAudio || 'مقطع صوتي'
+            default: return t?.supervisorContent?.typeText || 'نص مقروء'
         }
     }
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'pending_review': return <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 tracking-wide uppercase shadow-sm"><ShieldAlert className="w-3.5 h-3.5" /> بانتظار المراجعة</span>
-            case 'approved': return <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 tracking-wide uppercase shadow-sm"><CheckCircle2 className="w-3.5 h-3.5" /> مقبول</span>
-            case 'rejected': return <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-400 tracking-wide uppercase shadow-sm"><XCircle className="w-3.5 h-3.5" /> مرفوض</span>
+            case 'pending_review': return <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 tracking-wide uppercase shadow-sm"><ShieldAlert className="w-3.5 h-3.5" /> {t?.supervisorContent?.statusPending}</span>
+            case 'approved': return <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 tracking-wide uppercase shadow-sm"><CheckCircle2 className="w-3.5 h-3.5" /> {t?.supervisorContent?.statusApproved}</span>
+            case 'rejected': return <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-400 tracking-wide uppercase shadow-sm"><XCircle className="w-3.5 h-3.5" /> {t?.supervisorContent?.statusRejected}</span>
             default: return null
         }
     }
 
     return (
-        <div className="space-y-8 max-w-6xl mx-auto relative min-h-screen" dir="rtl">
+        <div className="space-y-8 max-w-6xl mx-auto relative min-h-screen" dir={dir}>
             
             {/* Decorative Background */}
             <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full filter blur-[120px] pointer-events-none -z-10 animate-pulse-slow" />
@@ -115,19 +117,19 @@ export default function SupervisorContentPage() {
                             <BookOpen className="w-10 h-10 text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight mb-2">إشراف المحتوى</h1>
+                            <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight mb-2">{t?.supervisorContent?.title}</h1>
                             <p className="text-muted-foreground font-medium max-w-lg">
-                                مراجعة واعتماد الدروس والمناهج المرفوعة من قبل الأساتذة للتأكد من جودتها وملاءمتها للمنصة.
+                                {t?.supervisorContent?.subtitle}
                             </p>
                         </div>
                     </div>
                     
                     <div className="w-full md:w-auto mt-4 md:mt-0 flex items-center gap-3 bg-muted/40 backdrop-blur-sm p-2 rounded-2xl border border-white/10 shadow-inner">
                         {[
-                            { id: 'pending_review', label: 'المعلقة' },
-                            { id: 'approved', label: 'المقبولة' },
-                            { id: 'rejected', label: 'المرفوضة' },
-                            { id: '', label: 'الكل' }
+                            { id: 'pending_review', label: t?.supervisorContent?.filterPending || 'المعلقة' },
+                            { id: 'approved', label: t?.supervisorContent?.filterApproved || 'المقبولة' },
+                            { id: 'rejected', label: t?.supervisorContent?.filterRejected || 'المرفوضة' },
+                            { id: '', label: t?.supervisorContent?.filterAll || 'الكل' }
                         ].map(f => (
                             <button
                                 key={f.id}
@@ -159,9 +161,9 @@ export default function SupervisorContentPage() {
                     <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-border">
                         <FolderOpen className="w-10 h-10 text-muted-foreground opacity-50" />
                     </div>
-                    <h3 className="text-2xl font-black text-foreground mb-2">صندوق المحتوى فارغ</h3>
+                    <h3 className="text-2xl font-black text-foreground mb-2">{t?.supervisorContent?.emptyTitle}</h3>
                     <p className="text-muted-foreground font-bold max-w-sm mx-auto">
-                        لا توجد دروس حالياً مطابقة للفلتر المختار.
+                        {t?.supervisorContent?.emptyText}
                     </p>
                 </div>
             ) : (
@@ -182,26 +184,26 @@ export default function SupervisorContentPage() {
                                     </div>
                                     <span className="text-[11px] font-bold text-muted-foreground flex items-center justify-center md:justify-start gap-1.5 bg-muted/50 px-3 py-1.5 rounded-lg border border-border w-fit mx-auto md:mx-0">
                                         <Clock className="w-3.5 h-3.5" />
-                                        {new Date(lesson.created_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                        {new Date(lesson.created_at).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                                     </span>
                                 </div>
                                 
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm mt-3">
                                     <span className="bg-muted px-3 py-1.5 rounded-xl font-bold text-muted-foreground border border-white/5">
-                                        الدورة: <span className="text-foreground">{lesson.course_name}</span>
+                                        {t?.supervisorContent?.labelCourse}: <span className="text-foreground">{lesson.course_name}</span>
                                     </span>
                                     <span className="bg-muted px-3 py-1.5 rounded-xl font-bold text-muted-foreground border border-white/5">
-                                        الأستاذ: <span className="text-foreground">{lesson.teacher_name}</span>
+                                        {t?.supervisorContent?.labelTeacher}: <span className="text-foreground">{lesson.teacher_name}</span>
                                     </span>
                                     <span className="bg-muted px-3 py-1.5 rounded-xl font-bold text-muted-foreground border border-white/5">
-                                        النوع: <span className="text-foreground">{getTypeLabel(lesson.type)}</span>
+                                        {t?.supervisorContent?.labelType}: <span className="text-foreground">{getTypeLabel(lesson.type)}</span>
                                     </span>
                                 </div>
 
                                 {lesson.rejection_reason && (
                                     <div className="mt-3 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 flex items-start gap-2 text-rose-700 dark:text-rose-400 text-sm font-bold w-full">
                                         <ShieldAlert className="w-5 h-5 shrink-0" />
-                                        <p>سبب الرفض: {lesson.rejection_reason}</p>
+                                        <p>{t?.supervisorContent?.labelRejectionReason}: {lesson.rejection_reason}</p>
                                     </div>
                                 )}
                             </div>
@@ -210,10 +212,10 @@ export default function SupervisorContentPage() {
                                 <Link
                                     href={`/academy/supervisor/content/${lesson.id}?course=${lesson.course_id}`}
                                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500/10 text-blue-600 hover:bg-blue-500 hover:text-white transition-all font-bold text-sm shadow-sm"
-                                    title="مراجعة وتفاصيل"
+                                    title={t?.supervisorContent?.btnReview || ""}
                                 >
                                     <Eye className="w-4 h-4" />
-                                    <span>التفاصيل والمراجعة</span>
+                                    <span>{t?.supervisorContent?.btnReview}</span>
                                 </Link>
                                 
                                 {lesson.status === 'pending_review' && (
@@ -221,17 +223,17 @@ export default function SupervisorContentPage() {
                                         <button
                                             onClick={() => handleAction(lesson.id, lesson.course_id, 'approved')}
                                             className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
-                                            title="اعتماد"
+                                            title={t?.supervisorContent?.tooltipApprove || ""}
                                         >
                                             <CheckCircle2 className="w-5 h-5" />
                                         </button>
                                         <button
                                             onClick={() => {
-                                                const reason = prompt('يرجى كتابة سبب الرفض لتوضيحه للأستاذ:')
+                                                const reason = prompt(t?.supervisorContent?.promptRejectionReason || "")
                                                 if (reason) handleAction(lesson.id, lesson.course_id, 'rejected', reason)
                                             }}
                                             className="p-2.5 rounded-xl bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                                            title="رفض"
+                                            title={t?.supervisorContent?.tooltipReject || ""}
                                         >
                                             <XCircle className="w-5 h-5" />
                                         </button>

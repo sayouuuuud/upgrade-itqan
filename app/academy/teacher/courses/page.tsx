@@ -28,7 +28,8 @@ interface Course {
 }
 
 export default function TeacherCoursesPage() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+  const isAr = locale === 'ar'
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [archivingId, setArchivingId] = useState<string | null>(null)
@@ -55,7 +56,10 @@ export default function TeacherCoursesPage() {
   }, [])
 
   const handleDelete = async (course: Course) => {
-    if (!confirm(`حذف الدورة "${course.title}" نهائياً؟ لا يمكن التراجع عن هذا الاجراء.`)) return
+    const confirmMsg = isAr 
+      ? `حذف الدورة "${course.title}" نهائياً؟ لا يمكن التراجع عن هذا الاجراء.`
+      : `Delete the course "${course.title}" permanently? This action cannot be undone.`
+    if (!confirm(confirmMsg)) return
     setDeletingId(course.id)
     try {
       let res = await fetch(`/api/academy/teacher/courses/${course.id}`, { method: 'DELETE' })
@@ -63,8 +67,10 @@ export default function TeacherCoursesPage() {
         const json = await res.json().catch(() => ({}))
         const enrolledCount = json?.enrolled_count
         const forceMsg = enrolledCount
-          ? `يوجد ${enrolledCount} طالب مسجل في الدورة. هل تود حذفها فعلاً؟ ستفقد السجلات التعليمية للطلاب.`
-          : (json?.message || 'لا يمكن حذف الدورة. هل تود المحاولة على أي حال؟')
+          ? (isAr 
+              ? `يوجد ${enrolledCount} طالب مسجل في الدورة. هل تود حذفها فعلاً؟ ستفقد السجلات التعليمية للطلاب.`
+              : `There are ${enrolledCount} students enrolled in the course. Do you really want to delete it? Student learning records will be lost.`)
+          : (json?.message || (isAr ? 'لا يمكن حذف الدورة. هل تود المحاولة على أي حال؟' : 'Cannot delete course. Do you want to try anyway?'))
         if (!confirm(forceMsg)) {
           setDeletingId(null)
           return
@@ -75,7 +81,7 @@ export default function TeacherCoursesPage() {
         setCourses(prev => prev.filter(c => c.id !== course.id))
       } else {
         const json = await res.json().catch(() => ({}))
-        alert(json?.message || 'تعذر حذف الدورة.')
+        alert(json?.message || (isAr ? 'تعذر حذف الدورة.' : 'Failed to delete course.'))
       }
     } finally {
       setDeletingId(null)
@@ -83,7 +89,10 @@ export default function TeacherCoursesPage() {
   }
 
   const handleResubmit = async (course: Course) => {
-    if (!confirm(`إعادة إرسال الدورة "${course.title}" للأدمن للمراجعة؟ تأكد أنك عدّلت المحتوى بناءً على سبب الرفض.`)) return
+    const confirmMsg = isAr
+      ? `إعادة إرسال الدورة "${course.title}" للأدمن للمراجعة؟ تأكد أنك عدّلت المحتوى بناءً على سبب الرفض.`
+      : `Resubmit the course "${course.title}" to the admin for review? Make sure you have edited the content based on the rejection reason.`
+    if (!confirm(confirmMsg)) return
     setResubmittingId(course.id)
     try {
       const res = await fetch(`/api/academy/teacher/courses/${course.id}`, {
@@ -92,11 +101,11 @@ export default function TeacherCoursesPage() {
         body: JSON.stringify({ status: 'pending_review' }),
       })
       if (res.ok) {
-        alert('تم إرسال الدورة للأدمن للمراجعة.')
+        alert(isAr ? 'تم إرسال الدورة للأدمن للمراجعة.' : 'Course submitted to admin for review successfully.')
         fetchCourses()
       } else {
         const json = await res.json().catch(() => ({}))
-        alert(json?.error || 'تعذر إرسال الدورة للمراجعة.')
+        alert(json?.error || (isAr ? 'تعذر إرسال الدورة للمراجعة.' : 'Could not submit course for review.'))
       }
     } finally {
       setResubmittingId(null)
@@ -106,8 +115,12 @@ export default function TeacherCoursesPage() {
   const handleToggleArchive = async (course: Course) => {
     const willDeactivate = course.is_active !== false
     const msg = willDeactivate
-      ? 'تعطيل الدورة؟ ستختفي من قائمة الطلاب الجدد بينما يكمل الطلاب الحاليون دراستهم.'
-      : 'إعادة تفعيل الدورة؟ ستظهر للطلاب الجدد مجدداً.'
+      ? (isAr 
+          ? 'تعطيل الدورة؟ ستختفي من قائمة الطلاب الجدد بينما يكمل الطلاب الحاليون دراستهم.'
+          : 'Deactivate the course? It will disappear from new students\' list while current students finish their studies.')
+      : (isAr
+          ? 'إعادة تفعيل الدورة؟ ستظهر للطلاب الجدد مجدداً.'
+          : 'Reactivate the course? It will appear to new students again.')
     if (!confirm(msg)) return
     setArchivingId(course.id)
     try {
@@ -117,16 +130,16 @@ export default function TeacherCoursesPage() {
         body: JSON.stringify({ is_active: !willDeactivate }),
       })
       if (res.ok) fetchCourses()
-      else alert('حدث خطأ')
+      else alert(isAr ? 'حدث خطأ' : 'An error occurred')
     } finally {
       setArchivingId(null)
     }
   }
 
   const levelLabels: Record<string, string> = {
-    beginner: t.academy?.beginner || 'مبتدئ',
-    intermediate: t.academy?.intermediate || 'متوسط',
-    advanced: t.academy?.advanced || 'متقدم'
+    beginner: t.academy?.beginner || (isAr ? 'مبتدئ' : 'Beginner'),
+    intermediate: t.academy?.intermediate || (isAr ? 'متوسط' : 'Intermediate'),
+    advanced: t.academy?.advanced || (isAr ? 'متقدم' : 'Advanced')
   }
 
   const levelColors: Record<string, string> = {
@@ -144,16 +157,16 @@ export default function TeacherCoursesPage() {
   const statusBadge = (status: CourseStatus) => {
     switch (status) {
       case 'published':
-        return { label: 'منشورة', cls: 'bg-green-500/80 text-white border-green-400' }
+        return { label: isAr ? 'منشورة' : 'Published', cls: 'bg-green-500/80 text-white border-green-400' }
       case 'pending_review':
-        return { label: 'بانتظار المراجعة', cls: 'bg-amber-500/80 text-white border-amber-400' }
+        return { label: isAr ? 'بانتظار المراجعة' : 'Pending Review', cls: 'bg-amber-500/80 text-white border-amber-400' }
       case 'rejected':
-        return { label: 'مرفوضة', cls: 'bg-red-500/80 text-white border-red-400' }
+        return { label: isAr ? 'مرفوضة' : 'Rejected', cls: 'bg-red-500/80 text-white border-red-400' }
       case 'archived':
-        return { label: 'مؤرشفة', cls: 'bg-gray-700/80 text-white border-gray-500' }
+        return { label: isAr ? 'مؤرشفة' : 'Archived', cls: 'bg-gray-700/80 text-white border-gray-500' }
       case 'draft':
       default:
-        return { label: 'مسودة', cls: 'bg-black/50 text-white border-white/20' }
+        return { label: isAr ? 'مسودة' : 'Draft', cls: 'bg-black/50 text-white border-white/20' }
     }
   }
 
@@ -166,9 +179,9 @@ export default function TeacherCoursesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">{t.academy?.myCourses || 'دوراتي'}</h1>
+          <h1 className="text-2xl font-bold">{t.academy?.myCourses || (isAr ? 'دوراتي' : 'My Courses')}</h1>
           <p className="text-muted-foreground mt-1">
-            إدارة دوراتك ومتابعة طلابك
+            {isAr ? 'إدارة دوراتك ومتابعة طلابك' : 'Manage your courses and track your students'}
           </p>
         </div>
         <Link 
@@ -176,7 +189,7 @@ export default function TeacherCoursesPage() {
           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
         >
           <Plus className="w-5 h-5" />
-          إنشاء دورة جديدة
+          {isAr ? 'إنشاء دورة جديدة' : 'Create New Course'}
         </Link>
       </div>
 
@@ -185,34 +198,42 @@ export default function TeacherCoursesPage() {
         <div className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2">
           <BookOpen className="w-6 h-6 text-blue-500" />
           <span className="text-2xl font-bold">{courses.length}</span>
-          <span className="text-sm text-muted-foreground">إجمالي الدورات</span>
+          <span className="text-sm text-muted-foreground">{isAr ? 'إجمالي الدورات' : 'Total Courses'}</span>
         </div>
         <div className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2">
           <GraduationCap className="w-6 h-6 text-green-500" />
           <span className="text-2xl font-bold">{publishedCount}</span>
-          <span className="text-sm text-muted-foreground">منشورة</span>
+          <span className="text-sm text-muted-foreground">{isAr ? 'منشورة' : 'Published'}</span>
         </div>
         <div className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2">
           <Clock className="w-6 h-6 text-amber-500" />
           <span className="text-2xl font-bold">{pendingCount}</span>
-          <span className="text-sm text-muted-foreground">بانتظار المراجعة</span>
+          <span className="text-sm text-muted-foreground">{isAr ? 'بانتظار المراجعة' : 'Pending Review'}</span>
         </div>
         <div className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2">
           <FileText className="w-6 h-6 text-yellow-500" />
           <span className="text-2xl font-bold">{draftCount}</span>
-          <span className="text-sm text-muted-foreground">في المسودة</span>
+          <span className="text-sm text-muted-foreground">{isAr ? 'في المسودة' : 'Draft'}</span>
         </div>
         <div className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2">
           <Users className="w-6 h-6 text-purple-500" />
           <span className="text-2xl font-bold">{totalStudents}</span>
-          <span className="text-sm text-muted-foreground">إجمالي الطلاب</span>
+          <span className="text-sm text-muted-foreground">{isAr ? 'إجمالي الطلاب' : 'Total Students'}</span>
         </div>
       </div>
       {rejectedCount > 0 && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>
-            لديك {rejectedCount} دورة مرفوضة — راجع سبب الرفض على بطاقة الدورة، عدّل المحتوى، ثم اضغط <strong>&quot;إعادة الإرسال للمراجعة&quot;</strong>.
+            {isAr ? (
+              <>
+                لديك {rejectedCount} دورة مرفوضة — راجع سبب الرفض على بطاقة الدورة، عدّل المحتوى، ثم اضغط <strong>&quot;إعادة الإرسال للمراجعة&quot;</strong>.
+              </>
+            ) : (
+              <>
+                You have {rejectedCount} rejected course(s) — review the rejection reason on the course card, edit the content, and then click <strong>&quot;Resubmit for Review&quot;</strong>.
+              </>
+            )}
           </span>
         </div>
       )}
@@ -223,14 +244,14 @@ export default function TeacherCoursesPage() {
           <div className="w-16 h-16 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <BookOpen className="w-8 h-8 text-blue-600" />
           </div>
-          <h3 className="text-xl font-bold mb-2">لا توجد لديك دورات حتى الآن</h3>
-          <p className="text-muted-foreground mb-6">ابدأ بنشر علمك بإنشاء دورتك الأولى</p>
+          <h3 className="text-xl font-bold mb-2">{isAr ? 'لا توجد لديك دورات حتى الآن' : "You don't have any courses yet"}</h3>
+          <p className="text-muted-foreground mb-6">{isAr ? 'ابدأ بنشر علمك بإنشاء دورتك الأولى' : 'Start sharing your knowledge by creating your first course'}</p>
           <Link 
             href="/academy/teacher/courses/new"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
           >
             <Plus className="w-5 h-5" />
-            إنشاء دورتي الأولى
+            {isAr ? 'إنشاء دورتي الأولى' : 'Create My First Course'}
           </Link>
         </div>
       ) : (
@@ -258,7 +279,7 @@ export default function TeacherCoursesPage() {
                   })()}
                   {course.is_active === false && (
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded-full border shadow-sm backdrop-blur-md bg-gray-700/80 text-white border-gray-500">
-                      مؤرشفة
+                      {isAr ? 'مؤرشفة' : 'Archived'}
                     </span>
                   )}
                 </div>
@@ -281,7 +302,7 @@ export default function TeacherCoursesPage() {
 
                 {course.status === 'rejected' && course.rejection_reason && (
                   <div className="mb-3 bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-800/60 rounded-lg p-2.5 text-xs text-red-700 dark:text-red-300">
-                    <div className="font-bold mb-0.5 flex items-center gap-1"><XCircle className="w-3.5 h-3.5" /> سبب رفض الأدمن:</div>
+                    <div className="font-bold mb-0.5 flex items-center gap-1"><XCircle className="w-3.5 h-3.5" /> {isAr ? 'سبب رفض الأدمن:' : 'Admin Rejection Reason:'}</div>
                     <p className="line-clamp-3 leading-relaxed">{course.rejection_reason}</p>
                   </div>
                 )}
@@ -289,16 +310,16 @@ export default function TeacherCoursesPage() {
                 {course.status === 'pending_review' && (
                   <div className="mb-3 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800/60 rounded-lg p-2.5 text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 shrink-0" />
-                    <span>الدورة بانتظار مراجعة الأدمن ولا تظهر للطلاب حتى تتم الموافقة.</span>
+                    <span>{isAr ? 'الدورة بانتظار مراجعة الأدمن ولا تظهر للطلاب حتى تتم الموافقة.' : 'The course is pending admin review and won\'t appear to students until approved.'}</span>
                   </div>
                 )}
                 
                 <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground mt-auto mb-4">
                   <span className="flex items-center gap-1.5">
-                     <PlayCircle className="w-4 h-4" /> {course.total_lessons} درس
+                     <PlayCircle className="w-4 h-4" /> {course.total_lessons} {isAr ? 'درس' : 'lesson(s)'}
                   </span>
                   <span className="flex items-center gap-1.5">
-                     <Users className="w-4 h-4" /> {course.total_enrolled} مسجلين
+                     <Users className="w-4 h-4" /> {course.total_enrolled} {isAr ? 'مسجلين' : 'enrolled'}
                   </span>
                 </div>
 
@@ -310,7 +331,7 @@ export default function TeacherCoursesPage() {
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm font-bold transition-colors shadow-sm disabled:opacity-60"
                     >
                       {resubmittingId === course.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                      إعادة الإرسال للمراجعة
+                      {isAr ? 'إعادة الإرسال للمراجعة' : 'Resubmit for Review'}
                     </button>
                   ) : (
                     <Link 
@@ -318,14 +339,14 @@ export default function TeacherCoursesPage() {
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 text-sm font-bold transition-colors"
                     >
                       <Edit className="w-4 h-4" />
-                      إدارة الدورة
+                      {isAr ? 'إدارة الدورة' : 'Manage Course'}
                     </Link>
                   )}
                   {course.status === 'rejected' && (
                     <Link 
                       href={`/academy/teacher/courses/${course.id}`}
                       className="shrink-0 flex items-center justify-center w-10 h-10 border border-border bg-card rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-muted-foreground hover:text-blue-600 transition-colors"
-                      title="تعديل الدورة"
+                      title={isAr ? 'تعديل الدورة' : 'Edit Course'}
                     >
                       <Edit className="w-4 h-4" />
                     </Link>
@@ -334,7 +355,7 @@ export default function TeacherCoursesPage() {
                     onClick={() => handleToggleArchive(course)}
                     disabled={archivingId === course.id}
                     className="shrink-0 flex items-center justify-center w-10 h-10 border border-border bg-card rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 text-muted-foreground hover:text-amber-600 transition-colors"
-                    title={course.is_active === false ? 'إعادة تفعيل' : 'تعطيل وأرشفة'}
+                    title={course.is_active === false ? (isAr ? 'إعادة تفعيل' : 'Reactivate') : (isAr ? 'تعطيل وأرشفة' : 'Deactivate & Archive')}
                   >
                     {archivingId === course.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Archive className="w-4 h-4" />}
                   </button>
@@ -342,14 +363,14 @@ export default function TeacherCoursesPage() {
                     onClick={() => handleDelete(course)}
                     disabled={deletingId === course.id}
                     className="shrink-0 flex items-center justify-center w-10 h-10 border border-border bg-card rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-muted-foreground hover:text-red-600 transition-colors"
-                    title="حذف الدورة نهائياً"
+                    title={isAr ? 'حذف الدورة نهائياً' : 'Delete Course Permanently'}
                   >
                     {deletingId === course.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                   </button>
                   <Link 
                     href={`/academy/teacher/enrollment-requests?course_id=${course.id}`}
                     className="shrink-0 flex items-center justify-center w-10 h-10 border border-border bg-card rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground relative transition-colors"
-                    title="طلبات الانضمام"
+                    title={isAr ? 'طلبات الانضمام' : 'Enrollment Requests'}
                   >
                     <Bell className="w-4 h-4" />
                     {course.pending_requests > 0 && (

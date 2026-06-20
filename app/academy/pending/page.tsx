@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import AudioRecorder from "@/components/applicant/audio-recorder"
 import PdfUploader from "@/components/applicant/pdf-uploader"
+import { useI18n } from "@/lib/i18n/context"
 
 type QuestionType = "text" | "textarea" | "select" | "audio" | "file"
 
@@ -112,10 +113,14 @@ function getStoredFile(application: ApplicationRecord | null) {
     return application?.cv_file_url || application?.pdf_url || null
 }
 
+function roleLabel(role: string, isAr: boolean) {
+    return role === "teacher" ? (isAr ? "أستاذ" : "Teacher") : (isAr ? "مقرئ" : "Reciter")
+}
+
 async function fetchCurrentUser() {
     const response = await fetch("/api/auth/me", { cache: "no-store" })
     if (response.status === 401) return null
-    if (!response.ok) throw new Error(await readResponseMessage(response, "فشل تحميل بيانات الحساب"))
+    if (!response.ok) throw new Error("Failed to load user details")
 
     const json = (await readJson(response)) as AuthMeData
     return json.user || null
@@ -124,7 +129,7 @@ async function fetchCurrentUser() {
 async function fetchApplicationData() {
     const response = await fetch("/api/auth/application/me", { cache: "no-store" })
     if (response.status === 401) return null
-    if (!response.ok) throw new Error(await readResponseMessage(response, "فشل تحميل بيانات الطلب"))
+    if (!response.ok) throw new Error("Failed to load application data")
 
     return (await readJson(response)) as ApplicationData
 }
@@ -146,19 +151,18 @@ async function readPendingApplication(): Promise<LoadResult> {
             return {
                 type: "ready",
                 data: { user, application: null, questions: [] },
-                warning: getMessage(error, "تعذر تحميل تفاصيل الطلب، لكن حالة الرفض ظاهرة من الحساب."),
+                warning: getMessage(error, "Could not load application details."),
             }
         }
         throw error
     }
 }
 
-function roleLabel(role: string) {
-    return role === "teacher" ? "أستاذ" : "مقرئ"
-}
-
 export default function PendingApplicationPage() {
     const router = useRouter()
+    const { locale } = useI18n()
+    const isAr = locale === "ar"
+
     const [data, setData] = useState<ApplicationData | null>(null)
     const [loading, setLoading] = useState(true)
     const [responses, setResponses] = useState<Record<string, string>>({})
@@ -204,14 +208,14 @@ export default function PendingApplicationPage() {
             })
             .catch((err: unknown) => {
                 if (!active) return
-                setError(getMessage(err, "حدث خطأ غير متوقع"))
+                setError(getMessage(err, isAr ? "حدث خطأ غير متوقع" : "An unexpected error occurred"))
                 setLoading(false)
             })
 
         return () => {
             active = false
         }
-    }, [applyData, router])
+    }, [applyData, router, isAr])
 
     const refresh = async () => {
         setLoading(true)
@@ -220,7 +224,7 @@ export default function PendingApplicationPage() {
         try {
             await loadApplication()
         } catch (err: unknown) {
-            setError(getMessage(err, "حدث خطأ غير متوقع"))
+            setError(getMessage(err, isAr ? "حدث خطأ غير متوقع" : "An unexpected error occurred"))
             setLoading(false)
         }
     }
@@ -244,9 +248,9 @@ export default function PendingApplicationPage() {
                 }),
             })
 
-            if (!response.ok) throw new Error(await readResponseMessage(response, "فشل الحفظ"))
+            if (!response.ok) throw new Error(await readResponseMessage(response, isAr ? "فشل الحفظ" : "Save failed"))
         } catch (err: unknown) {
-            setError(getMessage(err, "فشل الحفظ"))
+            setError(getMessage(err, isAr ? "فشل الحفظ" : "Save failed"))
         } finally {
             setSaving(false)
         }
@@ -268,16 +272,16 @@ export default function PendingApplicationPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ responses, audio_url: audioUrl, pdf_url: pdfUrl }),
             })
-            if (!saveResponse.ok) throw new Error(await readResponseMessage(saveResponse, "فشل حفظ الطلب"))
+            if (!saveResponse.ok) throw new Error(await readResponseMessage(saveResponse, isAr ? "فشل حفظ الطلب" : "Failed to save application"))
 
             const submitResponse = await fetch("/api/auth/application/me/submit", { method: "POST" })
             const submitJson = await readJson(submitResponse)
-            if (!submitResponse.ok) throw new Error(getMessage(submitJson, "فشل الإرسال"))
+            if (!submitResponse.ok) throw new Error(getMessage(submitJson, isAr ? "فشل الإرسال" : "Submission failed"))
 
-            setSuccess(getMessage(submitJson, "تم استلام طلبك"))
+            setSuccess(getMessage(submitJson, isAr ? "تم استلاف طلبك" : "Application received"))
             await loadApplication()
         } catch (err: unknown) {
-            setError(getMessage(err, "فشل الإرسال"))
+            setError(getMessage(err, isAr ? "فشل الإرسال" : "Submission failed"))
         } finally {
             setSubmitting(false)
         }
@@ -292,12 +296,12 @@ export default function PendingApplicationPage() {
             const json = await readJson(response)
             if (!response.ok) {
                 if (isRecord(json) && json.blocked === true) setReapplyBlocked(true)
-                throw new Error(getMessage(json, "فشل إعادة التقديم"))
+                throw new Error(getMessage(json, isAr ? "فشل إعادة التقديم" : "Failed to reapply"))
             }
-            setSuccess(getMessage(json, "تم إعادة تقديم طلبك بنجاح"))
+            setSuccess(getMessage(json, isAr ? "تم إعادة تقديم طلبك بنجاح" : "Reapplied successfully"))
             await loadApplication()
         } catch (err: unknown) {
-            setError(getMessage(err, "فشل إعادة التقديم"))
+            setError(getMessage(err, isAr ? "فشل إعادة التقديم" : "Failed to reapply"))
         } finally {
             setReapplying(false)
         }
@@ -332,7 +336,13 @@ export default function PendingApplicationPage() {
     return (
         <PageShell>
             <div className="max-w-4xl mx-auto space-y-6 relative z-10">
-                <Header role={data.user.role} subtitle={isSubmitted ? "طلبك قيد المراجعة" : "أكمل البيانات لإرسال طلبك"} onLogout={logout} />
+                <Header 
+                    role={data.user.role} 
+                    subtitle={isSubmitted 
+                        ? (isAr ? "طلبك قيد المراجعة" : "Your application is under review") 
+                        : (isAr ? "أكمل البيانات لإرسال طلبك" : "Complete details to submit request")} 
+                    onLogout={logout} 
+                />
                 <Timeline isSubmitted={isSubmitted} hasDraft={!!application && application.status !== "draft"} />
 
                 {isSubmitted ? (
@@ -366,35 +376,39 @@ export default function PendingApplicationPage() {
 }
 
 function LoadingScreen() {
+    const { locale } = useI18n()
+    const isAr = locale === "ar"
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#0B3D2E]">
             <div className="flex flex-col items-center gap-4">
                 <Loader2 className="w-10 h-10 animate-spin text-[#D4A843]" />
-                <p className="text-white/50 text-sm">جاري تحميل بيانات طلبك...</p>
+                <p className="text-white/50 text-sm">{isAr ? "جاري تحميل بيانات طلبك..." : "Loading your application details..."}</p>
             </div>
         </div>
     )
 }
 
 function LoadError({ message, onRefresh, onLogout }: { message: string | null; onRefresh: () => void; onLogout: () => void }) {
+    const { locale } = useI18n()
+    const isAr = locale === "ar"
     return (
-        <div dir="rtl" className="min-h-screen flex items-center justify-center px-4 bg-[#0B3D2E]">
+        <div dir={isAr ? "rtl" : "ltr"} className="min-h-screen flex items-center justify-center px-4 bg-[#0B3D2E]">
             <div className="w-full max-w-md bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl shadow-2xl p-8 space-y-5 text-center">
                 <div className="mx-auto w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
                     <AlertCircle className="w-7 h-7 text-red-400" />
                 </div>
                 <div>
-                    <h1 className="text-xl font-bold text-white">تعذّر تحميل بيانات طلبك</h1>
+                    <h1 className="text-xl font-bold text-white">{isAr ? "تعذّر تحميل بيانات طلبك" : "Could not load application details"}</h1>
                     <p className="text-sm text-white/50 mt-2">
-                        {message || "حدث خطأ غير متوقع. حاول مرة أخرى أو سجّل الخروج وادخل مجددًا."}
+                        {message || (isAr ? "حدث خطأ غير متوقع. حاول مرة أخرى أو سجّل الخروج وادخل مجددًا." : "An unexpected error occurred. Try again or logout and log back in.")}
                     </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                     <button onClick={onRefresh} className="flex-1 px-4 py-2.5 bg-[#D4A843] hover:bg-[#C49A3A] text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors">
-                        <RefreshCcw className="w-4 h-4" /> إعادة المحاولة
+                        <RefreshCcw className="w-4 h-4" /> {isAr ? "إعادة المحاولة" : "Try Again"}
                     </button>
                     <button onClick={onLogout} className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors">
-                        <LogOut className="w-4 h-4" /> تسجيل الخروج
+                        <LogOut className="w-4 h-4" /> {isAr ? "تسجيل الخروج" : "Logout"}
                     </button>
                 </div>
             </div>
@@ -403,8 +417,10 @@ function LoadError({ message, onRefresh, onLogout }: { message: string | null; o
 }
 
 function PageShell({ children }: { children: ReactNode }) {
+    const { locale } = useI18n()
+    const isAr = locale === "ar"
     return (
-        <div className="min-h-screen bg-[#0B3D2E] py-8 px-4" dir="rtl">
+        <div className="min-h-screen bg-[#0B3D2E] py-8 px-4" dir={isAr ? "rtl" : "ltr"}>
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <div className="absolute -top-32 right-0 w-96 h-96 bg-[#D4A843]/5 rounded-full blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
@@ -415,47 +431,53 @@ function PageShell({ children }: { children: ReactNode }) {
 }
 
 function Header({ role, subtitle, onLogout }: { role: string; subtitle: string; onLogout: () => void }) {
+    const { locale } = useI18n()
+    const isAr = locale === "ar"
     return (
         <header className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <button onClick={onLogout} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-all">
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-5 h-5 rtl:rotate-180" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-black text-white">طلب الانضمام ك{roleLabel(role)}</h1>
+                    <h1 className="text-2xl font-black text-white">{isAr ? `طلب الانضمام كـ${roleLabel(role, isAr)}` : `Join Request as ${roleLabel(role, isAr)}`}</h1>
                     <p className="text-sm text-white/40 mt-0.5">{subtitle}</p>
                 </div>
             </div>
             <button onClick={onLogout} className="flex items-center gap-2 px-4 py-2 text-sm text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                <LogOut className="w-4 h-4" /> خروج
+                <LogOut className="w-4 h-4" /> {isAr ? "خروج" : "Logout"}
             </button>
         </header>
     )
 }
 
 function Timeline({ isSubmitted, hasDraft }: { isSubmitted: boolean; hasDraft: boolean }) {
+    const { locale } = useI18n()
+    const isAr = locale === "ar"
     return (
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5">
             <div className="flex items-center justify-between gap-2 relative">
                 <div className="absolute top-5 right-0 left-0 h-0.5 bg-white/10 -z-0" />
-                <Step done current={!isSubmitted && !hasDraft} label="التسجيل" icon={<CheckCircle2 className="w-5 h-5" />} />
-                <Step done={isSubmitted || hasDraft} current={!isSubmitted && hasDraft} label="استكمال البيانات" icon={<Edit3 className="w-5 h-5" />} />
-                <Step done={isSubmitted} current={isSubmitted} label="مراجعة الإدارة" icon={<Clock className="w-5 h-5" />} />
-                <Step done={false} current={false} label="القبول" icon={<CheckCircle2 className="w-5 h-5" />} />
+                <Step done current={!isSubmitted && !hasDraft} label={isAr ? "التسجيل" : "Register"} icon={<CheckCircle2 className="w-5 h-5" />} />
+                <Step done={isSubmitted || hasDraft} current={!isSubmitted && hasDraft} label={isAr ? "استكمال البيانات" : "Complete Profile"} icon={<Edit3 className="w-5 h-5" />} />
+                <Step done={isSubmitted} current={isSubmitted} label={isAr ? "مراجعة الإدارة" : "Under Review"} icon={<Clock className="w-5 h-5" />} />
+                <Step done={false} current={false} label={isAr ? "القبول" : "Approval"} icon={<CheckCircle2 className="w-5 h-5" />} />
             </div>
         </div>
     )
 }
 
 function PendingReview({ submittedAt }: { submittedAt: string | null }) {
+    const { locale } = useI18n()
+    const isAr = locale === "ar"
     return (
         <div className="bg-amber-900/20 border-2 border-amber-500/30 rounded-2xl p-5 flex items-start gap-4">
             <Clock className="w-6 h-6 text-amber-400 mt-1 shrink-0" />
             <div className="flex-1">
-                <h2 className="font-bold text-amber-300">طلبك قيد المراجعة</h2>
-                <p className="text-sm text-amber-400/70 mt-1">تم إرسال طلبك بنجاح. سيقوم فريق الإدارة بمراجعة بياناتك في أقرب وقت ممكن.</p>
+                <h2 className="font-bold text-amber-300">{isAr ? "طلبك قيد المراجعة" : "Your request is under review"}</h2>
+                <p className="text-sm text-amber-400/70 mt-1">{isAr ? "تم إرسال طلبك بنجاح. سيقوم فريق الإدارة بمراجعة بياناتك في أقرب وقت ممكن." : "Your application has been submitted successfully. The admin team will review your details as soon as possible."}</p>
                 <p className="text-xs text-amber-500/50 mt-2">
-                    تاريخ الإرسال: {submittedAt ? new Date(submittedAt).toLocaleString("ar-EG") : "—"}
+                    {isAr ? "تاريخ الإرسال: " : "Submitted at: "} {submittedAt ? new Date(submittedAt).toLocaleString(isAr ? "ar-EG" : "en-US") : "—"}
                 </p>
             </div>
         </div>
@@ -481,10 +503,12 @@ function RejectedApplication({
     onLogout: () => void
     onReapply: () => void
 }) {
+    const { locale } = useI18n()
+    const isAr = locale === "ar"
     return (
-        <div dir="rtl" className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0B3D2E] relative overflow-hidden">
+        <div dir={isAr ? "rtl" : "ltr"} className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0B3D2E] relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute -top-32 -right-32 w-96 h-96 bg-red-500/5 rounded-full blur-3xl" />
+                <div className="absolute -top-32 -right-32 w-96 h-96 bg-red-50/5 rounded-full blur-3xl" />
                 <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-[#D4A843]/5 rounded-full blur-3xl" />
                 <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, #D4A843 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
             </div>
@@ -492,7 +516,7 @@ function RejectedApplication({
             <nav className="absolute top-0 left-0 right-0 p-5 flex justify-between items-center z-10 max-w-4xl mx-auto w-full">
                 <Image src="/branding/main-logo.png" alt="Logo" width={140} height={48} className="h-12 w-auto object-contain" priority />
                 <button onClick={onLogout} className="flex items-center gap-2 px-4 py-2 text-sm text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                    <LogOut className="w-4 h-4" /> خروج
+                    <LogOut className="w-4 h-4" /> {isAr ? "خروج" : "Logout"}
                 </button>
             </nav>
 
@@ -510,25 +534,29 @@ function RejectedApplication({
                         </div>
 
                         <div>
-                            <p className="text-red-400/70 text-xs font-bold tracking-[0.2em] uppercase mb-2">قرار الإدارة</p>
-                            <h1 className="text-3xl font-black text-white mb-2">تم رفض طلبك</h1>
+                            <p className="text-red-400/70 text-xs font-bold tracking-[0.2em] uppercase mb-2">{isAr ? "قرار الإدارة" : "ADMIN DECISION"}</p>
+                            <h1 className="text-3xl font-black text-white mb-2">{isAr ? "تم رفض طلبك" : "Application Rejected"}</h1>
                             <p className="text-white/50 text-base">
-                                للأسف لم يتم قبول طلب انضمامك <span className="text-[#D4A843]">كـ{roleLabel(role)}</span> في هذه المرحلة
+                                {isAr ? (
+                                    <>للأسف لم يتم قبول طلب انضمامك <span className="text-[#D4A843]">كـ{roleLabel(role, isAr)}</span> في هذه المرحلة</>
+                                ) : (
+                                    <>Unfortunately, your application to join <span className="text-[#D4A843]">as a {roleLabel(role, isAr)}</span> was not accepted at this stage</>
+                                )}
                             </p>
                         </div>
 
                         {application?.rejection_reason ? (
-                            <div className="bg-red-950/30 border border-red-500/20 rounded-2xl p-5 text-right space-y-2">
+                            <div className="bg-red-950/30 border border-red-500/20 rounded-2xl p-5 text-right space-y-2" dir={isAr ? "rtl" : "ltr"}>
                                 <p className="text-xs font-black text-red-400/80 tracking-wider uppercase flex items-center gap-2">
                                     <span className="w-5 h-0.5 bg-red-400/40 block" />
-                                    سبب الرفض
+                                    {isAr ? "سبب الرفض" : "Rejection Reason"}
                                     <span className="w-5 h-0.5 bg-red-400/40 block" />
                                 </p>
                                 <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">{application.rejection_reason}</p>
                             </div>
                         ) : (
                             <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 text-center">
-                                <p className="text-white/30 text-sm">لم يُذكر سبب محدد. يمكنك التواصل مع الإدارة لمزيد من التفاصيل.</p>
+                                <p className="text-white/30 text-sm">{isAr ? "لم يُذكر سبب محدد. يمكنك التواصل مع الإدارة لمزيد من التفاصيل." : "No specific reason was provided. You can contact support for more details."}</p>
                             </div>
                         )}
 
@@ -550,8 +578,8 @@ function RejectedApplication({
                                     <div className="w-10 h-10 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mx-auto">
                                         <Ban className="w-5 h-5 text-orange-400" />
                                     </div>
-                                    <p className="text-orange-300 font-bold text-sm">تم إيقاف إمكانية إعادة التقديم</p>
-                                    <p className="text-white/30 text-xs leading-relaxed">قررت الإدارة إيقاف إمكانية إعادة تقديم الطلب على هذا الحساب. يرجى التواصل مع الإدارة مباشرة للاستفسار.</p>
+                                    <p className="text-orange-300 font-bold text-sm">{isAr ? "تم إيقاف إمكانية إعادة التقديم" : "Reapplication Disabled"}</p>
+                                    <p className="text-white/30 text-xs leading-relaxed">{isAr ? "قررت الإدارة إيقاف إمكانية إعادة تقديم الطلب على هذا الحساب. يرجى التواصل مع الإدارة مباشرة للاستفسار." : "The administration has disabled the ability to reapply on this account. Please contact support directly."}</p>
                                 </div>
                             ) : (
                                 <button
@@ -560,16 +588,16 @@ function RejectedApplication({
                                     className="w-full px-6 py-4 bg-[#D4A843] hover:bg-[#C49A3A] disabled:opacity-50 text-white font-black rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.01] shadow-lg shadow-[#D4A843]/10"
                                 >
                                     {reapplying ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCcw className="w-5 h-5" />}
-                                    {reapplying ? "جاري تحديث الطلب..." : "إعادة التقديم مرة أخرى"}
+                                    {reapplying ? (isAr ? "جاري تحديث الطلب..." : "Updating Application...") : (isAr ? "إعادة التقديم مرة أخرى" : "Reapply Again")}
                                 </button>
                             )}
                             <button onClick={onLogout} className="w-full px-6 py-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/60 hover:text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all">
-                                <LogOut className="w-4 h-4" /> تسجيل الخروج
-                            </button>
+                                <LogOut className="w-4 h-4" /> {isAr ? "تسجيل الخروج" : "Logout"}
+                              </button>
                         </div>
                     </div>
                 </div>
-                <p className="text-center text-white/20 text-xs mt-6">هل لديك أي استفسار؟ تواصل مع إدارة المنصة عبر قنوات الدعم الرسمية</p>
+                <p className="text-center text-white/20 text-xs mt-6">{isAr ? "هل لديك أي استفسار؟ تواصل مع إدارة المنصة عبر قنوات الدعم الرسمية" : "Have any questions? Contact support through official channels"}</p>
             </div>
         </div>
     )
@@ -604,22 +632,24 @@ function ApplicationForm({
     onPdfChange: (url: string | null) => void
     onSubmit: () => void
 }) {
+    const { locale } = useI18n()
+    const isAr = locale === "ar"
     return (
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 md:p-6 space-y-5">
             <div className="flex items-center justify-between">
                 <h2 className="font-bold text-lg text-white flex items-center gap-2">
-                    <Send className="w-5 h-5 text-[#D4A843]" /> نموذج طلب الانضمام
+                    <Send className="w-5 h-5 text-[#D4A843]" /> {isAr ? "نموذج طلب الانضمام" : "Join Request Form"}
                 </h2>
                 {saving && (
                     <span className="text-xs text-white/30 flex items-center gap-1">
-                        <Loader2 className="w-3 h-3 animate-spin" /> جاري الحفظ
+                        <Loader2 className="w-3 h-3 animate-spin" /> {isAr ? "جاري الحفظ" : "Saving"}
                     </span>
                 )}
             </div>
 
             {questions.length === 0 && (
                 <div className="bg-white/[0.03] rounded-xl p-4 text-sm text-white/30">
-                    لم يتم إعداد نموذج الطلب بعد من قبل الإدارة. يرجى التواصل مع الدعم.
+                    {isAr ? "لم يتم إعداد نموذج الطلب بعد من قبل الإدارة. يرجى التواصل مع الدعم." : "The application form has not been set up by the administration yet. Please contact support."}
                 </div>
             )}
 
@@ -647,7 +677,7 @@ function ApplicationForm({
                 className="w-full px-4 py-3.5 bg-[#D4A843] hover:bg-[#C49A3A] disabled:opacity-50 text-white font-black rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
             >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                إرسال الطلب للمراجعة
+                {isAr ? "إرسال الطلب للمراجعة" : "Submit Request for Review"}
             </button>
         </div>
     )
@@ -674,6 +704,8 @@ function QuestionField({
     onAudioChange: (url: string | null) => void
     onPdfChange: (url: string | null) => void
 }) {
+    const { locale } = useI18n()
+    const isAr = locale === "ar"
     return (
         <div className="space-y-2">
             <label className="block">
@@ -709,7 +741,7 @@ function QuestionField({
                     onChange={(event) => onResponseChange(question.id, event.target.value, true)}
                     className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#D4A843]/20 outline-none text-white"
                 >
-                    <option value="">— اختر —</option>
+                    <option value="">{isAr ? "— اختر —" : "— Select —"}</option>
                     {(question.options || []).map((option) => (
                         <option key={option} value={option}>{option}</option>
                     ))}
@@ -736,15 +768,15 @@ function Notice({ tone, children }: { tone: "error" | "success"; children: React
 }
 
 function Step({ done, current, label, icon }: { done: boolean; current: boolean; label: string; icon: ReactNode }) {
-    const bg = done
-        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-        : current
-            ? "bg-[#D4A843]/20 text-[#D4A843] border-[#D4A843]/40"
-            : "bg-white/5 text-white/30 border-white/10"
-
     return (
         <div className="flex flex-col items-center gap-2 z-10 flex-1">
-            <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center ${bg}`}>{icon}</div>
+            <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center ${
+                done
+                    ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                    : current
+                        ? "bg-[#D4A843]/20 text-[#D4A843] border-[#D4A843]/40"
+                        : "bg-white/5 text-white/30 border-white/10"
+            }`}>{icon}</div>
             <span className={`text-xs font-bold text-center ${current ? "text-white/80" : "text-white/30"}`}>{label}</span>
         </div>
     )

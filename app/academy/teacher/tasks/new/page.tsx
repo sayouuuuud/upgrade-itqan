@@ -22,6 +22,7 @@ import {
   PencilLine,
   GripVertical,
 } from "lucide-react"
+import { useI18n } from "@/lib/i18n/context"
 
 type TaskTypeKey = "written" | "audio" | "video" | "quiz" | "project"
 
@@ -39,52 +40,55 @@ interface QuizQuestion {
 let _qid = 0
 const newQuestionId = () => `q_${Date.now()}_${_qid++}`
 
-const TASK_TYPES: {
-  key: TaskTypeKey
-  title: string
-  desc: string
-  Icon: React.ComponentType<{ className?: string }>
-  expects: string
-}[] = [
-  {
-    key: "written",
-    title: "مهمة كتابية",
-    desc: "إجابة نصية يكتبها الطالب",
-    Icon: FileText,
-    expects: "نص + مرفق اختياري",
-  },
-  {
-    key: "audio",
-    title: "تسجيل صوتي",
-    desc: "تلاوة أو حفظ أو تسجيل شفهي",
-    Icon: Mic,
-    expects: "ملف صوتي مطلوب",
-  },
-  {
-    key: "video",
-    title: "مقطع فيديو",
-    desc: "تسليم على هيئة مقطع فيديو",
-    Icon: Video,
-    expects: "ملف فيديو مطلوب",
-  },
-  {
-    key: "project",
-    title: "مشروع / ملف",
-    desc: "تقرير، عرض، أو ملف عملي",
-    Icon: Layers,
-    expects: "ملف مرفق مطلوب",
-  },
-  {
-    key: "quiz",
-    title: "اختبار",
-    desc: "إجابة قصيرة على أسئلة",
-    Icon: ListChecks,
-    expects: "إجابة نصية",
-  },
-]
-
 export default function NewTaskPage() {
   const router = useRouter()
+  const { locale } = useI18n()
+  const isAr = locale === "ar"
+
+  const TASK_TYPES: {
+    key: TaskTypeKey
+    title: string
+    desc: string
+    Icon: React.ComponentType<{ className?: string }>
+    expects: string
+  }[] = [
+    {
+      key: "written",
+      title: isAr ? "مهمة كتابية" : "Written Task",
+      desc: isAr ? "إجابة نصية يكتبها الطالب" : "Text response written by the student",
+      Icon: FileText,
+      expects: isAr ? "نص + مرفق اختياري" : "Text + optional attachment",
+    },
+    {
+      key: "audio",
+      title: isAr ? "تسجيل صوتي" : "Audio Recording",
+      desc: isAr ? "تلاوة أو حفظ أو تسجيل شفهي" : "Recitation, memorization or oral recording",
+      Icon: Mic,
+      expects: isAr ? "ملف صوتي مطلوب" : "Audio file required",
+    },
+    {
+      key: "video",
+      title: isAr ? "مقطع فيديو" : "Video Clip",
+      desc: isAr ? "تسليم على هيئة مقطع فيديو" : "Submission as a video clip",
+      Icon: Video,
+      expects: isAr ? "ملف فيديو مطلوب" : "Video file required",
+    },
+    {
+      key: "project",
+      title: isAr ? "مشروع / ملف" : "Project / File",
+      desc: isAr ? "تقرير، عرض، أو ملف عملي" : "Report, presentation or practical file",
+      Icon: Layers,
+      expects: isAr ? "ملف مرفق مطلوب" : "Attached file required",
+    },
+    {
+      key: "quiz",
+      title: isAr ? "اختبار" : "Quiz",
+      desc: isAr ? "إجابة قصيرة على أسئلة" : "Short answers to questions",
+      Icon: ListChecks,
+      expects: isAr ? "إجابة نصية" : "Text response",
+    },
+  ]
+
   const [loading, setLoading] = useState(false)
   const [coursesLoading, setCoursesLoading] = useState(true)
   const [courses, setCourses] = useState<{ id: string; title: string }[]>([])
@@ -189,19 +193,19 @@ export default function NewTaskPage() {
     e.preventDefault()
     setError("")
 
-    if (!formData.course_id) return setError("يجب اختيار دورة")
-    if (!formData.title.trim()) return setError("عنوان المهمة مطلوب")
-    if (!formData.due_date) return setError("تاريخ التسليم مطلوب")
+    if (!formData.course_id) return setError(isAr ? "يجب اختيار دورة" : "Course must be selected")
+    if (!formData.title.trim()) return setError(isAr ? "عنوان المهمة مطلوب" : "Task title is required")
+    if (!formData.due_date) return setError(isAr ? "تاريخ التسليم مطلوب" : "Due date is required")
 
     if (isQuiz) {
-      if (quizQuestions.length === 0) return setError("أضف سؤالاً واحداً على الأقل للاختبار")
+      if (quizQuestions.length === 0) return setError(isAr ? "أضف سؤالاً واحداً على الأقل للاختبار" : "Add at least one question to the quiz")
       for (const q of quizQuestions) {
-        if (!q.question.trim()) return setError("يوجد سؤال بدون نص. أكمل جميع الأسئلة")
+        if (!q.question.trim()) return setError(isAr ? "يوجد سؤال بدون نص. أكمل جميع الأسئلة" : "There is a question without text. Complete all questions")
         if (q.type === "mcq") {
           const filled = q.options.filter(o => o.trim()).length
-          if (filled < 2) return setError("أسئلة الاختيار يجب أن تحتوي على خيارين على الأقل")
+          if (filled < 2) return setError(isAr ? "أسئلة الاختيار يجب أن تحتوي على خيارين على الأقل" : "Multiple choice questions must have at least 2 options")
           if (!q.options[q.correct]?.trim())
-            return setError("حدّد الإجابة الصحيحة لكل سؤال اختيار من متعدد")
+            return setError(isAr ? "حدّد الإجابة الصحيحة لكل سؤال اختيار من متعدد" : "Select correct answer for each multiple choice question")
         }
       }
     }
@@ -234,11 +238,11 @@ export default function NewTaskPage() {
 
       const json = await res.json().catch(() => ({}))
       if (!res.ok) {
-        throw new Error(json.error || "حدث خطأ أثناء الإنشاء")
+        throw new Error(json.error || (isAr ? "حدث خطأ أثناء الإنشاء" : "An error occurred during creation"))
       }
       router.push("/academy/teacher/tasks")
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "حدث خطأ غير متوقع"
+      const msg = err instanceof Error ? err.message : (isAr ? "حدث خطأ غير متوقع" : "An unexpected error occurred")
       setError(msg)
       setLoading(false)
     }
@@ -247,22 +251,24 @@ export default function NewTaskPage() {
   const selectedType = TASK_TYPES.find(t => t.key === formData.task_type)
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-12">
+    <div className="max-w-3xl mx-auto space-y-6 pb-12" dir={isAr ? "rtl" : "ltr"}>
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link
           href="/academy/teacher/tasks"
           className="p-2 border border-border bg-card rounded-lg hover:bg-muted text-muted-foreground transition-colors"
-          aria-label="رجوع"
+          aria-label={isAr ? "رجوع" : "Back"}
         >
           <ArrowRight className="w-5 h-5 rtl:rotate-180" />
         </Link>
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            إنشاء مهمة جديدة
+            {isAr ? "إنشاء مهمة جديدة" : "Create New Task"}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            أضف مهمة لإحدى دوراتك وحدّد طريقة التسليم المطلوبة من الطلاب
+            {isAr 
+              ? "أضف مهمة لإحدى دوراتك وحدّد طريقة التسليم المطلوبة من الطلاب"
+              : "Add a task to one of your courses and specify the submission format required from students"}
           </p>
         </div>
       </div>
@@ -280,14 +286,14 @@ export default function NewTaskPage() {
           <div className="flex items-center gap-2 pb-2 border-b border-border">
             <BookOpen className="w-4 h-4 text-muted-foreground" />
             <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-              المعلومات الأساسية
+              {isAr ? "المعلومات الأساسية" : "Basic Information"}
             </h2>
           </div>
 
           {/* Course Selection */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-foreground" htmlFor="course_id">
-              الدورة <span className="text-red-500">*</span>
+              {isAr ? "الدورة" : "Course"} <span className="text-red-500">*</span>
             </label>
             <select
               id="course_id"
@@ -298,7 +304,9 @@ export default function NewTaskPage() {
               required
             >
               <option value="">
-                {coursesLoading ? "جاري تحميل الدورات..." : "اختر الدورة..."}
+                {coursesLoading 
+                  ? (isAr ? "جاري تحميل الدورات..." : "Loading courses...") 
+                  : (isAr ? "اختر الدورة..." : "Select course...")}
               </option>
               {courses.map(c => (
                 <option key={c.id} value={c.id}>
@@ -308,12 +316,12 @@ export default function NewTaskPage() {
             </select>
             {!coursesLoading && courses.length === 0 && (
               <p className="text-xs text-amber-600 dark:text-amber-400">
-                لا توجد دورات لديك بعد.{" "}
+                {isAr ? "لا توجد دورات لديك بعد." : "You do not have any courses yet."}{" "}
                 <Link
                   href="/academy/teacher/courses/new"
                   className="underline font-medium"
                 >
-                  أنشئ دورة أولاً
+                  {isAr ? "أنشئ دورة أولاً" : "Create a course first"}
                 </Link>
                 .
               </p>
@@ -323,12 +331,12 @@ export default function NewTaskPage() {
           {/* Title */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-foreground" htmlFor="title">
-              عنوان المهمة <span className="text-red-500">*</span>
+              {isAr ? "عنوان المهمة" : "Task Title"} <span className="text-red-500">*</span>
             </label>
             <input
               id="title"
               type="text"
-              placeholder="مثال: واجب تلاوة سورة البقرة"
+              placeholder={isAr ? "مثال: واجب تلاوة سورة البقرة" : "e.g. Surah Al-Baqarah Recitation Homework"}
               className="w-full p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={formData.title}
               onChange={e => setFormData({ ...formData, title: e.target.value })}
@@ -340,12 +348,12 @@ export default function NewTaskPage() {
           {/* Description */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-foreground" htmlFor="description">
-              وصف المهمة
+              {isAr ? "وصف المهمة" : "Task Description"}
             </label>
             <textarea
               id="description"
               rows={4}
-              placeholder="اشرح المطلوب من الطالب وما الهدف من هذه المهمة..."
+              placeholder={isAr ? "اشرح المطلوب من الطالب وما الهدف من هذه المهمة..." : "Explain what is required from the student and the goal of this task..."}
               className="w-full p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -358,7 +366,7 @@ export default function NewTaskPage() {
           <div className="flex items-center gap-2 pb-2 border-b border-border">
             <Layers className="w-4 h-4 text-muted-foreground" />
             <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-              نوع المهمة وطريقة التسليم
+              {isAr ? "نوع المهمة وطريقة التسليم" : "Task Type & Submission Method"}
             </h2>
           </div>
 
@@ -409,16 +417,16 @@ export default function NewTaskPage() {
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
                   <ListChecks className="w-4 h-4 text-blue-600" />
-                  <h3 className="text-sm font-bold text-foreground">أسئلة الاختبار</h3>
+                  <h3 className="text-sm font-bold text-foreground">{isAr ? "أسئلة الاختبار" : "Quiz Questions"}</h3>
                 </div>
                 <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 rounded-full">
-                  {quizQuestions.length} سؤال · {quizTotal} درجة
+                  {quizQuestions.length} {isAr ? "سؤال" : "questions"} · {quizTotal} {isAr ? "درجة" : "points"}
                 </span>
               </div>
 
               {quizQuestions.length === 0 && (
                 <p className="text-xs text-muted-foreground">
-                  لم تُضِف أي أسئلة بعد. اختر نوع السؤال لإضافته.
+                  {isAr ? "لم تُضِف أي أسئلة بعد. اختر نوع السؤال لإضافته." : "No questions added yet. Select a question type to add."}
                 </p>
               )}
 
@@ -444,16 +452,16 @@ export default function NewTaskPage() {
                           >
                             {q.type === "mcq" ? (
                               <>
-                                <CircleDot className="w-3 h-3" /> اختيار من متعدد
+                                <CircleDot className="w-3 h-3" /> {isAr ? "اختيار من متعدد" : "Multiple Choice"}
                               </>
                             ) : (
                               <>
-                                <PencilLine className="w-3 h-3" /> سؤال مقالي
+                                <PencilLine className="w-3 h-3" /> {isAr ? "سؤال مقالي" : "Essay Question"}
                               </>
                             )}
                           </span>
                           <div className="flex items-center gap-1.5 mr-auto">
-                            <label className="text-[11px] text-muted-foreground">الدرجة</label>
+                            <label className="text-[11px] text-muted-foreground">{isAr ? "الدرجة" : "Points"}</label>
                             <input
                               type="number"
                               min={1}
@@ -468,7 +476,7 @@ export default function NewTaskPage() {
                             type="button"
                             onClick={() => removeQuestion(q.id)}
                             className="p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                            aria-label="حذف السؤال"
+                            aria-label={isAr ? "حذف السؤال" : "Delete Question"}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -476,7 +484,7 @@ export default function NewTaskPage() {
 
                         <textarea
                           rows={2}
-                          placeholder="اكتب نص السؤال هنا..."
+                          placeholder={isAr ? "اكتب نص السؤال هنا..." : "Write question text here..."}
                           value={q.question}
                           onChange={e => updateQuestion(q.id, { question: e.target.value })}
                           className="w-full p-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
@@ -485,7 +493,7 @@ export default function NewTaskPage() {
                         {q.type === "mcq" && (
                           <div className="space-y-2">
                             <p className="text-[11px] text-muted-foreground">
-                              اختر الدائرة بجانب الإجابة الصحيحة:
+                              {isAr ? "اختر الدائرة بجانب الإجابة الصحيحة:" : "Select the circle next to the correct answer:"}
                             </p>
                             {q.options.map((opt, oIdx) => (
                               <div key={oIdx} className="flex items-center gap-2">
@@ -497,7 +505,7 @@ export default function NewTaskPage() {
                                       ? "border-emerald-500 bg-emerald-500"
                                       : "border-border"
                                   }`}
-                                  aria-label="تحديد كإجابة صحيحة"
+                                  aria-label={isAr ? "تحديد كإجابة صحيحة" : "Set as correct answer"}
                                 >
                                   {q.correct === oIdx && (
                                     <CheckCircle2 className="w-3 h-3 text-white" />
@@ -505,7 +513,7 @@ export default function NewTaskPage() {
                                 </button>
                                 <input
                                   type="text"
-                                  placeholder={`الخيار ${oIdx + 1}`}
+                                  placeholder={isAr ? `الخيار ${oIdx + 1}` : `Option ${oIdx + 1}`}
                                   value={opt}
                                   onChange={e => updateOption(q.id, oIdx, e.target.value)}
                                   className="flex-1 p-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
@@ -515,7 +523,7 @@ export default function NewTaskPage() {
                                     type="button"
                                     onClick={() => removeOption(q.id, oIdx)}
                                     className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                    aria-label="حذف الخيار"
+                                    aria-label={isAr ? "حذف الخيار" : "Delete Option"}
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
@@ -527,14 +535,16 @@ export default function NewTaskPage() {
                               onClick={() => addOption(q.id)}
                               className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 mt-1"
                             >
-                              <Plus className="w-3.5 h-3.5" /> إضافة خيار
+                              <Plus className="w-3.5 h-3.5" /> {isAr ? "إضافة خيار" : "Add Option"}
                             </button>
                           </div>
                         )}
 
                         {q.type === "essay" && (
                           <p className="text-[11px] text-muted-foreground italic">
-                            سيكتب الطالب إجابته نصياً، وتقوم أنت بتصحيحها ورصد درجتها يدوياً.
+                            {isAr 
+                              ? "سيكتب الطالب إجابته نصياً، وتقوم أنت بتصحيحها ورصد درجتها يدوياً."
+                              : "The student will write their answer as text, and you will manually grade it."}
                           </p>
                         )}
                       </div>
@@ -549,14 +559,14 @@ export default function NewTaskPage() {
                   onClick={() => addQuestion("mcq")}
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 text-sm font-bold hover:bg-emerald-100 transition-colors"
                 >
-                  <Plus className="w-4 h-4" /> سؤال اختيار من متعدد
+                  <Plus className="w-4 h-4" /> {isAr ? "سؤال اختيار من متعدد" : "Multiple Choice Question"}
                 </button>
                 <button
                   type="button"
                   onClick={() => addQuestion("essay")}
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-sm font-bold hover:bg-amber-100 transition-colors"
                 >
-                  <Plus className="w-4 h-4" /> سؤال مقالي
+                  <Plus className="w-4 h-4" /> {isAr ? "سؤال مقالي" : "Essay Question"}
                 </button>
               </div>
             </div>
@@ -568,17 +578,17 @@ export default function NewTaskPage() {
               className="text-sm font-bold text-foreground"
               htmlFor="submission_instructions"
             >
-              تعليمات التسليم (اختياري)
+              {isAr ? "تعليمات التسليم (اختياري)" : "Submission Instructions (Optional)"}
             </label>
             <textarea
               id="submission_instructions"
               rows={3}
               placeholder={
                 selectedType?.key === "audio"
-                  ? "مثال: سجل التلاوة بصوت واضح، وتأكد من جودة الميكروفون..."
+                  ? (isAr ? "مثال: سجل التلاوة بصوت واضح، وتأكد من جودة الميكروفون..." : "e.g., Record the recitation in a clear voice, check microphone quality...")
                   : selectedType?.key === "video"
-                  ? "مثال: المدة لا تتجاوز 5 دقائق، وضع الإضاءة مناسبة..."
-                  : "أي تعليمات إضافية تريد إخبار الطالب بها قبل التسليم"
+                  ? (isAr ? "مثال: المدة لا تتجاوز 5 دقائق، وضع الإضاءة مناسبة..." : "e.g., Duration not exceeding 5 minutes, ensure proper lighting...")
+                  : (isAr ? "أي تعليمات إضافية تريد إخبار الطالب بها قبل التسليم" : "Any additional instructions for the student before submission")
               }
               className="w-full p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
               value={formData.submission_instructions}
@@ -594,7 +604,7 @@ export default function NewTaskPage() {
           <div className="flex items-center gap-2 pb-2 border-b border-border">
             <CalendarClock className="w-4 h-4 text-muted-foreground" />
             <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-              الجدولة والتقييم
+              {isAr ? "الجدولة والتقييم" : "Scheduling & Grading"}
             </h2>
           </div>
 
@@ -603,7 +613,7 @@ export default function NewTaskPage() {
             <div className="space-y-2">
               <label className="text-sm font-bold text-foreground" htmlFor="due_date">
                 <CalendarClock className="w-4 h-4 inline ml-1" />
-                تاريخ التسليم <span className="text-red-500">*</span>
+                {isAr ? "تاريخ التسليم" : "Due Date"} <span className="text-red-500">*</span>
               </label>
               <input
                 id="due_date"
@@ -619,12 +629,12 @@ export default function NewTaskPage() {
             <div className="space-y-2">
               <label className="text-sm font-bold text-foreground" htmlFor="max_score">
                 <Trophy className="w-4 h-4 inline ml-1" />
-                الدرجة القصوى
+                {isAr ? "الدرجة القصوى" : "Max Score"}
               </label>
               {isQuiz ? (
                 <div className="w-full p-3 rounded-lg border border-dashed border-border bg-muted/40 text-sm text-muted-foreground">
-                  تُحسب تلقائياً من مجموع درجات الأسئلة:{" "}
-                  <span className="font-bold text-foreground">{quizTotal} درجة</span>
+                  {isAr ? "تُحسب تلقائياً من مجموع درجات الأسئلة:" : "Calculated automatically from total question points:"}{" "}
+                  <span className="font-bold text-foreground">{quizTotal} {isAr ? "درجة" : "points"}</span>
                 </div>
               ) : (
                 <input
@@ -647,7 +657,7 @@ export default function NewTaskPage() {
             href="/academy/teacher/tasks"
             className="px-6 py-3 border border-border bg-card hover:bg-muted text-foreground font-bold rounded-lg transition-colors text-center"
           >
-            إلغاء
+            {isAr ? "إلغاء" : "Cancel"}
           </Link>
           <button
             type="submit"
@@ -657,12 +667,12 @@ export default function NewTaskPage() {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                جاري الحفظ...
+                {isAr ? "جاري الحفظ..." : "Saving..."}
               </>
             ) : (
               <>
                 <CheckCircle2 className="w-4 h-4" />
-                حفظ المهمة
+                {isAr ? "حفظ المهمة" : "Save Task"}
               </>
             )}
           </button>

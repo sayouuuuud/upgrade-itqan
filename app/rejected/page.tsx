@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation'
 import { XCircle, RefreshCcw, LogOut, Loader2, CheckCircle, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useI18n } from '@/lib/i18n/context'
 
 export default function RejectedPage() {
   const router = useRouter()
+  const { t, dir } = useI18n()
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -31,10 +33,10 @@ export default function RejectedPage() {
           router.push('/login')
         }, 3000)
       } else {
-        setError(data.error || 'حدث خطأ أثناء إعادة التقديم')
+        setError(data.error || t?.rejectedPage?.toastErrorReapply || 'حدث خطأ أثناء إعادة التقديم')
       }
     } catch (err) {
-      setError('حدث خطأ في الاتصال بالخادم')
+      setError(t?.rejectedPage?.toastErrorConnection || 'حدث خطأ في الاتصال بالخادم')
     } finally {
       setLoading(false)
     }
@@ -51,24 +53,24 @@ export default function RejectedPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4" dir={dir}>
         <Card className="w-full max-w-md text-center">
           <CardHeader className="pb-4">
             <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
-            <CardTitle className="text-xl">تم إعادة التقديم بنجاح</CardTitle>
+            <CardTitle className="text-xl">{t?.rejectedPage?.successTitle}</CardTitle>
             <CardDescription>
-              سيتم مراجعة طلبك من قبل الإدارة وإشعارك بالنتيجة قريباً
+              {t?.rejectedPage?.successDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              سيتم توجيهك لصفحة تسجيل الدخول خلال ثوانٍ...
+              {t?.rejectedPage?.redirecting}
             </p>
             <Button variant="outline" onClick={() => router.push('/login')} className="gap-2">
-              الذهاب الآن
-              <ArrowRight className="w-4 h-4" />
+              {t?.rejectedPage?.btnGoNow}
+              <ArrowRight className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
             </Button>
           </CardContent>
         </Card>
@@ -77,16 +79,15 @@ export default function RejectedPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4" dir={dir}>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center pb-4">
           <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
             <XCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
-          <CardTitle className="text-xl">تم رفض طلبك</CardTitle>
+          <CardTitle className="text-xl">{t?.rejectedPage?.rejectedTitle}</CardTitle>
           <CardDescription className="mt-2">
-            نأسف لإبلاغك بأنه لم يتم قبول طلب انضمامك في هذا الوقت.
-            يمكنك إعادة التقديم وسنقوم بمراجعة طلبك مرة أخرى.
+            {t?.rejectedPage?.rejectedDesc}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -97,11 +98,11 @@ export default function RejectedPage() {
           )}
 
           <div className="bg-muted/50 rounded-lg p-4 text-sm">
-            <h4 className="font-medium mb-2">نصائح لتحسين طلبك:</h4>
+            <h4 className="font-medium mb-2">{t?.rejectedPage?.tipsTitle}</h4>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>تأكد من اكتمال جميع البيانات المطلوبة</li>
-              <li>أرفق الشهادات والمؤهلات إن وجدت</li>
-              <li>اكتب نبذة واضحة عن خبراتك</li>
+              <li>{t?.rejectedPage?.tip1}</li>
+              <li>{t?.rejectedPage?.tip2}</li>
+              <li>{t?.rejectedPage?.tip3}</li>
             </ul>
           </div>
 
@@ -116,7 +117,7 @@ export default function RejectedPage() {
               ) : (
                 <RefreshCcw className="w-4 h-4" />
               )}
-              إعادة التقديم
+              {t?.rejectedPage?.btnReapply}
             </Button>
 
             <Button 
@@ -125,7 +126,7 @@ export default function RejectedPage() {
               className="w-full gap-2"
             >
               <LogOut className="w-4 h-4" />
-              تسجيل الخروج
+              {t?.rejectedPage?.btnLogout}
             </Button>
           </div>
         </CardContent>

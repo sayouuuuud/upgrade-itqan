@@ -6,9 +6,11 @@ import { Lock, Eye, EyeOff, Loader2, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useI18n } from "@/lib/i18n/context"
 
 export default function ChangePasswordPage() {
   const router = useRouter()
+  const { t, dir } = useI18n()
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -24,17 +26,17 @@ export default function ChangePasswordPage() {
     setError("")
 
     if (newPassword.length < 8) {
-      setError("كلمة المرور يجب أن تكون 8 أحرف على الأقل")
+      setError(t?.changePasswordPage?.errMinLength || "كلمة المرور يجب أن تكون 8 أحرف على الأقل")
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setError("كلمات المرور غير متطابقة")
+      setError(t?.changePasswordPage?.errMismatch || "كلمات المرور غير متطابقة")
       return
     }
 
     if (currentPassword === newPassword) {
-      setError("كلمة المرور الجديدة يجب أن تكون مختلفة عن الحالية")
+      setError(t?.changePasswordPage?.errSamePassword || "كلمة المرور الجديدة يجب أن تكون مختلفة عن الحالية")
       return
     }
 
@@ -50,7 +52,7 @@ export default function ChangePasswordPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "حدث خطأ أثناء تغيير كلمة المرور")
+        setError(data.error || t?.changePasswordPage?.errGeneric || "حدث خطأ أثناء تغيير كلمة المرور")
         return
       }
 
@@ -59,7 +61,7 @@ export default function ChangePasswordPage() {
         router.push("/login")
       }, 2000)
     } catch {
-      setError("حدث خطأ في الاتصال")
+      setError(t?.changePasswordPage?.errConnection || "حدث خطأ في الاتصال")
     } finally {
       setLoading(false)
     }
@@ -67,27 +69,27 @@ export default function ChangePasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4" dir={dir}>
         <div className="w-full max-w-md text-center space-y-6">
           <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
             <CheckCircle className="w-10 h-10 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold">تم تغيير كلمة المرور بنجاح</h1>
-          <p className="text-muted-foreground">جاري تحويلك لصفحة تسجيل الدخول...</p>
+          <h1 className="text-2xl font-bold">{t?.changePasswordPage?.successTitle}</h1>
+          <p className="text-muted-foreground">{t?.changePasswordPage?.successDesc}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4" dir={dir}>
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
           <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold">تغيير كلمة المرور</h1>
-          <p className="text-muted-foreground">يجب عليك تغيير كلمة المرور المؤقتة قبل المتابعة</p>
+          <h1 className="text-2xl font-bold">{t?.changePasswordPage?.title}</h1>
+          <p className="text-muted-foreground">{t?.changePasswordPage?.subtitle}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-card p-8 rounded-3xl border border-border shadow-xl">
@@ -98,7 +100,7 @@ export default function ChangePasswordPage() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="current">كلمة المرور الحالية</Label>
+            <Label htmlFor="current">{t?.changePasswordPage?.currentPasswordLabel}</Label>
             <div className="relative">
               <Input
                 id="current"
@@ -107,7 +109,7 @@ export default function ChangePasswordPage() {
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 required
                 className="pr-4 pl-12 h-12 rounded-xl"
-                placeholder="أدخل كلمة المرور الحالية"
+                placeholder={t?.changePasswordPage?.currentPasswordPlaceholder || ""}
               />
               <button
                 type="button"
@@ -120,7 +122,7 @@ export default function ChangePasswordPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="new">كلمة المرور الجديدة</Label>
+            <Label htmlFor="new">{t?.changePasswordPage?.newPasswordLabel}</Label>
             <div className="relative">
               <Input
                 id="new"
@@ -129,7 +131,7 @@ export default function ChangePasswordPage() {
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 className="pr-4 pl-12 h-12 rounded-xl"
-                placeholder="أدخل كلمة المرور الجديدة (8 أحرف على الأقل)"
+                placeholder={t?.changePasswordPage?.newPasswordPlaceholder || ""}
               />
               <button
                 type="button"
@@ -142,7 +144,7 @@ export default function ChangePasswordPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirm">تأكيد كلمة المرور الجديدة</Label>
+            <Label htmlFor="confirm">{t?.changePasswordPage?.confirmPasswordLabel}</Label>
             <div className="relative">
               <Input
                 id="confirm"
@@ -151,7 +153,7 @@ export default function ChangePasswordPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 className="pr-4 pl-12 h-12 rounded-xl"
-                placeholder="أعد إدخال كلمة المرور الجديدة"
+                placeholder={t?.changePasswordPage?.confirmPasswordPlaceholder || ""}
               />
               <button
                 type="button"
@@ -171,10 +173,10 @@ export default function ChangePasswordPage() {
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin ml-2" />
-                جاري التحديث...
+                {t?.changePasswordPage?.btnUpdating}
               </>
             ) : (
-              "تغيير كلمة المرور"
+              t?.changePasswordPage?.btnSubmit
             )}
           </Button>
         </form>

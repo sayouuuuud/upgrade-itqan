@@ -9,8 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Mail, Phone, MapPin, CheckCircle, Send, Bell } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { useI18n } from '@/lib/i18n/context'
 
 export default function ContactPage() {
+  const { t } = useI18n()
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -19,6 +21,12 @@ export default function ContactPage() {
     phone: '+966 50 000 0000',
     address: 'الرياض، المملكة العربية السعودية'
   })
+
+  useEffect(() => {
+    if (t?.contactPage?.title) {
+      document.title = t.contactPage.title
+    }
+  }, [t?.contactPage?.title])
 
   useEffect(() => {
     async function fetchInfo() {
@@ -73,13 +81,13 @@ export default function ContactPage() {
 
       if (res.ok) {
         setSubmitted(true)
-        toast.success("تم إرسال رسالتك بنجاح")
+        toast.success(t?.contactPage?.successTitle || "تم إرسال رسالتك بنجاح")
       } else {
         const err = await res.json()
-        toast.error(err.error || "حدث خطأ أثناء إرسال الرسالة")
+        toast.error(err.error || t?.contactPage?.connectionError || "حدث خطأ أثناء إرسال الرسالة")
       }
     } catch (error) {
-      toast.error("حدث خطأ في الاتصال بالخادم")
+      toast.error(t?.contactPage?.connectionError || "حدث خطأ في الاتصال بالخادم")
     } finally {
       setLoading(false)
     }
@@ -89,8 +97,8 @@ export default function ContactPage() {
     <div className="bg-secondary min-h-[80vh]">
       <div className="mx-auto max-w-7xl px-4 py-16 lg:py-24 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground text-balance">تواصل معنا</h1>
-          <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">نسعد بتواصلك معنا. أرسل رسالتك وسنرد عليك في أقرب وقت.</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground text-balance">{t?.contactPage?.title}</h1>
+          <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">{t?.contactPage?.subtitle}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -102,7 +110,7 @@ export default function ContactPage() {
                   <Mail className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground text-sm">البريد الإلكتروني</p>
+                  <p className="font-medium text-foreground text-sm">{t?.contactPage?.emailLabel}</p>
                   <p className="text-sm text-muted-foreground mt-1">{contactInfo.email}</p>
                 </div>
               </CardContent>
@@ -113,7 +121,7 @@ export default function ContactPage() {
                   <Phone className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground text-sm">الهاتف</p>
+                  <p className="font-medium text-foreground text-sm">{t?.contactPage?.phoneLabel}</p>
                   <p className="text-sm text-muted-foreground mt-1 direction-ltr text-end" dir="ltr">{contactInfo.phone}</p>
                 </div>
               </CardContent>
@@ -124,7 +132,7 @@ export default function ContactPage() {
                   <MapPin className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground text-sm">العنوان</p>
+                  <p className="font-medium text-foreground text-sm">{t?.contactPage?.addressLabel}</p>
                   <p className="text-sm text-muted-foreground mt-1">{contactInfo.address}</p>
                 </div>
               </CardContent>
@@ -135,8 +143,8 @@ export default function ContactPage() {
           <div className="lg:col-span-2">
             <Card className="border-border/60">
               <CardHeader>
-                <CardTitle>أرسل رسالتك</CardTitle>
-                <CardDescription>جميع الحقول المميزة بـ * مطلوبة</CardDescription>
+                <CardTitle>{t?.contactPage?.formTitle}</CardTitle>
+                <CardDescription>{t?.contactPage?.formSubtitle}</CardDescription>
               </CardHeader>
               <CardContent>
                 {submitted ? (
@@ -144,17 +152,17 @@ export default function ContactPage() {
                     <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
                       <CheckCircle className="w-8 h-8 text-emerald-600" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">تم إرسال رسالتك بنجاح</h3>
-                    <p className="text-sm text-muted-foreground mb-6">شكرًا لتواصلك معنا. سنرد عليك في أقرب وقت ممكن.</p>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">{t?.contactPage?.successTitle}</h3>
+                    <p className="text-sm text-muted-foreground mb-6">{t?.contactPage?.successDesc}</p>
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                       <Button variant="outline" onClick={() => setSubmitted(false)}>
-                        إرسال رسالة أخرى
+                        {t?.contactPage?.anotherMessage}
                       </Button>
                       {isAdmin && (
                         <Link href="/admin/notifications">
                           <Button variant="default" className="flex items-center gap-2">
                             <Bell className="w-4 h-4" />
-                            عرض الإشعارات
+                            {t?.contactPage?.viewNotifications}
                           </Button>
                         </Link>
                       )}
@@ -164,32 +172,32 @@ export default function ContactPage() {
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="name">الاسم الكامل *</Label>
-                        <Input id="name" name="name" placeholder="أدخل اسمك" required />
+                        <Label htmlFor="name">{t?.contactPage?.fullNameLabel}</Label>
+                        <Input id="name" name="name" placeholder={t?.contactPage?.fullNamePlaceholder || ''} required />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">البريد الإلكتروني *</Label>
-                        <Input id="email" name="email" type="email" placeholder="example@email.com" dir="ltr" className="text-start" required />
+                        <Label htmlFor="email">{t?.contactPage?.emailLabelForm}</Label>
+                        <Input id="email" name="email" type="email" placeholder={t?.contactPage?.emailPlaceholder || ''} dir="ltr" className="text-start" required />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="subject">الموضوع *</Label>
-                      <Input id="subject" name="subject" placeholder="موضوع رسالتك" required />
+                      <Label htmlFor="subject">{t?.contactPage?.subjectLabel}</Label>
+                      <Input id="subject" name="subject" placeholder={t?.contactPage?.subjectPlaceholder || ''} required />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="message">الرسالة *</Label>
-                      <Textarea id="message" name="message" placeholder="اكتب رسالتك هنا..." rows={5} required />
+                      <Label htmlFor="message">{t?.contactPage?.messageLabel}</Label>
+                      <Textarea id="message" name="message" placeholder={t?.contactPage?.messagePlaceholder || ''} rows={5} required />
                     </div>
                     <Button type="submit" disabled={loading} className="w-full sm:w-auto">
                       {loading ? (
                         <span className="flex items-center gap-2">
                           <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                          جارِ الإرسال...
+                          {t?.contactPage?.sendingButton}
                         </span>
                       ) : (
                         <span className="flex items-center gap-2">
                           <Send className="w-4 h-4" />
-                          إرسال الرسالة
+                          {t?.contactPage?.submitButton}
                         </span>
                       )}
                     </Button>

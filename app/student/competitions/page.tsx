@@ -237,13 +237,13 @@ export default function StudentLibraryCompetitionsPage() {
                     {comp.max_participants && (
                       <span className="flex items-center gap-1 bg-muted px-3 py-1.5 rounded-full">
                         <Users className="w-3.5 h-3.5" />
-                        {t.student.competitionsPage.limitParticipants ? t.student.competitionsPage.limitParticipants.replace('{count}', String(comp.max_participants)) : `الحد: ${comp.max_participants}`}
+                        {t.student.competitionsPage.limitParticipants ? t.student.competitionsPage.limitParticipants.replace('{count}', String(comp.max_participants)) : (locale === 'ar' ? `الحد: ${comp.max_participants}` : `Limit: ${comp.max_participants}`)}
                       </span>
                     )}
                     {comp.min_verses ? (
                       <span className="flex items-center gap-1 bg-muted px-3 py-1.5 rounded-full">
                         <BookOpen className="w-3.5 h-3.5" />
-                        {t.student.competitionsPage.minVersesRequired ? t.student.competitionsPage.minVersesRequired.replace('{count}', String(comp.min_verses)) : `${comp.min_verses} آية على الأقل`}
+                        {t.student.competitionsPage.minVersesRequired ? t.student.competitionsPage.minVersesRequired.replace('{count}', String(comp.min_verses)) : (locale === 'ar' ? `${comp.min_verses} آية على الأقل` : `At least ${comp.min_verses} verses`)}
                       </span>
                     ) : null}
                   </div>
@@ -252,7 +252,7 @@ export default function StudentLibraryCompetitionsPage() {
                   {comp.prizes_description && (
                     <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-xl p-3">
                       <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
-                        🏅 {t.student.competitionsPage.prize ? t.student.competitionsPage.prize.replace('{prize}', comp.prizes_description) : `الجائزة: ${comp.prizes_description}`}
+                        🏅 {t.student.competitionsPage.prize ? t.student.competitionsPage.prize.replace('{prize}', comp.prizes_description) : (locale === 'ar' ? `الجائزة: ${comp.prizes_description}` : `Prize: ${comp.prizes_description}`)}
                       </p>
                     </div>
                   )}
@@ -265,7 +265,7 @@ export default function StudentLibraryCompetitionsPage() {
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm transition-colors"
                       >
                         <Mic className="w-4 h-4" />
-                        {t.student.competitionsPage.viewSubmitParticipation || "عرض وتقديم مشاركتي"}
+                        {t.student.competitionsPage.viewSubmitParticipation || (locale === 'ar' ? "عرض وتقديم مشاركتي" : "View & Submit Participation")}
                       </Link>
                     ) : comp.status === 'active' ? (
                       <button

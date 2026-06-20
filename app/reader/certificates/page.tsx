@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS } from "date-fns/locale";
+import { useI18n } from "@/lib/i18n/context";
 import {
   CheckCircle2,
   XCircle,
@@ -21,6 +22,9 @@ import { motion, AnimatePresence } from "framer-motion";
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ReaderCertificatesPage() {
+  const { locale } = useI18n();
+  const isAr = locale === "ar";
+
   const { data, error, mutate, isLoading } = useSWR(
     "/api/reader/certificates/requests",
     fetcher,
@@ -48,8 +52,8 @@ export default function ReaderCertificatesPage() {
         body: JSON.stringify({ action: "approve" }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "حدث خطأ أثناء الاعتماد");
-      toast.success("تم اعتماد الشهادة وإصدارها بنجاح");
+      if (!res.ok) throw new Error(json.error || (isAr ? "حدث خطأ أثناء الاعتماد" : "An error occurred during approval"));
+      toast.success(isAr ? "تم اعتماد الشهادة وإصدارها بنجاح" : "Certificate approved and issued successfully");
       mutate();
     } catch (err: any) {
       toast.error(err.message);
@@ -60,7 +64,7 @@ export default function ReaderCertificatesPage() {
 
   const handleReject = async (id: string) => {
     if (!rejectReason.trim()) {
-      toast.error("يرجى إدخال سبب الرفض");
+      toast.error(isAr ? "يرجى إدخال سبب الرفض" : "Please enter rejection reason");
       return;
     }
     setIsProcessing(id);
@@ -71,8 +75,8 @@ export default function ReaderCertificatesPage() {
         body: JSON.stringify({ action: "reject", reason: rejectReason }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "حدث خطأ أثناء الرفض");
-      toast.success("تم رفض طلب الشهادة");
+      if (!res.ok) throw new Error(json.error || (isAr ? "حدث خطأ أثناء الرفض" : "An error occurred during rejection"));
+      toast.success(isAr ? "تم رفض طلب الشهادة" : "Certificate request rejected");
       setRejectingId(null);
       setRejectReason("");
       mutate();
@@ -86,7 +90,7 @@ export default function ReaderCertificatesPage() {
   return (
     <div
       className="min-h-screen bg-slate-50/50 dark:bg-[#0A0A0A] p-6 md:p-12 font-sans"
-      dir="rtl"
+      dir={isAr ? "rtl" : "ltr"}
     >
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
@@ -94,14 +98,15 @@ export default function ReaderCertificatesPage() {
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm font-medium">
               <Award className="w-4 h-4" />
-              <span>مركز إصدار الشهادات</span>
+              <span>{isAr ? "مركز إصدار الشهادات" : "Certificate Issuance Center"}</span>
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              اعتماد شهادات الطلاب
+              {isAr ? "اعتماد شهادات الطلاب" : "Student Certificate Approval"}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 max-w-xl">
-              راجع واعتمد طلبات شهادات الإنجاز المقدمة من طلاب المسارات التي
-              تشرف عليها في المقرأة.
+              {isAr
+                ? "راجع واعتمد طلبات شهادات الإنجاز المقدمة من طلاب المسارات التي تشرف عليها في المقرأة."
+                : "Review and approve achievement certificate requests submitted by students of the paths you supervise."}
             </p>
           </div>
 
@@ -111,7 +116,7 @@ export default function ReaderCertificatesPage() {
               {(data.counts?.submitted ?? 0) > 0 && (
                 <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-full px-4 py-2 text-sm font-semibold">
                   <Clock className="w-4 h-4" />
-                  <span>{data.counts.submitted} بانتظار المراجعة</span>
+                  <span>{data.counts.submitted} {isAr ? "بانتظار المراجعة" : "Pending Review"}</span>
                 </div>
               )}
               {((data.counts?.approved ?? 0) + (data.counts?.issued ?? 0)) >
@@ -120,7 +125,7 @@ export default function ReaderCertificatesPage() {
                   <CheckCircle2 className="w-4 h-4" />
                   <span>
                     {(data.counts?.approved ?? 0) + (data.counts?.issued ?? 0)}{" "}
-                    معتمدة
+                    {isAr ? "معتمدة" : "Approved"}
                   </span>
                 </div>
               )}
@@ -133,20 +138,20 @@ export default function ReaderCertificatesPage() {
           <FilterTab
             active={filter === "all"}
             onClick={() => setFilter("all")}
-            label="الكل"
+            label={isAr ? "الكل" : "All"}
             count={requests.length}
           />
           <FilterTab
             active={filter === "submitted"}
             onClick={() => setFilter("submitted")}
-            label="بانتظار الاعتماد"
+            label={isAr ? "بانتظار الاعتماد" : "Pending Approval"}
             count={data?.counts?.submitted || 0}
             color="text-amber-500"
           />
           <FilterTab
             active={filter === "approved"}
             onClick={() => setFilter("approved")}
-            label="تم الاعتماد"
+            label={isAr ? "تم الاعتماد" : "Approved"}
             count={
               (data?.counts?.approved || 0) + (data?.counts?.issued || 0)
             }
@@ -155,14 +160,14 @@ export default function ReaderCertificatesPage() {
           <FilterTab
             active={filter === "rejected"}
             onClick={() => setFilter("rejected")}
-            label="مرفوضة"
+            label={isAr ? "مرفوضة" : "Rejected"}
             count={data?.counts?.rejected || 0}
             color="text-rose-500"
           />
           <FilterTab
             active={filter === "data_required"}
             onClick={() => setFilter("data_required")}
-            label="بانتظار بيانات الطالب"
+            label={isAr ? "بانتظار بيانات الطالب" : "Awaiting Student Data"}
             count={data?.counts?.data_required || 0}
             color="text-slate-400"
           />
@@ -174,15 +179,16 @@ export default function ReaderCertificatesPage() {
         ) : error ? (
           <div className="text-center py-20 text-rose-500">
             <AlertCircle className="w-8 h-8 mx-auto mb-3 opacity-50" />
-            <p>حدث خطأ أثناء تحميل الطلبات</p>
+            <p>{isAr ? "حدث خطأ أثناء تحميل الطلبات" : "An error occurred while loading requests"}</p>
           </div>
         ) : filteredRequests.length === 0 ? (
           <div className="flex flex-col items-center py-24 gap-4 text-slate-400">
             <BookOpen className="w-14 h-14 opacity-20" />
-            <p className="text-lg font-medium">لا توجد طلبات لعرضها حالياً</p>
+            <p className="text-lg font-medium">{isAr ? "لا توجد طلبات لعرضها حالياً" : "No requests to display currently"}</p>
             <p className="text-sm text-center max-w-sm">
-              سيظهر هنا طلب شهادة لكل طالب أتمّ أحد مسارات التجويد أو الحفظ
-              التي تشرف عليها.
+              {isAr
+                ? "سيظهر هنا طلب شهادة لكل طالب أتمّ أحد مسارات التجويد أو الحفظ التي تشرف عليها."
+                : "A certificate request will appear here for each student who completed one of the Tajweed or Memorization paths you supervise."}
             </p>
           </div>
         ) : (
@@ -262,16 +268,19 @@ function RequestCard({
   onApprove: () => void;
   onReject: () => void;
 }) {
+  const { locale } = useI18n();
+  const isAr = locale === "ar";
+
   const isPending = req.status === "submitted";
   const isApproved = req.status === "approved" || req.status === "issued";
   const isRejected = req.status === "rejected";
 
   const pathTypeLabel =
     req.source_table === "tajweed_paths"
-      ? "مسار التجويد"
+      ? (isAr ? "مسار التجويد" : "Tajweed Path")
       : req.source_table === "memorization_paths"
-        ? "مسار الحفظ"
-        : "مسار";
+        ? (isAr ? "مسار الحفظ" : "Memorization Path")
+        : (isAr ? "مسار" : "Path");
 
   return (
     <motion.div
@@ -299,7 +308,7 @@ function RequestCard({
           <p className="text-xs text-slate-400 font-medium bg-slate-50 dark:bg-white/5 px-2.5 py-1 rounded-md shrink-0">
             {req.requested_at
               ? format(new Date(req.requested_at), "d MMMM yyyy", {
-                  locale: ar,
+                  locale: isAr ? ar : enUS,
                 })
               : ""}
           </p>
@@ -315,7 +324,7 @@ function RequestCard({
           </div>
           <div>
             <p className="text-xs text-slate-500 mb-1">
-              بيانات الشهادة (الاسم)
+              {isAr ? "بيانات الشهادة (الاسم)" : "Certificate Data (Name)"}
             </p>
             <p className="font-medium text-sm text-slate-800 dark:text-slate-200">
               {req.data?.name || req.student_name}
@@ -323,7 +332,7 @@ function RequestCard({
           </div>
           {req.data?.grade && (
             <div>
-              <p className="text-xs text-slate-500 mb-1">التقدير</p>
+              <p className="text-xs text-slate-500 mb-1">{isAr ? "التقدير" : "Grade"}</p>
               <p className="font-medium text-sm text-slate-800 dark:text-slate-200">
                 {req.data.grade}
               </p>
@@ -331,7 +340,7 @@ function RequestCard({
           )}
           {isApproved && req.certificate_number && (
             <div>
-              <p className="text-xs text-slate-500 mb-1">رقم الشهادة</p>
+              <p className="text-xs text-slate-500 mb-1">{isAr ? "رقم الشهادة" : "Certificate Number"}</p>
               <p
                 className="font-medium text-sm text-slate-800 dark:text-slate-200 font-mono text-left"
                 dir="ltr"
@@ -346,7 +355,7 @@ function RequestCard({
           <div className="bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 p-3 rounded-xl text-sm flex items-start gap-2">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <p>
-              <strong>سبب الرفض:</strong> {req.rejection_reason}
+              <strong>{isAr ? "سبب الرفض:" : "Rejection Reason:"}</strong> {req.rejection_reason}
             </p>
           </div>
         )}
@@ -359,7 +368,7 @@ function RequestCard({
             <div className="space-y-3">
               <input
                 type="text"
-                placeholder="اكتب سبب الرفض..."
+                placeholder={isAr ? "اكتب سبب الرفض..." : "Write rejection reason..."}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 className="w-full text-sm bg-white dark:bg-black border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-rose-500"
@@ -370,14 +379,14 @@ function RequestCard({
                   disabled={isProcessing}
                   className="flex-1 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2 rounded-lg transition-colors disabled:opacity-50"
                 >
-                  تأكيد الرفض
+                  {isAr ? "تأكيد الرفض" : "Confirm Rejection"}
                 </button>
                 <button
                   onClick={() => setRejectingId(null)}
                   disabled={isProcessing}
                   className="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-slate-300 text-xs font-bold py-2 rounded-lg transition-colors"
                 >
-                  إلغاء
+                  {isAr ? "إلغاء" : "Cancel"}
                 </button>
               </div>
             </div>
@@ -393,7 +402,7 @@ function RequestCard({
                 ) : (
                   <CheckCircle2 className="w-5 h-5" />
                 )}
-                اعتماد وإصدار
+                {isAr ? "اعتماد وإصدار" : "Approve & Issue"}
               </button>
               <button
                 onClick={() => setRejectingId(req.id)}
@@ -401,7 +410,7 @@ function RequestCard({
                 className="w-full flex items-center justify-center gap-2 bg-white dark:bg-[#111] hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 border border-rose-200 dark:border-rose-500/30 font-bold py-2.5 rounded-xl transition-colors shadow-sm disabled:opacity-50"
               >
                 <XCircle className="w-5 h-5" />
-                رفض الطلب
+                {isAr ? "رفض الطلب" : "Reject Request"}
               </button>
             </>
           )}
@@ -418,7 +427,7 @@ function RequestCard({
             className="w-full flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 dark:text-emerald-400 font-bold py-2.5 rounded-xl transition-colors shadow-sm"
           >
             <Download className="w-4 h-4" />
-            عرض الشهادة
+            {isAr ? "عرض الشهادة" : "View Certificate"}
           </a>
         </div>
       )}
@@ -427,8 +436,10 @@ function RequestCard({
 }
 
 function CertificatesSkeleton() {
+  const { locale } = useI18n();
+  const isAr = locale === "ar";
   return (
-    <div className="grid gap-4" aria-busy="true" aria-label="جاري التحميل">
+    <div className="grid gap-4" aria-busy="true" aria-label={isAr ? "جاري التحميل" : "Loading"}>
       {/* Filter tabs skeleton */}
       <div className="flex gap-2 pb-4 border-b border-border">
         {[80, 130, 110, 90, 150].map((w, i) => (
@@ -483,30 +494,32 @@ function CertificatesSkeleton() {
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const { locale } = useI18n();
+  const isAr = locale === "ar";
   switch (status) {
     case "submitted":
       return (
         <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-2 py-0.5 rounded-md">
-          <Clock className="w-3 h-3" /> قيد المراجعة
+          <Clock className="w-3 h-3" /> {isAr ? "قيد المراجعة" : "Pending Review"}
         </span>
       );
     case "approved":
     case "issued":
       return (
         <span className="flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-2 py-0.5 rounded-md">
-          <CheckCircle2 className="w-3 h-3" /> معتمدة
+          <CheckCircle2 className="w-3 h-3" /> {isAr ? "معتمدة" : "Approved"}
         </span>
       );
     case "rejected":
       return (
         <span className="flex items-center gap-1 text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 px-2 py-0.5 rounded-md">
-          <XCircle className="w-3 h-3" /> مرفوضة
+          <XCircle className="w-3 h-3" /> {isAr ? "مرفوضة" : "Rejected"}
         </span>
       );
     case "data_required":
       return (
         <span className="flex items-center gap-1 text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-500/20 dark:text-slate-400 px-2 py-0.5 rounded-md">
-          <FileText className="w-3 h-3" /> بانتظار بيانات الطالب
+          <FileText className="w-3 h-3" /> {isAr ? "بانتظار بيانات الطالب" : "Awaiting Student Data"}
         </span>
       );
     default:

@@ -13,32 +13,32 @@ import { PageLoadingSkeleton } from "@/components/ui/page-loading-skeleton"
 
 // Major Arab/Islamic cities for prayer times
 const PRAYER_CITIES = [
-  { value: 'Makkah',     country: 'Saudi Arabia', label: 'مكة المكرمة' },
-  { value: 'Madinah',    country: 'Saudi Arabia', label: 'المدينة المنورة' },
-  { value: 'Riyadh',     country: 'Saudi Arabia', label: 'الرياض' },
-  { value: 'Jeddah',     country: 'Saudi Arabia', label: 'جدة' },
-  { value: 'Dammam',     country: 'Saudi Arabia', label: 'الدمام' },
-  { value: 'Cairo',      country: 'Egypt',        label: 'القاهرة' },
-  { value: 'Alexandria', country: 'Egypt',        label: 'الإسكندرية' },
-  { value: 'Giza',       country: 'Egypt',        label: 'الجيزة' },
-  { value: 'Dubai',      country: 'UAE',          label: 'دبي' },
-  { value: 'Abu Dhabi',  country: 'UAE',          label: 'أبوظبي' },
-  { value: 'Kuwait City',country: 'Kuwait',       label: 'الكويت' },
-  { value: 'Doha',       country: 'Qatar',        label: 'الدوحة' },
-  { value: 'Manama',     country: 'Bahrain',      label: 'المنامة' },
-  { value: 'Muscat',     country: 'Oman',         label: 'مسقط' },
-  { value: 'Amman',      country: 'Jordan',       label: 'عمّان' },
-  { value: 'Beirut',     country: 'Lebanon',      label: 'بيروت' },
-  { value: 'Damascus',   country: 'Syria',        label: 'دمشق' },
-  { value: 'Baghdad',    country: 'Iraq',         label: 'بغداد' },
-  { value: 'Tunis',      country: 'Tunisia',      label: 'تونس' },
-  { value: 'Algiers',    country: 'Algeria',      label: 'الجزائر' },
-  { value: 'Casablanca', country: 'Morocco',      label: 'الدار البيضاء' },
-  { value: 'Rabat',      country: 'Morocco',      label: 'الرباط' },
-  { value: 'Khartoum',   country: 'Sudan',        label: 'الخرطوم' },
-  { value: 'Istanbul',   country: 'Turkey',       label: 'إسطنبول' },
-  { value: 'London',     country: 'United Kingdom', label: 'لندن' },
-  { value: 'Paris',      country: 'France',       label: 'باريس' },
+  { value: 'Makkah',     countryAr: 'المملكة العربية السعودية', countryEn: 'Saudi Arabia', labelAr: 'مكة المكرمة', labelEn: 'Makkah' },
+  { value: 'Madinah',    countryAr: 'المملكة العربية السعودية', countryEn: 'Saudi Arabia', labelAr: 'المدينة المنورة', labelEn: 'Madinah' },
+  { value: 'Riyadh',     countryAr: 'المملكة العربية السعودية', countryEn: 'Saudi Arabia', labelAr: 'الرياض', labelEn: 'Riyadh' },
+  { value: 'Jeddah',     countryAr: 'المملكة العربية السعودية', countryEn: 'Saudi Arabia', labelAr: 'جدة', labelEn: 'Jeddah' },
+  { value: 'Dammam',     countryAr: 'المملكة العربية السعودية', countryEn: 'Saudi Arabia', labelAr: 'الدمام', labelEn: 'Dammam' },
+  { value: 'Cairo',      countryAr: 'مصر',        countryEn: 'Egypt',        labelAr: 'القاهرة', labelEn: 'Cairo' },
+  { value: 'Alexandria', countryAr: 'مصر',        countryEn: 'Egypt',        labelAr: 'الإسكندرية', labelEn: 'Alexandria' },
+  { value: 'Giza',       countryAr: 'مصر',        countryEn: 'Egypt',        labelAr: 'الجيزة', labelEn: 'Giza' },
+  { value: 'Dubai',      countryAr: 'الإمارات',   countryEn: 'UAE',          labelAr: 'دبي', labelEn: 'Dubai' },
+  { value: 'Abu Dhabi',  countryAr: 'الإمارات',   countryEn: 'UAE',          labelAr: 'أبوظبي', labelEn: 'Abu Dhabi' },
+  { value: 'Kuwait City',countryAr: 'الكويت',     countryEn: 'Kuwait',       labelAr: 'الكويت', labelEn: 'Kuwait City' },
+  { value: 'Doha',       countryAr: 'قطر',        countryEn: 'Qatar',        labelAr: 'الدوحة', labelEn: 'Doha' },
+  { value: 'Manama',     countryAr: 'البحرين',    countryEn: 'Bahrain',      labelAr: 'المنامة', labelEn: 'Manama' },
+  { value: 'Muscat',     countryAr: 'عمان',       countryEn: 'Oman',         labelAr: 'مسقط', labelEn: 'Muscat' },
+  { value: 'Amman',      countryAr: 'الأردن',     countryEn: 'Jordan',       labelAr: 'عمّان', labelEn: 'Amman' },
+  { value: 'Beirut',     countryAr: 'لبنان',      countryEn: 'Lebanon',      labelAr: 'بيروت', labelEn: 'Beirut' },
+  { value: 'Damascus',   countryAr: 'سوريا',      countryEn: 'Syria',        labelAr: 'دمشق', labelEn: 'Damascus' },
+  { value: 'Baghdad',    countryAr: 'العراق',     countryEn: 'Iraq',         labelAr: 'بغداد', labelEn: 'Baghdad' },
+  { value: 'Tunis',      countryAr: 'تونس',       countryEn: 'Tunisia',      labelAr: 'تونس', labelEn: 'Tunis' },
+  { value: 'Algiers',    countryAr: 'الجزائر',    countryEn: 'Algeria',      labelAr: 'الجزائر', labelEn: 'Algiers' },
+  { value: 'Casablanca', countryAr: 'المغرب',     countryEn: 'Morocco',      labelAr: 'الدار البيضاء', labelEn: 'Casablanca' },
+  { value: 'Rabat',      countryAr: 'المغرب',     countryEn: 'Morocco',      labelAr: 'الرباط', labelEn: 'Rabat' },
+  { value: 'Khartoum',   countryAr: 'السودان',    countryEn: 'Sudan',        labelAr: 'الخرطوم', labelEn: 'Khartoum' },
+  { value: 'Istanbul',   countryAr: 'تركيا',      countryEn: 'Turkey',       labelAr: 'إسطنبول', labelEn: 'Istanbul' },
+  { value: 'London',     countryAr: 'المملكة المتحدة', countryEn: 'United Kingdom', labelAr: 'لندن', labelEn: 'London' },
+  { value: 'Paris',      countryAr: 'فرنسا',      countryEn: 'France',       labelAr: 'باريس', labelEn: 'Paris' },
 ]
 import { useI18n } from '@/lib/i18n/context'
 
@@ -172,12 +172,12 @@ export default function ProfilePage() {
   const [specSaving, setSpecSaving] = useState<string | null>(null)
 
   const SPECIALIZATIONS = [
-    { key: 'sira',    label: 'السيرة النبوية' },
-    { key: 'fiqh',    label: 'الفقه' },
-    { key: 'aqeedah', label: 'العقيدة' },
-    { key: 'tajweed', label: 'التجويد' },
-    { key: 'tafseer', label: 'التفسير' },
-    { key: 'arabic',  label: 'اللغة العربية' },
+    { key: 'sira',    labelAr: 'السيرة النبوية', labelEn: 'Prophetic Biography' },
+    { key: 'fiqh',    labelAr: 'الفقه', labelEn: 'Jurisprudence (Fiqh)' },
+    { key: 'aqeedah', labelAr: 'العقيدة', labelEn: 'Creed (Aqeedah)' },
+    { key: 'tajweed', labelAr: 'التجويد', labelEn: 'Tajweed' },
+    { key: 'tafseer', labelAr: 'التفسير', labelEn: 'Interpretation (Tafseer)' },
+    { key: 'arabic',  labelAr: 'اللغة العربية', labelEn: 'Arabic Language' },
   ]
 
   useEffect(() => {
@@ -372,8 +372,8 @@ export default function ProfilePage() {
                       <SelectContent className="max-h-72">
                         {PRAYER_CITIES.map(c => (
                           <SelectItem key={c.value} value={c.value}>
-                            <span className="font-medium">{c.label}</span>
-                            <span className="text-muted-foreground text-xs ms-2">— {c.country}</span>
+                            <span className="font-medium">{isAr ? c.labelAr : c.labelEn}</span>
+                            <span className="text-muted-foreground text-xs ms-2">— {isAr ? c.countryAr : c.countryEn}</span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -442,9 +442,13 @@ export default function ProfilePage() {
                     <BookMarked className="w-5 h-5" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg font-bold text-foreground">التخصصات الدراسية</CardTitle>
+                    <CardTitle className="text-lg font-bold text-foreground">
+                      {isAr ? "التخصصات الدراسية" : "Academic Specializations"}
+                    </CardTitle>
                     <CardDescription className="text-muted-foreground font-medium text-sm">
-                      اختر التخصصات التي تريد أن تظهر لك الدورات المرتبطة بها. اتركها فارغة لعرض كل الدورات.
+                      {isAr 
+                        ? "اختر التخصصات التي تريد أن تظهر لك الدورات المرتبطة بها. اتركها فارغة لعرض كل الدورات." 
+                        : "Select the specializations you want to see associated courses for. Leave empty to show all courses."}
                     </CardDescription>
                   </div>
                 </div>
@@ -458,7 +462,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-3">
-                    {SPECIALIZATIONS.map(({ key, label }) => {
+                    {SPECIALIZATIONS.map(({ key, labelAr, labelEn }) => {
                       const active = specs.find(s => s.specialization === key)
                       const locked = active && active.set_by !== 'self'
                       const saving = specSaving === key
@@ -478,12 +482,12 @@ export default function ProfilePage() {
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
                           ) : active ? (
                             locked
-                              ? <span className="text-[10px] opacity-70">مقيّد</span>
+                              ? <span className="text-[10px] opacity-70">{isAr ? "مقيّد" : "Restricted"}</span>
                               : <X className="w-3.5 h-3.5" />
                           ) : (
                             <Plus className="w-3.5 h-3.5" />
                           )}
-                          {label}
+                          {isAr ? labelAr : labelEn}
                         </button>
                       )
                     })}
@@ -491,7 +495,7 @@ export default function ProfilePage() {
                 )}
                 {specs.length === 0 && !specsLoading && (
                   <p className="text-xs text-muted-foreground mt-4">
-                    لم تختر أي تخصص — ستظهر لك جميع الدورات المتاحة.
+                    {isAr ? "لم تختر أي تخصص — ستظهر لك جميع الدورات المتاحة." : "You have not selected any specializations — all available courses will be shown."}
                   </p>
                 )}
               </CardContent>

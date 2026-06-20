@@ -7,6 +7,7 @@ import {
   Filter, UserCheck, Settings, Award, Briefcase, Plus, FileText
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/context'
 
 interface SupervisorTeacher {
   id: string
@@ -38,13 +39,16 @@ interface Counts {
 
 type TabKey = 'pending' | 'verified' | 'all'
 
-const TABS: { key: TabKey; label: string; icon: any; color: string }[] = [
-  { key: 'pending',  label: 'بانتظار التوثيق', icon: ShieldAlert, color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
-  { key: 'verified', label: 'موثقون', icon: ShieldCheck, color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
-  { key: 'all',      label: 'الكل', icon: Users, color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
-]
-
 export default function SupervisorTeachersPage() {
+  const { locale } = useI18n()
+  const isAr = locale === 'ar'
+
+  const TABS: { key: TabKey; label: string; icon: any; color: string }[] = [
+    { key: 'pending',  label: isAr ? 'بانتظار التوثيق' : 'Awaiting Verification', icon: ShieldAlert, color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
+    { key: 'verified', label: isAr ? 'موثقون' : 'Verified', icon: ShieldCheck, color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+    { key: 'all',      label: isAr ? 'الكل' : 'All', icon: Users, color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
+  ]
+
   const [teachers, setTeachers] = useState<SupervisorTeacher[]>([])
   const [counts, setCounts] = useState<Counts>({ pending: 0, verified: 0, all: 0 })
   const [loading, setLoading] = useState(true)
@@ -84,8 +88,12 @@ export default function SupervisorTeachersPage() {
 
   const handleAction = async (teacher: SupervisorTeacher, action: 'verify' | 'unverify') => {
     const confirmMsg = action === 'verify'
-      ? `هل تريد توثيق الأستاذ «${teacher.name}»؟ سيظهر للطلاب بشارة التوثيق.`
-      : `هل تريد سحب علامة التوثيق من الأستاذ «${teacher.name}»؟`
+      ? (isAr 
+          ? `هل تريد توثيق الأستاذ «${teacher.name}»؟ سيظهر للطلاب بشارة التوثيق.` 
+          : `Do you want to verify teacher "${teacher.name}"? A verification badge will be shown to students.`)
+      : (isAr 
+          ? `هل تريد سحب علامة التوثيق من الأستاذ «${teacher.name}»؟` 
+          : `Do you want to revoke verification from teacher "${teacher.name}"?`)
     if (!confirm(confirmMsg)) return
 
     setActingId(teacher.id)
@@ -102,7 +110,7 @@ export default function SupervisorTeachersPage() {
         }
       } else {
         const data = await res.json().catch(() => ({}))
-        alert(data?.error || 'تعذّر تنفيذ العملية')
+        alert(data?.error || (isAr ? 'تعذّر تنفيذ العملية' : 'Operation failed'))
       }
     } finally {
       setActingId(null)
@@ -110,10 +118,10 @@ export default function SupervisorTeachersPage() {
   }
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' })
+    new Date(d).toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto relative min-h-screen" dir="rtl">
+    <div className="space-y-8 max-w-7xl mx-auto relative min-h-screen" dir={isAr ? "rtl" : "ltr"}>
       
       {/* Decorative Background */}
       <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full filter blur-[120px] pointer-events-none -z-10 animate-pulse-slow" />
@@ -129,9 +137,11 @@ export default function SupervisorTeachersPage() {
               <UserCheck className="w-10 h-10 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight mb-2">توثيق المدرسين</h1>
+              <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight mb-2">{isAr ? "توثيق المدرسين" : "Verify Teachers"}</h1>
               <p className="text-muted-foreground font-medium max-w-lg">
-                مراجعة طلبات التوثيق والملفات المهنية للمدرسين واعتمادهم رسمياً في المنصة.
+                {isAr 
+                  ? "مراجعة طلبات التوثيق والملفات المهنية للمدرسين واعتمادهم رسمياً في المنصة."
+                  : "Review verification requests and professional profiles of teachers, and officially approve them on the platform."}
               </p>
             </div>
           </div>
@@ -139,11 +149,11 @@ export default function SupervisorTeachersPage() {
           <div className="flex gap-4 w-full md:w-auto">
             <div className="flex-1 md:flex-none bg-card border border-border rounded-2xl p-4 shadow-sm flex flex-col items-center justify-center min-w-[120px]">
               <span className="text-3xl font-black text-amber-500">{counts.pending}</span>
-              <span className="text-xs font-bold text-muted-foreground uppercase mt-1">بانتظار التوثيق</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase mt-1">{isAr ? "بانتظار التوثيق" : "Awaiting Verification"}</span>
             </div>
             <div className="flex-1 md:flex-none bg-card border border-border rounded-2xl p-4 shadow-sm flex flex-col items-center justify-center min-w-[120px]">
               <span className="text-3xl font-black text-emerald-500">{counts.verified}</span>
-              <span className="text-xs font-bold text-muted-foreground uppercase mt-1">موثقون</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase mt-1">{isAr ? "موثقون" : "Verified"}</span>
             </div>
           </div>
         </div>
@@ -191,7 +201,7 @@ export default function SupervisorTeachersPage() {
           </div>
           <input
             type="text"
-            placeholder="بحث بالاسم أو البريد أو التخصص..."
+            placeholder={isAr ? "بحث بالاسم أو البريد أو التخصص..." : "Search by name, email or specialty..."}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-4 pr-12 py-3.5 bg-background border-2 border-border hover:border-primary/30 focus:border-primary rounded-2xl text-sm font-bold text-foreground focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
@@ -206,7 +216,7 @@ export default function SupervisorTeachersPage() {
             <div className="p-4 bg-card rounded-2xl border shadow-sm">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-            <p className="text-sm font-bold text-muted-foreground animate-pulse">جاري تحميل البيانات...</p>
+            <p className="text-sm font-bold text-muted-foreground animate-pulse">{isAr ? "جاري تحميل البيانات..." : "Loading data..."}</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-card/40 backdrop-blur-md border-2 border-dashed border-border rounded-[40px] p-24 text-center shadow-none flex flex-col items-center justify-center min-h-[400px] animate-in fade-in zoom-in-95 duration-500">
@@ -214,10 +224,10 @@ export default function SupervisorTeachersPage() {
               <ShieldAlert className="w-10 h-10 text-muted-foreground opacity-50" />
             </div>
             <h3 className="text-2xl font-black text-foreground mb-2">
-              {search ? 'لا توجد نتائج مطابقة للبحث' : 'القائمة فارغة'}
+              {search ? (isAr ? 'لا توجد نتائج مطابقة للبحث' : 'No matching results found') : (isAr ? 'القائمة فارغة' : 'The list is empty')}
             </h3>
             <p className="text-muted-foreground font-bold max-w-sm mx-auto">
-              {search ? 'جرب استخدام كلمات بحث مختلفة.' : 'لا يوجد مدرسون حالياً في هذا القسم.'}
+              {search ? (isAr ? 'جرب استخدام كلمات بحث مختلفة.' : 'Try using different search keywords.') : (isAr ? 'لا يوجد مدرسون حالياً في هذا القسم.' : 'There are currently no teachers in this section.')}
             </p>
           </div>
         ) : (
@@ -243,11 +253,11 @@ export default function SupervisorTeachersPage() {
                       <h3 className="font-black text-xl text-foreground truncate group-hover:text-primary transition-colors">{teacher.name}</h3>
                       {teacher.is_verified ? (
                         <span className="text-[10px] px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-black uppercase tracking-widest border border-emerald-500/20 flex items-center gap-1.5 shadow-sm">
-                          <BadgeCheck className="w-3.5 h-3.5" /> موثّق
+                          <BadgeCheck className="w-3.5 h-3.5" /> {isAr ? "موثّق" : "Verified"}
                         </span>
                       ) : (
                         <span className="text-[10px] px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 font-black uppercase tracking-widest border border-amber-500/20 flex items-center gap-1.5 shadow-sm">
-                          <ShieldAlert className="w-3.5 h-3.5" /> بانتظار التوثيق
+                          <ShieldAlert className="w-3.5 h-3.5" /> {isAr ? "بانتظار التوثيق" : "Awaiting Verification"}
                         </span>
                       )}
                     </div>
@@ -285,36 +295,36 @@ export default function SupervisorTeachersPage() {
                   <div className="bg-muted/40 rounded-2xl p-3 flex flex-col items-center justify-center border border-white/5">
                     <BookOpen className="w-4 h-4 text-blue-500 mb-1" />
                     <span className="text-lg font-black text-foreground">{teacher.courses_count ?? 0}</span>
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">دورات</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">{isAr ? "دورات" : "Courses"}</span>
                   </div>
                   <div className="bg-muted/40 rounded-2xl p-3 flex flex-col items-center justify-center border border-white/5">
                     <Users className="w-4 h-4 text-emerald-500 mb-1" />
                     <span className="text-lg font-black text-foreground">{teacher.students_count ?? 0}</span>
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">طلاب</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">{isAr ? "طلاب" : "Students"}</span>
                   </div>
                   <div className="bg-muted/40 rounded-2xl p-3 flex flex-col items-center justify-center border border-white/5">
                     <Star className="w-4 h-4 text-amber-500 mb-1" />
                     <span className="text-lg font-black text-foreground">{teacher.rating ? Number(teacher.rating).toFixed(1) : '—'}</span>
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">تقييم</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">{isAr ? "تقييم" : "Rating"}</span>
                   </div>
                   <div className="bg-muted/40 rounded-2xl p-3 flex flex-col items-center justify-center border border-white/5">
                     <Award className="w-4 h-4 text-purple-500 mb-1" />
                     <span className="text-lg font-black text-foreground">{teacher.years_of_experience ? `${teacher.years_of_experience}+` : '—'}</span>
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">سنوات خبرة</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">{isAr ? "خبرة" : "Experience"}</span>
                   </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center justify-between gap-4 mt-6 pt-6 border-t border-border/50 relative z-10">
                   <span className="text-xs font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border border-border">
-                    انضم: {formatDate(teacher.created_at)}
+                    {isAr ? "انضم:" : "Joined:"} {formatDate(teacher.created_at)}
                   </span>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setSelected(teacher)}
                       className="px-5 py-2 rounded-xl border-2 border-border text-foreground hover:border-primary/50 hover:bg-muted font-bold text-sm transition-all"
                     >
-                      التفاصيل
+                      {isAr ? "التفاصيل" : "Details"}
                     </button>
                     {teacher.is_verified ? (
                       <button
@@ -323,7 +333,7 @@ export default function SupervisorTeachersPage() {
                         className="px-5 py-2 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground border border-destructive/20 font-bold text-sm transition-all flex items-center gap-2 disabled:opacity-50 shadow-sm"
                       >
                         {actingId === teacher.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                        سحب التوثيق
+                        {isAr ? "سحب التوثيق" : "Revoke Verification"}
                       </button>
                     ) : (
                       <button
@@ -332,7 +342,7 @@ export default function SupervisorTeachersPage() {
                         className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-500/20"
                       >
                         {actingId === teacher.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                        اعتماد وتوثيق
+                        {isAr ? "اعتماد وتوثيق" : "Verify & Approve"}
                       </button>
                     )}
                   </div>
@@ -359,7 +369,7 @@ export default function SupervisorTeachersPage() {
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
                   <FileText className="w-5 h-5 text-primary" />
                 </div>
-                الملف التعريفي للمدرس
+                {isAr ? "الملف التعريفي للمدرس" : "Teacher Profile Details"}
               </h3>
               <button
                 onClick={() => setSelected(null)}
@@ -386,11 +396,11 @@ export default function SupervisorTeachersPage() {
                     <h2 className="text-3xl font-black text-foreground">{selected.name}</h2>
                     {selected.is_verified ? (
                       <span className="text-xs px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-black uppercase tracking-widest border border-emerald-500/20 flex items-center gap-1.5">
-                        <BadgeCheck className="w-4 h-4" /> موثّق رسمياً
+                        <BadgeCheck className="w-4 h-4" /> {isAr ? "موثّق رسمياً" : "Officially Verified"}
                       </span>
                     ) : (
                       <span className="text-xs px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 font-black uppercase tracking-widest border border-amber-500/20 flex items-center gap-1.5">
-                        <ShieldAlert className="w-4 h-4" /> بانتظار التوثيق
+                        <ShieldAlert className="w-4 h-4" /> {isAr ? "بانتظار التوثيق" : "Awaiting Verification"}
                       </span>
                     )}
                   </div>
@@ -417,7 +427,7 @@ export default function SupervisorTeachersPage() {
               {selected.bio && (
                 <div className="bg-card/50 border border-border rounded-[24px] p-6 shadow-inner">
                   <h4 className="text-sm font-black uppercase text-foreground flex items-center gap-2 mb-3">
-                    <FileText className="w-4 h-4 text-primary" /> نبذة شخصية
+                    <FileText className="w-4 h-4 text-primary" /> {isAr ? "نبذة شخصية" : "Personal Bio"}
                   </h4>
                   <p className="text-base text-muted-foreground leading-loose whitespace-pre-line font-medium">
                     {selected.bio}
@@ -430,22 +440,22 @@ export default function SupervisorTeachersPage() {
                 <div className="bg-muted/30 border border-white/5 rounded-[24px] p-5 text-center">
                   <BookOpen className="w-6 h-6 text-blue-500 mx-auto mb-2" />
                   <p className="text-3xl font-black text-foreground">{selected.courses_count ?? 0}</p>
-                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">دورات تعليمية</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">{isAr ? "دورات تعليمية" : "Courses"}</p>
                 </div>
                 <div className="bg-muted/30 border border-white/5 rounded-[24px] p-5 text-center">
                   <Users className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
                   <p className="text-3xl font-black text-foreground">{selected.students_count ?? 0}</p>
-                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">إجمالي الطلاب</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">{isAr ? "إجمالي الطلاب" : "Total Students"}</p>
                 </div>
                 <div className="bg-muted/30 border border-white/5 rounded-[24px] p-5 text-center">
                   <Star className="w-6 h-6 text-amber-500 mx-auto mb-2" />
                   <p className="text-3xl font-black text-foreground">{selected.rating ? Number(selected.rating).toFixed(1) : '—'}</p>
-                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">متوسط التقييم</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">{isAr ? "متوسط التقييم" : "Average Rating"}</p>
                 </div>
                 <div className="bg-muted/30 border border-white/5 rounded-[24px] p-5 text-center">
                   <Award className="w-6 h-6 text-purple-500 mx-auto mb-2" />
                   <p className="text-3xl font-black text-foreground">{selected.years_of_experience ? `+${selected.years_of_experience}` : '—'}</p>
-                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">سنوات خبرة</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">{isAr ? "سنوات خبرة" : "Years Experience"}</p>
                 </div>
               </div>
 
@@ -454,7 +464,7 @@ export default function SupervisorTeachersPage() {
                 {selected.subjects?.length ? (
                   <div className="bg-card/50 border border-border rounded-[24px] p-6 shadow-inner">
                     <h4 className="text-sm font-black uppercase text-foreground flex items-center gap-2 mb-4">
-                      <GraduationCap className="w-4 h-4 text-primary" /> المواد التي يُدرسها
+                      <GraduationCap className="w-4 h-4 text-primary" /> {isAr ? "المواد التي يُدرسها" : "Subjects Taught"}
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {selected.subjects.map((s, i) => (
@@ -470,7 +480,7 @@ export default function SupervisorTeachersPage() {
                 {selected.certifications?.length ? (
                   <div className="bg-card/50 border border-border rounded-[24px] p-6 shadow-inner">
                     <h4 className="text-sm font-black uppercase text-foreground flex items-center gap-2 mb-4">
-                      <ShieldCheck className="w-4 h-4 text-primary" /> الشهادات والمؤهلات
+                      <ShieldCheck className="w-4 h-4 text-primary" /> {isAr ? "الشهادات والمؤهلات" : "Certifications & Qualifications"}
                     </h4>
                     <ul className="space-y-3">
                       {selected.certifications.map((c, i) => (
@@ -492,7 +502,7 @@ export default function SupervisorTeachersPage() {
                 onClick={() => setSelected(null)}
                 className="px-6 py-3 rounded-xl border-2 border-border text-foreground hover:bg-muted transition-colors text-sm font-black"
               >
-                إغلاق النافذة
+                {isAr ? "إغلاق النافذة" : "Close Window"}
               </button>
               {selected.is_verified ? (
                 <button
@@ -501,7 +511,7 @@ export default function SupervisorTeachersPage() {
                   className="px-8 py-3 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground transition-all text-sm font-black flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-destructive/20"
                 >
                   {actingId === selected.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
-                  سحب التوثيق من المدرس
+                  {isAr ? "سحب التوثيق من المدرس" : "Revoke Verification from Teacher"}
                 </button>
               ) : (
                 <button
@@ -510,7 +520,7 @@ export default function SupervisorTeachersPage() {
                   className="px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all text-sm font-black flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-500/20"
                 >
                   {actingId === selected.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-                  اعتماد وتوثيق المدرس رسمياً
+                  {isAr ? "اعتماد وتوثيق المدرس رسمياً" : "Officially Verify & Approve Teacher"}
                 </button>
               )}
             </div>

@@ -252,7 +252,7 @@ export default function Home() {
   const [mounted, setMounted] = useState(false)
   const [settings, setSettings] = useState<Record<string, any>>({})
   const { resolvedTheme, setTheme } = useTheme()
-  const { locale, dir, toggleLocale } = useI18n()
+  const { locale, dir, toggleLocale, t } = useI18n()
   const heroRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] })
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 200])
@@ -290,7 +290,7 @@ export default function Home() {
   const showTestimonials = asBool(settings.homepage_show_testimonials, true)
   const maintenanceOn = asBool(settings.maintenance_mode, false)
   const maintenanceFull = asBool(settings.maintenance_full_page, false)
-  const maintenanceMsg = settings.maintenance_message || 'الموقع تحت الصيانة حاليًا، نعود قريبًا 🔧'
+  const maintenanceMsg = settings.maintenance_message || t.common.maintenanceMessage
   const maintenanceColor = settings.maintenance_banner_color || '#f59e0b'
 
   // Icons for the repeating sections (visual only — text/numbers come from CMS).
@@ -403,7 +403,7 @@ export default function Home() {
             <LangButton />
             <button
               onClick={toggleTheme}
-              aria-label="تبديل المظهر"
+              aria-label={t.common.toggleTheme}
               className="relative w-10 h-10 rounded-full border border-hp-ink/15 dark:border-hp-cream/20 flex items-center justify-center text-hp-navy dark:text-hp-gold hover:border-hp-bronze dark:hover:border-hp-gold transition-all duration-500 hover:scale-105 overflow-hidden"
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -439,7 +439,7 @@ export default function Home() {
             <LangButton mobile />
             <button
               onClick={toggleTheme}
-              aria-label="تبديل المظهر"
+              aria-label={t.common.toggleTheme}
               className="p-2 text-hp-navy dark:text-hp-gold"
             >
               {mounted && (isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />)}
@@ -447,7 +447,7 @@ export default function Home() {
             <button
               className="p-2 text-hp-navy dark:text-hp-gold"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="القائمة"
+              aria-label={t.common.menu}
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>

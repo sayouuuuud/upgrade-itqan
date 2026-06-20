@@ -21,6 +21,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
+import { useI18n } from "@/lib/i18n/context"
 
 type Path = {
   id: string
@@ -41,20 +42,15 @@ type Path = {
   stats?: { enrolled: string; active: string; completed: string; avg_progress: string }
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  juz: "بالأجزاء", surah: "بالسور", hizb: "بالأحزاب", page: "بالصفحات", custom: "مخصص",
-}
 const RANGE_MAX: Record<string, number> = { juz: 30, surah: 114, hizb: 60, page: 604 }
-const UNIT_WORD: Record<string, string> = { juz: "جزء", surah: "سورة", hizb: "حزب", page: "صفحة" }
-const LEVEL_LABELS: Record<string, string> = {
-  beginner: "مبتدئ", intermediate: "متوسط", advanced: "متقدم",
-}
 
 // Quick presets to spare readers from manual range setup.
 type Preset = {
   key: string
-  label: string
-  description: string
+  labelAr: string
+  labelEn: string
+  descriptionAr: string
+  descriptionEn: string
   unit_type: string
   range_from: number
   range_to: number
@@ -62,13 +58,37 @@ type Preset = {
   level: string
 }
 const PRESETS: Preset[] = [
-  { key: "juz30", label: "جزء عمّ", description: "السور القصيرة (النبأ → الناس)", unit_type: "surah", range_from: 78, range_to: 114, direction: "desc", level: "beginner" },
-  { key: "juz29", label: "جزء تبارك", description: "من سورة الملك", unit_type: "surah", range_from: 67, range_to: 77, direction: "desc", level: "beginner" },
-  { key: "full_surah", label: "المصحف كامل (بالسور)", description: "الفاتحة → الناس، 114 سورة", unit_type: "surah", range_from: 1, range_to: 114, direction: "desc", level: "advanced" },
-  { key: "full_juz", label: "المصحف كامل (بالأجزاء)", description: "30 جزءاً بالترتيب", unit_type: "juz", range_from: 1, range_to: 30, direction: "desc", level: "advanced" },
+  { key: "juz30", labelAr: "جزء عمّ", labelEn: "Juz Amma", descriptionAr: "السور القصيرة (النبأ → الناس)", descriptionEn: "Short Surahs (An-Naba → An-Nas)", unit_type: "surah", range_from: 78, range_to: 114, direction: "desc", level: "beginner" },
+  { key: "juz29", labelAr: "جزء تبارك", labelEn: "Juz Tabarak", descriptionAr: "من سورة الملك", descriptionEn: "From Surah Al-Mulk", unit_type: "surah", range_from: 67, range_to: 77, direction: "desc", level: "beginner" },
+  { key: "full_surah", labelAr: "المصحف كامل (بالسور)", labelEn: "Entire Quran (By Surah)", descriptionAr: "الفاتحة → الناس، 114 سورة", descriptionEn: "Al-Fatihah → An-Nas, 114 Surahs", unit_type: "surah", range_from: 1, range_to: 114, direction: "desc", level: "advanced" },
+  { key: "full_juz", labelAr: "المصحف كامل (بالأجزاء)", labelEn: "Entire Quran (By Juz)", descriptionAr: "30 جزءاً بالترتيب", descriptionEn: "30 Juz in order", unit_type: "juz", range_from: 1, range_to: 30, direction: "desc", level: "advanced" },
 ]
 
 export default function ReaderMemorizationPathsPage() {
+  const { locale } = useI18n()
+  const isAr = locale === "ar"
+
+  const TYPE_LABELS: Record<string, string> = {
+    juz: isAr ? "بالأجزاء" : "By Juz",
+    surah: isAr ? "بالسور" : "By Surah",
+    hizb: isAr ? "بالأحزاب" : "By Hizb",
+    page: isAr ? "بالصفحات" : "By Page",
+    custom: isAr ? "مخصص" : "Custom",
+  }
+
+  const UNIT_WORD: Record<string, string> = {
+    juz: isAr ? "جزء" : "Juz",
+    surah: isAr ? "سورة" : "Surah",
+    hizb: isAr ? "حزب" : "Hizb",
+    page: isAr ? "صفحة" : "Page"
+  }
+
+  const LEVEL_LABELS: Record<string, string> = {
+    beginner: isAr ? "مبتدئ" : "Beginner",
+    intermediate: isAr ? "متوسط" : "Intermediate",
+    advanced: isAr ? "متقدم" : "Advanced",
+  }
+
   const [paths, setPaths] = useState<Path[]>([])
   const [loading, setLoading] = useState(true)
   const [openCreate, setOpenCreate] = useState(false)
@@ -100,7 +120,7 @@ export default function ReaderMemorizationPathsPage() {
     from >= 1 && to >= 1 && from <= max && to <= max
   // Units are generated inclusively regardless of order (server clamps/sorts).
   const unitCount = rangeValid ? Math.abs(to - from) + 1 : 0
-  const unitWord = UNIT_WORD[form.unit_type] || "وحدة"
+  const unitWord = UNIT_WORD[form.unit_type] || (isAr ? "وحدة" : "Unit")
   const canSubmit = !!form.title.trim() && rangeValid && unitCount > 0
 
   function applyPreset(p: Preset) {
@@ -111,7 +131,7 @@ export default function ReaderMemorizationPathsPage() {
       range_to: String(p.range_to),
       direction: p.direction,
       level: p.level,
-      title: f.title.trim() ? f.title : p.label,
+      title: f.title.trim() ? f.title : (isAr ? p.labelAr : p.labelEn),
     }))
   }
 
@@ -140,11 +160,11 @@ export default function ReaderMemorizationPathsPage() {
 
   async function submit() {
     if (!form.title.trim()) {
-      toast.error("اكتب عنوان المسار أولاً")
+      toast.error(isAr ? "اكتب عنوان المسار أولاً" : "Please enter the path title first")
       return
     }
     if (!rangeValid || unitCount === 0) {
-      toast.error(`المدى غير صحيح — أدخل أرقاماً بين 1 و ${max}`)
+      toast.error(isAr ? `المدى غير صحيح — أدخل أرقاماً بين 1 و ${max}` : `Invalid range — enter numbers between 1 and ${max}`)
       return
     }
     setCreating(true)
@@ -167,12 +187,16 @@ export default function ReaderMemorizationPathsPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error || "فشل إنشاء المسار")
+        toast.error(data.error || (isAr ? "فشل إنشاء المسار" : "Failed to create path"))
         return
       }
       toast.success(
-        `تم إنشاء المسار${data.total_units ? ` بـ ${data.total_units} وحدة` : ""}` +
-        (form.is_published ? " ونُشر للطلاب" : " كمسودة"),
+        (isAr 
+          ? `تم إنشاء المسار${data.total_units ? ` بـ ${data.total_units} وحدة` : ""}` 
+          : `Path created successfully${data.total_units ? ` with ${data.total_units} units` : ""}`) +
+        (form.is_published 
+          ? (isAr ? " ونُشر للطلاب" : " and published to students") 
+          : (isAr ? " كمسودة" : " as draft")),
       )
       setOpenCreate(false)
       setForm({
@@ -182,7 +206,7 @@ export default function ReaderMemorizationPathsPage() {
       })
       await load()
     } catch {
-      toast.error("تعذّر الاتصال بالخادم")
+      toast.error(isAr ? "تعذّر الاتصال بالخادم" : "Failed to connect to server")
     } finally {
       setCreating(false)
     }
@@ -195,35 +219,42 @@ export default function ReaderMemorizationPathsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ is_published: next }),
     })
-    toast.success(next ? "تم نشر المسار للطلاب" : "تم إخفاء المسار")
+    toast.success(next 
+      ? (isAr ? "تم نشر المسار للطلاب" : "Path published to students") 
+      : (isAr ? "تم إخفاء المسار" : "Path hidden"))
     await load()
   }
 
   async function remove(p: Path) {
-    if (!confirm(`حذف المسار "${p.title}" نهائياً؟ سيُحذف معه تقدّم الطلاب المشتركين.`)) return
+    const confirmMsg = isAr 
+      ? `حذف المسار "${p.title}" نهائياً؟ سيُحذف معه تقدّم الطلاب المشتركين.` 
+      : `Delete path "${p.title}" permanently? Students' progress will be deleted as well.`
+    if (!confirm(confirmMsg)) return
     const res = await fetch(`/api/reader/memorization-paths/${p.id}`, { method: "DELETE" })
-    if (res.ok) toast.success("تم حذف المسار")
-    else toast.error("تعذّر حذف المسار")
+    if (res.ok) toast.success(isAr ? "تم حذف المسار" : "Path deleted successfully")
+    else toast.error(isAr ? "تعذّر حذف المسار" : "Failed to delete path")
     await load()
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="space-y-6 p-4 sm:p-6" dir={isAr ? "rtl" : "ltr"}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-primary/10 text-primary">
               <BookOpen className="h-5 w-5" />
             </span>
-            مسارات الحفظ
+            {isAr ? "مسارات الحفظ" : "Memorization Paths"}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            خطط حفظ تنشئها لطلابك — جزء/سورة/حزب/صفحات بترتيب متتابع، الوحدة التالية تنفتح بعد إتمام السابقة.
+            {isAr 
+              ? "خطط حفظ تنشئها لطلابك — جزء/سورة/حزب/صفحات بترتيب متتابع، الوحدة التالية تنفتح بعد إتمام السابقة."
+              : "Memorization plans you create for your students — Juz/Surah/Hizb/Pages in sequence, the next unit unlocks after completing the previous one."}
           </p>
         </div>
         <Button onClick={() => setOpenCreate(true)} className="gap-2">
           <Plus className="h-4 w-4" />
-          إنشاء مسار جديد
+          {isAr ? "إنشاء مسار جديد" : "Create New Path"}
         </Button>
       </div>
 
@@ -233,17 +264,33 @@ export default function ReaderMemorizationPathsPage() {
             <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
             <div>
               {schemaNotice.notice === "schema_prerequisite_missing" ? (
-                <>
-                  <strong>اتصال قاعدة البيانات مش على schema التطبيق المطلوبة.</strong> الجدول الأساسي
-                  <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">{schemaNotice.missing_relation}</code>
-                  غير موجود، فتأكد من `DATABASE_URL`/`POSTGRES_URL` أو شغّل السكريبتات الأساسية قبل
-                  <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
-                </>
+                isAr ? (
+                  <>
+                    <strong>اتصال قاعدة البيانات مش على schema التطبيق المطلوبة.</strong> الجدول الأساسي
+                    <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">{schemaNotice.missing_relation}</code>
+                    غير موجود، فتأكد من `DATABASE_URL`/`POSTGRES_URL` أو شغّل السكريبتات الأساسية قبل
+                    <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
+                  </>
+                ) : (
+                  <>
+                    <strong>Database schema missing prerequisite table.</strong> The table 
+                    <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">{schemaNotice.missing_relation}</code>
+                    was not found. Please verify your connection or run 
+                    <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
+                  </>
+                )
               ) : (
-                <>
-                  <strong>الميجريشن لسه ما اتشغّلش.</strong> راسل الإدارة لتشغيل
-                  <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
-                </>
+                isAr ? (
+                  <>
+                    <strong>الميجريشن لسه ما اتشغّلش.</strong> راسل الإدارة لتشغيل
+                    <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
+                  </>
+                ) : (
+                  <>
+                    <strong>Migrations not yet applied.</strong> Please run or request running
+                    <code className="bg-amber-500/15 px-2 py-0.5 mx-1 rounded">scripts/022-memorization-paths.sql</code>
+                  </>
+                )
               )}
             </div>
           </div>
@@ -257,22 +304,24 @@ export default function ReaderMemorizationPathsPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-primary/10 text-primary mb-4">
             <Layers className="h-8 w-8" />
           </div>
-          <h3 className="text-lg font-bold">لم تنشئ أي مسار بعد</h3>
+          <h3 className="text-lg font-bold">{isAr ? "لم تنشئ أي مسار بعد" : "No paths created yet"}</h3>
           <p className="text-sm text-muted-foreground mt-1 mb-5 max-w-md mx-auto">
-            أنشئ خطة حفظ متتابعة لطلابك خلال ثوانٍ — اختر قالباً جاهزاً مثل «جزء عمّ» أو حدّد المدى بنفسك.
+            {isAr 
+              ? "أنشئ خطة حفظ متتابعة لطلابك خلال ثوانٍ — اختر قالباً جاهزاً مثل «جزء عمّ» أو حدّد المدى بنفسك."
+              : "Create a sequential memorization plan for your students in seconds — choose a ready template like 'Juz Amma' or set the range yourself."}
           </p>
           <Button onClick={() => setOpenCreate(true)} className="gap-2">
-            <Plus className="h-4 w-4" /> إنشاء مسار جديد
+            <Plus className="h-4 w-4" /> {isAr ? "إنشاء مسار جديد" : "Create New Path"}
           </Button>
         </Card>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "إجمالي المسارات", value: paths.length, icon: Layers, tone: "text-primary bg-primary/10" },
-              { label: "المنشورة", value: paths.filter(p => p.is_published).length, icon: Eye, tone: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" },
-              { label: "إجمالي المشتركين", value: paths.reduce((s, p) => s + (Number(p.stats?.enrolled) || 0), 0), icon: Users, tone: "text-blue-600 dark:text-blue-400 bg-blue-500/10" },
-              { label: "إجمالي الوحدات", value: paths.reduce((s, p) => s + (Number(p.total_units) || 0), 0), icon: Hash, tone: "text-violet-600 dark:text-violet-400 bg-violet-500/10" },
+              { label: isAr ? "إجمالي المسارات" : "Total Paths", value: paths.length, icon: Layers, tone: "text-primary bg-primary/10" },
+              { label: isAr ? "المنشورة" : "Published", value: paths.filter(p => p.is_published).length, icon: Eye, tone: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" },
+              { label: isAr ? "إجمالي المشتركين" : "Total Enrolled", value: paths.reduce((s, p) => s + (Number(p.stats?.enrolled) || 0), 0), icon: Users, tone: "text-blue-600 dark:text-blue-400 bg-blue-500/10" },
+              { label: isAr ? "إجمالي الوحدات" : "Total Units", value: paths.reduce((s, p) => s + (Number(p.total_units) || 0), 0), icon: Hash, tone: "text-violet-600 dark:text-violet-400 bg-violet-500/10" },
             ].map((s, i) => (
               <Card key={i} className="p-4 flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${s.tone}`}>
@@ -299,17 +348,17 @@ export default function ReaderMemorizationPathsPage() {
                   </Link>
                   <div className="flex flex-wrap gap-1 mt-2">
                     <Badge variant="outline">{TYPE_LABELS[p.unit_type] || p.unit_type}</Badge>
-                    <Badge variant="secondary">{p.total_units} وحدة</Badge>
+                    <Badge variant="secondary">{p.total_units} {isAr ? "وحدة" : "Units"}</Badge>
                     {p.level && LEVEL_LABELS[p.level] && (
                       <Badge variant="outline" className="border-primary/30 text-primary">{LEVEL_LABELS[p.level]}</Badge>
                     )}
                     {p.is_published ? (
                       <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/15">
-                        <Eye className="h-3 w-3 me-1" /> منشور
+                        <Eye className="h-3 w-3 me-1" /> {isAr ? "منشور" : "Published"}
                       </Badge>
                     ) : (
                       <Badge variant="outline">
-                        <EyeOff className="h-3 w-3 me-1" /> مسودة
+                        <EyeOff className="h-3 w-3 me-1" /> {isAr ? "مسودة" : "Draft"}
                       </Badge>
                     )}
                   </div>
@@ -323,18 +372,18 @@ export default function ReaderMemorizationPathsPage() {
               <div className="grid grid-cols-3 gap-2 mt-4 text-center">
                 <div className="border rounded-xl p-2">
                   <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                    <Users className="h-3 w-3" /> مشترك
+                    <Users className="h-3 w-3" /> {isAr ? "مشترك" : "Enrolled"}
                   </div>
                   <div className="text-lg font-semibold">{p.stats?.enrolled || "0"}</div>
                 </div>
                 <div className="border rounded-xl p-2">
                   <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                    <CheckCircle2 className="h-3 w-3" /> أتموا
+                    <CheckCircle2 className="h-3 w-3" /> {isAr ? "أتموا" : "Passed"}
                   </div>
                   <div className="text-lg font-semibold">{p.stats?.completed || "0"}</div>
                 </div>
                 <div className="border rounded-xl p-2">
-                  <div className="text-xs text-muted-foreground">متوسط %</div>
+                  <div className="text-xs text-muted-foreground">{isAr ? "متوسط %" : "Avg Progress %"}</div>
                   <div className="text-lg font-semibold">{p.stats?.avg_progress || "0"}%</div>
                 </div>
               </div>
@@ -342,14 +391,14 @@ export default function ReaderMemorizationPathsPage() {
               <div className="flex gap-2 mt-4 pt-4 border-t">
                 <Button asChild variant="outline" size="sm" className="flex-1">
                   <Link href={`/reader/memorization-paths/${p.id}`}>
-                    إدارة <ChevronRight className="h-4 w-4 ms-1 rtl:rotate-180" />
+                    {isAr ? "إدارة" : "Manage"} <ChevronRight className="h-4 w-4 ms-1 rtl:rotate-180" />
                   </Link>
                 </Button>
                 <Button
                   variant={p.is_published ? "secondary" : "default"} size="sm"
                   onClick={() => togglePublish(p)}
                 >
-                  {p.is_published ? "إخفاء" : "نشر"}
+                  {p.is_published ? (isAr ? "إخفاء" : "Hide") : (isAr ? "نشر" : "Publish")}
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => remove(p)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                   <Trash2 className="h-4 w-4" />
@@ -362,18 +411,20 @@ export default function ReaderMemorizationPathsPage() {
       )}
 
       <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir={isAr ? "rtl" : "ltr"}>
           <DialogHeader>
-            <DialogTitle>إنشاء مسار حفظ جديد</DialogTitle>
+            <DialogTitle>{isAr ? "إنشاء مسار حفظ جديد" : "Create New Memorization Path"}</DialogTitle>
             <DialogDescription>
-              اختر قالباً جاهزاً أو حدّد التقسيم والمدى — يولّد النظام الوحدات تلقائياً.
+              {isAr 
+                ? "اختر قالباً جاهزاً أو حدّد التقسيم والمدى — يولّد النظام الوحدات تلقائياً."
+                : "Choose a ready-made template or specify division and range — the system generates units automatically."}
             </DialogDescription>
           </DialogHeader>
 
           {/* Quick presets */}
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> قوالب سريعة
+              <Sparkles className="h-3.5 w-3.5 text-primary" /> {isAr ? "قوالب سريعة" : "Quick Presets"}
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {PRESETS.map(p => {
@@ -392,10 +443,10 @@ export default function ReaderMemorizationPathsPage() {
                     }`}
                   >
                     <div className="font-bold text-sm flex items-center justify-between gap-2">
-                      {p.label}
+                      {isAr ? p.labelAr : p.labelEn}
                       {active && <CheckCircle2 className="h-4 w-4 text-primary" />}
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">{p.description}</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">{isAr ? p.descriptionAr : p.descriptionEn}</div>
                   </button>
                 )
               })}
@@ -404,26 +455,26 @@ export default function ReaderMemorizationPathsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
             <div className="md:col-span-2 space-y-1">
-              <Label>عنوان المسار</Label>
+              <Label>{isAr ? "عنوان المسار" : "Path Title"}</Label>
               <Input
                 value={form.title}
                 onChange={e => setForm({ ...form, title: e.target.value })}
-                placeholder="مثلاً: حفظ جزء عم"
+                placeholder={isAr ? "مثلاً: حفظ جزء عم" : "e.g. Memorizing Juz Amma"}
               />
             </div>
 
             <div className="md:col-span-2 space-y-1">
-              <Label>الوصف (اختياري)</Label>
+              <Label>{isAr ? "الوصف (اختياري)" : "Description (Optional)"}</Label>
               <Textarea
                 value={form.description}
                 onChange={e => setForm({ ...form, description: e.target.value })}
                 rows={2}
-                placeholder="نبذة قصيرة عن المسار"
+                placeholder={isAr ? "نبذة قصيرة عن المسار" : "Short summary of the path"}
               />
             </div>
 
             <div className="space-y-1">
-              <Label>نوع التقسيم</Label>
+              <Label>{isAr ? "نوع التقسيم" : "Division Type"}</Label>
               <Select
                 value={form.unit_type}
                 onValueChange={v => {
@@ -433,17 +484,17 @@ export default function ReaderMemorizationPathsPage() {
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="surah">حسب السور (1-114)</SelectItem>
-                  <SelectItem value="juz">حسب الأجزاء (1-30)</SelectItem>
-                  <SelectItem value="hizb">حسب الأحزاب (1-60)</SelectItem>
-                  <SelectItem value="page">حسب الصفحات (1-604)</SelectItem>
+                  <SelectItem value="surah">{isAr ? "حسب السور (1-114)" : "By Surahs (1-114)"}</SelectItem>
+                  <SelectItem value="juz">{isAr ? "حسب الأجزاء (1-30)" : "By Juz (1-30)"}</SelectItem>
+                  <SelectItem value="hizb">{isAr ? "حسب الأحزاب (1-60)" : "By Hizb (1-60)"}</SelectItem>
+                  <SelectItem value="page">{isAr ? "حسب الصفحات (1-604)" : "By Pages (1-604)"}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1">
               <Label className="flex items-center gap-1.5">
-                <ArrowUpDown className="h-3.5 w-3.5" /> ترتيب الحفظ
+                <ArrowUpDown className="h-3.5 w-3.5" /> {isAr ? "ترتيب الحفظ" : "Memorization Order"}
               </Label>
               <Select
                 value={form.direction}
@@ -451,14 +502,14 @@ export default function ReaderMemorizationPathsPage() {
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="desc">الترتيب الطبيعي (يبدأ بـ{unitWord} {form.range_from})</SelectItem>
-                  <SelectItem value="asc">معكوس (يبدأ بـ{unitWord} {form.range_to})</SelectItem>
+                  <SelectItem value="desc">{isAr ? `الترتيب الطبيعي (يبدأ بـ${unitWord} ${form.range_from})` : `Natural Order (Starts with ${unitWord} ${form.range_from})`}</SelectItem>
+                  <SelectItem value="asc">{isAr ? `معكوس (يبدأ بـ${unitWord} ${form.range_to})` : `Reverse Order (Starts with ${unitWord} ${form.range_to})`}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1">
-              <Label>من {unitWord} رقم</Label>
+              <Label>{isAr ? `من ${unitWord} رقم` : `From ${unitWord} #`}</Label>
               <Input
                 type="number" min="1" max={max}
                 value={form.range_from}
@@ -468,7 +519,7 @@ export default function ReaderMemorizationPathsPage() {
             </div>
 
             <div className="space-y-1">
-              <Label>إلى {unitWord} رقم</Label>
+              <Label>{isAr ? `إلى ${unitWord} رقم` : `To ${unitWord} #`}</Label>
               <Input
                 type="number" min="1" max={max}
                 value={form.range_to}
@@ -478,27 +529,27 @@ export default function ReaderMemorizationPathsPage() {
             </div>
 
             <div className="space-y-1">
-              <Label>المستوى</Label>
+              <Label>{isAr ? "المستوى" : "Level"}</Label>
               <Select
                 value={form.level}
                 onValueChange={v => setForm({ ...form, level: v })}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="beginner">مبتدئ</SelectItem>
-                  <SelectItem value="intermediate">متوسط</SelectItem>
-                  <SelectItem value="advanced">متقدم</SelectItem>
+                  <SelectItem value="beginner">{isAr ? "مبتدئ" : "Beginner"}</SelectItem>
+                  <SelectItem value="intermediate">{isAr ? "متوسط" : "Intermediate"}</SelectItem>
+                  <SelectItem value="advanced">{isAr ? "متقدم" : "Advanced"}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1">
-              <Label>المدة المتوقعة (أيام)</Label>
+              <Label>{isAr ? "المدة المتوقعة (أيام)" : "Expected Duration (Days)"}</Label>
               <Input
                 type="number" min="1"
                 value={form.estimated_days}
                 onChange={e => setForm({ ...form, estimated_days: e.target.value })}
-                placeholder="اختياري"
+                placeholder={isAr ? "اختياري" : "Optional"}
               />
             </div>
 
@@ -510,15 +561,26 @@ export default function ReaderMemorizationPathsPage() {
                     <Layers className="h-5 w-5" />
                   </div>
                   <p className="text-sm">
-                    سيتم توليد <strong className="text-primary">{unitCount} {unitCount === 1 ? unitWord : `${unitWord}اً`}</strong>{" "}
-                    ({TYPE_LABELS[form.unit_type]}) — تُفتح وحدة تلو الأخرى بعد إتمام السابقة.
+                    {isAr ? (
+                      <>
+                        سيتم توليد <strong className="text-primary">{unitCount} {unitCount === 1 ? unitWord : `${unitWord}اً`}</strong>{" "}
+                        ({TYPE_LABELS[form.unit_type]}) — تُفتح وحدة تلو الأخرى بعد إتمام السابقة.
+                      </>
+                    ) : (
+                      <>
+                        Will generate <strong className="text-primary">{unitCount} {unitCount === 1 ? unitWord : `${unitWord}s`}</strong>{" "}
+                        ({TYPE_LABELS[form.unit_type]}) — unlocked sequentially upon completion.
+                      </>
+                    )}
                   </p>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-3">
                   <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
                   <p className="text-sm text-destructive">
-                    المدى غير صحيح — أدخل أرقاماً بين 1 و {max} لنوع «{TYPE_LABELS[form.unit_type]}».
+                    {isAr 
+                      ? `المدى غير صحيح — أدخل أرقاماً بين 1 و ${max} لنوع «${TYPE_LABELS[form.unit_type]}».` 
+                      : `Invalid range — enter numbers between 1 and ${max} for "${TYPE_LABELS[form.unit_type]}".`}
                   </p>
                 </div>
               )}
@@ -532,7 +594,7 @@ export default function ReaderMemorizationPathsPage() {
               />
               <Label htmlFor="r_require_audio" className="cursor-pointer flex items-center gap-1.5">
                 <Mic className="h-4 w-4 text-muted-foreground" />
-                يتطلب تسجيل صوتي قبل إتمام كل وحدة
+                {isAr ? "يتطلب تسجيل صوتي قبل إتمام كل وحدة" : "Requires audio recording before completing each unit"}
               </Label>
             </div>
 
@@ -544,16 +606,18 @@ export default function ReaderMemorizationPathsPage() {
               />
               <Label htmlFor="r_is_published" className="cursor-pointer flex items-center gap-1.5">
                 <Eye className="h-4 w-4 text-muted-foreground" />
-                نشر المسار للطلاب فوراً
+                {isAr ? "نشر المسار للطلاب فوراً" : "Publish path to students immediately"}
               </Label>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpenCreate(false)}>إلغاء</Button>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setOpenCreate(false)}>{isAr ? "إلغاء" : "Cancel"}</Button>
             <Button onClick={submit} disabled={creating || !canSubmit} className="gap-2">
               {creating && <Loader2 className="h-4 w-4 animate-spin" />}
-              {rangeValid && unitCount > 0 ? `إنشاء المسار (${unitCount} ${unitWord})` : "إنشاء المسار"}
+              {rangeValid && unitCount > 0 
+                ? (isAr ? `إنشاء المسار (${unitCount} ${unitWord})` : `Create Path (${unitCount} ${unitWord})`) 
+                : (isAr ? "إنشاء المسار" : "Create Path")}
             </Button>
           </DialogFooter>
         </DialogContent>
