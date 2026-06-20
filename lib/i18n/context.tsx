@@ -31,20 +31,16 @@ function getSavedLocale(): Locale {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('ar')
+  const [locale, setLocaleState] = useState<Locale>(getSavedLocale)
 
   useEffect(() => {
-    const saved = getSavedLocale()
-    setLocaleState(saved)
-    document.documentElement.lang = saved
-    document.documentElement.dir = saved === 'ar' ? 'rtl' : 'ltr'
-  }, [])
+    document.documentElement.lang = locale
+    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr'
+  }, [locale])
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale)
     localStorage.setItem(LOCALE_STORAGE_KEY, newLocale)
-    document.documentElement.lang = newLocale
-    document.documentElement.dir = newLocale === 'ar' ? 'rtl' : 'ltr'
   }, [])
 
   const toggleLocale = useCallback(() => {
