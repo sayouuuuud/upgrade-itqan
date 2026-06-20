@@ -4,8 +4,9 @@ import { useState, useEffect, useMemo } from 'react'
 import {
   GraduationCap, ShieldCheck, ShieldAlert, Search, CheckCircle2,
   XCircle, Loader2, Star, Users, BookOpen, Mail, Phone, BadgeCheck,
-  Filter,
+  Filter, UserCheck, Settings, Award, Briefcase, Plus, FileText
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface SupervisorTeacher {
   id: string
@@ -37,10 +38,10 @@ interface Counts {
 
 type TabKey = 'pending' | 'verified' | 'all'
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'pending',  label: 'بانتظار التوثيق' },
-  { key: 'verified', label: 'موثقون' },
-  { key: 'all',      label: 'الكل' },
+const TABS: { key: TabKey; label: string; icon: any; color: string }[] = [
+  { key: 'pending',  label: 'بانتظار التوثيق', icon: ShieldAlert, color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
+  { key: 'verified', label: 'موثقون', icon: ShieldCheck, color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+  { key: 'all',      label: 'الكل', icon: Users, color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
 ]
 
 export default function SupervisorTeachersPage() {
@@ -112,59 +113,70 @@ export default function SupervisorTeachersPage() {
     new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl mx-auto relative min-h-screen" dir="rtl">
+      
+      {/* Decorative Background */}
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full filter blur-[120px] pointer-events-none -z-10 animate-pulse-slow" />
+      <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[600px] bg-emerald-500/5 rounded-full filter blur-[120px] pointer-events-none -z-10" />
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <ShieldCheck className="w-7 h-7 text-blue-600" />
-            توثيق المدرسين
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            مراجعة ملفات المدرسين واعتمادهم رسمياً في الأكاديمية
-          </p>
+      <div className="bg-card/40 backdrop-blur-3xl border border-white/20 dark:border-white/5 rounded-[40px] p-8 shadow-2xl shadow-black/5 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 justify-between">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center border border-primary/20 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shrink-0">
+              <UserCheck className="w-10 h-10 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight mb-2">توثيق المدرسين</h1>
+              <p className="text-muted-foreground font-medium max-w-lg">
+                مراجعة طلبات التوثيق والملفات المهنية للمدرسين واعتمادهم رسمياً في المنصة.
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex gap-4 w-full md:w-auto">
+            <div className="flex-1 md:flex-none bg-card border border-border rounded-2xl p-4 shadow-sm flex flex-col items-center justify-center min-w-[120px]">
+              <span className="text-3xl font-black text-amber-500">{counts.pending}</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase mt-1">بانتظار التوثيق</span>
+            </div>
+            <div className="flex-1 md:flex-none bg-card border border-border rounded-2xl p-4 shadow-sm flex flex-col items-center justify-center min-w-[120px]">
+              <span className="text-3xl font-black text-emerald-500">{counts.verified}</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase mt-1">موثقون</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { key: 'pending',  label: 'بانتظار التوثيق', value: counts.pending,  color: 'text-yellow-600', icon: ShieldAlert },
-          { key: 'verified', label: 'موثقون',          value: counts.verified, color: 'text-green-600',  icon: ShieldCheck },
-          { key: 'all',      label: 'إجمالي المدرسين', value: counts.all,      color: 'text-foreground', icon: GraduationCap },
-        ].map(stat => {
-          const Icon = stat.icon
-          return (
-            <div key={stat.key} className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl bg-muted flex items-center justify-center ${stat.color}`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <div>
-                <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Tabs + Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          {TABS.map(t => {
+      {/* Filters & Search Row */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card/60 backdrop-blur-xl p-4 rounded-[32px] border border-white/20 dark:border-white/5 shadow-lg shadow-black/5">
+        
+        {/* Custom Tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 hide-scrollbar w-full lg:w-auto">
+          {TABS.map((t) => {
             const active = tab === t.key
+            const Icon = t.icon
             return (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 ${
+                className={cn(
+                  'relative shrink-0 px-6 py-3 rounded-2xl text-sm font-black transition-all duration-300 flex items-center gap-3 group overflow-hidden',
                   active
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/70'
-                }`}
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-100'
+                    : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground scale-95 hover:scale-100'
+                )}
               >
-                {t.label}
-                <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${active ? 'bg-white/20 text-white' : 'bg-background text-foreground'}`}>
+                {active && <div className="absolute inset-0 bg-white/20 dark:bg-white/10 animate-pulse-slow" />}
+                <Icon className={cn("w-4 h-4 relative z-10 transition-transform group-hover:scale-110", active ? "text-primary-foreground" : "text-muted-foreground")} />
+                <span className="relative z-10 whitespace-nowrap">{t.label}</span>
+                <span
+                  className={cn(
+                    'relative z-10 text-[11px] px-2 py-0.5 rounded-lg font-black transition-colors',
+                    active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-background text-muted-foreground border border-border'
+                  )}
+                >
                   {counts[t.key]}
                 </span>
               </button>
@@ -172,298 +184,339 @@ export default function SupervisorTeachersPage() {
           })}
         </div>
 
-        <div className="relative flex-1 max-w-md sm:mr-auto">
-          <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        {/* Search Input */}
+        <div className="relative w-full lg:w-96 shrink-0">
+          <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+            <Search className="w-5 h-5 text-muted-foreground" />
+          </div>
           <input
-            type="search"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+            type="text"
             placeholder="بحث بالاسم أو البريد أو التخصص..."
-            className="w-full pr-10 pl-3 py-2.5 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-4 pr-12 py-3.5 bg-background border-2 border-border hover:border-primary/30 focus:border-primary rounded-2xl text-sm font-bold text-foreground focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
           />
         </div>
       </div>
 
       {/* List */}
-      {loading ? (
-        <div className="flex items-center justify-center min-h-[240px]">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="bg-card border border-border rounded-xl p-16 text-center">
-          <ShieldCheck className="w-14 h-14 mx-auto mb-4 text-muted-foreground opacity-30" />
-          <p className="text-muted-foreground font-medium">
-            {search ? 'لا توجد نتائج مطابقة للبحث' : 'لا يوجد مدرسون في هذا التبويب'}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filtered.map(teacher => (
-            <article
-              key={teacher.id}
-              className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4 hover:shadow-md transition-shadow"
-            >
-              {/* Top row */}
-              <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-xl shrink-0 overflow-hidden">
-                  {teacher.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={teacher.avatar_url} alt={teacher.name} className="w-full h-full object-cover" />
-                  ) : (
-                    teacher.name?.[0] || 'م'
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-foreground truncate text-base">{teacher.name}</h3>
-                    {teacher.is_verified ? (
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-bold flex items-center gap-1">
-                        <BadgeCheck className="w-3 h-3" /> موثّق
-                      </span>
+      <div className="min-h-[400px]">
+        {loading ? (
+          <div className="flex flex-col justify-center items-center h-64 gap-4">
+            <div className="p-4 bg-card rounded-2xl border shadow-sm">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+            <p className="text-sm font-bold text-muted-foreground animate-pulse">جاري تحميل البيانات...</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-card/40 backdrop-blur-md border-2 border-dashed border-border rounded-[40px] p-24 text-center shadow-none flex flex-col items-center justify-center min-h-[400px] animate-in fade-in zoom-in-95 duration-500">
+            <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-border">
+              <ShieldAlert className="w-10 h-10 text-muted-foreground opacity-50" />
+            </div>
+            <h3 className="text-2xl font-black text-foreground mb-2">
+              {search ? 'لا توجد نتائج مطابقة للبحث' : 'القائمة فارغة'}
+            </h3>
+            <p className="text-muted-foreground font-bold max-w-sm mx-auto">
+              {search ? 'جرب استخدام كلمات بحث مختلفة.' : 'لا يوجد مدرسون حالياً في هذا القسم.'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            {filtered.map((teacher) => (
+              <article
+                key={teacher.id}
+                className="group bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[32px] p-6 hover:bg-card/80 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 relative overflow-hidden flex flex-col"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/[0.02] to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+                
+                <div className="flex items-start gap-5 relative z-10">
+                  <div className="w-16 h-16 rounded-[20px] bg-gradient-to-br from-primary/10 to-blue-500/10 border border-primary/20 shadow-inner flex items-center justify-center font-black text-2xl text-primary shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
+                    {teacher.avatar_url ? (
+                      <img src={teacher.avatar_url} alt={teacher.name} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 font-bold flex items-center gap-1">
-                        <ShieldAlert className="w-3 h-3" /> غير موثّق
-                      </span>
+                      teacher.name?.[0] || 'م'
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground truncate flex items-center gap-1 mt-1">
-                    <Mail className="w-3 h-3" /> {teacher.email}
-                  </p>
-                  {teacher.phone && (
-                    <p className="text-xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
-                      <Phone className="w-3 h-3" /> {teacher.phone}
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 flex-wrap mb-1">
+                      <h3 className="font-black text-xl text-foreground truncate group-hover:text-primary transition-colors">{teacher.name}</h3>
+                      {teacher.is_verified ? (
+                        <span className="text-[10px] px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-black uppercase tracking-widest border border-emerald-500/20 flex items-center gap-1.5 shadow-sm">
+                          <BadgeCheck className="w-3.5 h-3.5" /> موثّق
+                        </span>
+                      ) : (
+                        <span className="text-[10px] px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 font-black uppercase tracking-widest border border-amber-500/20 flex items-center gap-1.5 shadow-sm">
+                          <ShieldAlert className="w-3.5 h-3.5" /> بانتظار التوثيق
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5 mt-2">
+                      <p className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                        <Mail className="w-4 h-4 opacity-70" /> {teacher.email}
+                      </p>
+                      {teacher.phone && (
+                        <p className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                          <Phone className="w-4 h-4 opacity-70" /> {teacher.phone}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Specialty & Bio */}
+                <div className="mt-6 flex-1 relative z-10">
+                  {teacher.specialization && (
+                    <p className="font-bold text-foreground text-base mb-2 flex items-center gap-2">
+                      <Briefcase className="w-4 h-4 text-primary" />
+                      {teacher.specialization}
+                    </p>
+                  )}
+                  {teacher.bio && (
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 bg-muted/30 p-3 rounded-xl border border-white/5">
+                      {teacher.bio}
                     </p>
                   )}
                 </div>
-              </div>
 
-              {/* Specialty + bio */}
-              {(teacher.specialization || teacher.bio) && (
-                <div className="text-sm">
-                  {teacher.specialization && (
-                    <p className="font-bold text-foreground">{teacher.specialization}</p>
-                  )}
-                  {teacher.bio && (
-                    <p className="text-muted-foreground line-clamp-2 mt-1 leading-relaxed">{teacher.bio}</p>
-                  )}
+                {/* Stats Grid */}
+                <div className="grid grid-cols-4 gap-3 mt-6 pt-6 border-t border-border/50 relative z-10">
+                  <div className="bg-muted/40 rounded-2xl p-3 flex flex-col items-center justify-center border border-white/5">
+                    <BookOpen className="w-4 h-4 text-blue-500 mb-1" />
+                    <span className="text-lg font-black text-foreground">{teacher.courses_count ?? 0}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">دورات</span>
+                  </div>
+                  <div className="bg-muted/40 rounded-2xl p-3 flex flex-col items-center justify-center border border-white/5">
+                    <Users className="w-4 h-4 text-emerald-500 mb-1" />
+                    <span className="text-lg font-black text-foreground">{teacher.students_count ?? 0}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">طلاب</span>
+                  </div>
+                  <div className="bg-muted/40 rounded-2xl p-3 flex flex-col items-center justify-center border border-white/5">
+                    <Star className="w-4 h-4 text-amber-500 mb-1" />
+                    <span className="text-lg font-black text-foreground">{teacher.rating ? Number(teacher.rating).toFixed(1) : '—'}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">تقييم</span>
+                  </div>
+                  <div className="bg-muted/40 rounded-2xl p-3 flex flex-col items-center justify-center border border-white/5">
+                    <Award className="w-4 h-4 text-purple-500 mb-1" />
+                    <span className="text-lg font-black text-foreground">{teacher.years_of_experience ? `${teacher.years_of_experience}+` : '—'}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">سنوات خبرة</span>
+                  </div>
                 </div>
-              )}
 
-              {/* Subjects + certifications chips */}
-              {(teacher.subjects?.length || teacher.certifications?.length) ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {teacher.subjects?.slice(0, 4).map((s, i) => (
-                    <span key={`s-${i}`} className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-bold">
-                      {s}
-                    </span>
-                  ))}
-                  {teacher.certifications?.slice(0, 3).map((c, i) => (
-                    <span key={`c-${i}`} className="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-bold">
-                      {c}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-
-              {/* Stats grid */}
-              <div className="grid grid-cols-4 gap-2 text-center pt-3 border-t border-border">
-                <Stat icon={BookOpen}  label="دورات"   value={teacher.courses_count ?? 0} />
-                <Stat icon={Users}     label="طلاب"    value={teacher.students_count ?? 0} />
-                <Stat icon={Star}      label="تقييم"   value={teacher.rating ? Number(teacher.rating).toFixed(1) : '—'} />
-                <Stat                  label="خبرة"    value={teacher.years_of_experience ? `${teacher.years_of_experience}س` : '—'} />
-              </div>
-
-              {/* Footer actions */}
-              <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
-                <span className="text-[11px] text-muted-foreground">
-                  انضم في {formatDate(teacher.created_at)}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setSelected(teacher)}
-                    className="text-xs font-bold text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-muted transition-colors"
-                  >
-                    عرض الملف
-                  </button>
-                  {teacher.is_verified ? (
+                {/* Actions */}
+                <div className="flex items-center justify-between gap-4 mt-6 pt-6 border-t border-border/50 relative z-10">
+                  <span className="text-xs font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border border-border">
+                    انضم: {formatDate(teacher.created_at)}
+                  </span>
+                  <div className="flex items-center gap-3">
                     <button
-                      disabled={actingId === teacher.id}
-                      onClick={() => handleAction(teacher, 'unverify')}
-                      className="text-xs font-bold text-red-600 hover:text-white hover:bg-red-600 border border-red-200 dark:border-red-900 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50"
+                      onClick={() => setSelected(teacher)}
+                      className="px-5 py-2 rounded-xl border-2 border-border text-foreground hover:border-primary/50 hover:bg-muted font-bold text-sm transition-all"
                     >
-                      {actingId === teacher.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
-                      سحب التوثيق
+                      التفاصيل
                     </button>
-                  ) : (
-                    <button
-                      disabled={actingId === teacher.id}
-                      onClick={() => handleAction(teacher, 'verify')}
-                      className="text-xs font-bold text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50"
-                    >
-                      {actingId === teacher.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                      اعتماد
-                    </button>
-                  )}
+                    {teacher.is_verified ? (
+                      <button
+                        disabled={actingId === teacher.id}
+                        onClick={() => handleAction(teacher, 'unverify')}
+                        className="px-5 py-2 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground border border-destructive/20 font-bold text-sm transition-all flex items-center gap-2 disabled:opacity-50 shadow-sm"
+                      >
+                        {actingId === teacher.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                        سحب التوثيق
+                      </button>
+                    ) : (
+                      <button
+                        disabled={actingId === teacher.id}
+                        onClick={() => handleAction(teacher, 'verify')}
+                        className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-500/20"
+                      >
+                        {actingId === teacher.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                        اعتماد وتوثيق
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* Detail Modal */}
+      {/* Modern Detail Modal */}
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in duration-300"
           onClick={e => e.target === e.currentTarget && setSelected(null)}
         >
-          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card z-10">
-              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-blue-600" />
-                ملف المدرس
+          <div className="bg-card/95 backdrop-blur-3xl border border-white/20 dark:border-white/5 rounded-[40px] shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col relative animate-in zoom-in-95 duration-300">
+            
+            {/* Modal Header */}
+            <div className="absolute top-0 right-0 w-full h-32 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+            
+            <div className="flex items-center justify-between p-6 sm:p-8 border-b border-white/10 dark:border-white/5 shrink-0 relative z-10">
+              <h3 className="text-2xl font-black text-foreground flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                  <FileText className="w-5 h-5 text-primary" />
+                </div>
+                الملف التعريفي للمدرس
               </h3>
               <button
                 onClick={() => setSelected(null)}
-                className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
+                className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               >
-                <XCircle className="w-5 h-5" />
+                <XCircle className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="p-6 space-y-5">
-              <div className="flex items-start gap-4">
-                <div className="w-20 h-20 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-2xl shrink-0 overflow-hidden">
+            {/* Modal Body */}
+            <div className="p-6 sm:p-8 overflow-y-auto relative z-10 flex-1 space-y-8 custom-scrollbar">
+              
+              {/* Profile Main Info */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-right">
+                <div className="w-28 h-28 rounded-[32px] bg-gradient-to-br from-primary/20 to-blue-500/20 text-primary flex items-center justify-center font-black text-4xl shrink-0 overflow-hidden border-2 border-white/10 shadow-xl shadow-primary/10">
                   {selected.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={selected.avatar_url} alt={selected.name} className="w-full h-full object-cover" />
                   ) : (
                     selected.name?.[0] || 'م'
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl font-black text-foreground">{selected.name}</h2>
+                <div className="flex-1 space-y-2">
+                  <div className="flex flex-col sm:flex-row items-center gap-3 flex-wrap justify-center sm:justify-start">
+                    <h2 className="text-3xl font-black text-foreground">{selected.name}</h2>
                     {selected.is_verified ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-bold flex items-center gap-1">
-                        <BadgeCheck className="w-3.5 h-3.5" /> موثّق
+                      <span className="text-xs px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-black uppercase tracking-widest border border-emerald-500/20 flex items-center gap-1.5">
+                        <BadgeCheck className="w-4 h-4" /> موثّق رسمياً
                       </span>
                     ) : (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 font-bold flex items-center gap-1">
-                        <ShieldAlert className="w-3.5 h-3.5" /> بانتظار التوثيق
+                      <span className="text-xs px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 font-black uppercase tracking-widest border border-amber-500/20 flex items-center gap-1.5">
+                        <ShieldAlert className="w-4 h-4" /> بانتظار التوثيق
                       </span>
                     )}
                   </div>
                   {selected.specialization && (
-                    <p className="text-sm font-bold text-blue-600 dark:text-blue-400 mt-1">
+                    <p className="text-lg font-bold text-primary flex items-center justify-center sm:justify-start gap-2">
+                      <Briefcase className="w-5 h-5" />
                       {selected.specialization}
                     </p>
                   )}
-                  <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5" /> {selected.email}
-                  </p>
-                  {selected.phone && (
-                    <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1">
-                      <Phone className="w-3.5 h-3.5" /> {selected.phone}
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 mt-4 pt-2">
+                    <p className="text-sm font-semibold text-muted-foreground flex items-center justify-center sm:justify-start gap-2 bg-muted/50 px-4 py-2 rounded-xl border border-border">
+                      <Mail className="w-4 h-4" /> {selected.email}
                     </p>
-                  )}
+                    {selected.phone && (
+                      <p className="text-sm font-semibold text-muted-foreground flex items-center justify-center sm:justify-start gap-2 bg-muted/50 px-4 py-2 rounded-xl border border-border">
+                        <Phone className="w-4 h-4" /> {selected.phone}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
+              {/* Bio */}
               {selected.bio && (
-                <div>
-                  <h4 className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-2">نبذة</h4>
-                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{selected.bio}</p>
+                <div className="bg-card/50 border border-border rounded-[24px] p-6 shadow-inner">
+                  <h4 className="text-sm font-black uppercase text-foreground flex items-center gap-2 mb-3">
+                    <FileText className="w-4 h-4 text-primary" /> نبذة شخصية
+                  </h4>
+                  <p className="text-base text-muted-foreground leading-loose whitespace-pre-line font-medium">
+                    {selected.bio}
+                  </p>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <Stat icon={BookOpen} label="دورات"   value={selected.courses_count ?? 0} large />
-                <Stat icon={Users}    label="طلاب"    value={selected.students_count ?? 0} large />
-                <Stat icon={Star}     label="تقييم"   value={selected.rating ? Number(selected.rating).toFixed(1) : '—'} large />
-                <Stat                 label="خبرة"    value={selected.years_of_experience ? `${selected.years_of_experience} سنة` : '—'} large />
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-muted/30 border border-white/5 rounded-[24px] p-5 text-center">
+                  <BookOpen className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+                  <p className="text-3xl font-black text-foreground">{selected.courses_count ?? 0}</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">دورات تعليمية</p>
+                </div>
+                <div className="bg-muted/30 border border-white/5 rounded-[24px] p-5 text-center">
+                  <Users className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
+                  <p className="text-3xl font-black text-foreground">{selected.students_count ?? 0}</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">إجمالي الطلاب</p>
+                </div>
+                <div className="bg-muted/30 border border-white/5 rounded-[24px] p-5 text-center">
+                  <Star className="w-6 h-6 text-amber-500 mx-auto mb-2" />
+                  <p className="text-3xl font-black text-foreground">{selected.rating ? Number(selected.rating).toFixed(1) : '—'}</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">متوسط التقييم</p>
+                </div>
+                <div className="bg-muted/30 border border-white/5 rounded-[24px] p-5 text-center">
+                  <Award className="w-6 h-6 text-purple-500 mx-auto mb-2" />
+                  <p className="text-3xl font-black text-foreground">{selected.years_of_experience ? `+${selected.years_of_experience}` : '—'}</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-1 uppercase">سنوات خبرة</p>
+                </div>
               </div>
 
-              {selected.subjects?.length ? (
-                <div>
-                  <h4 className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-2">المواد</h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {selected.subjects.map((s, i) => (
-                      <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-bold">
-                        {s}
-                      </span>
-                    ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Subjects */}
+                {selected.subjects?.length ? (
+                  <div className="bg-card/50 border border-border rounded-[24px] p-6 shadow-inner">
+                    <h4 className="text-sm font-black uppercase text-foreground flex items-center gap-2 mb-4">
+                      <GraduationCap className="w-4 h-4 text-primary" /> المواد التي يُدرسها
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selected.subjects.map((s, i) => (
+                        <span key={i} className="text-xs px-3 py-1.5 rounded-xl bg-blue-500/10 text-blue-700 dark:text-blue-300 font-black border border-blue-500/20">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : null}
+                ) : null}
 
-              {selected.certifications?.length ? (
-                <div>
-                  <h4 className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-2">الشهادات</h4>
-                  <ul className="space-y-1.5">
-                    {selected.certifications.map((c, i) => (
-                      <li key={i} className="text-sm text-foreground flex items-center gap-2">
-                        <BadgeCheck className="w-4 h-4 text-purple-600 shrink-0" />
-                        {c}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-border">
-                <button
-                  onClick={() => setSelected(null)}
-                  className="px-4 py-2 rounded-lg border border-border text-foreground hover:bg-muted transition-colors text-sm font-bold"
-                >
-                  إغلاق
-                </button>
-                {selected.is_verified ? (
-                  <button
-                    disabled={actingId === selected.id}
-                    onClick={() => handleAction(selected, 'unverify')}
-                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors text-sm font-bold flex items-center gap-1 disabled:opacity-50"
-                  >
-                    {actingId === selected.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                    سحب التوثيق
-                  </button>
-                ) : (
-                  <button
-                    disabled={actingId === selected.id}
-                    onClick={() => handleAction(selected, 'verify')}
-                    className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors text-sm font-bold flex items-center gap-1 disabled:opacity-50"
-                  >
-                    {actingId === selected.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                    اعتماد كأستاذ موثّق
-                  </button>
-                )}
+                {/* Certifications */}
+                {selected.certifications?.length ? (
+                  <div className="bg-card/50 border border-border rounded-[24px] p-6 shadow-inner">
+                    <h4 className="text-sm font-black uppercase text-foreground flex items-center gap-2 mb-4">
+                      <ShieldCheck className="w-4 h-4 text-primary" /> الشهادات والمؤهلات
+                    </h4>
+                    <ul className="space-y-3">
+                      {selected.certifications.map((c, i) => (
+                        <li key={i} className="text-sm font-bold text-foreground flex items-start gap-3 bg-muted/40 p-3 rounded-xl border border-white/5">
+                          <BadgeCheck className="w-5 h-5 text-purple-500 shrink-0" />
+                          <span className="leading-relaxed">{c}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </div>
+
+            </div>
+
+            {/* Modal Footer Actions */}
+            <div className="p-6 border-t border-white/10 dark:border-white/5 shrink-0 bg-muted/20 flex flex-col sm:flex-row justify-end gap-3 z-10">
+              <button
+                onClick={() => setSelected(null)}
+                className="px-6 py-3 rounded-xl border-2 border-border text-foreground hover:bg-muted transition-colors text-sm font-black"
+              >
+                إغلاق النافذة
+              </button>
+              {selected.is_verified ? (
+                <button
+                  disabled={actingId === selected.id}
+                  onClick={() => handleAction(selected, 'unverify')}
+                  className="px-8 py-3 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground transition-all text-sm font-black flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-destructive/20"
+                >
+                  {actingId === selected.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
+                  سحب التوثيق من المدرس
+                </button>
+              ) : (
+                <button
+                  disabled={actingId === selected.id}
+                  onClick={() => handleAction(selected, 'verify')}
+                  className="px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all text-sm font-black flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-500/20"
+                >
+                  {actingId === selected.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                  اعتماد وتوثيق المدرس رسمياً
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
-    </div>
-  )
-}
-
-function Stat({
-  icon: Icon,
-  label,
-  value,
-  large = false,
-}: {
-  icon?: React.ElementType
-  label: string
-  value: string | number
-  large?: boolean
-}) {
-  return (
-    <div className={`rounded-xl bg-muted/40 ${large ? 'p-4' : 'p-2.5'} text-center`}>
-      <div className="flex items-center justify-center gap-1 text-muted-foreground">
-        {Icon && <Icon className={large ? 'w-4 h-4' : 'w-3 h-3'} />}
-        <span className={`uppercase tracking-wider font-bold ${large ? 'text-[11px]' : 'text-[10px]'}`}>{label}</span>
-      </div>
-      <p className={`font-black text-foreground ${large ? 'text-xl mt-1' : 'text-base mt-0.5'}`}>{value}</p>
     </div>
   )
 }

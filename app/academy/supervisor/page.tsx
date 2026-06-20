@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   BookOpen, HelpCircle, UserCheck, BarChart3, Clock,
-  CheckCircle, ArrowLeft, Loader2, Video, Mic, FileText, TrendingUp
+  CheckCircle, ArrowLeft, Loader2, Video, Mic, FileText, TrendingUp,
+  ShieldCheck, Sparkles
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface Stats {
   pendingLessons: number
@@ -87,103 +89,182 @@ export default function AcademySupervisorDashboard() {
   }, [])
 
   const statCards = [
-    { label: 'دروس تنتظر المراجعة', value: stats.pendingLessons, icon: Clock, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10', href: '/academy/supervisor/content' },
-    { label: 'إجمالي الدروس', value: stats.totalLessons, icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10', href: '/academy/supervisor/content' },
-    { label: 'أسئلة فقهية معلقة', value: stats.fiqhUnanswered, icon: HelpCircle, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-500/10', href: '/academy/fiqh-supervisor/questions' },
-    { label: 'إجمالي الأسئلة', value: stats.fiqhTotal, icon: CheckCircle, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10', href: '/academy/fiqh-supervisor/questions' },
+    { label: 'دروس تنتظر المراجعة', value: stats.pendingLessons, icon: Clock, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', href: '/academy/supervisor/content' },
+    { label: 'إجمالي الدروس', value: stats.totalLessons, icon: BookOpen, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20', href: '/academy/supervisor/content' },
+    { label: 'أسئلة فقهية معلقة', value: stats.fiqhUnanswered, icon: HelpCircle, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20', href: '/academy/fiqh-supervisor/questions' },
+    { label: 'إجمالي الأسئلة', value: stats.fiqhTotal, icon: CheckCircle, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', href: '/academy/fiqh-supervisor/questions' },
   ]
 
   const quickLinks = [
-    { href: '/academy/supervisor/content', label: 'إشراف المحتوى', desc: 'مراجعة واعتماد الدروس', icon: BookOpen },
-    { href: '/academy/fiqh-supervisor/questions', label: 'الأسئلة الفقهية', desc: 'الإجابة على أسئلة الطلاب', icon: HelpCircle },
-    { href: '/academy/supervisor/teachers', label: 'توثيق المدرسين', desc: 'مراجعة وتوثيق المدرسين', icon: UserCheck },
-    { href: '/academy/supervisor/quality', label: 'مراقبة الجودة', desc: 'متابعة أداء المدرسين', icon: BarChart3 },
+    { href: '/academy/supervisor/content', label: 'إشراف المحتوى', desc: 'مراجعة واعتماد الدروس والمناهج', icon: BookOpen, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { href: '/academy/fiqh-supervisor/questions', label: 'الأسئلة الفقهية', desc: 'متابعة الإجابات الفقهية واعتمادها', icon: HelpCircle, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+    { href: '/academy/supervisor/teachers', label: 'توثيق المدرسين', desc: 'مراجعة طلبات التوثيق والملفات', icon: UserCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { href: '/academy/supervisor/quality', label: 'مراقبة الجودة', desc: 'متابعة الأداء العام والتقييمات', icon: BarChart3, color: 'text-purple-500', bg: 'bg-purple-500/10' },
   ]
 
   return (
-    <div className="space-y-8 max-w-4xl">
-      <div>
-        <h1 className="text-2xl font-black text-foreground">
-          {name ? `مرحباً، ${name}` : 'لوحة المشرف'}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          نظرة عامة على مهام الإشراف — مراجعة المحتوى، الأسئلة الفقهية، وجودة المدرسين
-        </p>
+    <div className="space-y-8 max-w-6xl mx-auto relative min-h-screen">
+      
+      {/* Decorative Background Effects */}
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full filter blur-[120px] pointer-events-none -z-10 animate-pulse-slow" />
+      <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-blue-500/5 rounded-full filter blur-[100px] pointer-events-none -z-10" />
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 bg-card/40 backdrop-blur-3xl border border-white/20 dark:border-white/5 rounded-[40px] p-8 shadow-2xl shadow-black/5 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+        <div className="space-y-3 relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-primary/10 border border-primary/20 text-primary mb-2 shadow-inner">
+            <ShieldCheck className="w-5 h-5" />
+            <span className="text-sm font-bold tracking-wide uppercase">لوحة المشرف العام</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-foreground tracking-tight leading-tight flex flex-col gap-2">
+            مرحباً، 
+            <span className="bg-clip-text text-transparent bg-gradient-to-l from-primary via-blue-600 to-primary animate-gradient-x">
+              {name || 'أيها المشرف'}
+            </span>
+          </h1>
+          <p className="text-muted-foreground/80 font-medium max-w-2xl text-lg leading-relaxed">
+            نظرة عامة وشاملة على مهام الإدارة العليا للأكاديمية، مراجعة المحتوى التعليمي، الإشراف على الفتاوى، وضمان الجودة.
+          </p>
+        </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <div className="flex flex-col items-center justify-center py-32 gap-6 bg-card/30 backdrop-blur-xl rounded-[40px] border border-white/10 shadow-xl">
+          <div className="relative w-20 h-20">
+            <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <Loader2 className="absolute inset-0 m-auto w-8 h-8 animate-spin text-primary opacity-50" />
+          </div>
+          <p className="text-lg font-bold text-muted-foreground animate-pulse">جاري تحميل بيانات اللوحة...</p>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {statCards.map(({ label, value, icon: Icon, color, bg, href }) => (
-              <Link key={label} href={href} className="bg-card border border-border rounded-2xl p-5 hover:border-primary/40 transition-colors">
-                <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-3`}>
-                  <Icon className={`w-5 h-5 ${color}`} />
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          
+          {/* Stats Grid (Bento Style) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {statCards.map(({ label, value, icon: Icon, color, bg, border, href }) => (
+              <Link 
+                key={label} 
+                href={href}
+                className={cn(
+                  "relative group bg-card/60 backdrop-blur-xl border rounded-[32px] p-6 hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 overflow-hidden cursor-pointer",
+                  border
+                )}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 opacity-50 pointer-events-none" />
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${bg} opacity-50 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700`} />
+                
+                <div className="relative z-10 flex flex-col justify-between h-full space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-14 h-14 rounded-2xl ${bg} flex items-center justify-center shadow-inner group-hover:rotate-12 transition-transform duration-500 border border-white/10`}>
+                      <Icon className={`w-7 h-7 ${color}`} />
+                    </div>
+                  </div>
+                  <div>
+                    <p className={`text-5xl font-black tracking-tighter ${color} drop-shadow-sm`}>{value}</p>
+                    <p className="text-sm text-muted-foreground mt-2 font-bold uppercase tracking-widest">{label}</p>
+                  </div>
                 </div>
-                <p className={`text-3xl font-black ${color}`}>{value}</p>
-                <p className="text-xs text-muted-foreground mt-1 font-medium">{label}</p>
               </Link>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {quickLinks.map(({ href, label, desc, icon: Icon }) => (
-              <Link key={href} href={href} className="flex items-center gap-4 bg-card border border-border rounded-2xl p-5 hover:border-primary/40 hover:bg-muted/30 transition-colors group">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Icon className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
-                </div>
-                <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-              </Link>
-            ))}
-          </div>
-
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <h2 className="font-bold text-foreground text-sm">دروس تنتظر المراجعة</h2>
-              </div>
-              <Link href="/academy/supervisor/content" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
-                عرض الكل
-                <ArrowLeft className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-            <div className="divide-y divide-border">
-              {recentLessons.length === 0 ? (
-                <div className="px-6 py-10 text-center text-sm text-muted-foreground">
-                  لا توجد دروس تنتظر المراجعة
-                </div>
-              ) : recentLessons.map(lesson => {
-                const Icon = typeIcon[lesson.type] || FileText
-                return (
-                  <Link key={lesson.id} href="/academy/supervisor/content" className="flex items-center gap-4 px-6 py-4 hover:bg-muted/40 transition-colors group">
-                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <Icon className="w-4 h-4 text-primary" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Quick Links */}
+            <div className="lg:col-span-1 flex flex-col gap-4">
+              <h3 className="font-black text-xl px-2 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber-500" />
+                الوصول السريع
+              </h3>
+              <div className="grid grid-cols-1 gap-4">
+                {quickLinks.map(({ href, label, desc, icon: Icon, color, bg }) => (
+                  <Link 
+                    key={href} 
+                    href={href} 
+                    className="flex items-center gap-4 bg-card/60 backdrop-blur-md border border-border rounded-3xl p-5 hover:border-primary/40 hover:bg-card hover:shadow-lg transition-all group overflow-hidden relative"
+                  >
+                    <div className="absolute right-0 top-0 w-2 h-full bg-primary/20 scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-bottom" />
+                    <div className={`w-12 h-12 rounded-2xl ${bg} flex items-center justify-center shrink-0 border border-white/5 shadow-inner group-hover:scale-110 transition-transform`}>
+                      <Icon className={`w-6 h-6 ${color}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                        {lesson.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                        {lesson.course_name} · {lesson.teacher_name}
+                      <p className="text-base font-bold text-foreground group-hover:text-primary transition-colors">{label}</p>
+                      <p className="text-xs font-semibold text-muted-foreground mt-1 line-clamp-1">{desc}</p>
+                    </div>
+                    <ArrowLeft className="w-5 h-5 text-muted-foreground/50 group-hover:text-primary group-hover:-translate-x-1 transition-all shrink-0" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Lessons Box */}
+            <div className="lg:col-span-2">
+              <div className="bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[40px] overflow-hidden shadow-xl shadow-black/5 h-full flex flex-col relative group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full pointer-events-none" />
+                
+                <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 dark:border-white/5 bg-white/5 dark:bg-black/5 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-inner">
+                      <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div>
+                      <h2 className="font-black text-foreground text-xl">دروس تنتظر المراجعة</h2>
+                      <p className="text-xs font-semibold text-muted-foreground mt-1">المحتوى التعليمي المرفوع مؤخراً</p>
+                    </div>
+                  </div>
+                  <Link href="/academy/supervisor/content" className="text-sm font-bold text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/20 px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 group/btn">
+                    عرض الكل
+                    <ArrowLeft className="w-4 h-4 group-hover/btn:-translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+                
+                <div className="flex-1 relative z-10">
+                  {recentLessons.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 px-6 text-center h-full">
+                      <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 shadow-inner border border-emerald-500/20">
+                        <CheckCircle className="w-8 h-8 text-emerald-500 opacity-80" />
+                      </div>
+                      <p className="text-lg font-black text-foreground">لا توجد دروس معلقة</p>
+                      <p className="text-sm text-muted-foreground font-medium mt-2 max-w-sm">
+                        لقد تمت مراجعة جميع الدروس المرفوعة. أحسنت عملاً!
                       </p>
                     </div>
-                    <span className="shrink-0 px-2.5 py-1 text-xs font-bold rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400">
-                      ينتظر
-                    </span>
-                  </Link>
-                )
-              })}
+                  ) : (
+                    <div className="p-4 space-y-3">
+                      {recentLessons.map(lesson => {
+                        const Icon = typeIcon[lesson.type] || FileText
+                        return (
+                          <Link 
+                            key={lesson.id} 
+                            href="/academy/supervisor/content" 
+                            className="flex items-center gap-4 bg-white/40 dark:bg-black/20 hover:bg-white/80 dark:hover:bg-white/5 border border-white/20 dark:border-white/5 p-5 rounded-[24px] transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group/item"
+                          >
+                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 shadow-inner group-hover/item:scale-110 transition-transform">
+                              <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div className="flex-1 min-w-0 pr-2">
+                              <p className="text-base font-bold text-foreground line-clamp-1 group-hover/item:text-primary transition-colors">
+                                {lesson.title}
+                              </p>
+                              <div className="flex items-center gap-3 mt-1.5 text-xs font-semibold text-muted-foreground">
+                                <span className="bg-muted px-2 py-1 rounded-md">{lesson.course_name}</span>
+                                <span className="bg-muted px-2 py-1 rounded-md">{lesson.teacher_name}</span>
+                              </div>
+                            </div>
+                            <span className="shrink-0 px-4 py-1.5 text-[11px] font-black uppercase tracking-widest rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400">
+                              قيد المراجعة
+                            </span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   )

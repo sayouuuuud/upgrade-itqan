@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
   const roleFilter =
     type === 'fiqh'    ? ['fiqh_supervisor'] :
     type === 'content' ? ['content_supervisor'] :
+    type === 'supervisor' ? ['supervisor'] :
                          SUPERVISOR_ROLES
 
   const supervisors = await query<any>(
@@ -69,6 +70,7 @@ export async function POST(req: NextRequest) {
 
   const supervisorRole =
     type === 'content' ? 'content_supervisor' :
+    type === 'supervisor' ? 'supervisor' :
     type === 'fiqh'    ? 'fiqh_supervisor'    :
                          'fiqh_supervisor' // default
 

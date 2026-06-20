@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
+import { useI18n } from "@/lib/i18n/context"
 
 interface BookCategoryOption {
   id: string
@@ -47,6 +48,10 @@ interface BookFormProps {
 }
 
 export function BookForm({ value, onChange }: BookFormProps) {
+  const { locale } = useI18n()
+  const isAr = locale === "ar"
+  const tr = (ar: string, en: string) => (isAr ? ar : en)
+
   const [uploadingCover, setUploadingCover] = useState(false)
   const [categories, setCategories] = useState<BookCategoryOption[]>([])
   const [isDragging, setIsDragging] = useState(false)
@@ -80,7 +85,7 @@ export function BookForm({ value, onChange }: BookFormProps) {
       const res = await fetch("/api/upload", { method: "POST", body: fd })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || "تعذر رفع الصورة")
+        throw new Error(data.error || tr("تعذر رفع الصورة", "Could not upload image"))
       }
       const data = await res.json()
       onChange({
@@ -88,9 +93,9 @@ export function BookForm({ value, onChange }: BookFormProps) {
         cover_image_url: data.url || data.imageUrl,
         cover_image_key: data.public_id || null,
       })
-      toast.success("تم رفع الغلاف")
+      toast.success(tr("تم رفع الغلاف", "Cover uploaded successfully"))
     } catch (e: any) {
-      toast.error(e?.message || "تعذر رفع الصورة")
+      toast.error(e?.message || tr("تعذر رفع الصورة", "Could not upload image"))
     } finally {
       setUploadingCover(false)
     }
@@ -119,11 +124,11 @@ export function BookForm({ value, onChange }: BookFormProps) {
 
   return (
     <Card>
-      <CardContent className="p-5 space-y-5">
+      <CardContent className="p-5 space-y-5" dir={isAr ? "rtl" : "ltr"}>
         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-5">
           {/* Cover image uploader */}
           <div className="space-y-2">
-            <Label>صورة الغلاف</Label>
+            <Label>{tr("صورة الغلاف", "Cover Image")}</Label>
             <div className="relative aspect-[3/4] w-full bg-muted rounded-xl overflow-hidden border border-border">
               {value.cover_image_url ? (
                 <>
@@ -139,7 +144,7 @@ export function BookForm({ value, onChange }: BookFormProps) {
                       onChange({ ...value, cover_image_url: null, cover_image_key: null })
                     }
                     className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:opacity-90"
-                    title="حذف"
+                    title={tr("حذف", "Delete")}
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -160,7 +165,7 @@ export function BookForm({ value, onChange }: BookFormProps) {
                     <Upload className={`w-6 h-6 ${isDragging ? 'text-primary' : ''}`} />
                   )}
                   <span className={isDragging ? 'font-bold text-primary' : ''}>
-                    {isDragging ? 'أفلت الصورة هنا' : 'اختر صورة أو اسحبها هنا'}
+                    {isDragging ? tr('أفلت الصورة هنا', 'Drop image here') : tr('اختر صورة أو اسحبها هنا', 'Select image or drag here')}
                   </span>
                   <input
                     type="file"
@@ -181,17 +186,17 @@ export function BookForm({ value, onChange }: BookFormProps) {
           {/* Main fields */}
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="bk-title">العنوان *</Label>
+              <Label htmlFor="bk-title">{tr("العنوان *", "Title *")}</Label>
               <Input
                 id="bk-title"
                 value={value.title}
                 onChange={(e) => update("title", e.target.value)}
-                placeholder="اسم الكتاب"
+                placeholder={tr("اسم الكتاب", "Book Name")}
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="bk-author">المؤلف</Label>
+                <Label htmlFor="bk-author">{tr("المؤلف", "Author")}</Label>
                 <Input
                   id="bk-author"
                   value={value.author}
@@ -199,14 +204,14 @@ export function BookForm({ value, onChange }: BookFormProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="bk-category">التصنيف</Label>
+                <Label htmlFor="bk-category">{tr("التصنيف", "Category")}</Label>
                 <select
                   id="bk-category"
                   value={value.category_id}
                   onChange={(e) => update("category_id", e.target.value)}
                   className="w-full border border-border bg-background rounded-md px-3 h-10 text-sm"
                 >
-                  <option value="">بدون تصنيف</option>
+                  <option value="">{tr("بدون تصنيف", "No Category")}</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -215,7 +220,7 @@ export function BookForm({ value, onChange }: BookFormProps) {
                 </select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="bk-pages">عدد الصفحات</Label>
+                <Label htmlFor="bk-pages">{tr("عدد الصفحات", "Pages Count")}</Label>
                 <Input
                   id="bk-pages"
                   type="number"
@@ -225,7 +230,7 @@ export function BookForm({ value, onChange }: BookFormProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="bk-date">تاريخ النشر</Label>
+                <Label htmlFor="bk-date">{tr("تاريخ النشر", "Publish Date")}</Label>
                 <Input
                   id="bk-date"
                   type="date"
@@ -234,7 +239,7 @@ export function BookForm({ value, onChange }: BookFormProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="bk-order">ترتيب العرض</Label>
+                <Label htmlFor="bk-order">{tr("ترتيب العرض", "Display Order")}</Label>
                 <Input
                   id="bk-order"
                   type="number"
@@ -243,13 +248,13 @@ export function BookForm({ value, onChange }: BookFormProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>الحالة</Label>
+                <Label>{tr("الحالة", "Status")}</Label>
                 <div className="flex items-center gap-3 h-10">
                   <Switch
                     checked={value.is_published}
                     onCheckedChange={(checked) => update("is_published", checked)}
                   />
-                  <span className="text-sm">{value.is_published ? "منشور" : "مسودة"}</span>
+                  <span className="text-sm">{value.is_published ? tr("منشور", "Published") : tr("مسودة", "Draft")}</span>
                 </div>
               </div>
             </div>
@@ -257,13 +262,13 @@ export function BookForm({ value, onChange }: BookFormProps) {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="bk-desc">الوصف</Label>
+          <Label htmlFor="bk-desc">{tr("الوصف", "Description")}</Label>
           <Textarea
             id="bk-desc"
             value={value.description}
             onChange={(e) => update("description", e.target.value)}
             rows={5}
-            placeholder="وصف الكتاب..."
+            placeholder={tr("وصف الكتاب...", "Book description...")}
           />
         </div>
       </CardContent>

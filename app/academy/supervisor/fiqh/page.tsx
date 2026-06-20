@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { HelpCircle, Clock, User, Filter, Eye, CheckCircle, Loader2 } from 'lucide-react'
+import { HelpCircle, Clock, User, Filter, Eye, CheckCircle, Loader2, MessageSquare, AlertCircle, Sparkles } from 'lucide-react'
 
 interface FiqhQuestion {
   id: string
@@ -39,95 +39,146 @@ export default function SupervisorFiqhPage() {
   const published  = questions.filter(q => q.is_published).length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-5xl mx-auto relative min-h-screen" dir="rtl">
+      
+      {/* Decorative Background */}
+      <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-primary/5 rounded-full filter blur-[120px] pointer-events-none -z-10 animate-pulse-slow" />
+      <div className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-rose-500/5 rounded-full filter blur-[100px] pointer-events-none -z-10" />
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <HelpCircle className="w-6 h-6 text-primary" />
-            الأسئلة الفقهية
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">مراجعة الأسئلة الواردة والإجابة عليها</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-muted-foreground" />
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-3 py-2 bg-card border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="unanswered">غير مُجابة</option>
-            <option value="answered">مُجابة</option>
-            <option value="all">الكل</option>
-          </select>
+      <div className="bg-card/40 backdrop-blur-3xl border border-white/20 dark:border-white/5 rounded-[40px] p-8 shadow-2xl shadow-black/5 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 justify-between">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-primary/20 to-rose-500/20 flex items-center justify-center border border-primary/20 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shrink-0">
+              <HelpCircle className="w-10 h-10 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight mb-2 flex items-center gap-3">
+                الأسئلة الفقهية
+                <Sparkles className="w-6 h-6 text-amber-500" />
+              </h1>
+              <p className="text-muted-foreground font-medium max-w-lg">
+                مراجعة وتدقيق الإجابات الفقهية الموجهة للطلاب والإشراف العام على فتاوى المنصة.
+              </p>
+            </div>
+          </div>
+          
+          <div className="w-full md:w-auto mt-4 md:mt-0 flex items-center gap-2 bg-muted/40 backdrop-blur-sm p-2 rounded-2xl border border-white/10 shadow-inner">
+            <Filter className="w-4 h-4 text-muted-foreground mr-2" />
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="bg-transparent border-none text-sm font-bold text-foreground focus:outline-none focus:ring-0 cursor-pointer pr-8"
+            >
+              <option value="unanswered">الأسئلة غير المُجابة</option>
+              <option value="answered">الأسئلة المُجابة</option>
+              <option value="all">عرض جميع الأسئلة</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Stats Grid (Bento Style) */}
+      <div className="grid grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
         {[
-          { label: 'غير مُجابة', value: unanswered, color: 'text-amber-600 dark:text-amber-400' },
-          { label: 'مُجابة',     value: answered,   color: 'text-emerald-600 dark:text-emerald-400' },
-          { label: 'منشورة',    value: published,  color: 'text-primary' },
+          { label: 'بانتظار الإجابة', value: unanswered, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          { label: 'تمت الإجابة',     value: answered,   color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          { label: 'منشور للعامة',    value: published,  color: 'text-primary', bg: 'bg-primary/10' },
         ].map(stat => (
-          <div key={stat.label} className="bg-card border border-border rounded-2xl p-4 text-center">
-            <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">{stat.label}</p>
+          <div key={stat.label} className="group bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[32px] p-6 hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 overflow-hidden relative shadow-lg shadow-black/5 text-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 opacity-50 pointer-events-none" />
+            <div className={`absolute top-0 left-0 w-32 h-32 bg-gradient-to-br ${stat.bg} opacity-50 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700`} />
+            
+            <div className="relative z-10 flex flex-col items-center justify-center h-full">
+              <p className={`text-5xl font-black tracking-tight drop-shadow-sm ${stat.color}`}>{stat.value}</p>
+              <p className="text-xs font-bold text-muted-foreground mt-3 uppercase tracking-widest">{stat.label}</p>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* List */}
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        </div>
-      ) : questions.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-12 text-center">
-          <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-foreground">لا توجد أسئلة</h3>
-          <p className="text-sm text-muted-foreground mt-1">لا توجد أسئلة بهذا الفلتر</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {questions.map(q => (
-            <Link
-              key={q.id}
-              href={`/academy/supervisor/fiqh/${q.id}`}
-              className="flex items-start justify-between gap-4 bg-card border border-border rounded-2xl p-5 hover:border-primary/30 hover:shadow-sm transition-all group"
-            >
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                  {q.question}
-                </p>
-                <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <User className="w-3 h-3" />
-                    {q.student_name}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {new Date(q.asked_at).toLocaleDateString('ar-EG')}
-                  </span>
-                  <span className="px-2 py-0.5 bg-muted rounded-full font-medium">{q.category}</span>
+      {/* List Area */}
+      <div className="bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[40px] overflow-hidden shadow-xl shadow-black/5 relative min-h-[400px]">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full pointer-events-none" />
+        
+        <div className="p-6 border-b border-white/10 dark:border-white/5 bg-white/5 dark:bg-black/5 relative z-10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shadow-inner border border-primary/20">
+                    <MessageSquare className="w-5 h-5 text-primary" />
                 </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                {q.answer !== null ? (
-                  <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
-                    مُجاب
-                  </span>
-                ) : (
-                  <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400">
-                    ينتظر
-                  </span>
-                )}
-                <Eye className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
-            </Link>
-          ))}
+                <h3 className="font-black text-xl text-foreground">صندوق الأسئلة الفقهية</h3>
+            </div>
+            <span className="text-sm font-bold text-muted-foreground bg-muted/50 px-4 py-1.5 rounded-lg border border-border">
+                {questions.length} سؤال
+            </span>
         </div>
-      )}
+
+        <div className="p-6 relative z-10">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="w-10 h-10 animate-spin text-primary opacity-50" />
+              <p className="text-sm font-bold text-muted-foreground animate-pulse">جاري تحميل صندوق الأسئلة...</p>
+            </div>
+          ) : questions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 shadow-inner border border-emerald-500/20">
+                <CheckCircle className="w-10 h-10 text-emerald-500 opacity-80" />
+              </div>
+              <h3 className="text-2xl font-black text-foreground mb-2">الصندوق فارغ</h3>
+              <p className="text-muted-foreground font-medium">لا توجد أسئلة مطابقة للفلتر المختار حالياً.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              {questions.map(q => (
+                <Link
+                  key={q.id}
+                  href={`/academy/supervisor/fiqh/${q.id}`}
+                  className="group bg-white/40 dark:bg-black/20 hover:bg-card border border-white/20 dark:border-white/5 rounded-[24px] p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative overflow-hidden flex flex-col md:flex-row items-center gap-6"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/[0.02] to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+                  
+                  <div className="flex-1 min-w-0 text-center md:text-right relative z-10 w-full">
+                    <p className="font-black text-lg text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-relaxed mb-4">
+                      {q.question}
+                    </p>
+                    
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm">
+                      <span className="flex items-center gap-1.5 font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border border-border shadow-sm">
+                        <User className="w-4 h-4 opacity-70" />
+                        {q.student_name}
+                      </span>
+                      <span className="flex items-center gap-1.5 font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border border-border shadow-sm">
+                        <Clock className="w-4 h-4 opacity-70" />
+                        {new Date(q.asked_at).toLocaleDateString('ar-EG')}
+                      </span>
+                      <span className="px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-lg font-black shadow-sm">
+                        {q.category}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col items-center gap-3 shrink-0 relative z-10 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-border">
+                    {q.answer !== null ? (
+                      <span className="w-full text-center px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 shadow-sm">
+                        تمت الإجابة
+                      </span>
+                    ) : (
+                      <span className="w-full text-center flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 shadow-sm">
+                        <AlertCircle className="w-3.5 h-3.5" /> بانتظار الإجابة
+                      </span>
+                    )}
+                    <span className="w-full text-center px-6 py-2.5 rounded-xl bg-blue-500/10 text-blue-600 hover:bg-blue-500 hover:text-white transition-all font-bold text-sm shadow-sm flex items-center justify-center gap-2">
+                        <Eye className="w-4 h-4" /> عرض السؤال
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

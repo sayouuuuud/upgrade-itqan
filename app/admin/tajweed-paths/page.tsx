@@ -123,7 +123,9 @@ function parseFloatSafe(value: string | undefined) {
 }
 
 export default function AdminTajweedPathsPage() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+  const isAr = locale === "ar"
+  const tr = (ar: string, en: string) => (isAr ? ar : en)
   const tp = (t as any).tajweedPaths
 
   const [paths, setPaths] = useState<Path[]>([])
@@ -227,11 +229,11 @@ export default function AdminTajweedPathsPage() {
 
   async function handleThumbnailUpload(file: File) {
     if (!file.type.startsWith("image/")) {
-      toast.error("يجب اختيار ملف صورة")
+      toast.error(tr("يجب اختيار ملف صورة", "Please select an image file"))
       return
     }
     if (file.size > 4 * 1024 * 1024) {
-      toast.error("الحجم الأقصى للصورة 4MB")
+      toast.error(tr("الحجم الأقصى للصورة 4MB", "Maximum image size is 4MB"))
       return
     }
     setUploadingThumb(true)
@@ -241,14 +243,14 @@ export default function AdminTajweedPathsPage() {
       const res = await fetch("/api/upload", { method: "POST", body: fd })
       const json = await res.json()
       if (!res.ok || !json.url) {
-        const errMsg = json.details ? `${json.error || "فشل رفع الصورة"}: ${json.details}` : (json.error || "فشل رفع الصورة")
+        const errMsg = json.details ? `${json.error || tr("فشل رفع الصورة", "Failed to upload image")}: ${json.details}` : (json.error || tr("فشل رفع الصورة", "Failed to upload image"))
         toast.error(errMsg)
         return
       }
       setForm(prev => ({ ...prev, thumbnail_url: json.url || "" }))
-      toast.success("تم رفع الصورة")
+      toast.success(tr("تم رفع الصورة", "Image uploaded successfully"))
     } catch {
-      toast.error("حدث خطأ أثناء الرفع")
+      toast.error(tr("حدث خطأ أثناء الرفع", "An error occurred during upload"))
     } finally {
       setUploadingThumb(false)
       if (fileInputRef.current) fileInputRef.current.value = ""
@@ -281,7 +283,7 @@ export default function AdminTajweedPathsPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || tp.form.createFailed)
 
-      toast.success("تم إنشاء المسار بنجاح")
+      toast.success(tr("تم إنشاء المسار بنجاح", "Path created successfully"))
       setOpenCreate(false)
       setForm({ ...form, title: "", description: "", manager_id: "", thumbnail_url: "" })
       setCreateTab("basic")
@@ -301,11 +303,11 @@ export default function AdminTajweedPathsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_published: !p.is_published }),
       })
-      if (!res.ok) throw new Error("تعذر تحديث الحالة")
-      toast.success(!p.is_published ? "تم النشر" : "تم إلغاء النشر")
+      if (!res.ok) throw new Error(tr("تعذر تحديث الحالة", "Failed to update status"))
+      toast.success(!p.is_published ? tr("تم النشر", "Published") : tr("تم إلغاء النشر", "Unpublished"))
       await load()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "خطأ")
+      toast.error(err instanceof Error ? err.message : tr("خطأ", "Error"))
     } finally {
       setActionId(null)
     }
@@ -316,11 +318,11 @@ export default function AdminTajweedPathsPage() {
     setActionId(`delete-${p.id}`)
     try {
       const res = await fetch(`/api/admin/tajweed-paths/${p.id}`, { method: "DELETE" })
-      if (!res.ok) throw new Error("تعذر الحذف")
-      toast.success("تم الحذف بنجاح")
+      if (!res.ok) throw new Error(tr("تعذر الحذف", "Failed to delete"))
+      toast.success(tr("تم الحذف بنجاح", "Deleted successfully"))
       await load()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "خطأ")
+      toast.error(err instanceof Error ? err.message : tr("خطأ", "Error"))
     } finally {
       setActionId(null)
     }
@@ -355,7 +357,7 @@ export default function AdminTajweedPathsPage() {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => remove(path)} className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer gap-2">
-            <Trash2 className="h-4 w-4" /> حذف المسار
+            <Trash2 className="h-4 w-4" /> {tr("حذف المسار", "Delete Path")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -363,7 +365,7 @@ export default function AdminTajweedPathsPage() {
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:max-w-[1400px] mx-auto">
+    <div className="space-y-6 p-4 sm:p-6 lg:max-w-[1400px] mx-auto" dir={isAr ? "rtl" : "ltr"}>
       {/* Header & Stats Premium Design */}
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -399,7 +401,7 @@ export default function AdminTajweedPathsPage() {
             </div>
             <Button variant="outline" onClick={load} disabled={refreshing} className="gap-2 shadow-sm">
               {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
-              تحديث
+              {tr("تحديث", "Refresh")}
             </Button>
             <Button onClick={() => setOpenCreate(true)} className="gap-2 shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white">
               <Plus className="h-4 w-4" /> {tp.actions.createPath}
@@ -421,13 +423,13 @@ export default function AdminTajweedPathsPage() {
 
         {/* Stats Dashboard */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
-          <StatCard icon={<BookOpen className="h-5 w-5 text-white" />} iconBg="bg-emerald-500" value={summary.total} label="المسارات" />
+          <StatCard icon={<BookOpen className="h-5 w-5 text-white" />} iconBg="bg-emerald-500" value={summary.total} label={tr("المسارات", "Paths")} />
           <StatCard icon={<Eye className="h-5 w-5 text-white" />} iconBg="bg-blue-500" value={summary.published} label={tp.statuses.published} />
           <StatCard icon={<EyeOff className="h-5 w-5 text-white" />} iconBg="bg-slate-400" value={summary.drafts} label={tp.statuses.draft} />
           <StatCard icon={<Users className="h-5 w-5 text-white" />} iconBg="bg-violet-500" value={summary.enrolled} label={tp.metadata.enrolled} />
           <StatCard icon={<CheckCircle2 className="h-5 w-5 text-white" />} iconBg="bg-teal-500" value={summary.completed} label={tp.metadata.completed} />
           <StatCard icon={<BarChart3 className="h-5 w-5 text-white" />} iconBg="bg-amber-500" value={`${summary.avgProgress}%`} label={tp.metadata.avgPercent} />
-          <StatCard icon={<AlertCircle className="h-5 w-5 text-white" />} iconBg={summary.empty > 0 ? "bg-red-500" : "bg-emerald-400"} value={summary.empty} label="مسارات فارغة" tone={summary.empty > 0 ? "warn" : undefined} />
+          <StatCard icon={<AlertCircle className="h-5 w-5 text-white" />} iconBg={summary.empty > 0 ? "bg-red-500" : "bg-emerald-400"} value={summary.empty} label={tr("مسارات فارغة", "Empty Paths")} tone={summary.empty > 0 ? "warn" : undefined} />
         </div>
       </div>
 
@@ -437,7 +439,7 @@ export default function AdminTajweedPathsPage() {
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="ابحث بعنوان المسار أو الوصف..."
+            placeholder={tr("ابحث بعنوان المسار أو الوصف...", "Search by path title or description...")}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full pr-9 pl-3 py-2 rounded-lg border-transparent bg-transparent hover:bg-muted/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm transition-colors"
@@ -450,7 +452,7 @@ export default function AdminTajweedPathsPage() {
             value={statusFilter}
             onChange={v => setStatusFilter(v as StatusFilter)}
             options={[
-              { value: "all", label: "كل الحالات" },
+              { value: "all", label: tr("كل الحالات", "All Statuses") },
               { value: "published", label: tp.statuses.published },
               { value: "draft", label: tp.statuses.draft },
             ]}
@@ -459,7 +461,7 @@ export default function AdminTajweedPathsPage() {
             value={levelFilter}
             onChange={v => setLevelFilter(v as "all" | Level)}
             options={[
-              { value: "all", label: "كل المستويات" },
+              { value: "all", label: tr("كل المستويات", "All Levels") },
               { value: "beginner", label: tp.levels.beginner },
               { value: "intermediate", label: tp.levels.intermediate },
               { value: "advanced", label: tp.levels.advanced },
@@ -470,7 +472,7 @@ export default function AdminTajweedPathsPage() {
               value={managerFilter}
               onChange={setManagerFilter}
               options={[
-                { value: "all", label: "كل المدراء" },
+                { value: "all", label: tr("كل المدراء", "All Managers") },
                 ...managers.map(m => ({ value: m.id, label: m.name || m.email })),
               ]}
             />
@@ -483,7 +485,7 @@ export default function AdminTajweedPathsPage() {
         <Card className="flex min-h-[300px] items-center justify-center p-10 text-muted-foreground rounded-2xl border-dashed">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-            <p>جاري تحميل البيانات...</p>
+            <p>{tr("جاري تحميل البيانات...", "Loading data...")}</p>
           </div>
         </Card>
       ) : visiblePaths.length === 0 ? (
@@ -500,9 +502,9 @@ export default function AdminTajweedPathsPage() {
             </>
           ) : (
             <>
-              <h2 className="text-xl font-bold">لا توجد نتائج تطابق الفلاتر الحالية</h2>
+              <h2 className="text-xl font-bold">{tr("لا توجد نتائج تطابق الفلاتر الحالية", "No results match the current filters")}</h2>
               <Button variant="outline" className="mt-6" onClick={() => { setSearch(""); setLevelFilter("all"); setStatusFilter("all"); setManagerFilter("all"); }}>
-                مسح الفلاتر
+                {tr("مسح الفلاتر", "Clear Filters")}
               </Button>
             </>
           )}
@@ -558,7 +560,7 @@ export default function AdminTajweedPathsPage() {
                     {path.title}
                   </Link>
                   <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                    {path.description || "لا يوجد وصف متوفر لهذا المسار حالياً."}
+                    {path.description || tr("لا يوجد وصف متوفر لهذا المسار حالياً.", "No description available for this path currently.")}
                   </p>
 
                   {/* Meta Stats */}
@@ -584,7 +586,7 @@ export default function AdminTajweedPathsPage() {
                           <span className="truncate max-w-[100px]">{path.manager_name}</span>
                         </div>
                       ) : (
-                        <span className="opacity-50">بدون مدير</span>
+                        <span className="opacity-50">{tr("بدون مدير", "No manager")}</span>
                       )}
                     </div>
                     <div className="flex items-center gap-1">
@@ -608,13 +610,13 @@ export default function AdminTajweedPathsPage() {
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow>
-                  <TableHead className="w-[300px]">المسار</TableHead>
-                  <TableHead>المستوى</TableHead>
-                  <TableHead>المراحل</TableHead>
-                  <TableHead>الطلاب والإنجاز</TableHead>
-                  <TableHead>المدير</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="text-right">إجراءات</TableHead>
+                  <TableHead className="w-[300px]">{tr("المسار", "Path")}</TableHead>
+                  <TableHead>{tr("المستوى", "Level")}</TableHead>
+                  <TableHead>{tr("المراحل", "Stages")}</TableHead>
+                  <TableHead>{tr("الطلاب والإنجاز", "Students & Progress")}</TableHead>
+                  <TableHead>{tr("المدير", "Manager")}</TableHead>
+                  <TableHead>{tr("الحالة", "Status")}</TableHead>
+                  <TableHead className={isAr ? "text-left" : "text-right"}>{tr("إجراءات", "Actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -642,7 +644,7 @@ export default function AdminTajweedPathsPage() {
                               {path.title}
                             </Link>
                             {path.estimated_days ? (
-                              <span className="text-[10px] text-muted-foreground mt-0.5">{path.estimated_days} يوم</span>
+                              <span className="text-[10px] text-muted-foreground mt-0.5">{path.estimated_days} {tr("يوم", "days")}</span>
                             ) : null}
                           </div>
                         </div>
@@ -655,8 +657,8 @@ export default function AdminTajweedPathsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1 w-24">
-                          <span className="text-xs font-medium flex items-center gap-1.5"><Users className="h-3 w-3 text-blue-500" /> {enrolled} طالب</span>
-                          <div className="flex items-center gap-1.5" title={`${avgProgress}% إنجاز`}>
+                          <span className="text-xs font-medium flex items-center gap-1.5"><Users className="h-3 w-3 text-blue-500" /> {enrolled} {tr("طالب", "students")}</span>
+                          <div className="flex items-center gap-1.5" title={`${avgProgress}% ${tr("إنجاز", "completed")}`}>
                             <Progress value={avgProgress} className="h-1.5 flex-1" />
                             <span className="text-[10px] text-muted-foreground">{avgProgress}%</span>
                           </div>
@@ -681,7 +683,7 @@ export default function AdminTajweedPathsPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className={isAr ? "text-left" : "text-right"}>
                         {renderActionsMenu(path)}
                       </TableCell>
                     </TableRow>
@@ -713,9 +715,9 @@ export default function AdminTajweedPathsPage() {
           <Tabs value={createTab} onValueChange={setCreateTab} className="flex flex-col">
             <div className="px-6 pt-4">
               <TabsList className="w-full grid grid-cols-3 bg-muted/50 p-1 rounded-lg">
-                <TabsTrigger value="basic" className="rounded-md">المعلومات الأساسية</TabsTrigger>
-                <TabsTrigger value="media" className="rounded-md">الوسائط</TabsTrigger>
-                <TabsTrigger value="settings" className="rounded-md">الإعدادات</TabsTrigger>
+                <TabsTrigger value="basic" className="rounded-md">{tr("المعلومات الأساسية", "Basic Info")}</TabsTrigger>
+                <TabsTrigger value="media" className="rounded-md">{tr("الوسائط", "Media")}</TabsTrigger>
+                <TabsTrigger value="settings" className="rounded-md">{tr("الإعدادات", "Settings")}</TabsTrigger>
               </TabsList>
             </div>
 
@@ -738,7 +740,7 @@ export default function AdminTajweedPathsPage() {
                       rows={4}
                       value={form.description}
                       onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="وصف مختصر لأهداف هذا المسار..."
+                      placeholder={tr("وصف مختصر لأهداف هذا المسار...", "Short description of this path's goals...")}
                       className="bg-muted/20 resize-none"
                     />
                   </div>
@@ -762,11 +764,11 @@ export default function AdminTajweedPathsPage() {
                   <div className="mx-auto w-full max-w-sm aspect-[16/9] bg-background shadow-sm rounded-lg overflow-hidden border border-border/50 mb-4 relative flex items-center justify-center">
                     {form.thumbnail_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={form.thumbnail_url} alt="معاينة" className="w-full h-full object-cover" />
+                      <img src={form.thumbnail_url} alt={tr("معاينة", "Preview")} className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-center p-4">
                         <ImageIcon className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
-                        <span className="text-sm text-muted-foreground">صورة الغلاف (16:9)</span>
+                        <span className="text-sm text-muted-foreground">{tr("صورة الغلاف (16:9)", "Cover Image (16:9)")}</span>
                       </div>
                     )}
                   </div>
@@ -785,15 +787,15 @@ export default function AdminTajweedPathsPage() {
                     />
                     <Button type="button" variant="secondary" disabled={uploadingThumb || creating} className="gap-2 px-6">
                       {uploadingThumb ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-                      {form.thumbnail_url ? "تغيير الصورة الحالية" : "اختيار ورفع صورة"}
+                      {form.thumbnail_url ? tr("تغيير الصورة الحالية", "Change current image") : tr("اختيار ورفع صورة", "Select & upload image")}
                     </Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-3">الصيغ المدعومة: JPG, PNG, WebP — الحجم الأقصى: 4MB</p>
+                  <p className="text-[11px] text-muted-foreground mt-3">{tr("الصيغ المدعومة: JPG, PNG, WebP — الحجم الأقصى: 4MB", "Supported formats: JPG, PNG, WebP — Max size: 4MB")}</p>
                   
                   {form.thumbnail_url && (
                     <div className="mt-3">
                       <button type="button" onClick={() => setForm(prev => ({ ...prev, thumbnail_url: "" }))} className="text-xs text-red-500 hover:text-red-700 underline underline-offset-2">
-                        إزالة الصورة نهائياً
+                        {tr("إزالة الصورة نهائياً", "Remove image permanently")}
                       </button>
                     </div>
                   )}
@@ -832,7 +834,7 @@ export default function AdminTajweedPathsPage() {
 
                 <div className="bg-muted/30 p-4 rounded-xl border border-border/50 space-y-3">
                   <h4 className="text-sm font-semibold flex items-center gap-2 mb-2">
-                    <Settings className="h-4 w-4 text-muted-foreground" /> إعدادات متقدمة
+                    <Settings className="h-4 w-4 text-muted-foreground" /> {tr("إعدادات متقدمة", "Advanced Settings")}
                   </h4>
                   
                   <label className="flex items-start gap-3 cursor-pointer group">
@@ -841,7 +843,7 @@ export default function AdminTajweedPathsPage() {
                     </div>
                     <div>
                       <span className="text-sm font-medium group-hover:text-emerald-700 transition-colors">{tp.form.seedDefaultStages}</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">يقوم النظام بتوليد هيكل أساسي للمراحل بناءً على التخصص.</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{tr("يقوم النظام بتوليد هيكل أساسي للمراحل بناءً على التخصص.", "The system will generate a basic structure for the stages based on the specialization.")}</p>
                     </div>
                   </label>
                   
@@ -851,7 +853,7 @@ export default function AdminTajweedPathsPage() {
                     </div>
                     <div>
                       <span className="text-sm font-medium group-hover:text-emerald-700 transition-colors">{tp.form.requireAudioOption}</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">يُطلب من الطالب تسجيل مقاطع صوتية لاجتياز بعض المراحل.</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{tr("يُطلب من الطالب تسجيل مقاطع صوتية لاجتياز بعض المراحل.", "Students are required to record audio clips to pass some stages.")}</p>
                     </div>
                   </label>
 
@@ -861,7 +863,7 @@ export default function AdminTajweedPathsPage() {
                     </div>
                     <div>
                       <span className="text-sm font-medium group-hover:text-emerald-700 transition-colors">{tp.form.publishImmediately}</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">سيكون المسار مرئياً للطلاب فور الإنشاء.</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{tr("سيكون المسار مرئياً للطلاب فور الإنشاء.", "The path will be visible to students immediately upon creation.")}</p>
                     </div>
                   </label>
                 </div>
@@ -875,7 +877,7 @@ export default function AdminTajweedPathsPage() {
               <div className="flex gap-2">
                 {createTab !== "settings" ? (
                   <Button type="button" variant="secondary" onClick={() => setCreateTab(createTab === "basic" ? "media" : "settings")}>
-                    التالي
+                    {tr("التالي", "Next")}
                   </Button>
                 ) : null}
                 <Button onClick={submit} disabled={creating || uploadingThumb || !form.title.trim()} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white min-w-[120px]">

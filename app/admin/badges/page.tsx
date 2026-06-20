@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   Award, Plus, Trash2, Edit2, X, Loader2, Star, Users,
-  Eye, Search, Save, ToggleLeft, ToggleRight, User, Gift
+  Search, Save, ToggleLeft, ToggleRight, Gift
 } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/context'
 
 interface BadgeDef {
   id: string
@@ -42,26 +43,26 @@ interface Stats {
 
 const ICONS = ['🏆', '⭐', '🌟', '🎖️', '🥇', '🏅', '💎', '🎯', '🚀', '🌙', '📖', '🎤', '💯', '👑', '🔥', '⚡']
 
-const CATEGORIES = [
-  { value: 'recitation', label: 'التلاوة' },
-  { value: 'memorization', label: 'الحفظ' },
-  { value: 'streak', label: 'الاستمرارية' },
-  { value: 'mastery', label: 'الإتقان' },
-  { value: 'special', label: 'خاصة' },
-  { value: 'achievement', label: 'إنجازات' },
+const getCategories = (tr: (ar: string, en: string) => string) => [
+  { value: 'recitation', label: tr('التلاوة', 'Recitation') },
+  { value: 'memorization', label: tr('الحفظ', 'Memorization') },
+  { value: 'streak', label: tr('الاستمرارية', 'Streak') },
+  { value: 'mastery', label: tr('الإتقان', 'Mastery') },
+  { value: 'special', label: tr('خاصة', 'Special') },
+  { value: 'achievement', label: tr('إنجازات', 'Achievements') },
 ]
 
-const CRITERIA_TYPES = [
-  { value: 'recitation_count', label: 'عدد التلاوات' },
-  { value: 'recitation_total', label: 'إجمالي التلاوات' },
-  { value: 'streak_days', label: 'أيام Streak' },
-  { value: 'juz_memorized', label: 'حفظ جزء' },
-  { value: 'tajweed_path', label: 'مسار التجويد' },
-  { value: 'ramadan', label: 'أيام رمضان' },
-  { value: 'quran_complete', label: 'ختم القرآن' },
-  { value: 'top_student', label: 'الأعلى نقاطاً' },
-  { value: 'points_threshold', label: 'حد نقاط' },
-  { value: 'manual', label: 'يدوي' },
+const getCriteriaTypes = (tr: (ar: string, en: string) => string) => [
+  { value: 'recitation_count', label: tr('عدد التلاوات', 'Recitations Count') },
+  { value: 'recitation_total', label: tr('إجمالي التلاوات', 'Total Recitations') },
+  { value: 'streak_days', label: tr('أيام Streak', 'Streak Days') },
+  { value: 'juz_memorized', label: tr('حفظ جزء', 'Memorized Juz') },
+  { value: 'tajweed_path', label: tr('مسار التجويد', 'Tajweed Path') },
+  { value: 'ramadan', label: tr('أيام رمضان', 'Ramadan Days') },
+  { value: 'quran_complete', label: tr('ختم القرآن', 'Quran Completion') },
+  { value: 'top_student', label: tr('الأعلى نقاطاً', 'Top Student') },
+  { value: 'points_threshold', label: tr('حد نقاط', 'Points Threshold') },
+  { value: 'manual', label: tr('يدوي', 'Manual') },
 ]
 
 const COLORS = ['#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#F97316', '#6366F1', '#EF4444', '#14B8A6', '#EAB308']
@@ -81,6 +82,10 @@ const emptyForm = {
 }
 
 export default function AdminBadgesPage() {
+  const { locale } = useI18n()
+  const isAr = locale === 'ar'
+  const tr = (ar: string, en: string) => (isAr ? ar : en)
+
   const [badges, setBadges] = useState<BadgeDef[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [recentAwards, setRecentAwards] = useState<RecentAward[]>([])
@@ -115,7 +120,7 @@ export default function AdminBadgesPage() {
     }
   }
 
-  useEffect(() => { fetchBadges() }, [])
+  useEffect(() => { void fetchBadges() }, [])
 
   const openAdd = () => {
     setEditItem(null)
@@ -155,10 +160,10 @@ export default function AdminBadgesPage() {
       })
       if (res.ok) {
         setShowModal(false)
-        fetchBadges()
+        void fetchBadges()
       } else {
         const data = await res.json()
-        alert(data.error || 'حدث خطأ')
+        alert(data.error || tr('حدث خطأ', 'An error occurred'))
       }
     } finally {
       setSaving(false)
@@ -166,11 +171,11 @@ export default function AdminBadgesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذه الشارة؟')) return
+    if (!confirm(tr('هل أنت متأكد من حذف هذه الشارة؟', 'Are you sure you want to delete this badge?'))) return
     setDeletingId(id)
     try {
       await fetch(`/api/admin/badges/${id}`, { method: 'DELETE' })
-      fetchBadges()
+      void fetchBadges()
     } finally {
       setDeletingId(null)
     }
@@ -182,7 +187,7 @@ export default function AdminBadgesPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_active: !b.is_active }),
     })
-    fetchBadges()
+    void fetchBadges()
   }
 
   const searchStudents = async () => {
@@ -210,13 +215,13 @@ export default function AdminBadgesPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setAwardMsg(data.awarded ? 'تم منح الشارة بنجاح!' : 'الطالب حاصل على الشارة مسبقاً')
-        fetchBadges()
+        setAwardMsg(data.awarded ? tr('تم منح الشارة بنجاح!', 'Badge awarded successfully!') : tr('الطالب حاصل على الشارة مسبقاً', 'Student already has this badge'))
+        void fetchBadges()
       } else {
-        setAwardMsg(`خطأ: ${data.error}`)
+        setAwardMsg(`${tr('خطأ:', 'Error:')} ${data.error}`)
       }
     } catch {
-      setAwardMsg('فشل الاتصال')
+      setAwardMsg(tr('فشل الاتصال', 'Connection failed'))
     } finally {
       setAwarding(false)
     }
@@ -230,25 +235,28 @@ export default function AdminBadgesPage() {
     )
   }
 
+  const categories = getCategories(tr)
+  const criteriaTypes = getCriteriaTypes(tr)
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir={isAr ? "rtl" : "ltr"}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Award className="w-7 h-7 text-yellow-600" />
-            إدارة الشارات والإنجازات
+            {tr("إدارة الشارات والإنجازات", "Badges & Achievements Management")}
           </h1>
-          <p className="text-muted-foreground mt-1">إنشاء وتعديل وتخصيص الشارات</p>
+          <p className="text-muted-foreground mt-1">{tr("إنشاء وتعديل وتخصيص الشارات", "Create, edit, and customize badges")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => { setShowAwardModal(true); setAwardMsg(null) }}>
-            <Gift className="w-4 h-4 ml-2" />
-            منح شارة لطالب
+            <Gift className={isAr ? "ml-2 w-4 h-4" : "mr-2 w-4 h-4"} />
+            {tr("منح شارة لطالب", "Award badge to student")}
           </Button>
           <Button onClick={openAdd} className="bg-yellow-600 hover:bg-yellow-700 text-white">
-            <Plus className="w-4 h-4 ml-2" />
-            شارة جديدة
+            <Plus className={isAr ? "ml-2 w-4 h-4" : "mr-2 w-4 h-4"} />
+            {tr("شارة جديدة", "New Badge")}
           </Button>
         </div>
       </div>
@@ -260,21 +268,21 @@ export default function AdminBadgesPage() {
             <CardContent className="pt-5 text-center">
               <Award className="w-6 h-6 mx-auto mb-1 text-yellow-500" />
               <p className="text-2xl font-bold">{stats.total_definitions}</p>
-              <p className="text-xs text-muted-foreground">شارة معرّفة</p>
+              <p className="text-xs text-muted-foreground">{tr("شارة معرّفة", "Defined Badges")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-5 text-center">
               <Users className="w-6 h-6 mx-auto mb-1 text-blue-500" />
               <p className="text-2xl font-bold">{stats.total_students_with_badges}</p>
-              <p className="text-xs text-muted-foreground">طالب حاصل على شارات</p>
+              <p className="text-xs text-muted-foreground">{tr("طالب حاصل على شارات", "Students with Badges")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-5 text-center">
               <Star className="w-6 h-6 mx-auto mb-1 text-green-500" />
               <p className="text-2xl font-bold">{stats.total_badges_awarded}</p>
-              <p className="text-xs text-muted-foreground">شارة ممنوحة</p>
+              <p className="text-xs text-muted-foreground">{tr("شارة ممنوحة", "Badges Awarded")}</p>
             </CardContent>
           </Card>
         </div>
@@ -284,9 +292,9 @@ export default function AdminBadgesPage() {
       {badges.length === 0 ? (
         <Card className="text-center py-12">
           <Award className="w-14 h-14 mx-auto mb-4 text-muted-foreground opacity-30" />
-          <p className="text-muted-foreground font-medium mb-4">لا توجد شارات بعد</p>
+          <p className="text-muted-foreground font-medium mb-4">{tr("لا توجد شارات بعد", "No badges yet")}</p>
           <Button onClick={openAdd} className="bg-yellow-600 hover:bg-yellow-700 text-white">
-            <Plus className="w-4 h-4 ml-2" /> أنشئ أول شارة
+            <Plus className={isAr ? "ml-2 w-4 h-4" : "mr-2 w-4 h-4"} /> {tr("أنشئ أول شارة", "Create first badge")}
           </Button>
         </Card>
       ) : (
@@ -301,7 +309,7 @@ export default function AdminBadgesPage() {
                 <button
                   className="absolute top-2 left-2"
                   onClick={() => handleToggleActive(b)}
-                  title={b.is_active ? 'تعطيل' : 'تفعيل'}
+                  title={b.is_active ? tr('تعطيل', 'Deactivate') : tr('تفعيل', 'Activate')}
                 >
                   {b.is_active ? (
                     <ToggleRight className="w-5 h-5 text-green-500" />
@@ -316,6 +324,7 @@ export default function AdminBadgesPage() {
                   style={{ backgroundColor: b.badge_color + '25' }}
                 >
                   {b.badge_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={b.badge_image_url} alt={b.badge_name} className="w-10 h-10 rounded-full object-cover" />
                   ) : (
                     <span>{b.badge_icon || '🏆'}</span>
@@ -326,15 +335,15 @@ export default function AdminBadgesPage() {
 
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 font-bold">
-                    +{b.points_awarded} نقطة
+                    +{b.points_awarded} {tr("نقطة", "points")}
                   </span>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700">
-                    {CRITERIA_TYPES.find(c => c.value === b.criteria_type)?.label || b.criteria_type}
+                    {criteriaTypes.find(c => c.value === b.criteria_type)?.label || b.criteria_type}
                   </span>
                 </div>
 
                 <p className="text-xs text-muted-foreground mb-3">
-                  {b.earned_count} طالب حاصل عليها
+                  {b.earned_count} {tr("طالب حاصل عليها", "students earned this")}
                 </p>
 
                 <div className="flex items-center justify-center gap-2">
@@ -363,7 +372,7 @@ export default function AdminBadgesPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Star className="w-5 h-5 text-yellow-500" />
-              آخر الشارات الممنوحة
+              {tr("آخر الشارات الممنوحة", "Recent Badges Awarded")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -375,7 +384,7 @@ export default function AdminBadgesPage() {
                     <p className="text-xs text-muted-foreground">{a.badge_name}</p>
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(a.awarded_at).toLocaleDateString('ar-SA')}
+                    {new Date(a.awarded_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}
                   </span>
                 </div>
               ))}
@@ -388,9 +397,9 @@ export default function AdminBadgesPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowModal(false)} />
-          <div className="relative bg-card rounded-2xl border p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-card rounded-2xl border p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto" dir={isAr ? "rtl" : "ltr"}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">{editItem ? 'تعديل الشارة' : 'شارة جديدة'}</h2>
+              <h2 className="text-xl font-bold">{editItem ? tr('تعديل الشارة', 'Edit Badge') : tr('شارة جديدة', 'New Badge')}</h2>
               <button onClick={() => setShowModal(false)}>
                 <X className="w-5 h-5" />
               </button>
@@ -400,11 +409,11 @@ export default function AdminBadgesPage() {
               {/* Badge Key (only for new) */}
               {!editItem && (
                 <div>
-                  <label className="text-sm font-medium block mb-1">المعرّف (badge_key)</label>
+                  <label className="text-sm font-medium block mb-1">{tr("المعرّف (badge_key)", "Identifier (badge_key)")}</label>
                   <Input
                     value={form.badge_key}
                     onChange={(e) => setForm(f => ({ ...f, badge_key: e.target.value.replace(/\s/g, '_').toLowerCase() }))}
-                    placeholder="مثال: first_recitation"
+                    placeholder={tr("مثال: first_recitation", "e.g., first_recitation")}
                     required
                   />
                 </div>
@@ -412,28 +421,28 @@ export default function AdminBadgesPage() {
 
               {/* Name */}
               <div>
-                <label className="text-sm font-medium block mb-1">اسم الشارة</label>
+                <label className="text-sm font-medium block mb-1">{tr("اسم الشارة", "Badge Name")}</label>
                 <Input
                   value={form.badge_name}
                   onChange={(e) => setForm(f => ({ ...f, badge_name: e.target.value }))}
-                  placeholder="مثال: أول تلاوة"
+                  placeholder={tr("مثال: أول تلاوة", "e.g., First Recitation")}
                   required
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="text-sm font-medium block mb-1">الوصف</label>
+                <label className="text-sm font-medium block mb-1">{tr("الوصف", "Description")}</label>
                 <Input
                   value={form.badge_description}
                   onChange={(e) => setForm(f => ({ ...f, badge_description: e.target.value }))}
-                  placeholder="مثال: سجّل تلاوتك الأولى على المنصة"
+                  placeholder={tr("مثال: سجّل تلاوتك الأولى على المنصة", "e.g., Record your first recitation on the platform")}
                 />
               </div>
 
               {/* Icon Selection */}
               <div>
-                <label className="text-sm font-medium block mb-1">الأيقونة</label>
+                <label className="text-sm font-medium block mb-1">{tr("الأيقونة", "Icon")}</label>
                 <div className="flex flex-wrap gap-2">
                   {ICONS.map(icon => (
                     <button
@@ -452,7 +461,7 @@ export default function AdminBadgesPage() {
 
               {/* Image URL */}
               <div>
-                <label className="text-sm font-medium block mb-1">رابط الصورة (اختياري — بديل عن الأيقونة)</label>
+                <label className="text-sm font-medium block mb-1">{tr("رابط الصورة (اختياري — بديل عن الأيقونة)", "Image URL (Optional - replaces icon)")}</label>
                 <Input
                   value={form.badge_image_url}
                   onChange={(e) => setForm(f => ({ ...f, badge_image_url: e.target.value }))}
@@ -463,7 +472,7 @@ export default function AdminBadgesPage() {
 
               {/* Color */}
               <div>
-                <label className="text-sm font-medium block mb-1">اللون</label>
+                <label className="text-sm font-medium block mb-1">{tr("اللون", "Color")}</label>
                 <div className="flex flex-wrap gap-2">
                   {COLORS.map(c => (
                     <button
@@ -488,7 +497,7 @@ export default function AdminBadgesPage() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Points */}
                 <div>
-                  <label className="text-sm font-medium block mb-1">النقاط الممنوحة</label>
+                  <label className="text-sm font-medium block mb-1">{tr("النقاط الممنوحة", "Points Awarded")}</label>
                   <Input
                     type="number"
                     min={0}
@@ -499,7 +508,7 @@ export default function AdminBadgesPage() {
 
                 {/* Display Order */}
                 <div>
-                  <label className="text-sm font-medium block mb-1">ترتيب العرض</label>
+                  <label className="text-sm font-medium block mb-1">{tr("ترتيب العرض", "Display Order")}</label>
                   <Input
                     type="number"
                     min={0}
@@ -511,13 +520,13 @@ export default function AdminBadgesPage() {
 
               {/* Category */}
               <div>
-                <label className="text-sm font-medium block mb-1">التصنيف</label>
+                <label className="text-sm font-medium block mb-1">{tr("التصنيف", "Category")}</label>
                 <select
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={form.category}
                   onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))}
                 >
-                  {CATEGORIES.map(c => (
+                  {categories.map(c => (
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
                 </select>
@@ -526,13 +535,13 @@ export default function AdminBadgesPage() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Criteria Type */}
                 <div>
-                  <label className="text-sm font-medium block mb-1">نوع الشرط</label>
+                  <label className="text-sm font-medium block mb-1">{tr("نوع الشرط", "Criteria Type")}</label>
                   <select
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     value={form.criteria_type}
                     onChange={(e) => setForm(f => ({ ...f, criteria_type: e.target.value }))}
                   >
-                    {CRITERIA_TYPES.map(c => (
+                    {criteriaTypes.map(c => (
                       <option key={c.value} value={c.value}>{c.label}</option>
                     ))}
                   </select>
@@ -540,7 +549,7 @@ export default function AdminBadgesPage() {
 
                 {/* Criteria Value */}
                 <div>
-                  <label className="text-sm font-medium block mb-1">قيمة الشرط</label>
+                  <label className="text-sm font-medium block mb-1">{tr("قيمة الشرط", "Criteria Value")}</label>
                   <Input
                     type="number"
                     min={0}
@@ -552,12 +561,13 @@ export default function AdminBadgesPage() {
 
               {/* Preview */}
               <div className="bg-muted/30 rounded-lg p-4 text-center">
-                <p className="text-xs text-muted-foreground mb-2">معاينة</p>
+                <p className="text-xs text-muted-foreground mb-2">{tr("معاينة", "Preview")}</p>
                 <div
                   className="w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center text-3xl"
                   style={{ backgroundColor: form.badge_color + '25' }}
                 >
                   {form.badge_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={form.badge_image_url} alt="" className="w-10 h-10 rounded-full object-cover" />
                   ) : (
                     <span>{form.badge_icon}</span>
@@ -565,20 +575,20 @@ export default function AdminBadgesPage() {
                 </div>
                 <p className="font-bold text-sm">{form.badge_name || '...'}</p>
                 <p className="text-xs text-muted-foreground">{form.badge_description || '...'}</p>
-                <span className="text-xs text-amber-600 font-bold">+{form.points_awarded} نقطة</span>
+                <span className="text-xs text-amber-600 font-bold">+{form.points_awarded} {tr("نقطة", "points")}</span>
               </div>
 
               <div className="flex gap-3 pt-2">
                 <Button type="submit" disabled={saving} className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white">
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                     <>
-                      <Save className="w-4 h-4 ml-2" />
-                      {editItem ? 'حفظ التعديلات' : 'إنشاء الشارة'}
+                      <Save className={isAr ? "ml-2 w-4 h-4" : "mr-2 w-4 h-4"} />
+                      {editItem ? tr('حفظ التعديلات', 'Save Changes') : tr('إنشاء الشارة', 'Create Badge')}
                     </>
                   )}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>
-                  إلغاء
+                  {tr("إلغاء", "Cancel")}
                 </Button>
               </div>
             </form>
@@ -590,11 +600,11 @@ export default function AdminBadgesPage() {
       {showAwardModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowAwardModal(false)} />
-          <div className="relative bg-card rounded-2xl border p-6 w-full max-w-md">
+          <div className="relative bg-card rounded-2xl border p-6 w-full max-w-md" dir={isAr ? "rtl" : "ltr"}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Gift className="w-5 h-5 text-yellow-500" />
-                منح شارة لطالب
+                {tr("منح شارة لطالب", "Award Badge to Student")}
               </h2>
               <button onClick={() => setShowAwardModal(false)}>
                 <X className="w-5 h-5" />
@@ -603,13 +613,13 @@ export default function AdminBadgesPage() {
 
             {/* Select Badge */}
             <div className="mb-4">
-              <label className="text-sm font-medium block mb-1">اختر الشارة</label>
+              <label className="text-sm font-medium block mb-1">{tr("اختر الشارة", "Select Badge")}</label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={awardBadgeKey}
                 onChange={(e) => setAwardBadgeKey(e.target.value)}
               >
-                <option value="">اختر شارة...</option>
+                <option value="">{tr("اختر شارة...", "Select badge...")}</option>
                 {badges.filter(b => b.is_active).map(b => (
                   <option key={b.badge_key} value={b.badge_key}>
                     {b.badge_icon} {b.badge_name} (+{b.points_awarded})
@@ -620,13 +630,13 @@ export default function AdminBadgesPage() {
 
             {/* Search Student */}
             <div className="mb-4">
-              <label className="text-sm font-medium block mb-1">ابحث عن الطالب</label>
+              <label className="text-sm font-medium block mb-1">{tr("ابحث عن الطالب", "Search Student")}</label>
               <div className="flex gap-2">
                 <Input
-                  placeholder="اسم أو بريد إلكتروني..."
+                  placeholder={tr("اسم أو بريد إلكتروني...", "Name or email...")}
                   value={awardSearch}
                   onChange={(e) => setAwardSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && searchStudents()}
+                  onKeyDown={(e) => { if (e.key === 'Enter') void searchStudents() }}
                 />
                 <Button variant="outline" onClick={searchStudents} size="sm">
                   <Search className="w-4 h-4" />
@@ -648,14 +658,14 @@ export default function AdminBadgesPage() {
                     onClick={() => handleAwardBadge(s.id)}
                     className="bg-yellow-600 hover:bg-yellow-700 text-white"
                   >
-                    {awarding ? <Loader2 className="w-3 h-3 animate-spin" /> : 'منح'}
+                    {awarding ? <Loader2 className="w-3 h-3 animate-spin" /> : tr('منح', 'Award')}
                   </Button>
                 </div>
               ))}
             </div>
 
             {awardMsg && (
-              <p className={`mt-3 text-sm font-medium ${awardMsg.includes('خطأ') ? 'text-red-600' : 'text-green-600'}`}>
+              <p className={`mt-3 text-sm font-medium ${awardMsg.includes('خطأ') || awardMsg.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
                 {awardMsg}
               </p>
             )}

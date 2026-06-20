@@ -9,7 +9,7 @@ import { resolveSupervisorScope, canSupervisorAccessUser } from "@/lib/superviso
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession()
-    const allowedRoles: ("admin" | "student_supervisor" | "reciter_supervisor")[] = ["admin", "student_supervisor", "reciter_supervisor"]
+    const allowedRoles: ("admin" | "student_supervisor" | "reciter_supervisor" | "academy_admin")[] = ["admin", "student_supervisor", "reciter_supervisor", "academy_admin"]
     if (!requireRole(session, allowedRoles)) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
     }
@@ -41,7 +41,11 @@ export async function GET(req: NextRequest) {
       whereClause += ` AND u.role = $${params.length}`
     } else if (role) {
       if (role === 'supervisors') {
-        whereClause += ` AND u.role IN ('student_supervisor', 'reciter_supervisor')`
+        if (platform === 'academy') {
+          whereClause += ` AND u.role IN ('supervisor', 'fiqh_supervisor', 'content_supervisor', 'quality_supervisor')`
+        } else {
+          whereClause += ` AND u.role IN ('student_supervisor', 'reciter_supervisor')`
+        }
       } else {
         params.push(role)
         whereClause += ` AND u.role = $${params.length}`
@@ -114,7 +118,7 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getSession()
-    const allowedRoles: ("admin" | "student_supervisor" | "reciter_supervisor")[] = ["admin", "student_supervisor", "reciter_supervisor"]
+    const allowedRoles: ("admin" | "student_supervisor" | "reciter_supervisor" | "academy_admin")[] = ["admin", "student_supervisor", "reciter_supervisor", "academy_admin"]
     if (!requireRole(session, allowedRoles)) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
     }
@@ -261,7 +265,7 @@ export async function PATCH(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession()
-    const allowedRoles: ("admin" | "student_supervisor" | "reciter_supervisor")[] = ["admin", "student_supervisor", "reciter_supervisor"]
+    const allowedRoles: ("admin" | "student_supervisor" | "reciter_supervisor" | "academy_admin")[] = ["admin", "student_supervisor", "reciter_supervisor", "academy_admin"]
     if (!requireRole(session, allowedRoles)) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
     }

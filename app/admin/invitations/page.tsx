@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import useSWR from 'swr'
+import { useI18n } from '@/lib/i18n/context'
 
 // ---- Types ----
 interface Invitation {
@@ -41,23 +42,26 @@ interface Counts {
   PENDING: number; ACCEPTED: number; EXPIRED: number; CANCELLED: number; ALL: number
 }
 
-const ROLES = [
-  { value: 'student',            label: 'طالب' },
-  { value: 'reader',             label: 'مقرئ' },
-  { value: 'student_supervisor', label: 'مشرف طلاب' },
-  { value: 'reciter_supervisor', label: 'مشرف مقرئين' },
-]
-
-const STATUS_META: Record<string, { label: string; cls: string; icon: React.ReactNode }> = {
-  PENDING:   { label: 'معلقة',  cls: 'bg-amber-500/10 text-amber-700 border-amber-500/20',      icon: <Clock      className="w-3 h-3" /> },
-  ACCEPTED:  { label: 'مقبولة', cls: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20', icon: <CheckCircle className="w-3 h-3" /> },
-  EXPIRED:   { label: 'منتهية', cls: 'bg-muted text-muted-foreground border-border',             icon: <XCircle    className="w-3 h-3" /> },
-  CANCELLED: { label: 'ملغاة',  cls: 'bg-red-500/10 text-red-700 border-red-500/20',             icon: <XCircle    className="w-3 h-3" /> },
-}
-
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export default function AdminInvitationsPage() {
+  const { locale } = useI18n()
+  const isAr = locale === 'ar'
+  const tr = (ar: string, en: string) => (isAr ? ar : en)
+
+  const ROLES = useMemo(() => [
+    { value: 'student',            label: tr('طالب', 'Student') },
+    { value: 'reader',             label: tr('مقرئ', 'Reciter') },
+    { value: 'student_supervisor', label: tr('مشرف طلاب', 'Student Supervisor') },
+    { value: 'reciter_supervisor', label: tr('مشرف مقرئين', 'Reciter Supervisor') },
+  ], [isAr])
+
+  const STATUS_META = useMemo<Record<string, { label: string; cls: string; icon: React.ReactNode }>>(() => ({
+    PENDING:   { label: tr('معلقة', 'Pending'),  cls: 'bg-amber-500/10 text-amber-700 border-amber-500/20',      icon: <Clock      className="w-3 h-3" /> },
+    ACCEPTED:  { label: tr('مقبولة', 'Accepted'), cls: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20', icon: <CheckCircle className="w-3 h-3" /> },
+    EXPIRED:   { label: tr('منتهية', 'Expired'), cls: 'bg-muted text-muted-foreground border-border',             icon: <XCircle    className="w-3 h-3" /> },
+    CANCELLED: { label: tr('ملغاة', 'Cancelled'),  cls: 'bg-red-500/10 text-red-700 border-red-500/20',             icon: <XCircle    className="w-3 h-3" /> },
+  }), [isAr])
   // ---- filters ----
   const [tab,    setTab]    = useState('all')
   const [search, setSearch] = useState('')
@@ -95,7 +99,7 @@ export default function AdminInvitationsPage() {
 
   // ---- Send single invite ----
   async function handleSend() {
-    if (!formEmail) { toast.error('البريد الإلكتروني مطلوب'); return }
+    if (!formEmail) { toast.error(tr('البريد الإلكتروني مطلوب', 'Email is required')); return }
     setSending(true)
     try {
       const res = await fetch('/api/admin/invitations', {
@@ -110,15 +114,15 @@ export default function AdminInvitationsPage() {
       })
       const json = await res.json()
       if (!res.ok && res.status !== 207) {
-        toast.error(json.error || 'حدث خطأ')
+        toast.error(json.error || tr('حدث خطأ', 'An error occurred'))
       } else {
-        toast.success(`تم إرسال الدعوة إلى ${formEmail}`)
+        toast.success(tr(`تم إرسال الدعوة إلى ${formEmail}`, `Invitation sent to ${formEmail}`))
         setShowForm(false)
         setFormEmail(''); setFormName('')
         setFormRole('student'); setFormPlan('none')
         mutate()
       }
-    } catch { toast.error('حدث خطأ') }
+    } catch { toast.error(tr('حدث خطأ', 'An error occurred')) }
     finally { setSending(false) }
   }
 
@@ -136,12 +140,12 @@ export default function AdminInvitationsPage() {
       for (const line of lines) {
         const [email, name] = line.split(',').map(s => s.trim())
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          bad.push(email || '(فارغ)')
+          bad.push(email || tr('(فارغ)', '(empty)'))
         } else {
           rows.push({ email, name: name || undefined })
         }
       }
-      if (bad.length) setCsvError(`إيميلات غير صالحة: ${bad.join(', ')}`)
+      if (bad.length) setCsvError(tr(`إيميلات غير صالحة: ${bad.join(', ')}`, `Invalid emails: ${bad.join(', ')}`))
       setCsvRows(rows)
     }
     reader.readAsText(file)
@@ -166,12 +170,12 @@ export default function AdminInvitationsPage() {
       const json = await res.json()
       const sentCount = json.sent?.length  || 0
       const errCount  = json.errors?.length || 0
-      if (sentCount > 0) toast.success(`تم إرسال ${sentCount} دعوة بنجاح`)
-      if (errCount  > 0) toast.error(`${errCount} دعوة لم تُرسل (مكررة أو بريد غير صالح)`)
+      if (sentCount > 0) toast.success(tr(`تم إرسال ${sentCount} دعوة بنجاح`, `Successfully sent ${sentCount} invitations`))
+      if (errCount  > 0) toast.error(tr(`${errCount} دعوة لم تُرسل (مكررة أو بريد غير صالح)`, `${errCount} invitations were not sent (duplicate or invalid email)`))
       setShowCsv(false); setCsvRows([]); setCsvError('')
       if (fileRef.current) fileRef.current.value = ''
       mutate()
-    } catch { toast.error('حدث خطأ') }
+    } catch { toast.error(tr('حدث خطأ', 'An error occurred')) }
     finally { setCsvSending(false) }
   }
 
@@ -184,8 +188,8 @@ export default function AdminInvitationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'resend' }),
       })
-      if (res.ok) { toast.success('تم إعادة إرسال الدعوة'); mutate() }
-      else        { toast.error('تعذّر إعادة الإرسال') }
+      if (res.ok) { toast.success(tr('تم إعادة إرسال الدعوة', 'Invitation resent successfully')); mutate() }
+      else        { toast.error(tr('تعذّر إعادة الإرسال', 'Failed to resend')) }
     } finally { setActionId(null) }
   }
 
@@ -198,47 +202,47 @@ export default function AdminInvitationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'cancel' }),
       })
-      if (res.ok) { toast.success('تم إلغاء الدعوة'); mutate() }
-      else        { toast.error('تعذّر الإلغاء') }
+      if (res.ok) { toast.success(tr('تم إلغاء الدعوة', 'Invitation cancelled successfully')); mutate() }
+      else        { toast.error(tr('تعذّر الإلغاء', 'Failed to cancel')) }
     } finally { setActionId(null) }
   }
 
   // ---- Delete ----
   async function handleDelete(id: string) {
-    if (!confirm('هل أنت متأكد من حذف هذه الدعوة بشكل نهائي؟')) return
+    if (!confirm(tr('هل أنت متأكد من حذف هذه الدعوة بشكل نهائي؟', 'Are you sure you want to permanently delete this invitation?'))) return
     setActionId(id)
     try {
       const res = await fetch(`/api/admin/invitations/${id}`, { method: 'DELETE' })
-      if (res.ok) { toast.success('تم حذف الدعوة'); mutate() }
-      else        { toast.error('تعذّر الحذف') }
+      if (res.ok) { toast.success(tr('تم حذف الدعوة', 'Invitation deleted successfully')); mutate() }
+      else        { toast.error(tr('تعذّر الحذف', 'Failed to delete')) }
     } finally { setActionId(null) }
   }
 
   const tabs = [
-    { key: 'all',       label: 'الكل',   count: counts.ALL },
-    { key: 'PENDING',   label: 'معلقة',  count: counts.PENDING },
-    { key: 'ACCEPTED',  label: 'مقبولة', count: counts.ACCEPTED },
-    { key: 'EXPIRED',   label: 'منتهية', count: counts.EXPIRED },
+    { key: 'all',       label: tr('الكل', 'All'),   count: counts.ALL },
+    { key: 'PENDING',   label: tr('معلقة', 'Pending'),  count: counts.PENDING },
+    { key: 'ACCEPTED',  label: tr('مقبولة', 'Accepted'), count: counts.ACCEPTED },
+    { key: 'EXPIRED',   label: tr('منتهية', 'Expired'), count: counts.EXPIRED },
     { key: 'CANCELLED', label: 'ملغاة',  count: counts.CANCELLED },
   ]
 
   return (
-    <div className="space-y-6 p-6" dir="rtl">
+    <div className="space-y-6 p-6" dir={isAr ? "rtl" : "ltr"}>
 
       {/* ---- Header ---- */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-foreground">الدعوات</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">إرسال وتتبع دعوات الانضمام إلى المقرأة</p>
+          <h1 className="text-2xl font-black text-foreground">{tr("الدعوات", "Invitations")}</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">{tr("إرسال وتتبع دعوات الانضمام إلى المقرأة", "Send and track invitations to join the academy")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="rounded-2xl gap-2 h-10" onClick={() => setShowCsv(true)}>
             <Upload className="w-4 h-4" />
-            رفع CSV
+            {tr("رفع CSV", "Upload CSV")}
           </Button>
           <Button className="rounded-2xl gap-2 h-10" onClick={() => setShowForm(true)}>
             <UserPlus className="w-4 h-4" />
-            دعوة جديدة
+            {tr("دعوة جديدة", "New Invitation")}
           </Button>
         </div>
       </div>
@@ -246,10 +250,10 @@ export default function AdminInvitationsPage() {
       {/* ---- Stats ---- */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'إجمالي',  value: counts.ALL,       cls: 'text-foreground' },
-          { label: 'معلقة',   value: counts.PENDING,   cls: 'text-amber-600' },
-          { label: 'مقبولة',  value: counts.ACCEPTED,  cls: 'text-emerald-600' },
-          { label: 'منتهية',  value: counts.EXPIRED + counts.CANCELLED, cls: 'text-muted-foreground' },
+          { label: tr('إجمالي', 'Total'),  value: counts.ALL,       cls: 'text-foreground' },
+          { label: tr('معلقة', 'Pending'),   value: counts.PENDING,   cls: 'text-amber-600' },
+          { label: tr('مقبولة', 'Accepted'),  value: counts.ACCEPTED,  cls: 'text-emerald-600' },
+          { label: tr('منتهية', 'Expired/Cancelled'),  value: counts.EXPIRED + counts.CANCELLED, cls: 'text-muted-foreground' },
         ].map(s => (
           <Card key={s.label} className="rounded-2xl border-border/50">
             <CardContent className="p-4 text-center">
@@ -282,7 +286,7 @@ export default function AdminInvitationsPage() {
         <div className="relative md:max-w-xs flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="بحث بالإيميل أو الاسم..."
+            placeholder={tr("بحث بالإيميل أو الاسم...", "Search by email or name...")}
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1) }}
             className="pr-9 rounded-2xl"
@@ -299,18 +303,26 @@ export default function AdminInvitationsPage() {
         ) : invitations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Mail className="w-10 h-10 text-muted-foreground/30 mb-3" />
-            <p className="font-bold text-foreground">لا توجد دعوات</p>
-            <p className="text-muted-foreground text-sm mt-1">ابدأ بإرسال دعوتك الأولى</p>
+            <p className="font-bold text-foreground">{tr("لا توجد دعوات", "No invitations found")}</p>
+            <p className="text-muted-foreground text-sm mt-1">{tr("ابدأ بإرسال دعوتك الأولى", "Start by sending your first invitation")}</p>
             <Button className="mt-4 rounded-2xl gap-2" onClick={() => setShowForm(true)}>
-              <UserPlus className="w-4 h-4" /> دعوة جديدة
+              <UserPlus className="w-4 h-4" /> {tr("دعوة جديدة", "New Invitation")}
             </Button>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="border-b border-border/50 bg-muted/30">
-                <tr className="text-right">
-                  {['البريد الإلكتروني', 'الاسم', 'الدور', 'المسار', 'الحالة', 'التواريخ', 'إجراءات'].map(h => (
+                <tr className={isAr ? "text-right" : "text-left"}>
+                  {[
+                    tr('البريد الإلكتروني', 'Email'),
+                    tr('الاسم', 'Name'),
+                    tr('الدور', 'Role'),
+                    tr('المسار', 'Path'),
+                    tr('الحالة', 'Status'),
+                    tr('التواريخ', 'Dates'),
+                    tr('إجراءات', 'Actions')
+                  ].map(h => (
                     <th key={h} className="px-4 py-3 text-xs font-bold text-muted-foreground whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -351,17 +363,17 @@ export default function AdminInvitationsPage() {
                         </Badge>
                         {inv.resent_count > 0 && (
                           <span className="ms-1.5 text-[10px] text-muted-foreground">
-                            أُعيد {inv.resent_count}x
+                            {tr("أُعيد", "Resent")} {inv.resent_count}x
                           </span>
                         )}
                       </td>
 
                       {/* Dates */}
                       <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
-                        <div>أُرسلت: {new Date(inv.created_at).toLocaleDateString('ar-EG')}</div>
+                        <div>{tr("أُرسلت:", "Sent:")} {new Date(inv.created_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}</div>
                         {inv.accepted_at
-                          ? <div className="text-emerald-600">قُبلت: {new Date(inv.accepted_at).toLocaleDateString('ar-EG')}</div>
-                          : <div>تنتهي: {new Date(inv.expires_at).toLocaleDateString('ar-EG')}</div>
+                          ? <div className="text-emerald-600">{tr("قُبلت:", "Accepted:")} {new Date(inv.accepted_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}</div>
+                          : <div>{tr("تنتهي:", "Expires:")} {new Date(inv.expires_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}</div>
                         }
                       </td>
 
@@ -380,7 +392,7 @@ export default function AdminInvitationsPage() {
                                 ? <Loader2 className="w-3 h-3 animate-spin" />
                                 : <RefreshCw className="w-3 h-3" />
                               }
-                              إعادة إرسال
+                              {tr("إعادة إرسال", "Resend")}
                             </Button>
                           )}
                           {inv.status === 'PENDING' && (
@@ -391,7 +403,7 @@ export default function AdminInvitationsPage() {
                               disabled={isBusy}
                               onClick={() => handleCancel(inv.id)}
                             >
-                              إلغاء
+                              {tr("إلغاء", "Cancel")}
                             </Button>
                           )}
                           <Button
@@ -416,15 +428,15 @@ export default function AdminInvitationsPage() {
         {/* Pagination */}
         {invitations.length > 0 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-border/30">
-            <span className="text-xs text-muted-foreground">صفحة {page}</span>
+            <span className="text-xs text-muted-foreground">{tr("صفحة", "Page")} {page}</span>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" className="rounded-xl h-7 w-7 p-0"
                 disabled={page === 1} onClick={() => setPage(p => p - 1)}>
-                <ChevronRight className="w-3.5 h-3.5" />
+                {isAr ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
               </Button>
               <Button size="sm" variant="outline" className="rounded-xl h-7 w-7 p-0"
                 disabled={invitations.length < 20} onClick={() => setPage(p => p + 1)}>
-                <ChevronLeft className="w-3.5 h-3.5" />
+                {isAr ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
               </Button>
             </div>
           </div>
@@ -435,17 +447,17 @@ export default function AdminInvitationsPage() {
           SINGLE INVITE DIALOG
       ====================================================== */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-md rounded-3xl" dir="rtl">
+        <DialogContent className="max-w-md rounded-3xl" dir={isAr ? "rtl" : "ltr"}>
           <DialogHeader>
             <DialogTitle className="text-lg font-black flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-primary" />
-              دعوة جديدة
+              {tr("دعوة جديدة", "New Invitation")}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-1">
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-muted-foreground">البريد الإلكتروني *</Label>
+              <Label className="text-xs font-bold text-muted-foreground">{tr("البريد الإلكتروني *", "Email *")}</Label>
               <Input
                 type="email"
                 dir="ltr"
@@ -457,9 +469,9 @@ export default function AdminInvitationsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-muted-foreground">الاسم (اختياري)</Label>
+              <Label className="text-xs font-bold text-muted-foreground">{tr("الاسم (اختياري)", "Name (Optional)")}</Label>
               <Input
-                placeholder="اسم المدعو"
+                placeholder={tr("اسم المدعو", "Invitee name")}
                 value={formName}
                 onChange={e => setFormName(e.target.value)}
                 className="rounded-2xl"
@@ -468,7 +480,7 @@ export default function AdminInvitationsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-muted-foreground">الدور</Label>
+                <Label className="text-xs font-bold text-muted-foreground">{tr("الدور", "Role")}</Label>
                 <Select value={formRole} onValueChange={setFormRole}>
                   <SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -477,13 +489,13 @@ export default function AdminInvitationsPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-muted-foreground">المسار (اختياري)</Label>
+                <Label className="text-xs font-bold text-muted-foreground">{tr("المسار (اختياري)", "Path (Optional)")}</Label>
                 <Select value={formPlan} onValueChange={setFormPlan}>
                   <SelectTrigger className="rounded-2xl">
-                    <SelectValue placeholder="بدون مسار" />
+                    <SelectValue placeholder={tr("بدون مسار", "No Path")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">بدون مسار</SelectItem>
+                    <SelectItem value="none">{tr("بدون مسار", "No Path")}</SelectItem>
                     {plans.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -491,17 +503,17 @@ export default function AdminInvitationsPage() {
             </div>
 
             <p className="text-xs text-muted-foreground bg-muted/50 rounded-xl px-3 py-2">
-              سيصل إيميل الدعوة فوراً وتنتهي صلاحيته بعد 7 أيام.
+              {tr("سيصل إيميل الدعوة فوراً وتنتهي صلاحيته بعد 7 أيام.", "The invitation email will be sent immediately and will expire after 7 days.")}
             </p>
           </div>
 
           <DialogFooter className="gap-2">
             <Button variant="outline" className="rounded-2xl" onClick={() => setShowForm(false)}>
-              إلغاء
+              {tr("إلغاء", "Cancel")}
             </Button>
             <Button className="rounded-2xl gap-2" disabled={sending} onClick={handleSend}>
               {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              إرسال الدعوة
+              {tr("إرسال الدعوة", "Send Invitation")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -511,11 +523,11 @@ export default function AdminInvitationsPage() {
           CSV BATCH DIALOG
       ====================================================== */}
       <Dialog open={showCsv} onOpenChange={v => { setShowCsv(v); if (!v) { setCsvRows([]); setCsvError('') } }}>
-        <DialogContent className="max-w-lg rounded-3xl" dir="rtl">
+        <DialogContent className="max-w-lg rounded-3xl" dir={isAr ? "rtl" : "ltr"}>
           <DialogHeader>
             <DialogTitle className="text-lg font-black flex items-center gap-2">
               <Upload className="w-5 h-5 text-primary" />
-              دعوة جماعية عبر CSV
+              {tr("دعوة جماعية عبر CSV", "Bulk Invitation via CSV")}
             </DialogTitle>
           </DialogHeader>
 
@@ -526,10 +538,9 @@ export default function AdminInvitationsPage() {
               onClick={() => fileRef.current?.click()}
             >
               <FileText className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm font-bold text-foreground">اضغط لاختيار ملف CSV</p>
+              <p className="text-sm font-bold text-foreground">{tr("اضغط لاختيار ملف CSV", "Click to select CSV file")}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                كل سطر: <code className="bg-muted px-1 rounded font-mono text-[11px]">email,name</code>
-                {' '}— الاسم اختياري
+                {tr("كل سطر: email,name — الاسم اختياري", "Each line: email,name — Name is optional")}
               </p>
               <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleFile} />
             </div>
@@ -538,11 +549,11 @@ export default function AdminInvitationsPage() {
             {csvRows.length > 0 && (
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-3">
                 <p className="text-sm font-bold text-emerald-700">
-                  {csvRows.length} إيميل جاهز للإرسال
+                  {csvRows.length} {tr("إيميل جاهز للإرسال", "emails ready to send")}
                 </p>
                 <p className="text-xs text-emerald-600 mt-1">
                   {csvRows.slice(0, 4).map(r => r.email).join('  •  ')}
-                  {csvRows.length > 4 ? ` وآخرون...` : ''}
+                  {csvRows.length > 4 ? tr(` وآخرون...`, ` and others...`) : ''}
                 </p>
               </div>
             )}
@@ -557,7 +568,7 @@ export default function AdminInvitationsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-muted-foreground">الدور</Label>
+                <Label className="text-xs font-bold text-muted-foreground">{tr("الدور", "Role")}</Label>
                 <Select value={csvRole} onValueChange={setCsvRole}>
                   <SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -566,13 +577,13 @@ export default function AdminInvitationsPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-muted-foreground">المسار (اختياري)</Label>
+                <Label className="text-xs font-bold text-muted-foreground">{tr("المسار (اختياري)", "Path (Optional)")}</Label>
                 <Select value={csvPlan} onValueChange={setCsvPlan}>
                   <SelectTrigger className="rounded-2xl">
-                    <SelectValue placeholder="بدون مسار" />
+                    <SelectValue placeholder={tr("بدون مسار", "No Path")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">بدون مسار</SelectItem>
+                    <SelectItem value="none">{tr("بدون مسار", "No Path")}</SelectItem>
                     {plans.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -583,7 +594,7 @@ export default function AdminInvitationsPage() {
           <DialogFooter className="gap-2">
             <Button variant="outline" className="rounded-2xl"
               onClick={() => { setShowCsv(false); setCsvRows([]); setCsvError('') }}>
-              إلغاء
+              {tr("إلغاء", "Cancel")}
             </Button>
             <Button
               className="rounded-2xl gap-2"
@@ -594,7 +605,7 @@ export default function AdminInvitationsPage() {
                 ? <Loader2 className="w-4 h-4 animate-spin" />
                 : <Upload className="w-4 h-4" />
               }
-              إرسال {csvRows.length > 0 ? `(${csvRows.length})` : ''}
+              {tr("إرسال", "Send")} {csvRows.length > 0 ? `(${csvRows.length})` : ''}
             </Button>
           </DialogFooter>
         </DialogContent>

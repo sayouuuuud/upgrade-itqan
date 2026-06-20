@@ -44,7 +44,7 @@ export default function AdminUsersPage() {
     password: "", 
     role: "student", 
     gender: "",
-    has_academy_access: true,
+    has_academy_access: false,
     has_quran_access: true
   })
   const [submitting, setSubmitting] = useState(false)
@@ -143,7 +143,7 @@ export default function AdminUsersPage() {
         password: "", 
         role: defaultRole, 
         gender: "",
-        has_academy_access: true,
+        has_academy_access: false,
         has_quran_access: true
       })
     }
@@ -153,15 +153,13 @@ export default function AdminUsersPage() {
     if (!selectedUser) return
     setSubmitting(true)
     try {
-      const { name, email, password, role, gender, has_academy_access, has_quran_access } = formData
+      const { name, email, password, role, gender } = formData
       const body: any = { userId: selectedUser.id }
       if (name) body.name = name
       if (email) body.email = email
       if (password) body.password = password
       if (role) body.role = role
       if (gender) body.gender = gender
-      if (typeof has_academy_access === 'boolean') body.has_academy_access = has_academy_access
-      if (typeof has_quran_access === 'boolean') body.has_quran_access = has_quran_access
 
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
@@ -189,9 +187,7 @@ export default function AdminUsersPage() {
       email: user.email, 
       password: "", 
       role: user.role, 
-      gender: user.gender || "",
-      has_academy_access: user.has_academy_access !== false,
-      has_quran_access: user.has_quran_access !== false
+      gender: user.gender || ""
     })
     setIsEditUserOpen(true)
   }
@@ -225,9 +221,7 @@ export default function AdminUsersPage() {
               email: "", 
               password: "", 
               role: defaultRole, 
-              gender: "",
-              has_academy_access: true,
-              has_quran_access: true
+              gender: ""
             })
             setIsAddUserOpen(true)
           }}
@@ -574,35 +568,6 @@ export default function AdminUsersPage() {
               </select>
             </div>
             
-            <div className="md:col-span-2 p-4 bg-muted/20 rounded-2xl border border-border/50 space-y-3">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                {a.usPlatformAccess}
-              </Label>
-              <div className="flex flex-wrap gap-6">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={formData.has_quran_access}
-                    onChange={e => setFormData({ ...formData, has_quran_access: e.target.checked })}
-                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
-                  />
-                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {a.usQuranPlatform}
-                  </span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={formData.has_academy_access}
-                    onChange={e => setFormData({ ...formData, has_academy_access: e.target.checked })}
-                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
-                  />
-                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {a.usAcademyPlatform}
-                  </span>
-                </label>
-              </div>
-            </div>
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsAddUserOpen(false)} className="rounded-2xl font-black">{t.cancel}</Button>
@@ -682,36 +647,6 @@ export default function AdminUsersPage() {
                 <option value="male">{t.auth.male}</option>
                 <option value="female">{t.auth.female}</option>
               </select>
-            </div>
-
-            <div className="md:col-span-2 p-4 bg-muted/20 rounded-2xl border border-border/50 space-y-3">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                {a.usPlatformAccess}
-              </Label>
-              <div className="flex flex-wrap gap-6">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={formData.has_quran_access}
-                    onChange={e => setFormData({ ...formData, has_quran_access: e.target.checked })}
-                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
-                  />
-                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {a.usQuranPlatform}
-                  </span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={formData.has_academy_access}
-                    onChange={e => setFormData({ ...formData, has_academy_access: e.target.checked })}
-                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
-                  />
-                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {a.usAcademyPlatform}
-                  </span>
-                </label>
-              </div>
             </div>
           </div>
           <DialogFooter className="gap-2">

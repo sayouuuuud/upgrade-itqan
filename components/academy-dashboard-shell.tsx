@@ -129,7 +129,7 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/admin/teacher-applications', label: t.academy?.teacherApplications || 'طلبات التدريس', icon: UserCheck },
             { href: '/academy/admin/application-questions', label: t.academy?.applicationQuestions || 'أسئلة طلبات الانضمام', icon: ClipboardList },
             { href: '/academy/admin/students', label: t.academy?.students || 'الطلاب', icon: Users },
-            { href: '/academy/admin/supervisors', label: t.academyAdmin?.fiqhOfficers, icon: Shield },
+            { href: '/academy/admin/supervisors', label: t.academyAdmin?.supervision || 'الإشراف', icon: Shield },
             { href: '/academy/admin/users', label: t.admin?.users || 'المستخدمين', icon: Users },
             { href: '/academy/admin/invitations', label: t.academy?.invitations || 'الدعوات', icon: UserPlus },
           ]
@@ -231,11 +231,13 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/fiqh-supervisor/questions', label: t.academyAdmin?.sidebarFiqhQuestions, icon: HelpCircle },
             { href: '/academy/fiqh', label: t.academyAdmin?.fiqhLibrary, icon: Library },
             { href: '/academy/fiqh-supervisor/messages', label: t.academyAdmin?.sidebarFiqhMessages, icon: MessageSquare },
+            { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
           ]
         },
         {
           title: t.shell?.account || 'الحساب',
           items: [
+            { href: '/academy/fiqh-supervisor/notifications', label: t.student?.notifications || 'الإشعارات', icon: Bell },
             { href: '/academy/fiqh-supervisor/profile', label: t.academyAdmin?.sidebarProfile, icon: User },
           ]
         }
@@ -256,11 +258,13 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/content-supervisor/academy-paths', label: t.academy?.academyPaths || 'مسارات الأكاديمية', icon: GraduationCap },
             { href: '/academy/content-supervisor/archive', label: t.academyAdmin?.sidebarContentArchive || 'أرشيف الدورات', icon: Archive },
             { href: '/academy/content-supervisor/messages', label: t.academyAdmin?.sidebarContentMessages || 'الرسائل', icon: MessageSquare },
+            { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى', icon: MessageSquare },
           ]
         },
         {
           title: t.shell?.account || 'الحساب',
           items: [
+            { href: '/academy/content-supervisor/notifications', label: t.student?.notifications || 'الإشعارات', icon: Bell },
             { href: '/academy/content-supervisor/profile', label: t.academyAdmin?.sidebarProfile, icon: User },
           ]
         }

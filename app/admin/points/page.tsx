@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import {
   ArrowLeft, User, Zap, Award, RefreshCw, Save,
   ChevronDown, ChevronUp, Trophy, X, Eye, Trash2, Edit3
 } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/context'
 
 // ── Types ──
 
@@ -100,28 +101,6 @@ interface Badge {
 
 // ── Constants ──
 
-const REASON_LABELS: Record<string, string> = {
-  recitation: 'تسجيل تلاوة',
-  mastered: 'إتقان تلاوة',
-  task: 'إنهاء مهمة',
-  lesson: 'درس',
-  streak: 'يوم Streak',
-  juz_complete: 'إنهاء جزء كامل',
-  course_complete: 'إنهاء دورة',
-  session_attend: 'حضور درس',
-  daily_login: 'تسجيل دخول يومي',
-  competition_win: 'فوز بمسابقة',
-  badge_earned: 'شارة جديدة',
-  admin_adjust: 'تعديل يدوي',
-}
-
-const LEVEL_LABELS: Record<string, string> = {
-  beginner: 'مبتدئ',
-  intermediate: 'متوسط',
-  advanced: 'متقدم',
-  hafiz: 'حافظ',
-}
-
 const LEVEL_COLORS: Record<string, string> = {
   beginner: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
   intermediate: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
@@ -133,6 +112,31 @@ const LEVEL_COLORS: Record<string, string> = {
 type Tab = 'overview' | 'config' | 'students'
 
 export default function AdminPointsPage() {
+  const { locale } = useI18n()
+  const isAr = locale === 'ar'
+  const tr = (ar: string, en: string) => (isAr ? ar : en)
+
+  const REASON_LABELS = useMemo<Record<string, string>>(() => ({
+    recitation: tr('تسجيل تلاوة', 'Recitation Logged'),
+    mastered: tr('إتقان تلاوة', 'Recitation Mastered'),
+    task: tr('إنهاء مهمة', 'Task Completed'),
+    lesson: tr('درس', 'Lesson'),
+    streak: tr('يوم Streak', 'Streak Day'),
+    juz_complete: tr('إنهاء جزء كامل', 'Juz Completed'),
+    course_complete: tr('إنهاء دورة', 'Course Completed'),
+    session_attend: tr('حضور درس', 'Session Attended'),
+    daily_login: tr('تسجيل دخول يومي', 'Daily Login'),
+    competition_win: tr('فوز بمسابقة', 'Competition Win'),
+    badge_earned: tr('شارة جديدة', 'Badge Earned'),
+    admin_adjust: tr('تعديل يدوي', 'Manual Adjustment'),
+  }), [isAr])
+
+  const LEVEL_LABELS = useMemo<Record<string, string>>(() => ({
+    beginner: tr('مبتدئ', 'Beginner'),
+    intermediate: tr('متوسط', 'Intermediate'),
+    advanced: tr('متقدم', 'Advanced'),
+    hafiz: tr('حافظ', 'Hafiz'),
+  }), [isAr])
   const [tab, setTab] = useState<Tab>('overview')
   const [loading, setLoading] = useState(true)
 
@@ -238,13 +242,13 @@ export default function AdminPointsPage() {
       })
       if (res.ok) {
         setPointsConfig(editConfig)
-        setConfigMsg('تم حفظ الإعدادات بنجاح')
+        setConfigMsg(tr('تم حفظ الإعدادات بنجاح', 'Settings saved successfully'))
       } else {
         const data = await res.json()
-        setConfigMsg(`خطأ: ${data.error}`)
+        setConfigMsg(tr(`خطأ: ${data.error}`, `Error: ${data.error}`))
       }
     } catch {
-      setConfigMsg('فشل الاتصال')
+      setConfigMsg(tr('فشل الاتصال', 'Connection failed'))
     } finally {
       setConfigSaving(false)
     }
@@ -267,15 +271,15 @@ export default function AdminPointsPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setAdjustResult(`تم! النقاط الجديدة: ${data.newTotal} — المستوى: ${LEVEL_LABELS[data.level] || data.level}`)
+        setAdjustResult(tr(`تم! النقاط الجديدة: ${data.newTotal} — المستوى: ${LEVEL_LABELS[data.level] || data.level}`, `Done! New points: ${data.newTotal} — Level: ${LEVEL_LABELS[data.level] || data.level}`))
         setAdjustPoints('')
         setAdjustDesc('')
         selectStudent(selectedStudent.id)
       } else {
-        setAdjustResult(`خطأ: ${data.error}`)
+        setAdjustResult(tr(`خطأ: ${data.error}`, `Error: ${data.error}`))
       }
     } catch {
-      setAdjustResult('فشل الاتصال')
+      setAdjustResult(tr('فشل الاتصال', 'Connection failed'))
     } finally {
       setAdjusting(false)
     }
@@ -309,18 +313,18 @@ export default function AdminPointsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Header + Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Zap className="w-7 h-7 text-amber-500" />
-          إدارة النقاط والمستويات
+          {tr('إدارة النقاط والمستويات', 'Points & Levels Management')}
         </h1>
         <div className="flex gap-2">
           {([
-            { key: 'overview' as Tab, label: 'نظرة عامة', icon: BarChart3 },
-            { key: 'config' as Tab, label: 'إعدادات النقاط', icon: Settings },
-            { key: 'students' as Tab, label: 'إدارة الطلاب', icon: Users },
+            { key: 'overview' as Tab, label: tr('نظرة عامة', 'Overview'), icon: BarChart3 },
+            { key: 'config' as Tab, label: tr('إعدادات النقاط', 'Points Settings'), icon: Settings },
+            { key: 'students' as Tab, label: tr('إدارة الطلاب', 'Manage Students'), icon: Users },
           ]).map(t => (
             <button
               key={t.key}
@@ -347,42 +351,42 @@ export default function AdminPointsPage() {
               <CardContent className="pt-5 text-center">
                 <Users className="w-6 h-6 mx-auto mb-1 text-blue-500" />
                 <p className="text-2xl font-bold">{stats?.total_students ?? 0}</p>
-                <p className="text-xs text-muted-foreground">طالب</p>
+                <p className="text-xs text-muted-foreground">{tr('طالب', 'Students')}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-5 text-center">
                 <Star className="w-6 h-6 mx-auto mb-1 text-amber-500" />
                 <p className="text-2xl font-bold">{(stats?.total_points_awarded ?? 0).toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">إجمالي النقاط</p>
+                <p className="text-xs text-muted-foreground">{tr('إجمالي النقاط', 'Total Points')}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-5 text-center">
                 <TrendingUp className="w-6 h-6 mx-auto mb-1 text-green-500" />
                 <p className="text-2xl font-bold">{stats?.avg_points ?? 0}</p>
-                <p className="text-xs text-muted-foreground">متوسط النقاط</p>
+                <p className="text-xs text-muted-foreground">{tr('متوسط النقاط', 'Avg Points')}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-5 text-center">
                 <Flame className="w-6 h-6 mx-auto mb-1 text-orange-500" />
                 <p className="text-2xl font-bold">{stats?.avg_streak ?? 0}</p>
-                <p className="text-xs text-muted-foreground">متوسط Streak</p>
+                <p className="text-xs text-muted-foreground">{tr('متوسط Streak', 'Avg Streak')}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-5 text-center">
                 <Trophy className="w-6 h-6 mx-auto mb-1 text-yellow-500" />
                 <p className="text-2xl font-bold">{stats?.max_points ?? 0}</p>
-                <p className="text-xs text-muted-foreground">أعلى نقاط</p>
+                <p className="text-xs text-muted-foreground">{tr('أعلى نقاط', 'Max Points')}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-5 text-center">
                 <Flame className="w-6 h-6 mx-auto mb-1 text-red-500" />
                 <p className="text-2xl font-bold">{stats?.max_streak ?? 0}</p>
-                <p className="text-xs text-muted-foreground">أطول Streak</p>
+                <p className="text-xs text-muted-foreground">{tr('أطول Streak', 'Max Streak')}</p>
               </CardContent>
             </Card>
           </div>
@@ -393,7 +397,7 @@ export default function AdminPointsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <BarChart3 className="w-5 h-5" />
-                  توزيع المستويات
+                  {tr('توزيع المستويات', 'Levels Distribution')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -419,7 +423,7 @@ export default function AdminPointsPage() {
                     )
                   })}
                   {levelDist.length === 0 && (
-                    <p className="text-center text-muted-foreground py-4">لا توجد بيانات</p>
+                    <p className="text-center text-muted-foreground py-4">{tr('لا توجد بيانات', 'No data available')}</p>
                   )}
                 </div>
               </CardContent>
@@ -430,7 +434,7 @@ export default function AdminPointsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Trophy className="w-5 h-5 text-yellow-500" />
-                  أفضل 10 طلاب
+                  {tr('أفضل 10 طلاب', 'Top 10 Students')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -463,7 +467,7 @@ export default function AdminPointsPage() {
                     </div>
                   ))}
                   {topStudents.length === 0 && (
-                    <p className="text-center text-muted-foreground py-4">لا توجد بيانات</p>
+                    <p className="text-center text-muted-foreground py-4">{tr('لا توجد بيانات', 'No data available')}</p>
                   )}
                 </div>
               </CardContent>
@@ -476,16 +480,16 @@ export default function AdminPointsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <TrendingUp className="w-5 h-5" />
-                  النشاط اليومي (آخر 14 يوم)
+                  {tr('النشاط اليومي (آخر 14 يوم)', 'Daily Activity (Last 14 Days)')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-7 gap-2">
                   {dailyActivity.map(d => (
                     <div key={d.day} className="text-center p-2 rounded-lg bg-muted/30">
-                      <p className="text-xs text-muted-foreground">{new Date(d.day).toLocaleDateString('ar-SA', { day: 'numeric', month: 'short' })}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(d.day).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { day: 'numeric', month: 'short' })}</p>
                       <p className="text-lg font-bold text-amber-600">+{d.total_points}</p>
-                      <p className="text-[10px] text-muted-foreground">{d.transactions} عملية</p>
+                      <p className="text-[10px] text-muted-foreground">{d.transactions} {tr('عملية', 'actions')}</p>
                     </div>
                   ))}
                 </div>
@@ -498,12 +502,12 @@ export default function AdminPointsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <History className="w-5 h-5" />
-                آخر النشاطات
+                {tr('آخر النشاطات', 'Recent Activity')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {recentActivity.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">لا توجد نشاطات بعد</p>
+                <p className="text-center text-muted-foreground py-8">{tr('لا توجد نشاطات بعد', 'No activities yet')}</p>
               ) : (
                 <div className="space-y-2 max-h-[400px] overflow-y-auto">
                   {recentActivity.map((a) => (
@@ -524,7 +528,7 @@ export default function AdminPointsPage() {
                           {a.points >= 0 ? '+' : ''}{a.points}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(a.created_at).toLocaleDateString('ar-SA')}
+                          {new Date(a.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}
                         </span>
                       </div>
                     </div>
@@ -544,12 +548,12 @@ export default function AdminPointsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Settings className="w-5 h-5" />
-                إعدادات قيم النقاط
+                {tr('إعدادات قيم النقاط', 'Points Value Settings')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                عدّل قيم النقاط لكل نشاط. التغييرات تنطبق على النقاط الجديدة فقط.
+                {tr('عدّل قيم النقاط لكل نشاط. التغييرات تنطبق على النقاط الجديدة فقط.', 'Edit points value for each activity. Changes apply to new points only.')}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Object.entries(editConfig).map(([key, val]) => (
@@ -568,7 +572,7 @@ export default function AdminPointsPage() {
                     </div>
                     {val !== pointsConfig[key] && (
                       <span className="text-xs text-orange-500 mt-5">
-                        كان: {pointsConfig[key]}
+                        {tr('كان:', 'Was:')} {pointsConfig[key]}
                       </span>
                     )}
                   </div>
@@ -584,7 +588,7 @@ export default function AdminPointsPage() {
                   {configSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                     <>
                       <Save className="w-4 h-4 ml-2" />
-                      حفظ الإعدادات
+                      {tr('حفظ الإعدادات', 'Save Settings')}
                     </>
                   )}
                 </Button>
@@ -594,12 +598,12 @@ export default function AdminPointsPage() {
                   disabled={JSON.stringify(editConfig) === JSON.stringify(pointsConfig)}
                 >
                   <RefreshCw className="w-4 h-4 ml-2" />
-                  إلغاء التغييرات
+                  {tr('إلغاء التغييرات', 'Discard Changes')}
                 </Button>
               </div>
 
               {configMsg && (
-                <p className={`mt-3 text-sm font-medium ${configMsg.includes('خطأ') ? 'text-red-600' : 'text-green-600'}`}>
+                <p className={`mt-3 text-sm font-medium ${configMsg.includes('Error') || configMsg.includes('خطأ') ? 'text-red-600' : 'text-green-600'}`}>
                   {configMsg}
                 </p>
               )}
@@ -611,16 +615,16 @@ export default function AdminPointsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Flame className="w-5 h-5 text-orange-500" />
-                مضاعف الـ Streak
+                {tr('مضاعف الـ Streak', 'Streak Multiplier')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
                 <p className="text-sm">
-                  عندما يحافظ الطالب على Streak <strong>7 أيام أو أكثر</strong>، تتضاعف جميع النقاط المكتسبة بمعامل <strong>×1.5</strong>.
+                  {tr('عندما يحافظ الطالب على Streak 7 أيام أو أكثر، تتضاعف جميع النقاط المكتسبة بمعامل ×1.5.', 'When a student maintains a streak of 7 days or more, all points earned are multiplied by ×1.5.')}
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  مثال: تسجيل تلاوة = {editConfig.recitation || 10} نقطة × 1.5 = {Math.round((editConfig.recitation || 10) * 1.5)} نقطة
+                  {tr(`مثال: تسجيل تلاوة = ${editConfig.recitation || 10} نقطة × 1.5 = ${Math.round((editConfig.recitation || 10) * 1.5)} نقطة`, `Example: Recitation = ${editConfig.recitation || 10} pts × 1.5 = ${Math.round((editConfig.recitation || 10) * 1.5)} pts`)}
                 </p>
               </div>
             </CardContent>
@@ -631,20 +635,20 @@ export default function AdminPointsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <TrendingUp className="w-5 h-5" />
-                حدود المستويات
+                {tr('حدود المستويات', 'Level Thresholds')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {([
-                  { key: 'beginner', label: 'مبتدئ', range: '0 – 499', color: 'border-gray-300 bg-gray-50 dark:bg-gray-800/50' },
-                  { key: 'intermediate', label: 'متوسط', range: '500 – 1,999', color: 'border-blue-300 bg-blue-50 dark:bg-blue-900/20' },
-                  { key: 'advanced', label: 'متقدم', range: '2,000 – 4,999', color: 'border-purple-300 bg-purple-50 dark:bg-purple-900/20' },
-                  { key: 'hafiz', label: 'حافظ', range: '5,000+', color: 'border-amber-300 bg-amber-50 dark:bg-amber-900/20' },
+                  { key: 'beginner', label: tr('مبتدئ', 'Beginner'), range: '0 – 499', color: 'border-gray-300 bg-gray-50 dark:bg-gray-800/50' },
+                  { key: 'intermediate', label: tr('متوسط', 'Intermediate'), range: '500 – 1,999', color: 'border-blue-300 bg-blue-50 dark:bg-blue-900/20' },
+                  { key: 'advanced', label: tr('متقدم', 'Advanced'), range: '2,000 – 4,999', color: 'border-purple-300 bg-purple-50 dark:bg-purple-900/20' },
+                  { key: 'hafiz', label: tr('حافظ', 'Hafiz'), range: '5,000+', color: 'border-amber-300 bg-amber-50 dark:bg-amber-900/20' },
                 ]).map(l => (
                   <div key={l.key} className={`p-4 rounded-lg border-2 text-center ${l.color}`}>
                     <p className="font-bold text-lg">{l.label}</p>
-                    <p className="text-sm text-muted-foreground">{l.range} نقطة</p>
+                    <p className="text-sm text-muted-foreground">{l.range} {tr('نقطة', 'pts')}</p>
                   </div>
                 ))}
               </div>
@@ -663,7 +667,7 @@ export default function AdminPointsPage() {
                 <div className="relative flex-1">
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="ابحث بالاسم أو البريد الإلكتروني..."
+                    placeholder={tr('ابحث بالاسم أو البريد الإلكتروني...', 'Search by name or email...')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -671,7 +675,7 @@ export default function AdminPointsPage() {
                   />
                 </div>
                 <Button onClick={handleSearch} disabled={searching || !searchQuery.trim()}>
-                  {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'بحث'}
+                  {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : tr('بحث', 'Search')}
                 </Button>
               </div>
 
@@ -696,7 +700,7 @@ export default function AdminPointsPage() {
                           {LEVEL_LABELS[s.level] || s.level}
                         </span>
                         <span className="font-bold text-amber-600">{s.total_points}</span>
-                        <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                        {isAr ? <ArrowLeft className="w-4 h-4 text-muted-foreground" /> : <ArrowRight className="w-4 h-4 text-muted-foreground" />}
                       </div>
                     </div>
                   ))}
@@ -731,7 +735,7 @@ export default function AdminPointsPage() {
                           </span>
                           {selectedStudent.last_activity_date && (
                             <span className="text-xs text-muted-foreground">
-                              آخر نشاط: {new Date(selectedStudent.last_activity_date).toLocaleDateString('ar-SA')}
+                              {tr('آخر نشاط:', 'Last Activity:')} {new Date(selectedStudent.last_activity_date).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}
                             </span>
                           )}
                         </div>
@@ -750,7 +754,7 @@ export default function AdminPointsPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6">
                     <div className="text-center p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20">
                       <p className="text-2xl font-bold text-amber-600">{selectedStudent.total_points}</p>
-                      <p className="text-xs text-muted-foreground">نقطة</p>
+                      <p className="text-xs text-muted-foreground">{tr('نقطة', 'pts')}</p>
                     </div>
                     <div className="text-center p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20">
                       <p className="text-2xl font-bold text-orange-600">{selectedStudent.streak_days}</p>
@@ -758,15 +762,15 @@ export default function AdminPointsPage() {
                     </div>
                     <div className="text-center p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
                       <p className="text-2xl font-bold text-red-600">{selectedStudent.longest_streak}</p>
-                      <p className="text-xs text-muted-foreground">أطول Streak</p>
+                      <p className="text-xs text-muted-foreground">{tr('أطول Streak', 'Max Streak')}</p>
                     </div>
                     <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
                       <p className="text-2xl font-bold text-green-600">{selectedStudent.total_verses_memorized}</p>
-                      <p className="text-xs text-muted-foreground">آيات محفوظة</p>
+                      <p className="text-xs text-muted-foreground">{tr('آيات محفوظة', 'Verses Memorized')}</p>
                     </div>
                     <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
                       <p className="text-2xl font-bold text-blue-600">{selectedStudent.total_verses_revised}</p>
-                      <p className="text-xs text-muted-foreground">آيات مراجعة</p>
+                      <p className="text-xs text-muted-foreground">{tr('آيات مراجعة', 'Verses Revised')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -778,24 +782,24 @@ export default function AdminPointsPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Edit3 className="w-5 h-5" />
-                      إجراءات الأدمن
+                      {tr('إجراءات الأدمن', 'Admin Actions')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {/* Add/Remove Points */}
                     <form onSubmit={handleAdjust} className="space-y-3">
-                      <label className="text-sm font-medium">تعديل النقاط</label>
+                      <label className="text-sm font-medium">{tr('تعديل النقاط', 'Adjust Points')}</label>
                       <div className="flex gap-2">
                         <Input
                           type="number"
-                          placeholder="النقاط (موجب أو سالب)"
+                          placeholder={tr('النقاط (موجب أو سالب)', 'Points (positive or negative)')}
                           value={adjustPoints}
                           onChange={(e) => setAdjustPoints(e.target.value)}
                           className="flex-1"
                           required
                         />
                         <Input
-                          placeholder="السبب"
+                          placeholder={tr('السبب', 'Reason')}
                           value={adjustDesc}
                           onChange={(e) => setAdjustDesc(e.target.value)}
                           className="flex-1"
@@ -805,7 +809,7 @@ export default function AdminPointsPage() {
                         </Button>
                       </div>
                       {adjustResult && (
-                        <p className={`text-sm ${adjustResult.startsWith('خطأ') ? 'text-red-600' : 'text-green-600'}`}>
+                        <p className={`text-sm ${adjustResult.startsWith('Error') || adjustResult.startsWith('خطأ') ? 'text-red-600' : 'text-green-600'}`}>
                           {adjustResult}
                         </p>
                       )}
@@ -813,7 +817,7 @@ export default function AdminPointsPage() {
 
                     {/* Change Level */}
                     <div>
-                      <label className="text-sm font-medium block mb-2">تغيير المستوى</label>
+                      <label className="text-sm font-medium block mb-2">{tr('تغيير المستوى', 'Change Level')}</label>
                       <div className="flex gap-2 flex-wrap">
                         {(['beginner', 'intermediate', 'advanced', 'hafiz'] as const).map(lvl => (
                           <Button
@@ -837,7 +841,7 @@ export default function AdminPointsPage() {
                         className="text-orange-600 border-orange-300 hover:bg-orange-50"
                         disabled={actionLoading === 'reset_streak'}
                         onClick={() => {
-                          if (confirm('هل أنت متأكد من إعادة تعيين الـ Streak؟')) {
+                          if (confirm(tr('هل أنت متأكد من إعادة تعيين الـ Streak؟', 'Are you sure you want to reset the streak?'))) {
                             handleStudentAction('reset_streak', selectedStudent.id)
                           }
                         }}
@@ -845,7 +849,7 @@ export default function AdminPointsPage() {
                         {actionLoading === 'reset_streak' ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                           <>
                             <RefreshCw className="w-4 h-4 ml-1" />
-                            إعادة تعيين Streak
+                            {tr('إعادة تعيين Streak', 'Reset Streak')}
                           </>
                         )}
                       </Button>
@@ -855,7 +859,7 @@ export default function AdminPointsPage() {
                         className="text-red-600 border-red-300 hover:bg-red-50"
                         disabled={actionLoading === 'reset_points'}
                         onClick={() => {
-                          if (confirm('هل أنت متأكد من إعادة تعيين كل النقاط والمستوى؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+                          if (confirm(tr('هل أنت متأكد من إعادة تعيين كل النقاط والمستوى؟ هذا الإجراء لا يمكن التراجع عنه.', 'Are you sure you want to reset all points and level? This action cannot be undone.'))) {
                             handleStudentAction('reset_points', selectedStudent.id)
                           }
                         }}
@@ -863,7 +867,7 @@ export default function AdminPointsPage() {
                         {actionLoading === 'reset_points' ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                           <>
                             <Trash2 className="w-4 h-4 ml-1" />
-                            إعادة تعيين كامل
+                            {tr('إعادة تعيين كامل', 'Full Reset')}
                           </>
                         )}
                       </Button>
@@ -876,12 +880,12 @@ export default function AdminPointsPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <BarChart3 className="w-5 h-5" />
-                      تفصيل النقاط
+                      {tr('تفصيل النقاط', 'Points Breakdown')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {studentBreakdown.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-4">لا توجد بيانات</p>
+                      <p className="text-center text-muted-foreground py-4">{tr('لا توجد بيانات', 'No data available')}</p>
                     ) : (
                       <div className="space-y-2">
                         {studentBreakdown.map(b => {
@@ -914,7 +918,7 @@ export default function AdminPointsPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Award className="w-5 h-5 text-purple-500" />
-                      الشارات ({studentBadges.length})
+                      {tr('الشارات', 'Badges')} ({studentBadges.length})
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -930,7 +934,7 @@ export default function AdminPointsPage() {
                           </div>
                           <div>
                             <p className="text-sm font-medium">{b.badge_name}</p>
-                            <p className="text-[10px] text-muted-foreground">{new Date(b.awarded_at).toLocaleDateString('ar-SA')}</p>
+                            <p className="text-[10px] text-muted-foreground">{new Date(b.awarded_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</p>
                           </div>
                           <span className="text-xs font-bold text-amber-600 mr-auto">+{b.points_awarded}</span>
                         </div>
@@ -945,12 +949,12 @@ export default function AdminPointsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <History className="w-5 h-5" />
-                    سجل النقاط
+                    {tr('سجل النقاط', 'Points Log')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {studentLog.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-4">لا توجد سجلات</p>
+                    <p className="text-center text-muted-foreground py-4">{tr('لا توجد سجلات', 'No records found')}</p>
                   ) : (
                     <div className="space-y-2 max-h-[400px] overflow-y-auto">
                       {studentLog.map(l => (
@@ -964,7 +968,7 @@ export default function AdminPointsPage() {
                               {l.points >= 0 ? '+' : ''}{l.points}
                             </span>
                             <p className="text-[10px] text-muted-foreground">
-                              {new Date(l.created_at).toLocaleDateString('ar-SA')} {new Date(l.created_at).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
+                              {new Date(l.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')} {new Date(l.created_at).toLocaleTimeString(isAr ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
                         </div>
@@ -979,7 +983,7 @@ export default function AdminPointsPage() {
           {!selectedStudent && !studentLoading && searchResults.length === 0 && (
             <Card className="text-center py-12">
               <Search className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-muted-foreground">ابحث عن طالب لعرض تفاصيل نقاطه وإدارتها</p>
+              <p className="text-muted-foreground">{tr('ابحث عن طالب لعرض تفاصيل نقاطه وإدارتها', 'Search for a student to view and manage their points details')}</p>
             </Card>
           )}
         </>

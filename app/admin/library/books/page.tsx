@@ -21,6 +21,7 @@ import {
   getLanguageDisplay,
 } from "@/lib/library/languages"
 import { BookCategoriesManager } from "@/components/library/book-categories-manager"
+import { useI18n } from "@/lib/i18n/context"
 
 interface AdminBookRow {
   id: string
@@ -38,6 +39,10 @@ interface AdminBookRow {
 }
 
 export default function AdminLibraryBooksPage() {
+  const { locale } = useI18n()
+  const isAr = locale === "ar"
+  const tr = (ar: string, en: string) => (isAr ? ar : en)
+
   const [books, setBooks] = useState<AdminBookRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -70,36 +75,36 @@ export default function AdminLibraryBooksPage() {
   }, [search, fetchBooks])
 
   const onDelete = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الكتاب؟ سيتم حذف كل ملفاته نهائياً.")) return
+    if (!confirm(tr("هل أنت متأكد من حذف هذا الكتاب؟ سيتم حذف كل ملفاته نهائياً.", "Are you sure you want to delete this book? All its files will be permanently deleted."))) return
     setDeletingId(id)
     try {
       const res = await fetch(`/api/admin/library/books/${id}`, { method: "DELETE" })
       if (!res.ok) throw new Error()
-      toast.success("تم حذف الكتاب")
+      toast.success(tr("تم حذف الكتاب", "Book deleted successfully"))
       setBooks((prev) => prev.filter((b) => b.id !== id))
     } catch {
-      toast.error("تعذر حذف الكتاب")
+      toast.error(tr("تعذر حذف الكتاب", "Could not delete the book"))
     } finally {
       setDeletingId(null)
     }
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-5" dir="rtl">
+    <div className="container mx-auto px-4 py-6 space-y-5" dir={isAr ? "rtl" : "ltr"}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-primary" />
-            مكتبة الكتب
+            {tr("مكتبة الكتب", "Books Library")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            إدارة الكتب المتاحة لكل المستخدمين في الأكاديمية والمقرأة
+            {tr("إدارة الكتب المتاحة لكل المستخدمين في الأكاديمية والمقرأة", "Manage books available to all users in the academy and recitation portal")}
           </p>
         </div>
         <Link href="/admin/library/books/new">
           <Button className="gap-2 font-bold">
             <Plus className="w-4 h-4" />
-            إضافة كتاب
+            {tr("إضافة كتاب", "Add Book")}
           </Button>
         </Link>
       </div>
@@ -109,12 +114,12 @@ export default function AdminLibraryBooksPage() {
           <Card>
             <CardContent className="p-3">
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className={isAr ? "absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" : "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"} />
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="ابحث بعنوان الكتاب أو المؤلف..."
-                  className="pr-9"
+                  placeholder={tr("ابحث بعنوان الكتاب أو المؤلف...", "Search by book title or author...")}
+                  className={isAr ? "pr-9" : "pl-9"}
                 />
               </div>
             </CardContent>
@@ -131,7 +136,7 @@ export default function AdminLibraryBooksPage() {
         <Card className="border-dashed">
           <CardContent className="p-10 text-center text-muted-foreground">
             <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-40" />
-            لا يوجد كتب بعد. ابدأ بإضافة كتاب جديد.
+            {tr("لا يوجد كتب بعد. ابدأ بإضافة كتاب جديد.", "No books yet. Start by adding a new book.")}
           </CardContent>
         </Card>
       ) : (
@@ -140,12 +145,12 @@ export default function AdminLibraryBooksPage() {
             <table className="w-full text-sm">
               <thead className="text-xs uppercase bg-muted/40 text-muted-foreground">
                 <tr>
-                  <th className="text-start px-4 py-3">الكتاب</th>
-                  <th className="text-start px-4 py-3">المؤلف</th>
-                  <th className="text-start px-4 py-3">اللغات</th>
-                  <th className="text-start px-4 py-3">الصفحات</th>
-                  <th className="text-start px-4 py-3">الحالة</th>
-                  <th className="text-start px-4 py-3">إجراءات</th>
+                  <th className="text-start px-4 py-3">{tr("الكتاب", "Book")}</th>
+                  <th className="text-start px-4 py-3">{tr("المؤلف", "Author")}</th>
+                  <th className="text-start px-4 py-3">{tr("اللغات", "Languages")}</th>
+                  <th className="text-start px-4 py-3">{tr("الصفحات", "Pages")}</th>
+                  <th className="text-start px-4 py-3">{tr("الحالة", "Status")}</th>
+                  <th className="text-start px-4 py-3">{tr("إجراءات", "Actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -181,7 +186,7 @@ export default function AdminLibraryBooksPage() {
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1 max-w-[260px]">
                         {b.languages.length === 0 ? (
-                          <span className="text-xs text-muted-foreground">لا توجد ملفات</span>
+                          <span className="text-xs text-muted-foreground">{tr("لا توجد ملفات", "No files")}</span>
                         ) : (
                           b.languages.map((lf) => (
                             <Badge
@@ -189,10 +194,10 @@ export default function AdminLibraryBooksPage() {
                               variant="secondary"
                               className="text-[11px]"
                             >
-                              <Globe className="w-3 h-3 ml-1" />
+                              <Globe className={isAr ? "w-3 h-3 ml-1" : "w-3 h-3 mr-1"} />
                               {lf.language === OTHER_LANGUAGE_CODE
-                                ? lf.language_label || "أخرى"
-                                : getLanguageDisplay(lf.language, lf.language_label, "ar")}
+                                ? lf.language_label || tr("أخرى", "Other")
+                                : getLanguageDisplay(lf.language, lf.language_label, locale)}
                             </Badge>
                           ))
                         )}
@@ -201,9 +206,9 @@ export default function AdminLibraryBooksPage() {
                     <td className="px-4 py-3">{b.pages_count ?? "—"}</td>
                     <td className="px-4 py-3">
                       {b.is_published ? (
-                        <Badge variant="default">منشور</Badge>
+                        <Badge variant="default">{tr("منشور", "Published")}</Badge>
                       ) : (
-                        <Badge variant="outline">مسودة</Badge>
+                        <Badge variant="outline">{tr("مسودة", "Draft")}</Badge>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -211,7 +216,7 @@ export default function AdminLibraryBooksPage() {
                         <Link href={`/admin/library/books/${b.id}/edit`}>
                           <Button size="sm" variant="outline" className="gap-1">
                             <Edit2 className="w-3.5 h-3.5" />
-                            تعديل
+                            {tr("تعديل", "Edit")}
                           </Button>
                         </Link>
                         <Button
@@ -226,7 +231,7 @@ export default function AdminLibraryBooksPage() {
                           ) : (
                             <Trash2 className="w-3.5 h-3.5" />
                           )}
-                          حذف
+                          {tr("حذف", "Delete")}
                         </Button>
                       </div>
                     </td>

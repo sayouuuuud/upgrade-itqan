@@ -46,6 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (type !== undefined) {
       supervisorRole =
         type === 'content' ? 'content_supervisor' :
+        type === 'supervisor' ? 'supervisor' :
         type === 'fiqh'    ? 'fiqh_supervisor'    :
                              'fiqh_supervisor'
     }

@@ -59,6 +59,7 @@ type Application = {
 
 export default function ReaderApplicationsPage() {
   const { t, locale } = useI18n()
+  const a = t.admin
   const isAr = locale === "ar"
   const [applications, setApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,7 +81,7 @@ export default function ReaderApplicationsPage() {
         const msg =
           (data && (data.error || data.detail)) ||
           (isAr ? `فشل تحميل الطلبات (${res.status})` : `Failed to load applications (${res.status})`)
-        setFetchError(typeof msg === "string" ? msg : (isAr ? "فشل تحميل الطلبات" : "Failed to load applications"))
+        setFetchError(typeof msg === "string" ? msg : a.raLoadFailed)
         setApplications([])
         return
       }
@@ -90,7 +91,7 @@ export default function ReaderApplicationsPage() {
       else if (data.applications?.length > 0) setSelectedId(data.applications[0].id)
     } catch (err: any) {
       console.error(err)
-      setFetchError(err?.message || (isAr ? "تعذّر الاتصال بالخادم" : "Network error"))
+      setFetchError(err?.message || a.raNetworkError)
     } finally {
       setLoading(false)
     }
@@ -170,7 +171,7 @@ export default function ReaderApplicationsPage() {
         setApplications(prev => prev.filter(a => a.id !== userId))
         setSelectedId(null)
       } else {
-        alert(isAr ? "حدث خطأ أثناء الحذف" : "Error deleting application")
+        alert(a.raDeleteError)
       }
     } catch {
       alert(t.auth.errorOccurred)
@@ -225,7 +226,7 @@ export default function ReaderApplicationsPage() {
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder={isAr ? "البحث عن طلب..." : "Search applications..."}
+              placeholder={a.raSearchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-11 pl-4 py-3 bg-muted/50 border border-border rounded-2xl text-sm focus:ring-4 focus:ring-primary/10 transition-all font-bold text-foreground outline-none"
@@ -234,7 +235,7 @@ export default function ReaderApplicationsPage() {
           {counts.pending_approval > 0 && (
             <div className="flex items-center gap-2 bg-amber-500/10 text-amber-500 border border-amber-500/20 px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-amber-500/5 animate-pulse shrink-0">
               <AlertCircle className="w-3.5 h-3.5" />
-              {counts.pending_approval} {isAr ? "طلبات بانتظار المراجعة" : "Pending Reviews"}
+              {counts.pending_approval} {a.raPendingReviews}
             </div>
           )}
         </div>
@@ -252,7 +253,7 @@ export default function ReaderApplicationsPage() {
               className="flex items-center gap-2 text-xs font-black uppercase tracking-widest bg-red-500/20 hover:bg-red-500/30 px-3 py-1.5 rounded-xl transition-colors shrink-0"
             >
               <RefreshCcw className="w-3.5 h-3.5" />
-              {isAr ? "إعادة المحاولة" : "Retry"}
+              {a.raRetry}
             </button>
           </div>
         </div>
@@ -377,14 +378,14 @@ export default function ReaderApplicationsPage() {
                               variant="outline"
                               className="rounded-2xl h-14 px-8 border-destructive/20 text-destructive font-black text-xs uppercase tracking-widest hover:bg-destructive/10 transition-all"
                             >
-                              {isAr ? "رفض الطلب" : "Reject"}
+                              {a.raReject}
                             </Button>
                             <Button
                               onClick={() => handleAction(selectedApp.id, "approve")}
                               disabled={!!processingId}
                               className="rounded-2xl h-14 px-10 bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest shadow-2xl shadow-primary/30 hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all"
                             >
-                              {processingId === selectedApp.id ? <Loader2 className="w-5 h-5 animate-spin" /> : isAr ? "اعتماد القارئ" : "Approve Reader"}
+                              {processingId === selectedApp.id ? <Loader2 className="w-5 h-5 animate-spin" /> : a.raApproveReader}
                             </Button>
                           </>
                         ) : (
@@ -412,7 +413,7 @@ export default function ReaderApplicationsPage() {
                             <AlertDialogHeader>
                               <AlertDialogTitle className="text-2xl font-black text-destructive flex items-center gap-3">
                                 <Trash2 className="w-7 h-7" />
-                                {isAr ? "حذف طلب المقرئ" : "Delete Reader Application"}
+                                {a.raDeleteApplication}
                               </AlertDialogTitle>
                               <AlertDialogDescription className="text-muted-foreground font-bold leading-relaxed pt-2">
                                 {isAr
@@ -421,14 +422,14 @@ export default function ReaderApplicationsPage() {
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter className="pt-6 gap-3">
-                              <AlertDialogCancel className="rounded-2xl h-12 font-black border-border">{isAr ? "إلغاء" : "Cancel"}</AlertDialogCancel>
+                              <AlertDialogCancel className="rounded-2xl h-12 font-black border-border">{a.raCancel}</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDelete(selectedApp.id)}
                                 className="rounded-2xl h-12 bg-destructive text-destructive-foreground font-black hover:bg-destructive/90 shadow-xl shadow-destructive/20"
                               >
                                 {processingId === selectedApp.id
                                   ? <Loader2 className="w-4 h-4 animate-spin" />
-                                  : (isAr ? "حذف نهائياً" : "Delete Permanently")}
+                                  : a.raDeletePermanently}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -444,9 +445,9 @@ export default function ReaderApplicationsPage() {
                 <div className="bg-card border border-border rounded-[32px] p-6 space-y-3">
                   <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
                     <Mic className="w-4 h-4 text-blue-600" />
-                    {isAr ? "الاختبار الصوتي" : "Audio Test"}
+                    {a.raAudioTest}
                   </h3>
-                  <AdminAudioPlayer src={selectedApp.audio_url} label={isAr ? "تسجيل المتقدم" : "Applicant recording"} />
+                  <AdminAudioPlayer src={selectedApp.audio_url} label={a.raApplicantRecording} />
                 </div>
               )}
 
@@ -454,7 +455,7 @@ export default function ReaderApplicationsPage() {
               {selectedApp.approval_status === "rejected" && selectedApp.rejection_reason && (
                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4">
                   <p className="text-xs font-black text-red-700 dark:text-red-300 mb-1 uppercase tracking-widest">
-                    {isAr ? "سبب الرفض" : "Rejection reason"}
+                    {a.raRejectionReason}
                   </p>
                   <p className="text-sm text-red-900 dark:text-red-200 whitespace-pre-wrap">{selectedApp.rejection_reason}</p>
                 </div>
@@ -464,7 +465,7 @@ export default function ReaderApplicationsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                   { icon: GraduationCap, label: t.readerRegister.qualification, val: selectedApp.qualification || "---", color: "blue" },
-                  { icon: BookOpen, label: t.readerRegister.memorizedParts, val: `${selectedApp.memorized_parts || "---"} ${isAr ? "جزءاً" : "Parts"}`, color: "emerald" },
+                  { icon: BookOpen, label: t.readerRegister.memorizedParts, val: `${selectedApp.memorized_parts || "---"} ${a.raPartsUnit}`, color: "emerald" },
                   { icon: Clock, label: t.readerRegister.years_of_experience, val: `${selectedApp.years_of_experience || 0} ${t.years}`, color: "purple" },
                   { icon: Globe, label: t.readerRegister.nationality, val: selectedApp.nationality || "---", color: "orange" }
                 ].map((stat, i) => (
@@ -493,7 +494,7 @@ export default function ReaderApplicationsPage() {
                       <div className="p-3 bg-primary/10 text-primary rounded-2xl">
                         <FileText className="w-6 h-6" />
                       </div>
-                      <h3 className="text-xl font-black text-foreground tracking-tight">{isAr ? "الوثائق المرفقة" : "Documents"}</h3>
+                      <h3 className="text-xl font-black text-foreground tracking-tight">{a.raDocuments}</h3>
                     </div>
                   </div>
 
@@ -509,7 +510,7 @@ export default function ReaderApplicationsPage() {
                                 </div>
                                 <div className="text-right">
                                   <p className="text-sm font-black text-foreground mb-1">{isAr ? `وثيقة ${idx + 1}` : `Document ${idx + 1}`}</p>
-                                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">{isAr ? "اضغط للمراجعة" : "Click to review"}</p>
+                                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">{a.raClickToReview}</p>
                                 </div>
                               </div>
                               <ExternalLink className="w-5 h-5 text-muted-foreground group-hover/doc:text-primary transition-colors" />
@@ -544,7 +545,7 @@ export default function ReaderApplicationsPage() {
                             </div>
                             <div className="p-6 border-t border-border bg-muted/30 flex justify-end gap-3 shrink-0">
                                <button onClick={() => window.open(url, '_blank')} className="px-8 py-4 bg-primary text-primary-foreground rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
-                                {isAr ? "تحميل الملف" : "Download File"}
+                                {a.raDownloadFile}
                                </button>
                             </div>
                           </DialogContent>
@@ -553,7 +554,7 @@ export default function ReaderApplicationsPage() {
                     ) : (
                       <div className="py-12 border-2 border-dashed border-border rounded-3xl flex flex-col items-center justify-center opacity-40">
                         <FileText className="w-10 h-10 mb-2" />
-                        <span className="text-xs font-black uppercase tracking-widest">{isAr ? "لا توجد وثائق" : "No documents"}</span>
+                        <span className="text-xs font-black uppercase tracking-widest">{a.raNoDocuments}</span>
                       </div>
                     )}
                   </div>
@@ -565,15 +566,15 @@ export default function ReaderApplicationsPage() {
                   
                   <h3 className="text-xl font-black mb-8 flex items-center gap-3 relative">
                     <ShieldCheck className="w-6 h-6" />
-                    {isAr ? "معلومات إضافية" : "Additional Info"}
+                    {a.raAdditionalInfo}
                   </h3>
 
                   <div className="grid grid-cols-1 gap-8 relative flex-1">
                     {[
-                      { icon: MapPin, label: isAr ? "المدينة والمنطقة" : "City & Region", val: selectedApp.city || "---" },
+                      { icon: MapPin, label: a.raCityRegion, val: selectedApp.city || "---" },
                       { icon: UserIcon, label: t.readerRegister.gender, val: selectedApp.gender === 'male' ? t.auth.male : t.auth.female },
-                      { icon: Calendar, label: isAr ? "تاريخ تقديم الطلب" : "Application Date", val: new Date(selectedApp.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) },
-                      { icon: BadgeCheck, label: isAr ? "وقت التقديم" : "Application Time", val: new Date(selectedApp.created_at).toLocaleTimeString(isAr ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }) }
+                      { icon: Calendar, label: a.raApplicationDate, val: new Date(selectedApp.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) },
+                      { icon: BadgeCheck, label: a.raApplicationTime, val: new Date(selectedApp.created_at).toLocaleTimeString(isAr ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }) }
                     ].map((detail, i) => (
                       <div key={i} className="flex items-center gap-5 group">
                         <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 border border-white/10 transition-transform duration-500 group-hover:scale-110">
@@ -594,9 +595,9 @@ export default function ReaderApplicationsPage() {
               <div className="w-32 h-32 bg-muted/50 rounded-[48px] border border-border shadow-inner flex items-center justify-center mb-8 animate-bounce transition-all duration-1000">
                 <UserCheck className="w-12 h-12 text-muted-foreground opacity-20" />
               </div>
-              <h3 className="text-2xl font-black text-foreground uppercase tracking-widest">{isAr ? "اختر طلباً للمراجعة" : "Choose an application"}</h3>
+              <h3 className="text-2xl font-black text-foreground uppercase tracking-widest">{a.raChooseApplication}</h3>
               <p className="text-muted-foreground font-bold max-w-sm mx-auto mt-4 leading-relaxed">
-                {isAr ? "سيتم عرض جميع التفاصيل والوثائق والمؤهلات هنا بمجرد اختيار طلب من القائمة." : "Detailed credentials and certificates will be visible upon selection."}
+                {a.raChooseDesc}
               </p>
             </div>
           )}
@@ -608,17 +609,17 @@ export default function ReaderApplicationsPage() {
           <DialogHeader>
             <DialogTitle className="text-xl font-black text-destructive flex items-center gap-3">
               <XCircle className="w-6 h-6" />
-              {isAr ? "رفض طلب المقرئ" : "Reject Reader Application"}
+              {a.raRejectTitle}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <p className="text-muted-foreground text-sm">
-              {isAr ? "يرجى إدخال سبب الرفض (اختياري). سيتم إرسال هذا السبب للمتقدم عبر البريد الإلكتروني." : "Please enter a rejection reason (optional). This will be sent to the applicant via email."}
+              {a.raRejectDesc}
             </p>
             <textarea
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder={isAr ? "سبب الرفض..." : "Rejection reason..."}
+              placeholder={a.raRejectReasonPlaceholder}
               className="w-full h-32 p-4 bg-muted/50 border border-border rounded-2xl text-sm resize-none focus:ring-2 focus:ring-destructive/20 outline-none"
             />
             <div className="flex gap-3 pt-2">
@@ -634,7 +635,7 @@ export default function ReaderApplicationsPage() {
                 disabled={!!processingId}
                 className="flex-1 h-12 rounded-xl font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {processingId ? <Loader2 className="w-5 h-5 animate-spin" /> : (isAr ? "تأكيد الرفض" : "Confirm Reject")}
+                {processingId ? <Loader2 className="w-5 h-5 animate-spin" /> : a.raConfirmReject}
               </Button>
             </div>
           </div>

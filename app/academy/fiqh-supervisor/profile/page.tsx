@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, Mail, Lock, Save, Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import { User, Mail, Lock, Save, Loader2, CheckCircle, Eye, EyeOff, ShieldCheck, Sparkles } from 'lucide-react'
 import { AvatarUpload } from '@/components/avatar-upload'
 
 interface Profile {
@@ -85,130 +85,188 @@ export default function FiqhSupervisorProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      <div className="flex flex-col items-center justify-center py-40 gap-6">
+        <div className="relative w-24 h-24">
+          <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+          <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <Loader2 className="absolute inset-0 m-auto w-10 h-10 animate-spin text-primary opacity-50" />
+        </div>
+        <p className="text-xl font-black text-muted-foreground animate-pulse">جاري تحميل الملف الشخصي...</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-foreground">الملف الشخصي</h1>
-        <p className="text-sm text-muted-foreground mt-1">إدارة بياناتك الشخصية وكلمة المرور</p>
+    <div className="max-w-4xl mx-auto space-y-8 relative min-h-screen pb-20" dir="rtl">
+      
+      {/* Decorative Background */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full filter blur-[120px] pointer-events-none -z-10 animate-pulse-slow" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full filter blur-[120px] pointer-events-none -z-10" />
+
+      {/* Header */}
+      <div className="bg-card/40 backdrop-blur-3xl border border-white/20 dark:border-white/5 rounded-[40px] p-8 shadow-2xl shadow-black/5 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+          <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center border border-primary/20 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shrink-0">
+            <User className="w-10 h-10 text-primary" />
+          </div>
+          <div className="text-center md:text-right">
+            <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">إعدادات الحساب</h1>
+            <p className="text-muted-foreground font-medium mt-2 max-w-lg">
+              إدارة بياناتك الشخصية، صورة العرض، وكلمة المرور الخاصة بك كمشرف فقهي في الأكاديمية.
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Profile card */}
-      <div className="bg-card border border-border rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-            <User className="w-4 h-4 text-primary" />
-          </div>
-          <h2 className="font-bold text-foreground">البيانات الشخصية</h2>
-        </div>
-
-        <form onSubmit={handleSaveProfile} className="space-y-5">
-          {/* Avatar */}
-          <div className="flex justify-center">
-            <AvatarUpload
-              currentUrl={avatarUrl}
-              name={name}
-              onUploaded={(url: string) => setAvatarUrl(url)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">الاسم</label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className="w-full bg-muted/30 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">البريد الإلكتروني</label>
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/20 border border-border rounded-xl">
-              <Mail className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span className="text-sm text-muted-foreground">{profile?.email}</span>
-            </div>
-          </div>
-
-          {saved && (
-            <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-sm text-emerald-700 dark:text-emerald-400">
-              <CheckCircle className="w-4 h-4 shrink-0" />
-              تم حفظ البيانات بنجاح
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
-          </button>
-        </form>
-      </div>
-
-      {/* Password card */}
-      <div className="bg-card border border-border rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
-            <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-          </div>
-          <h2 className="font-bold text-foreground">تغيير كلمة المرور</h2>
-        </div>
-
-        <form onSubmit={handleChangePassword} className="space-y-4">
-          {[
-            { label: 'كلمة المرور الحالية', value: currentPw, setter: setCurrentPw },
-            { label: 'كلمة المرور الجديدة', value: newPw,     setter: setNewPw     },
-            { label: 'تأكيد كلمة المرور',   value: confirmPw, setter: setConfirmPw  },
-          ].map(({ label, value, setter }) => (
-            <div key={label} className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">{label}</label>
-              <div className="relative">
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  value={value}
-                  onChange={e => setter(e.target.value)}
-                  dir="ltr"
-                  required
-                  className="w-full pr-4 pl-10 py-2.5 bg-muted/30 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw(p => !p)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Profile Details Card */}
+        <div className="lg:col-span-7 bg-card/60 backdrop-blur-3xl border border-white/20 dark:border-white/5 rounded-[40px] p-8 md:p-10 shadow-2xl shadow-black/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 opacity-50 blur-3xl rounded-full pointer-events-none group-hover:scale-150 transition-transform duration-1000" />
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-8 pb-6 border-b border-white/10 dark:border-white/5">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shadow-inner border border-primary/20">
+                <ShieldCheck className="w-7 h-7 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-black text-2xl text-foreground">البيانات الشخصية</h2>
+                <p className="text-sm font-bold text-primary">المعلومات الأساسية لحسابك</p>
               </div>
             </div>
-          ))}
 
-          {pwError && (
-            <p className="text-sm text-destructive">{pwError}</p>
-          )}
-          {pwSaved && (
-            <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-sm text-emerald-700 dark:text-emerald-400">
-              <CheckCircle className="w-4 h-4 shrink-0" />
-              تم تغيير كلمة المرور بنجاح
+            <form onSubmit={handleSaveProfile} className="space-y-8">
+              {/* Avatar Section */}
+              <div className="flex flex-col items-center sm:items-start gap-6 bg-white/40 dark:bg-black/20 p-6 rounded-[32px] border border-white/40 dark:border-white/5 shadow-inner">
+                <div className="flex flex-col sm:flex-row items-center gap-6 w-full">
+                  <div className="shrink-0 p-2 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-full border border-primary/20 shadow-lg shadow-primary/10">
+                    <AvatarUpload
+                      currentUrl={avatarUrl}
+                      name={name}
+                      onUploaded={(url: string) => setAvatarUrl(url)}
+                    />
+                  </div>
+                  <div className="text-center sm:text-right space-y-1">
+                    <h3 className="font-black text-lg text-foreground">الصورة الشخصية</h3>
+                    <p className="text-sm font-medium text-muted-foreground">صورة واضحة تساعد الطلاب على التعرف عليك.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Inputs */}
+              <div className="space-y-6">
+                <div className="space-y-2 relative group/input">
+                  <label className="text-sm font-black text-foreground pr-2 block">الاسم الكامل</label>
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-500 rounded-2xl opacity-0 group-focus-within/input:opacity-20 transition duration-500 blur" />
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className="relative w-full bg-background border-2 border-border focus:border-transparent rounded-2xl px-5 py-4 text-sm font-bold text-foreground focus:outline-none focus:ring-4 focus:ring-primary/20 transition-all shadow-inner"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-black text-foreground pr-2 block">البريد الإلكتروني</label>
+                  <div className="flex items-center gap-3 px-5 py-4 bg-muted/50 border border-border rounded-2xl shadow-inner opacity-80 cursor-not-allowed">
+                    <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <span className="text-sm font-bold text-muted-foreground font-mono">{profile?.email}</span>
+                  </div>
+                </div>
+              </div>
+
+              {saved && (
+                <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-700 dark:text-emerald-400 font-bold shadow-inner">
+                  <CheckCircle className="w-5 h-5 shrink-0" />
+                  تم حفظ التحديثات بنجاح
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-base hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-1 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:translate-y-0"
+              >
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Password Card */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          <div className="bg-gradient-to-br from-amber-500/5 to-orange-500/5 dark:from-amber-950/30 dark:to-orange-950/30 backdrop-blur-3xl border border-amber-500/20 dark:border-amber-500/10 rounded-[40px] p-8 shadow-2xl shadow-black/5 relative overflow-hidden group flex-1">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 opacity-50 blur-3xl rounded-full pointer-events-none group-hover:scale-150 transition-transform duration-1000" />
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-4 mb-8 pb-6 border-b border-amber-500/20">
+                <div className="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center shadow-inner border border-amber-500/20 group-hover:rotate-12 transition-transform duration-500">
+                  <Lock className="w-7 h-7 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <h2 className="font-black text-xl text-foreground">تغيير كلمة المرور</h2>
+                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400 mt-1">حماية حسابك بخطوات بسيطة</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleChangePassword} className="space-y-6">
+                {[
+                  { label: 'كلمة المرور الحالية', value: currentPw, setter: setCurrentPw },
+                  { label: 'كلمة المرور الجديدة', value: newPw,     setter: setNewPw     },
+                  { label: 'تأكيد كلمة المرور',   value: confirmPw, setter: setConfirmPw  },
+                ].map(({ label, value, setter }, idx) => (
+                  <div key={label} className="space-y-2 relative group/input">
+                    <label className="text-sm font-black text-foreground pr-2 block">{label}</label>
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl opacity-0 group-focus-within/input:opacity-20 transition duration-500 blur" />
+                    <div className="relative">
+                      <input
+                        type={showPw ? 'text' : 'password'}
+                        value={value}
+                        onChange={e => setter(e.target.value)}
+                        dir="ltr"
+                        required
+                        className="w-full pl-12 pr-5 py-4 bg-background border-2 border-border focus:border-transparent rounded-2xl text-sm font-bold text-foreground focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all shadow-inner"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPw(p => !p)}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded-xl"
+                      >
+                        {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {pwError && (
+                  <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-2xl text-destructive font-bold text-sm shadow-inner">
+                    <Sparkles className="w-5 h-5 shrink-0" />
+                    {pwError}
+                  </div>
+                )}
+                {pwSaved && (
+                  <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-700 dark:text-emerald-400 font-bold text-sm shadow-inner">
+                    <CheckCircle className="w-5 h-5 shrink-0" />
+                    تم تغيير كلمة المرور بنجاح
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={pwSaving}
+                  className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-base transition-all shadow-lg shadow-amber-500/20 hover:shadow-xl hover:-translate-y-1 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:translate-y-0"
+                >
+                  {pwSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Lock className="w-5 h-5" />}
+                  {pwSaving ? 'جاري التغيير...' : 'تأكيد التغيير'}
+                </button>
+              </form>
             </div>
-          )}
+          </div>
+        </div>
 
-          <button
-            type="submit"
-            disabled={pwSaving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 transition-colors disabled:opacity-50"
-          >
-            {pwSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-            {pwSaving ? 'جاري التغيير...' : 'تغيير كلمة المرور'}
-          </button>
-        </form>
       </div>
     </div>
   )

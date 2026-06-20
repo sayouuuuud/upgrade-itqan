@@ -14,7 +14,7 @@ export default async function AcademySupervisorLayout({
     }
 
     // Check if user has a supervisor role
-    const supervisorRoles = ['supervisor', 'content_supervisor', 'fiqh_supervisor', 'quality_supervisor']
+    const supervisorRoles = ['supervisor', 'quality_supervisor']
     const isSupervisor = supervisorRoles.includes(session.role) ||
         session.academy_roles?.some((r: string) => supervisorRoles.includes(r))
 

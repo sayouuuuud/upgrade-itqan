@@ -69,7 +69,7 @@ export default function AcademySupervisorsPage() {
   const [supervisors, setSupervisors] = useState<Supervisor[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [tab, setTab] = useState<'all' | 'fiqh' | 'content'>('all')
+  const [tab, setTab] = useState<'all' | 'fiqh' | 'content' | 'supervisor'>('all')
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -79,7 +79,7 @@ export default function AcademySupervisorsPage() {
     email: '',
     password: '',
     gender: 'male',
-    type: 'fiqh' as 'fiqh' | 'content',
+    type: 'supervisor' as 'fiqh' | 'content' | 'supervisor',
   })
 
   const [isEditOpen, setIsEditOpen] = useState(false)
@@ -91,7 +91,7 @@ export default function AcademySupervisorsPage() {
     email: '',
     password: '',
     gender: 'male',
-    type: 'fiqh' as 'fiqh' | 'content',
+    type: 'supervisor' as 'fiqh' | 'content' | 'supervisor',
   })
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
@@ -100,7 +100,7 @@ export default function AcademySupervisorsPage() {
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-  const fetchSupervisors = async (filter: 'all' | 'fiqh' | 'content' = tab) => {
+  const fetchSupervisors = async (filter: 'all' | 'fiqh' | 'content' | 'supervisor' = tab) => {
     setLoading(true)
     try {
       const res = await fetch(`/api/academy/admin/supervisors?type=${filter}`)
@@ -272,7 +272,7 @@ export default function AcademySupervisorsPage() {
       email: supervisor.email,
       password: '',
       gender: supervisor.gender,
-      type: supervisor.role === 'content_supervisor' ? 'content' : 'fiqh',
+      type: supervisor.role === 'content_supervisor' ? 'content' : supervisor.role === 'supervisor' ? 'supervisor' : 'fiqh',
     })
     setEditEmailError('')
     setIsEditOpen(true)
@@ -388,6 +388,7 @@ export default function AcademySupervisorsPage() {
         <div className="flex gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-900 rounded-xl w-fit">
           {([
             { key: 'all', label: a.supvAll },
+            { key: 'supervisor', label: a.supvGeneralSupervisor || 'مشرف عام' },
             { key: 'fiqh', label: a.supvFiqhQnA },
             { key: 'content', label: a.supvContentTab },
           ] as const).map(({ key, label }) => (
@@ -559,8 +560,9 @@ export default function AcademySupervisorsPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label className="text-xs font-bold text-muted-foreground">{a.supvAssignment}</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {([
+                  { key: 'supervisor', label: a.supvGeneralSupervisor || 'مشرف عام', desc: a.supvGeneralDesc || 'إشراف عام للوحة' },
                   { key: 'fiqh', label: a.supvFiqhSupervisor, desc: a.supvFiqhDesc },
                   { key: 'content', label: a.supvContentSupervisor, desc: a.supvContentDesc },
                 ] as const).map(({ key, label, desc }) => (
@@ -679,8 +681,9 @@ export default function AcademySupervisorsPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label className="text-xs font-bold text-muted-foreground">{a.supvAssignment}</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {([
+                  { key: 'supervisor', label: a.supvGeneralSupervisor || 'مشرف عام', desc: a.supvGeneralDesc || 'إشراف عام للوحة' },
                   { key: 'fiqh', label: a.supvFiqhSupervisor, desc: a.supvFiqhDesc },
                   { key: 'content', label: a.supvContentSupervisor, desc: a.supvContentDesc },
                 ] as const).map(({ key, label, desc }) => (

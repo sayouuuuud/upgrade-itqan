@@ -40,16 +40,16 @@ interface ActionType {
   count: number
 }
 
-const actionTypeLabels: Record<string, { ar: string; en: string; color: string }> = {
-  role_change: { ar: 'تغيير صلاحية', en: 'Role Change', color: 'bg-purple-100 text-purple-700' },
-  user_disabled: { ar: 'تعطيل حساب', en: 'User Disabled', color: 'bg-red-100 text-red-700' },
-  user_enabled: { ar: 'تفعيل حساب', en: 'User Enabled', color: 'bg-green-100 text-green-700' },
-  permission_granted: { ar: 'منح صلاحية', en: 'Permission Granted', color: 'bg-blue-100 text-blue-700' },
-  permission_revoked: { ar: 'سحب صلاحية', en: 'Permission Revoked', color: 'bg-orange-100 text-orange-700' },
-  user_created: { ar: 'إنشاء حساب', en: 'User Created', color: 'bg-teal-100 text-teal-700' },
-  user_deleted: { ar: 'حذف حساب', en: 'User Deleted', color: 'bg-red-100 text-red-700' },
-  settings_changed: { ar: 'تغيير إعدادات', en: 'Settings Changed', color: 'bg-gray-100 text-gray-700' },
-  default: { ar: 'إجراء', en: 'Action', color: 'bg-gray-100 text-gray-700' },
+const actionTypeLabels: Record<string, { key: string; color: string }> = {
+  role_change: { key: 'alActionRoleChange', color: 'bg-purple-100 text-purple-700' },
+  user_disabled: { key: 'alActionUserDisabled', color: 'bg-red-100 text-red-700' },
+  user_enabled: { key: 'alActionUserEnabled', color: 'bg-green-100 text-green-700' },
+  permission_granted: { key: 'alActionPermissionGranted', color: 'bg-blue-100 text-blue-700' },
+  permission_revoked: { key: 'alActionPermissionRevoked', color: 'bg-orange-100 text-orange-700' },
+  user_created: { key: 'alActionUserCreated', color: 'bg-teal-100 text-teal-700' },
+  user_deleted: { key: 'alActionUserDeleted', color: 'bg-red-100 text-red-700' },
+  settings_changed: { key: 'alActionSettingsChanged', color: 'bg-gray-100 text-gray-700' },
+  default: { key: 'alActionDefault', color: 'bg-gray-100 text-gray-700' },
 }
 
 export default function AuditLogPage() {
@@ -111,7 +111,7 @@ export default function AuditLogPage() {
   const getActionLabel = (type: string) => {
     const config = actionTypeLabels[type] || actionTypeLabels.default
     return {
-      label: isAr ? config.ar : config.en,
+      label: a[config.key as keyof typeof a] || config.key,
       color: config.color,
     }
   }

@@ -44,7 +44,7 @@ export default function AdminUsersPage() {
     role: "student", 
     gender: "",
     has_academy_access: true,
-    has_quran_access: true
+    has_quran_access: false
   })
   const [submitting, setSubmitting] = useState(false)
   const [currentUserRole, setCurrentUserRole] = useState<string>("")
@@ -145,7 +145,7 @@ export default function AdminUsersPage() {
         role: defaultRole, 
         gender: "",
         has_academy_access: true,
-        has_quran_access: true
+        has_quran_access: false
       })
     }
   }
@@ -154,15 +154,13 @@ export default function AdminUsersPage() {
     if (!selectedUser) return
     setSubmitting(true)
     try {
-      const { name, email, password, role, gender, has_academy_access, has_quran_access } = formData
+      const { name, email, password, role, gender } = formData
       const body: any = { userId: selectedUser.id }
       if (name) body.name = name
       if (email) body.email = email
       if (password) body.password = password
       if (role) body.role = role
       if (gender) body.gender = gender
-      if (typeof has_academy_access === 'boolean') body.has_academy_access = has_academy_access
-      if (typeof has_quran_access === 'boolean') body.has_quran_access = has_quran_access
 
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
@@ -190,9 +188,7 @@ export default function AdminUsersPage() {
       email: user.email, 
       password: "", 
       role: user.role, 
-      gender: user.gender || "",
-      has_academy_access: user.has_academy_access !== false,
-      has_quran_access: user.has_quran_access !== false
+      gender: user.gender || ""
     })
     setIsEditUserOpen(true)
   }
@@ -225,9 +221,7 @@ export default function AdminUsersPage() {
               email: "",
               password: "",
               role: 'student',
-              gender: "",
-              has_academy_access: true,
-              has_quran_access: true
+              gender: ""
             })
             setIsAddUserOpen(true)
           }}
@@ -354,17 +348,29 @@ export default function AdminUsersPage() {
                           <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-black text-[10px] uppercase tracking-widest rounded-lg pointer-events-none">
                             {a.usersAdmin}
                           </Badge>
+                        ) : user.role === 'academy_admin' ? (
+                          <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-black text-[10px] uppercase tracking-widest rounded-lg pointer-events-none">
+                            أدمن أكاديمية
+                          </Badge>
+                        ) : user.role === 'supervisor' ? (
+                          <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20 font-black text-[10px] uppercase tracking-widest rounded-lg pointer-events-none">
+                            مشرف عام
+                          </Badge>
+                        ) : user.role === 'content_supervisor' ? (
+                          <Badge className="bg-orange-500/10 text-orange-400 border-orange-500/20 font-black text-[10px] uppercase tracking-widest rounded-lg pointer-events-none">
+                            مشرف محتوى
+                          </Badge>
+                        ) : user.role === 'fiqh_supervisor' ? (
+                          <Badge className="bg-pink-500/10 text-pink-400 border-pink-500/20 font-black text-[10px] uppercase tracking-widest rounded-lg pointer-events-none">
+                            مشرف فقه
+                          </Badge>
+                        ) : user.role === 'quality_supervisor' ? (
+                          <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 font-black text-[10px] uppercase tracking-widest rounded-lg pointer-events-none">
+                            مشرف جودة
+                          </Badge>
                         ) : user.role === 'reader' ? (
                           <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20 font-black text-[10px] uppercase tracking-widest rounded-lg pointer-events-none">
                             {a.usersReader}
-                          </Badge>
-                        ) : user.role === 'student_supervisor' ? (
-                          <Badge className="bg-orange-500/10 text-orange-400 border-orange-500/20 font-black text-[10px] uppercase tracking-widest rounded-lg pointer-events-none">
-                            {a.usersStudentSupervisor}
-                          </Badge>
-                        ) : user.role === 'reciter_supervisor' ? (
-                          <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 font-black text-[10px] uppercase tracking-widest rounded-lg pointer-events-none">
-                            {a.usersReciterSupervisor}
                           </Badge>
                         ) : (
                           <Badge className="bg-muted text-muted-foreground border-border font-black text-[10px] uppercase tracking-widest rounded-lg pointer-events-none">
@@ -547,17 +553,17 @@ export default function AdminUsersPage() {
                 value={formData.role}
                 onChange={e => setFormData({ ...formData, role: e.target.value })}
               >
-                {(currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
+                {(currentUserRole === 'admin' || currentUserRole === 'academy_admin') && (
                   <>
                     <option value="student">{a.usersStudent}</option>
                     <option value="parent">{a.usersParent}</option>
                     <option value="teacher">{a.usersTeacher}</option>
-                  </>
-                )}
-                {currentUserRole === 'admin' && (
-                  <>
                     <option value="admin">{a.usersAdmin}</option>
-                    <option value="student_supervisor">{a.usersStudentSupervisor}</option>
+                    <option value="academy_admin">أدمن أكاديمية</option>
+                    <option value="supervisor">مشرف عام</option>
+                    <option value="content_supervisor">مشرف محتوى</option>
+                    <option value="fiqh_supervisor">مشرف فقه</option>
+                    <option value="quality_supervisor">مشرف جودة</option>
                   </>
                 )}
               </select>
@@ -575,35 +581,6 @@ export default function AdminUsersPage() {
               </select>
             </div>
             
-            <div className="md:col-span-2 p-4 bg-muted/20 rounded-2xl border border-border/50 space-y-3">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                {a.usersPlatformAccess}
-              </Label>
-              <div className="flex flex-wrap gap-6">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={formData.has_quran_access}
-                    onChange={e => setFormData({ ...formData, has_quran_access: e.target.checked })}
-                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
-                  />
-                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {a.usersQuranPlatform}
-                  </span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={formData.has_academy_access}
-                    onChange={e => setFormData({ ...formData, has_academy_access: e.target.checked })}
-                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
-                  />
-                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {a.usersAcademyPlatform}
-                  </span>
-                </label>
-              </div>
-            </div>
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsAddUserOpen(false)} className="rounded-2xl font-black">{t.cancel}</Button>
@@ -656,17 +633,17 @@ export default function AdminUsersPage() {
                 value={formData.role}
                 onChange={e => setFormData({ ...formData, role: e.target.value })}
               >
-                {(currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
+                {(currentUserRole === 'admin' || currentUserRole === 'academy_admin') && (
                   <>
                     <option value="student">{a.usersStudent}</option>
                     <option value="parent">{a.usersParent}</option>
                     <option value="teacher">{a.usersTeacher}</option>
-                  </>
-                )}
-                {currentUserRole === 'admin' && (
-                  <>
                     <option value="admin">{a.usersAdmin}</option>
-                    <option value="student_supervisor">{a.usersStudentSupervisor}</option>
+                    <option value="academy_admin">أدمن أكاديمية</option>
+                    <option value="supervisor">مشرف عام</option>
+                    <option value="content_supervisor">مشرف محتوى</option>
+                    <option value="fiqh_supervisor">مشرف فقه</option>
+                    <option value="quality_supervisor">مشرف جودة</option>
                   </>
                 )}
               </select>
@@ -683,36 +660,7 @@ export default function AdminUsersPage() {
                 <option value="female">{t.auth.female}</option>
               </select>
             </div>
-
-            <div className="md:col-span-2 p-4 bg-muted/20 rounded-2xl border border-border/50 space-y-3">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                {a.usersPlatformAccess}
-              </Label>
-              <div className="flex flex-wrap gap-6">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={formData.has_quran_access}
-                    onChange={e => setFormData({ ...formData, has_quran_access: e.target.checked })}
-                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
-                  />
-                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {a.usersQuranPlatform}
-                  </span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={formData.has_academy_access}
-                    onChange={e => setFormData({ ...formData, has_academy_access: e.target.checked })}
-                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
-                  />
-                  <span className="text-sm font-bold group-hover:text-primary transition-colors">
-                    {a.usersAcademyPlatform}
-                  </span>
-                </label>
-              </div>
-            </div>
+            
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsEditUserOpen(false)} className="rounded-2xl font-black">{t.cancel}</Button>
