@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   resolveStudentDashboardRedirect,
   isStudentLike,
+  isFullAdmin,
   type AccessSessionLike,
 } from '@/lib/academy/access'
 
@@ -63,5 +64,34 @@ describe('academy student RBAC guard (#1)', () => {
     expect(resolveStudentDashboardRedirect(session('admin', ['content_supervisor']))).toBe(
       '/academy/admin',
     )
+  })
+})
+
+/**
+ * Regression tests for issue #2: the Access Control page (per-user platform
+ * permissions) must be reachable by FULL admins only. Scoped supervisors that
+ * the broader /academy/admin layout admits must NOT pass this stricter guard.
+ */
+describe('access-control full-admin guard (#2)', () => {
+  const session = (role: string, academy_roles?: string[]): AccessSessionLike => ({
+    role,
+    academy_roles,
+  })
+
+  it('admits a full admin', () => {
+    expect(isFullAdmin(session('admin'))).toBe(true)
+    expect(isFullAdmin(session('academy_admin'))).toBe(true)
+    expect(isFullAdmin(session('reader', ['admin']))).toBe(true)
+  })
+
+  it('rejects scoped supervisors that the section layout would admit', () => {
+    expect(isFullAdmin(session('student_supervisor'))).toBe(false)
+    expect(isFullAdmin(session('reciter_supervisor'))).toBe(false)
+  })
+
+  it('rejects students, teachers, parents and other supervisors', () => {
+    for (const role of ['student', 'parent', 'teacher', 'supervisor', 'fiqh_supervisor']) {
+      expect(isFullAdmin(session(role))).toBe(false)
+    }
   })
 })

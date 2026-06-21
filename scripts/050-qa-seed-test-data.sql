@@ -154,14 +154,19 @@ BEGIN
         last_activity_date = CURRENT_DATE,
         updated_at = NOW();
 
-  -- 8) Fiqh questions in the moderation queue (answer IS NULL => "pending")
-  INSERT INTO fiqh_questions (asked_by, question, category, is_published, asked_at)
-  SELECT v_student, q.question, q.cat, FALSE, NOW() - (q.h || ' hours')::INTERVAL
+  -- 8) Fiqh questions for the admin / officer assignment queue.
+  --     The fiqh inbox + admin views filter on status IN
+  --     ('pending','assigned','in_progress'), so we MUST set status='pending'
+  --     (unassigned) and a real category_id — otherwise the rows exist but
+  --     never appear in the "manage fiqh assignments" screen.
+  INSERT INTO fiqh_questions (asked_by, title, question, category, category_id, status, is_published, asked_at)
+  SELECT v_student, q.title, q.question, q.cat, v_category, 'pending', FALSE,
+         NOW() - (q.h || ' hours')::INTERVAL
   FROM (VALUES
-    ('ما حكم الجمع بين الصلاتين في السفر؟', 'salah', 5),
-    ('هل يجب إخراج زكاة الفطر نقداً أم طعاماً؟', 'zakat', 20),
-    ('ما الحكم إذا نسيت ركناً في الصلاة؟', 'salah', 30)
-  ) AS q(question, cat, h)
+    ('الجمع في السفر', 'ما حكم الجمع بين الصلاتين في السفر؟', 'salah', 5),
+    ('زكاة الفطر',     'هل يجب إخراج زكاة الفطر نقداً أم طعاماً؟', 'zakat', 20),
+    ('نسيان ركن',      'ما الحكم إذا نسيت ركناً في الصلاة؟', 'salah', 30)
+  ) AS q(title, question, cat, h)
   WHERE NOT EXISTS (
     SELECT 1 FROM fiqh_questions f WHERE f.asked_by = v_student AND f.question = q.question
   );

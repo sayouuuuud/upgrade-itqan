@@ -45,6 +45,23 @@ export function isStudentLike(session: AccessSessionLike): boolean {
 }
 
 /**
+ * True only for FULL academy administrators.
+ *
+ * Note this is intentionally stricter than the /academy/admin section guard,
+ * which also admits scoped supervisors (student_supervisor / reciter_supervisor)
+ * for the user-management pages. The most sensitive admin surfaces — e.g.
+ * Access Control, which edits per-user platform permissions — must be limited to
+ * real admins, so they use this check instead.
+ */
+export function isFullAdmin(session: AccessSessionLike): boolean {
+  return (
+    session.role === "admin" ||
+    session.role === "academy_admin" ||
+    hasRole(session, "admin")
+  )
+}
+
+/**
  * Resolve where a user hitting /academy/student should go.
  *
  * Returns `null` when the user is allowed to stay (student / parent). Otherwise

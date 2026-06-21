@@ -139,10 +139,30 @@ export async function DELETE(
     const p = await params;
     const appId = p.id;
 
-    await query('DELETE FROM teacher_applications WHERE id = $1', [appId])
+    // RETURNING lets us distinguish "deleted" from "nothing matched" so the UI
+    // can tell the admin whether the record was actually removed.
+    const deleted = await query<{ id: string }>(
+      'DELETE FROM teacher_applications WHERE id = $1 RETURNING id',
+      [appId]
+    )
+
+    if (deleted.length === 0) {
+      // Already gone (or bad id). Treat as success for idempotency so the row
+      // disappears from the list instead of showing a confusing error.
+      return NextResponse.json({ success: true, message: 'Application not found (already removed)' })
+    }
+
     return NextResponse.json({ success: true, message: 'Application deleted' })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting teacher application:', error)
+    // A foreign-key violation means another record still references this
+    // application. Return a clear, actionable message instead of a generic 500.
+    if (error?.code === '23503') {
+      return NextResponse.json(
+        { error: 'لا يمكن حذف الطلب لارتباطه بسجلات أخرى' },
+        { status: 409 }
+      )
+    }
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

@@ -98,9 +98,24 @@ export default function TeacherApplicationsPage() {
     try {
       const res = await fetch(`/api/academy/admin/teacher-applications/${id}`, { method: "DELETE" })
       if (res.ok) {
+        // Optimistically drop the row so the applicant disappears from the list
+        // immediately, then refetch to stay in sync with the server.
+        setApps(prev => prev.filter(ap => ap.id !== id))
         setSelectedId(null)
         await fetchData()
+      } else {
+        // Previously failures were swallowed silently, so the applicant stayed
+        // visible with no explanation. Surface the server error instead.
+        let msg = a.taError
+        try {
+          const body = await res.json()
+          if (body?.error) msg = `${a.taError}: ${body.error}`
+        } catch { /* non-JSON error body */ }
+        alert(msg)
       }
+    } catch (err) {
+      console.error("[v0] teacher application delete failed:", err)
+      alert(a.taError)
     } finally {
       setProcessing(false)
     }
