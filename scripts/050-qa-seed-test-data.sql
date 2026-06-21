@@ -38,6 +38,7 @@ DECLARE
   v_enrollment UUID;
   v_post      UUID;
   v_reply     UUID;
+  v_task      UUID;
 BEGIN
   -- 1) Resolve the target student (fallback: most recent user with student role)
   SELECT id INTO v_student FROM users WHERE lower(email) = lower(v_student_email) LIMIT 1;
@@ -97,6 +98,14 @@ BEGIN
     RETURNING id INTO v_lesson;
   END IF;
 
+  -- 4c) Keep the denormalized courses.total_lessons counter in sync with the
+  --     actual number of published lessons. Several course screens read this
+  --     counter directly, so a stale 0 makes a course look empty ("لم يتم إضافة
+  --     دروس بعد") even when published lessons exist.
+  UPDATE courses c
+  SET total_lessons = (SELECT COUNT(*) FROM lessons l WHERE l.course_id = c.id AND l.is_published)
+  WHERE c.id = v_course;
+
   -- 5) Enroll the student in the course (active)
   SELECT id INTO v_enrollment FROM enrollments
   WHERE student_id = v_student AND course_id = v_course LIMIT 1;
@@ -124,6 +133,22 @@ BEGIN
   WHERE NOT EXISTS (
     SELECT 1 FROM tasks x WHERE x.assigned_to = v_student AND x.title = t.title
   );
+
+  -- 6b) Add a SUBMITTED (ungraded) submission for one of the student's tasks so
+  --     the grading flow can be exercised end-to-end: a teacher/supervisor can
+  --     open "task submissions", grade it, award points and trigger a level-up.
+  --     Without this the submissions screen shows "لا توجد تسليمات لهذه المهمة".
+  SELECT id INTO v_task FROM tasks
+  WHERE assigned_to = v_student AND title = 'حفظ سورة الملك' LIMIT 1;
+  IF v_task IS NOT NULL THEN
+    INSERT INTO task_submissions (task_id, student_id, content, submission_type, status, submitted_at)
+    SELECT v_task, v_student,
+           'تم حفظ سورة الملك كاملة، وهذا تسليم تجريبي بانتظار التصحيح.',
+           'text', 'submitted', NOW() - INTERVAL '6 hours'
+    WHERE NOT EXISTS (
+      SELECT 1 FROM task_submissions s WHERE s.task_id = v_task AND s.student_id = v_student
+    );
+  END IF;
 
   -- 7) Points history (so the student "points" screen is not empty)
   INSERT INTO points_log (user_id, points, reason, description, created_at)
