@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
+import { createCompetitionStages, type StageInput } from '@/lib/academy/competitions'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
       points_first,
       points_second,
       points_third,
+      stages,
     } = await req.json()
     if (!title || !start_date || !end_date) {
       return NextResponse.json({ error: 'Title, start_date and end_date required' }, { status: 400 })
@@ -121,7 +123,15 @@ export async function POST(req: NextRequest) {
       Number.isFinite(Number(points_second)) && Number(points_second) >= 0 ? Number(points_second) : 300,
       Number.isFinite(Number(points_third)) && Number(points_third) >= 0 ? Number(points_third) : 150,
     ])
-    
+
+    // Set up the competition's stages (rounds). When no/one stage is provided,
+    // a single implicit round is created so behaviour matches a classic contest.
+    await createCompetitionStages(
+      result[0].id,
+      Array.isArray(stages) ? (stages as StageInput[]) : [],
+      { min_verses: Number(min_verses) > 0 ? Number(min_verses) : null, tajweed_rules: null, start_date, end_date },
+    )
+
     return NextResponse.json({ data: result[0] }, { status: 201 })
   } catch (error) {
     console.error('Error creating competition:', error)

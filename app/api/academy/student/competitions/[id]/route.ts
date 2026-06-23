@@ -3,29 +3,25 @@ import { getSession } from '@/lib/auth'
 import { queryOne } from '@/lib/db'
 import { getStudentStageContext } from '@/lib/academy/competitions'
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+// GET a single academy competition with the student's stage context (rounds,
+// active stage, their per-stage entries, and whether they can submit now).
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession()
-  if (!session || session.role !== 'student') {
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-
   const { id } = await params
-
   try {
     const competition = await queryOne(
-      `SELECT * FROM competitions WHERE id = $1 AND scope = 'library'`,
-      [id]
+      `SELECT * FROM competitions WHERE id = $1 AND scope = 'academy'`,
+      [id],
     )
     if (!competition) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
-
     const ctx = await getStudentStageContext(id, session.sub)
-
     return NextResponse.json({
       competition,
-      // `entry` keeps the active-stage entry for backwards compatibility with
-      // the existing single-stage UI; the rich stage context is added alongside.
       entry: ctx.activeEntry || null,
       stages: ctx.stages,
       activeStage: ctx.activeStage,
@@ -33,7 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       canSubmit: ctx.canSubmit,
     })
   } catch (error) {
-    console.error('Error fetching competition:', error)
+    console.error('Error fetching academy competition:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

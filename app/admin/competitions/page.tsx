@@ -12,6 +12,8 @@ import { CardListSkeleton } from '@/components/ui/skeletons'
 import { cn } from '@/lib/utils'
 import MediaViewer from '@/components/media-viewer'
 import { JudgesManager } from '@/components/competitions/judges-manager'
+import { StageBuilder, type StageDraft } from '@/components/competitions/stage-builder'
+import { StageManager } from '@/components/competitions/stage-manager'
 import { useI18n } from '@/lib/i18n/context'
 
 interface Competition {
@@ -109,6 +111,8 @@ export default function AdminLibraryCompetitionsPage() {
   const [showModal, setShowModal] = useState(false)
   const [editItem, setEditItem] = useState<Competition | null>(null)
   const [form, setForm] = useState<CompetitionForm>(emptyForm)
+  // Stage drafts for the creation modal (empty = single implicit round).
+  const [stages, setStages] = useState<StageDraft[]>([])
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [typeFilter, setTypeFilter] = useState('all')
@@ -169,6 +173,7 @@ export default function AdminLibraryCompetitionsPage() {
   const openAdd = (type = 'monthly') => {
     const config = TYPE_CONFIG[type]
     setEditItem(null)
+    setStages([])
     setForm({ ...emptyForm, type, badge_key: config.badge })
     setShowModal(true)
   }
@@ -210,6 +215,7 @@ export default function AdminLibraryCompetitionsPage() {
           tajweed_rules: form.tajweed_rules.split(',').map(s => s.trim()).filter(Boolean),
           certificate_template_id: form.certificate_template_id || null,
           award_top_n: form.certificate_enabled ? Number(form.award_top_n) || 10 : null,
+          stages: editItem ? undefined : stages,
         }),
       })
       if (res.ok) { setShowModal(false); fetchCompetitions() }
@@ -280,6 +286,12 @@ export default function AdminLibraryCompetitionsPage() {
             </div>
           </div>
         </div>
+
+        <StageManager
+          competitionId={selectedComp.id}
+          basePath={`/api/admin/competitions/${selectedComp.id}`}
+          onChanged={() => { fetchCompetitions(); fetchEntries(selectedComp) }}
+        />
 
         {loadingEntries ? (
           <CardListSkeleton rows={3} />
@@ -723,6 +735,8 @@ export default function AdminLibraryCompetitionsPage() {
                   )}
                 </p>
               </div>
+
+              {!editItem && <StageBuilder stages={stages} onChange={setStages} />}
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 rounded-xl border border-border py-3 font-bold hover:bg-muted transition text-foreground">{tr('إلغاء', 'Cancel')}</button>

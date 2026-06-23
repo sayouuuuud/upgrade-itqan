@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
+import { createCompetitionStages, type StageInput } from '@/lib/academy/competitions'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
       certificate_enabled,
       award_top_n,
       certificate_template_id,
+      stages,
     } = await req.json()
 
     if (!title || !start_date || !end_date) {
@@ -116,6 +118,14 @@ export async function POST(req: NextRequest) {
       award_top_n ? Number(award_top_n) : null,
       certificate_template_id || null,
     ])
+
+    // Set up the competition's stages (rounds). When no/one stage is provided,
+    // a single implicit round is created so behaviour matches a classic contest.
+    await createCompetitionStages(
+      result[0].id,
+      Array.isArray(stages) ? (stages as StageInput[]) : [],
+      { min_verses: Number(min_verses) > 0 ? Number(min_verses) : null, tajweed_rules: null, start_date, end_date },
+    )
 
     return NextResponse.json({ data: result[0] }, { status: 201 })
   } catch (error) {
