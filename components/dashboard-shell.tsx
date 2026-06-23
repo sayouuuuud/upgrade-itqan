@@ -552,7 +552,7 @@ export function DashboardShell({ role, children, headerTitle }: { role: 'student
               className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all"
               title={t.logout}
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-5 h-5 rtl:rotate-180" />
             </button>
 
           </div>

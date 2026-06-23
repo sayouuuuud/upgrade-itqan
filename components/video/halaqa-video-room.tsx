@@ -315,7 +315,7 @@ export function HalaqaVideoRoom({ kind, refId, title, subtitle, exitHref, accent
           onClick={() => router.push(exitHref)}
           className="inline-flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-lg font-medium transition-colors"
         >
-          <LogOut className="w-4 h-4" /> {t.back}
+          <LogOut className="w-4 h-4 rtl:rotate-180" /> {t.back}
         </button>
       </div>
     )
@@ -351,7 +351,7 @@ export function HalaqaVideoRoom({ kind, refId, title, subtitle, exitHref, accent
               onClick={() => setShowLeaveConfirm(true)}
               className="inline-flex items-center gap-1.5 text-[11px] sm:text-sm font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 transition-colors"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut className="w-3.5 h-3.5 rtl:rotate-180" />
               {t.leave}
             </button>
           </div>
@@ -726,7 +726,7 @@ function ControlBar({
           onClick={onLeave}
           className="flex items-center gap-2 h-11 px-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm transition-colors"
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-5 h-5 rtl:rotate-180" />
           <span className="hidden sm:inline">{t.leave}</span>
         </button>
       </div>
