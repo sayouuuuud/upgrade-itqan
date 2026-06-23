@@ -9,6 +9,7 @@ import {
 import { cn } from '@/lib/utils'
 import { PageLoadingSkeleton } from "@/components/ui/page-loading-skeleton"
 import { useI18n } from '@/lib/i18n/context'
+import { StageProgress, type StudentStage, type StudentStageEntry } from '@/components/competitions/stage-progress'
 
 import AudioRecorder from '@/components/academy/audio-recorder'
 
@@ -58,6 +59,10 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
   const { t, locale } = useI18n()
   const [competition, setCompetition] = useState<Competition | null>(null)
   const [entry, setEntry] = useState<Entry | null>(null)
+  const [stages, setStages] = useState<StudentStage[]>([])
+  const [activeStage, setActiveStage] = useState<StudentStage | null>(null)
+  const [stageEntries, setStageEntries] = useState<StudentStageEntry[]>([])
+  const [canSubmit, setCanSubmit] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showSubmitForm, setShowSubmitForm] = useState(false)
   const [form, setForm] = useState({ submission_url: '', notes: '', verses_count: 0 })
@@ -76,6 +81,10 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
         const json = await res.json()
         setCompetition(json.competition)
         setEntry(json.entry || null)
+        setStages(json.stages || [])
+        setActiveStage(json.activeStage || null)
+        setStageEntries(json.entries || [])
+        setCanSubmit(Boolean(json.canSubmit))
         if (json.entry?.submission_url) {
           setForm(prev => ({ ...prev, submission_url: json.entry.submission_url || '' }))
         }
@@ -253,6 +262,9 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
         </div>
       </div>
 
+      {/* Round progress (multi-stage competitions only) */}
+      <StageProgress stages={stages} activeStage={activeStage} entries={stageEntries} />
+
       {/* Entry Status & Submission */}
       {entry ? (
         <div className="space-y-4">
@@ -349,8 +361,9 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
             </div>
           )}
 
-          {/* Resubmit if still pending/active */}
-          {competition.status === 'active' && entry.status !== 'winner' && (
+          {/* Resubmit: only while the active stage is open and the student is
+              still eligible to submit (handles multi-stage gating). */}
+          {canSubmit && (
             <button
               onClick={() => setShowSubmitForm(!showSubmitForm)}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary rounded-2xl text-sm font-bold transition-all"
@@ -362,7 +375,7 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
             </button>
           )}
         </div>
-      ) : competition.status === 'active' ? (
+      ) : competition.status === 'active' && canSubmit ? (
         <div className="bg-card border-2 border-dashed border-primary/30 rounded-3xl p-8 text-center space-y-4">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
             <Mic className="w-8 h-8 text-primary" />

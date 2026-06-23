@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
-import { previewCompetitionResults, finalizeCompetitionResults, getCompetition } from '@/lib/academy/competitions'
+import {
+  previewCompetitionResults,
+  finalizeCompetitionResults,
+  finalizeCurrentStageAsResults,
+  advanceStageOrFinalize,
+  cancelCompetition,
+  getCompetition,
+} from '@/lib/academy/competitions'
 
 const ALLOWED_ROLES = ['reader', 'teacher', 'admin', 'academy_admin']
 
@@ -32,7 +39,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
   const { id } = await params
   try {
-    const result = await finalizeCompetitionResults(id)
+    // action: 'advance' (next stage / finalize if final), 'finalize_now'
+    // (close on current stage), 'cancel' (no winner). Default keeps the
+    // historical behaviour of finalizing the active/final stage.
+    const body = await req.json().catch(() => ({}))
+    const action = body?.action || 'finalize'
+
+    const result =
+      action === 'advance' ? await advanceStageOrFinalize(id)
+      : action === 'finalize_now' ? await finalizeCurrentStageAsResults(id)
+      : action === 'cancel' ? await cancelCompetition(id)
+      : await finalizeCompetitionResults(id)
+
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 })
     }

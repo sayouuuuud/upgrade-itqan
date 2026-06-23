@@ -10,6 +10,8 @@ import { CardListSkeleton } from '@/components/ui/skeletons'
 import MediaViewer from '@/components/media-viewer'
 import { cn } from '@/lib/utils'
 import { JudgesManager } from '@/components/competitions/judges-manager'
+import { StageBuilder, type StageDraft } from '@/components/competitions/stage-builder'
+import { StageManager } from '@/components/competitions/stage-manager'
 import { useI18n } from '@/lib/i18n/context'
 
 interface Entry {
@@ -81,6 +83,9 @@ export default function AdminCompetitionsPage() {
   const [showModal, setShowModal] = useState(false)
   const [editItem, setEditItem] = useState<Competition | null>(null)
   const [form, setForm] = useState<CompetitionForm>(emptyForm)
+  // Stage drafts for the creation modal. Empty = a single implicit round
+  // (classic single-stage competition). 2+ = an elimination bracket.
+  const [stages, setStages] = useState<StageDraft[]>([])
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [typeFilter, setTypeFilter] = useState('all')
@@ -136,14 +141,14 @@ export default function AdminCompetitionsPage() {
     return competitions.filter((item) => [item.title, item.description, TYPE_CONFIG[item.type]?.label].filter(Boolean).some((value) => value!.toLowerCase().includes(term)))
   }, [competitions, search])
 
-  const openAdd = (type = 'monthly') => { const config = TYPE_CONFIG[type]; setEditItem(null); setForm({ ...emptyForm, type, badge_key: config.badge, points_multiplier: ['monthly', 'ramadan', 'tajweed'].includes(type) ? 2 : 1 }); setShowModal(true) }
+  const openAdd = (type = 'monthly') => { const config = TYPE_CONFIG[type]; setEditItem(null); setStages([]); setForm({ ...emptyForm, type, badge_key: config.badge, points_multiplier: ['monthly', 'ramadan', 'tajweed'].includes(type) ? 2 : 1 }); setShowModal(true) }
   const openEdit = (comp: Competition) => { const config = TYPE_CONFIG[comp.type] || TYPE_CONFIG.monthly; setEditItem(comp); setForm({ title: comp.title, description: comp.description || '', type: comp.type || 'monthly', start_date: comp.start_date ? comp.start_date.slice(0, 10) : '', end_date: comp.end_date ? comp.end_date.slice(0, 10) : '', max_participants: comp.max_participants || 100, prizes_description: comp.prizes_description || '', rules: comp.rules || '', tajweed_rules: Array.isArray(comp.tajweed_rules) ? comp.tajweed_rules.join(', ') : '', badge_key: comp.badge_key || config.badge, points_multiplier: Number(comp.points_multiplier || 2), points_first: Number(comp.points_first ?? 500), points_second: Number(comp.points_second ?? 300), points_third: Number(comp.points_third ?? 150), min_verses: comp.min_verses || 0, is_featured: Boolean(comp.is_featured), certificate_enabled: Boolean(comp.certificate_enabled), award_top_n: Number(comp.award_top_n || 10), certificate_template_id: comp.certificate_template_id || '' }); setShowModal(true) }
 
   const updateType = (type: string) => { const config = TYPE_CONFIG[type] || TYPE_CONFIG.monthly; setForm({ ...form, type, badge_key: config.badge, points_multiplier: ['monthly', 'ramadan', 'tajweed'].includes(type) ? 2 : 1 }) }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!form.title || !form.start_date || !form.end_date) return; setSaving(true)
-    try { const url = editItem ? `/api/academy/admin/competitions/${editItem.id}` : '/api/academy/admin/competitions'; const method = editItem ? 'PATCH' : 'POST'; const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, tajweed_rules: form.tajweed_rules.split(',').map((item) => item.trim()).filter(Boolean), certificate_template_id: form.certificate_template_id || null, award_top_n: form.certificate_enabled ? Number(form.award_top_n) || 10 : null, points_first: Number(form.points_first) >= 0 ? Number(form.points_first) : 500, points_second: Number(form.points_second) >= 0 ? Number(form.points_second) : 300, points_third: Number(form.points_third) >= 0 ? Number(form.points_third) : 150 }) }); if (res.ok) { setShowModal(false); fetchCompetitions() } else { const data = await res.json().catch(() => null); alert(data?.error || a.compSaveError) } }
+    try { const url = editItem ? `/api/academy/admin/competitions/${editItem.id}` : '/api/academy/admin/competitions'; const method = editItem ? 'PATCH' : 'POST'; const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, tajweed_rules: form.tajweed_rules.split(',').map((item) => item.trim()).filter(Boolean), certificate_template_id: form.certificate_template_id || null, award_top_n: form.certificate_enabled ? Number(form.award_top_n) || 10 : null, points_first: Number(form.points_first) >= 0 ? Number(form.points_first) : 500, points_second: Number(form.points_second) >= 0 ? Number(form.points_second) : 300, points_third: Number(form.points_third) >= 0 ? Number(form.points_third) : 150, stages: editItem ? undefined : stages }) }); if (res.ok) { setShowModal(false); fetchCompetitions() } else { const data = await res.json().catch(() => null); alert(data?.error || a.compSaveError) } }
     finally { setSaving(false) }
   }
 
@@ -171,6 +176,11 @@ export default function AdminCompetitionsPage() {
             </div>
           </div>
         </div>
+        <StageManager
+          competitionId={selectedComp.id}
+          basePath={`/api/academy/admin/competitions/${selectedComp.id}`}
+          onChanged={() => { fetchCompetitions(); fetchEntries(selectedComp) }}
+        />
         {loadingEntries ? <CardListSkeleton rows={3} /> : entries.length === 0 ? (
           <div className="border-2 border-dashed border-border rounded-2xl p-16 text-center"><Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" /><p className="font-bold text-muted-foreground">{a.compNoEntries}</p></div>
         ) : (
@@ -351,6 +361,7 @@ export default function AdminCompetitionsPage() {
                 {form.certificate_enabled && (<div className="grid gap-3 sm:grid-cols-2"><Field label={a.compTopNWinners}><input type="number" min={1} max={1000} value={form.award_top_n} onChange={(event) => setForm({ ...form, award_top_n: Number(event.target.value) })} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-amber-500" /></Field><Field label={a.compCertificateTemplate}><input type="text" placeholder={a.compTemplatePlaceholder} value={form.certificate_template_id} onChange={(event) => setForm({ ...form, certificate_template_id: event.target.value })} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-amber-500 font-mono" /></Field></div>)}
                 <p className="text-xs text-amber-800 leading-relaxed">{a.compCertificateNote}</p>
               </div>
+              {!editItem && <StageBuilder stages={stages} onChange={setStages} />}
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 rounded-xl border border-border py-3 font-bold transition hover:bg-muted">{t.cancel}</button>
                 <button type="submit" disabled={saving} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-600 py-3 font-bold text-white transition hover:bg-amber-700 disabled:opacity-60">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 h-4" />}{editItem ? a.compSaveChanges : a.compCreateCompetition}</button>

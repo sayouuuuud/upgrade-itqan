@@ -71,7 +71,15 @@ export async function getStudentEntries(studentId: string, scope?: string) {
   return query(sql, params)
 }
 
-export async function getEntries(competitionId: string) {
+export async function getEntries(competitionId: string, stageId?: string) {
+  // Default to the active stage so judges/admins always see the current round.
+  // Pass an explicit stageId to inspect a past round. For single-stage
+  // competitions the active stage owns every entry, so behaviour is unchanged.
+  let targetStageId = stageId
+  if (!targetStageId) {
+    const active = await getActiveStage(competitionId)
+    targetStageId = active?.id
+  }
   return query(`
     SELECT ce.*, u.name as student_name, u.email as student_email,
            u.avatar_url as student_avatar_url,
@@ -86,24 +94,222 @@ export async function getEntries(competitionId: string) {
       GROUP BY entry_id
     ) js ON js.entry_id = ce.id
     WHERE ce.competition_id = $1
+      AND ($2::uuid IS NULL OR ce.stage_id = $2)
     ORDER BY ce.rank ASC NULLS LAST, ce.score DESC NULLS LAST, ce.submitted_at DESC
-  `, [competitionId])
+  `, [competitionId, targetStageId ?? null])
 }
 
 export async function getCompetition(id: string) {
   return queryOne(`SELECT * FROM competitions WHERE id = $1`, [id])
 }
 
-export async function joinCompetition(competitionId: string, studentId: string) {
-  // Joining only registers participation. `submitted_at` stays NULL until the
-  // student actually submits, so a joined-but-not-submitted entry is never
-  // mistaken for a submission (and never shows a bogus submission date).
+// ============================================================================
+// Stages (elimination rounds)
+// ----------------------------------------------------------------------------
+// A competition runs as one or more ordered stages. The LAST stage (highest
+// order_index, advance_count = NULL) is the "final" — its top finishers are the
+// winners. Earlier stages advance their top `advance_count` students to the
+// next stage. A single-stage competition behaves exactly like the old system.
+// ============================================================================
+
+export interface CompetitionStage {
+  id: string
+  competition_id: string
+  order_index: number
+  name: string
+  description: string | null
+  advance_count: number | null
+  min_verses: number | null
+  tajweed_rules: string | null
+  start_date: string | null
+  end_date: string | null
+  status: string // locked | active | completed
+  created_at?: string
+  updated_at?: string
+}
+
+export interface StageInput {
+  name: string
+  description?: string | null
+  advance_count?: number | null
+  min_verses?: number | null
+  tajweed_rules?: string | null
+  start_date?: string | null
+  end_date?: string | null
+}
+
+/** All stages of a competition, ordered. */
+export async function getStages(competitionId: string): Promise<CompetitionStage[]> {
+  return query<CompetitionStage>(
+    `SELECT * FROM competition_stages WHERE competition_id = $1 ORDER BY order_index ASC`,
+    [competitionId],
+  )
+}
+
+/**
+ * The stage currently open for submissions/judging. Prefers the competition's
+ * `current_stage_id` pointer, then any 'active' stage, then the first stage.
+ */
+export async function getActiveStage(competitionId: string): Promise<CompetitionStage | null> {
+  const comp = await queryOne<{ current_stage_id: string | null }>(
+    `SELECT current_stage_id FROM competitions WHERE id = $1`,
+    [competitionId],
+  )
+  if (comp?.current_stage_id) {
+    const s = await queryOne<CompetitionStage>(
+      `SELECT * FROM competition_stages WHERE id = $1`,
+      [comp.current_stage_id],
+    )
+    if (s) return s
+  }
+  return queryOne<CompetitionStage>(
+    `SELECT * FROM competition_stages
+      WHERE competition_id = $1
+      ORDER BY (status = 'active') DESC, order_index ASC
+      LIMIT 1`,
+    [competitionId],
+  )
+}
+
+/**
+ * Stage context for a student viewing a competition: all stages, the active
+ * stage, the student's entry in each stage, and whether they can submit now.
+ * Used by the student-facing detail pages to render round progress and gate
+ * the submission form.
+ */
+export async function getStudentStageContext(competitionId: string, studentId: string): Promise<{
+  stages: CompetitionStage[]
+  activeStage: CompetitionStage | null
+  entries: any[]
+  activeEntry: any | null
+  canSubmit: boolean
+}> {
+  const [stages, activeStage, entries] = await Promise.all([
+    getStages(competitionId),
+    getActiveStage(competitionId),
+    query<any>(
+      `SELECT * FROM competition_entries WHERE competition_id = $1 AND student_id = $2`,
+      [competitionId, studentId],
+    ),
+  ])
+  const activeEntry = activeStage ? entries.find((e) => e.stage_id === activeStage.id) ?? null : null
+  // A student can submit if the active stage is open AND either it's stage 1
+  // (open to all) or they qualified into this stage (an entry row exists), and
+  // they haven't already been judged this round.
+  const canSubmit = Boolean(
+    activeStage &&
+    activeStage.status === 'active' &&
+    (activeStage.order_index === 1 || !!activeEntry) &&
+    !(activeEntry && ['evaluated', 'winner', 'eliminated'].includes(activeEntry.status)),
+  )
+  return { stages, activeStage, entries, activeEntry, canSubmit }
+}
+
+/** The stage immediately after the given order index, if any. */
+async function getNextStage(competitionId: string, orderIndex: number): Promise<CompetitionStage | null> {
+  return queryOne<CompetitionStage>(
+    `SELECT * FROM competition_stages
+      WHERE competition_id = $1 AND order_index > $2
+      ORDER BY order_index ASC LIMIT 1`,
+    [competitionId, orderIndex],
+  )
+}
+
+/** True when this stage is the last one (no further rounds to advance into). */
+function isFinalStage(stage: CompetitionStage, allStages: CompetitionStage[]): boolean {
+  const maxOrder = Math.max(...allStages.map((s) => s.order_index))
+  return stage.order_index >= maxOrder
+}
+
+/**
+ * Define the stages for a competition at creation time.
+ *
+ * - When `stages` has 2+ entries, the competition is multi-stage: stage 1 is
+ *   `active`, the rest `locked`, and the last stage's `advance_count` is forced
+ *   to NULL (it's the final). The competition pointer/flag are set accordingly.
+ * - When `stages` is empty or has 1 entry, a single implicit stage is created
+ *   so the competition behaves like a classic single-round contest.
+ *
+ * Any stages auto-created earlier (e.g. by the backfill) are replaced. Safe to
+ * call right after inserting the competition row.
+ */
+export async function createCompetitionStages(
+  competitionId: string,
+  stages: StageInput[],
+  fallback: { min_verses?: number | null; tajweed_rules?: string | null; start_date?: string | null; end_date?: string | null },
+): Promise<void> {
+  const clean = (stages || []).filter((s) => s && s.name && s.name.trim())
+
+  // Single (or no) stage → one implicit "final" round from competition fields.
+  const list: StageInput[] = clean.length >= 2 ? clean : [
+    {
+      name: clean[0]?.name?.trim() || 'المسابقة',
+      description: clean[0]?.description ?? null,
+      advance_count: null,
+      min_verses: clean[0]?.min_verses ?? fallback.min_verses ?? null,
+      tajweed_rules: clean[0]?.tajweed_rules ?? fallback.tajweed_rules ?? null,
+      start_date: clean[0]?.start_date ?? fallback.start_date ?? null,
+      end_date: clean[0]?.end_date ?? fallback.end_date ?? null,
+    },
+  ]
+
+  await withTransaction(async (tx) => {
+    // Replace any pre-existing (e.g. backfilled) stages for a clean slate.
+    await tx(`UPDATE competitions SET current_stage_id = NULL WHERE id = $1`, [competitionId])
+    await tx(`DELETE FROM competition_stages WHERE competition_id = $1`, [competitionId])
+
+    let firstStageId: string | null = null
+    for (let i = 0; i < list.length; i++) {
+      const s = list[i]
+      const isLast = i === list.length - 1
+      // Only non-final stages advance students; the final stage's advance_count
+      // is always NULL (its top finishers are awarded as winners instead).
+      const advance = isLast ? null : Math.max(1, Number(s.advance_count) || 1)
+      const inserted = await tx<{ id: string }>(
+        `INSERT INTO competition_stages
+           (competition_id, order_index, name, description, advance_count, min_verses, tajweed_rules, start_date, end_date, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         RETURNING id`,
+        [
+          competitionId,
+          i + 1,
+          s.name.trim(),
+          s.description ?? null,
+          advance,
+          s.min_verses ?? null,
+          s.tajweed_rules ?? null,
+          s.start_date ?? null,
+          s.end_date ?? null,
+          i === 0 ? 'active' : 'locked',
+        ],
+      )
+      if (i === 0) firstStageId = inserted[0].id
+    }
+
+    await tx(
+      `UPDATE competitions SET current_stage_id = $1, is_multi_stage = $2 WHERE id = $3`,
+      [firstStageId, list.length >= 2, competitionId],
+    )
+  })
+}
+
+export async function joinCompetition(competitionId: string, studentId: string, stageId?: string) {
+  // Joining only registers participation in the active stage. `submitted_at`
+  // stays NULL until the student actually submits, so a joined-but-not-submitted
+  // entry is never mistaken for a submission (and never shows a bogus date).
+  // Students join the active stage only; later stages are populated
+  // automatically when they qualify.
+  let targetStageId = stageId
+  if (!targetStageId) {
+    const active = await getActiveStage(competitionId)
+    targetStageId = active?.id
+  }
   return query(`
-    INSERT INTO competition_entries (competition_id, student_id, status)
-    VALUES ($1, $2, 'pending')
-    ON CONFLICT (competition_id, student_id) DO NOTHING
+    INSERT INTO competition_entries (competition_id, student_id, stage_id, status)
+    VALUES ($1, $2, $3, 'pending')
+    ON CONFLICT (competition_id, student_id, stage_id) DO NOTHING
     RETURNING *
-  `, [competitionId, studentId])
+  `, [competitionId, studentId, targetStageId])
 }
 
 export async function submitEntry(competitionId: string, studentId: string, data: {
@@ -118,30 +324,43 @@ export async function submitEntry(competitionId: string, studentId: string, data
   if (!comp) return { success: false, error: ((en.extracted_2026_v2 as any)?.["المسابقة غير موجودة"] || "المسابقة غير موجودة") }
   if (comp.status !== 'active') return { success: false, error: ((en.extracted_2026_v2 as any)?.["المسابقة غير نشطة"] || "المسابقة غير نشطة") }
 
-  const minVerses = Number(comp.min_verses) || 0
+  // Submissions always target the active stage. The stage must be open, and the
+  // stage's own min_verses requirement takes precedence over the competition's.
+  const stage = await getActiveStage(competitionId)
+  if (!stage) return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مرحلة نشطة"] || "لا توجد مرحلة نشطة") }
+  if (stage.status !== 'active') {
+    return { success: false, error: ((en.extracted_2026_v2 as any)?.["هذه المرحلة غير مفتوحة للتسليم"] || "هذه المرحلة غير مفتوحة للتسليم") }
+  }
+
+  const minVerses = Number(stage.min_verses ?? comp.min_verses) || 0
   const verses = Number(data.verses_count) || 0
   if (minVerses > 0 && verses < minVerses) {
     return { success: false, error: `${(en.extracted_2026_v2 as any)?.["الحد الأدنى للمشاركة هو "] || "الحد الأدنى للمشاركة هو "}${minVerses}${(en.extracted_2026_v2 as any)?.[" آية"] || " آية"}` }
   }
 
-  // Block re-submission once an entry has already been judged.
+  // The student's entry row for THIS stage. For stage 1 it's created on demand;
+  // for later stages it only exists if the student qualified (advanced).
   const existing = await queryOne<{ status: string }>(
-    `SELECT status FROM competition_entries WHERE competition_id = $1 AND student_id = $2`,
-    [competitionId, studentId]
+    `SELECT status FROM competition_entries WHERE competition_id = $1 AND student_id = $2 AND stage_id = $3`,
+    [competitionId, studentId, stage.id]
   )
+  if (stage.order_index > 1 && !existing) {
+    return { success: false, error: ((en.extracted_2026_v2 as any)?.["لم تتأهّل لهذه المرحلة"] || "لم تتأهّل لهذه المرحلة") }
+  }
+  // Block re-submission once this stage's entry has already been judged.
   if (existing && (existing.status === 'evaluated' || existing.status === 'winner')) {
     return { success: false, error: ((en.extracted_2026_v2 as any)?.["تم تقييم مشاركتك بالفعل ولا يمكن تعديلها"] || "تم تقييم مشاركتك بالفعل ولا يمكن تعديلها") }
   }
 
-  // Ensure the participation row exists, then record the actual submission.
-  await joinCompetition(competitionId, studentId)
+  // Ensure the participation row exists in this stage, then record submission.
+  await joinCompetition(competitionId, studentId, stage.id)
 
   const rows = await query<any>(`
     UPDATE competition_entries
     SET submission_url = $3, notes = $4, verses_count = $5, status = 'pending', submitted_at = NOW()
-    WHERE competition_id = $1 AND student_id = $2
+    WHERE competition_id = $1 AND student_id = $2 AND stage_id = $6
     RETURNING *
-  `, [competitionId, studentId, data.submission_url || null, data.notes || null, verses])
+  `, [competitionId, studentId, data.submission_url || null, data.notes || null, verses, stage.id])
 
   return { success: true, data: rows[0] }
 }
@@ -543,22 +762,36 @@ export interface RankPreviewRow {
  * tie-breaker. The top `award_top_n` (default 3, capped at 3 for points) are
  * flagged as winners. Used to preview results before the judge confirms.
  */
-export async function previewCompetitionResults(competitionId: string): Promise<{
+export async function previewCompetitionResults(competitionId: string, stageId?: string): Promise<{
   ready: boolean
   pending: number
   topN: number
   ranking: RankPreviewRow[]
 }> {
+  // Resolve which stage we're previewing (defaults to the active stage).
+  const stages = await getStages(competitionId)
+  let stage: CompetitionStage | null = stageId
+    ? stages.find((s) => s.id === stageId) ?? null
+    : await getActiveStage(competitionId)
+  const targetStageId = stage?.id ?? null
+
   const comp = await queryOne<{ award_top_n: number | null }>(
     `SELECT award_top_n FROM competitions WHERE id = $1`,
     [competitionId],
   )
-  const topN = Math.max(1, Number(comp?.award_top_n) || 3)
+
+  // Cutoff: a non-final stage advances its top `advance_count`; the final stage
+  // (or a single-stage competition) awards its top `award_top_n`.
+  const finalStage = !stage || isFinalStage(stage, stages)
+  const topN = finalStage
+    ? Math.max(1, Number(comp?.award_top_n) || 3)
+    : Math.max(1, Number(stage?.advance_count) || 1)
 
   const pendingRow = await queryOne<{ count: string }>(
     `SELECT COUNT(*)::text AS count FROM competition_entries
-      WHERE competition_id = $1 AND submission_url IS NOT NULL AND status = 'pending'`,
-    [competitionId],
+      WHERE competition_id = $1 AND ($2::uuid IS NULL OR stage_id = $2)
+        AND submission_url IS NOT NULL AND status = 'pending'`,
+    [competitionId, targetStageId],
   )
   const pending = Number(pendingRow?.count ?? 0)
 
@@ -567,10 +800,11 @@ export async function previewCompetitionResults(competitionId: string): Promise<
        FROM competition_entries ce
        JOIN users u ON u.id = ce.student_id
       WHERE ce.competition_id = $1
-        AND ce.status IN ('evaluated', 'winner')
+        AND ($2::uuid IS NULL OR ce.stage_id = $2)
+        AND ce.status IN ('evaluated', 'winner', 'qualified', 'eliminated')
         AND ce.score IS NOT NULL
       ORDER BY ce.score DESC, ce.submitted_at ASC`,
-    [competitionId],
+    [competitionId, targetStageId],
   )
 
   // Competition-style ranking with ties: equal scores share the same rank, and
@@ -598,71 +832,259 @@ export async function previewCompetitionResults(competitionId: string): Promise<
 }
 
 /**
- * Finalize a competition: persist the ranks computed from scores, mark the
- * winners, award points to the top finishers, and close the competition.
- * Idempotent on points (awardCompetitionRank guards against double-paying).
+ * Internal: treat `stage` as the FINAL stage and crown its winners — persist
+ * ranks, flag winners, set the competition winner, award points/certs, and
+ * close the competition. All structural writes are atomic; points/certs run
+ * post-commit and are independently idempotent. Used both by the normal final
+ * stage and by the "finalize current stage as results" admin action.
+ */
+async function finalizeStageAsResults(
+  competitionId: string,
+  stage: CompetitionStage,
+  remainingStageIds: string[],
+): Promise<{ success: boolean; error?: string; winners?: number; ranked?: number }> {
+  const { ready, ranking } = await previewCompetitionResults(competitionId, stage.id)
+  if (!ready) {
+    return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مشاركات مُقيّمة لاعتماد نتائجها"] || "لا توجد مشاركات مُقيّمة لاعتماد نتائجها") }
+  }
+
+  const winnerRows = ranking.filter((r) => r.is_winner)
+  const firstPlace = ranking.find((r) => r.rank === 1)
+
+  await withTransaction(async (tx) => {
+    // Reset previous winner flags in this stage so re-finalizing reflects latest scores.
+    await tx(
+      `UPDATE competition_entries SET status = 'evaluated'
+        WHERE competition_id = $1 AND stage_id = $2 AND status = 'winner'`,
+      [competitionId, stage.id],
+    )
+    // Persist computed ranks.
+    for (const row of ranking) {
+      await tx(`UPDATE competition_entries SET rank = $1 WHERE id = $2`, [row.rank, row.entry_id])
+    }
+    // Flag winners (rank within topN) within this stage.
+    for (const row of winnerRows) {
+      await tx(
+        `UPDATE competition_entries SET status = 'winner'
+          WHERE competition_id = $1 AND stage_id = $2 AND student_id = $3`,
+        [competitionId, stage.id, row.student_id],
+      )
+    }
+    if (firstPlace) {
+      await tx(`UPDATE competitions SET winner_id = $1 WHERE id = $2`, [firstPlace.student_id, competitionId])
+    }
+    // This stage is done; any not-yet-reached stages are locked out.
+    await tx(`UPDATE competition_stages SET status = 'completed', updated_at = NOW() WHERE id = $1`, [stage.id])
+    if (remainingStageIds.length > 0) {
+      await tx(
+        `UPDATE competition_stages SET status = 'locked', updated_at = NOW() WHERE id = ANY($1::uuid[])`,
+        [remainingStageIds],
+      )
+    }
+    await tx(`UPDATE competitions SET status = 'ended', current_stage_id = $1 WHERE id = $2`, [stage.id, competitionId])
+  })
+
+  // Award points/certs/notifications post-commit (idempotent).
+  let winners = 0
+  for (const row of winnerRows) {
+    await awardCompetitionRank(competitionId, row.student_id, row.rank)
+    winners++
+  }
+  return { success: true, winners, ranked: ranking.length }
+}
+
+/**
+ * Finalize a competition's CURRENT stage as the official end result.
+ *
+ * - If the active stage is the final stage (or the competition is single-stage),
+ *   this crowns the overall winners — identical to the classic behaviour.
+ * - If called on an earlier stage (via the admin "إنهاء واعتماد النتائج الحالية"
+ *   option), it treats that stage as the finish line: top scorer wins, remaining
+ *   stages are locked, competition closes.
+ *
+ * Idempotent on points. Backwards compatible: existing callers pass only the
+ * competition id and get the active/final stage.
  */
 export async function finalizeCompetitionResults(
   competitionId: string,
+  stageId?: string,
 ): Promise<{ success: boolean; error?: string; winners?: number; ranked?: number }> {
   try {
-    const { ready, ranking } = await previewCompetitionResults(competitionId)
-    if (!ready) {
-      return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مشاركات مُقيّمة لاعتماد نتائجها"] || "لا توجد مشاركات مُقيّمة لاعتماد نتائجها") }
+    const stages = await getStages(competitionId)
+    const stage = stageId
+      ? stages.find((s) => s.id === stageId) ?? null
+      : (await getActiveStage(competitionId))
+    if (!stage) {
+      return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مرحلة نشطة"] || "لا توجد مرحلة نشطة") }
     }
-
-    const winnerRows = ranking.filter((r) => r.is_winner)
-    const firstPlace = ranking.find((r) => r.rank === 1)
-
-    // All the structural writes (rank reset, per-entry ranks, winner flags,
-    // winner_id, closing the competition) happen in ONE transaction so a
-    // crash or a concurrent double-submit can never leave the competition with
-    // partially-written ranks/winners. Points are awarded afterwards because
-    // they are independently idempotent and touch the global gamification
-    // tables.
-    await withTransaction(async (tx) => {
-      // Reset any previous winner flags so re-finalizing reflects latest scores.
-      await tx(
-        `UPDATE competition_entries SET status = 'evaluated'
-          WHERE competition_id = $1 AND status = 'winner'`,
-        [competitionId],
-      )
-
-      // Persist every entry's computed rank.
-      for (const row of ranking) {
-        await tx(`UPDATE competition_entries SET rank = $1 WHERE id = $2`, [row.rank, row.entry_id])
-      }
-
-      // Flag winners (rank within topN).
-      for (const row of winnerRows) {
-        await tx(
-          `UPDATE competition_entries SET status = 'winner'
-            WHERE competition_id = $1 AND student_id = $2`,
-          [competitionId, row.student_id],
-        )
-      }
-
-      // Record the single headline winner (rank #1). If there is a tie for
-      // first, the earliest submission (first in the ordered ranking) is used.
-      if (firstPlace) {
-        await tx(`UPDATE competitions SET winner_id = $1 WHERE id = $2`, [firstPlace.student_id, competitionId])
-      }
-
-      // Close the competition once results are official.
-      await tx(`UPDATE competitions SET status = 'ended' WHERE id = $1`, [competitionId])
-    })
-
-    // Award points to top finishers (ranks 1-3). Safe to run post-commit:
-    // awardCompetitionRank guards against double-paying on re-finalize.
-    let winners = 0
-    for (const row of winnerRows) {
-      await awardCompetitionRank(competitionId, row.student_id, row.rank)
-      winners++
-    }
-
-    return { success: true, winners, ranked: ranking.length }
+    const remaining = stages.filter((s) => s.order_index > stage.order_index).map((s) => s.id)
+    return await finalizeStageAsResults(competitionId, stage, remaining)
   } catch (error) {
     console.error('Error finalizing competition results:', error)
     return { success: false, error: ((en.extracted_2026_v2 as any)?.["حدث خطأ أثناء اعتماد النتائج"] || "حدث خطأ أثناء اعتماد النتائج") }
+  }
+}
+
+/** Explicit alias for the admin "finalize current stage now" action (option 2). */
+export async function finalizeCurrentStageAsResults(competitionId: string) {
+  return finalizeCompetitionResults(competitionId)
+}
+
+/**
+ * The core stage-transition action.
+ *
+ * - On a NON-final stage: ranks the stage, advances the top `advance_count`
+ *   students (marks them 'qualified', creates fresh pending entries in the next
+ *   stage), marks the rest 'eliminated', activates the next stage, and notifies
+ *   both groups. All writes are atomic; notifications are post-commit.
+ * - On the FINAL stage: delegates to finalizeCompetitionResults (crowns winners).
+ *
+ * Idempotent: re-running after a stage is already completed is a no-op for that
+ * stage (it will operate on the now-active next stage instead).
+ */
+export async function advanceStageOrFinalize(
+  competitionId: string,
+): Promise<{ success: boolean; error?: string; advanced?: number; eliminated?: number; finalized?: boolean; winners?: number }> {
+  try {
+    const stages = await getStages(competitionId)
+    const stage = await getActiveStage(competitionId)
+    if (!stage) {
+      return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مرحلة نشطة"] || "لا توجد مرحلة نشطة") }
+    }
+
+    // Final stage → crown winners.
+    if (isFinalStage(stage, stages)) {
+      const res = await finalizeCompetitionResults(competitionId, stage.id)
+      return { ...res, finalized: true }
+    }
+
+    // Non-final stage → advance the top scorers.
+    const nextStage = await getNextStage(competitionId, stage.order_index)
+    if (!nextStage) {
+      // No next stage despite not being "final" (shouldn't happen) — finalize.
+      const res = await finalizeCompetitionResults(competitionId, stage.id)
+      return { ...res, finalized: true }
+    }
+
+    const { ready, ranking } = await previewCompetitionResults(competitionId, stage.id)
+    if (!ready) {
+      return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مشاركات مُقيّمة في هذه المرحلة"] || "لا توجد مشاركات مُقيّمة في هذه المرحلة") }
+    }
+
+    const advancing = ranking.filter((r) => r.is_winner) // is_winner == within advance_count here
+    const eliminated = ranking.filter((r) => !r.is_winner)
+
+    await withTransaction(async (tx) => {
+      // Persist ranks for this stage's entries.
+      for (const row of ranking) {
+        await tx(`UPDATE competition_entries SET rank = $1 WHERE id = $2`, [row.rank, row.entry_id])
+      }
+      // Mark advancing vs eliminated in the CURRENT stage.
+      for (const row of advancing) {
+        await tx(`UPDATE competition_entries SET status = 'qualified' WHERE id = $1`, [row.entry_id])
+      }
+      for (const row of eliminated) {
+        await tx(`UPDATE competition_entries SET status = 'eliminated' WHERE id = $1`, [row.entry_id])
+      }
+      // Create fresh pending entries for advancers in the NEXT stage.
+      for (const row of advancing) {
+        await tx(
+          `INSERT INTO competition_entries (competition_id, student_id, stage_id, status)
+           VALUES ($1, $2, $3, 'pending')
+           ON CONFLICT (competition_id, student_id, stage_id) DO NOTHING`,
+          [competitionId, row.student_id, nextStage.id],
+        )
+      }
+      // Close this stage, open the next, and move the competition pointer.
+      await tx(`UPDATE competition_stages SET status = 'completed', updated_at = NOW() WHERE id = $1`, [stage.id])
+      await tx(`UPDATE competition_stages SET status = 'active', updated_at = NOW() WHERE id = $1`, [nextStage.id])
+      await tx(`UPDATE competitions SET current_stage_id = $1 WHERE id = $2`, [nextStage.id, competitionId])
+    })
+
+    // Notify advancers and eliminated students (post-commit, best-effort).
+    const comp = await queryOne<{ title: string | null; scope: string | null }>(
+      `SELECT title, scope FROM competitions WHERE id = $1`, [competitionId])
+    const compTitle = comp?.title || 'المسابقة'
+    const studentLink = comp?.scope === 'academy' ? '/academy/student/competitions' : '/student/competitions'
+    for (const row of advancing) {
+      try {
+        await createNotification({
+          userId: row.student_id,
+          type: 'general',
+          title: `تأهّلت إلى «${nextStage.name}» 🎉`,
+          message: `لقد تأهّلت إلى مرحلة «${nextStage.name}» في «${compTitle}». جهّز تسليمك الجديد!`,
+          category: 'system',
+          link: studentLink,
+          dedupKey: `competition-advance:${nextStage.id}:${row.student_id}`,
+        })
+      } catch (err) { console.error('[competitions] advance notification failed', err) }
+    }
+    for (const row of eliminated) {
+      try {
+        await createNotification({
+          userId: row.student_id,
+          type: 'general',
+          title: `نتيجة مرحلة «${stage.name}»`,
+          message: `شكراً لمشاركتك في «${compTitle}». لم تتأهّل لمرحلة «${nextStage.name}» هذه المرة، نتمنى لك التوفيق!`,
+          category: 'system',
+          link: studentLink,
+          dedupKey: `competition-eliminated:${stage.id}:${row.student_id}`,
+        })
+      } catch (err) { console.error('[competitions] eliminated notification failed', err) }
+    }
+
+    return { success: true, advanced: advancing.length, eliminated: eliminated.length, finalized: false }
+  } catch (error) {
+    console.error('Error advancing competition stage:', error)
+    return { success: false, error: ((en.extracted_2026_v2 as any)?.["حدث خطأ أثناء ترحيل المرحلة"] || "حدث خطأ أثناء ترحيل المرحلة") }
+  }
+}
+
+/**
+ * Cancel a competition immediately (admin option 3): close it with NO ranking,
+ * winner, points or certificates, and notify every participant that it ended.
+ * Idempotent — notifications are de-duplicated per student.
+ */
+export async function cancelCompetition(
+  competitionId: string,
+): Promise<{ success: boolean; error?: string; notified?: number }> {
+  try {
+    const comp = await queryOne<{ title: string | null; scope: string | null; status: string }>(
+      `SELECT title, scope, status FROM competitions WHERE id = $1`, [competitionId])
+    if (!comp) return { success: false, error: ((en.extracted_2026_v2 as any)?.["المسابقة غير موجودة"] || "المسابقة غير موجودة") }
+
+    // Everyone who ever participated in any stage.
+    const participants = await query<{ student_id: string }>(
+      `SELECT DISTINCT student_id FROM competition_entries WHERE competition_id = $1`,
+      [competitionId],
+    )
+
+    await withTransaction(async (tx) => {
+      await tx(`UPDATE competition_stages SET status = 'completed', updated_at = NOW()
+                 WHERE competition_id = $1 AND status <> 'completed'`, [competitionId])
+      await tx(`UPDATE competitions SET status = 'ended' WHERE id = $1`, [competitionId])
+    })
+
+    const compTitle = comp.title || 'المسابقة'
+    const studentLink = comp.scope === 'academy' ? '/academy/student/competitions' : '/student/competitions'
+    let notified = 0
+    for (const p of participants) {
+      try {
+        await createNotification({
+          userId: p.student_id,
+          type: 'general',
+          title: `تم إنهاء المسابقة`,
+          message: `نأسف، تم إنهاء «${compTitle}» من قبل الإدارة.`,
+          category: 'system',
+          link: studentLink,
+          dedupKey: `competition-cancelled:${competitionId}:${p.student_id}`,
+        })
+        notified++
+      } catch (err) { console.error('[competitions] cancel notification failed', err) }
+    }
+    return { success: true, notified }
+  } catch (error) {
+    console.error('Error cancelling competition:', error)
+    return { success: false, error: ((en.extracted_2026_v2 as any)?.["حدث خطأ أثناء إنهاء المسابقة"] || "حدث خطأ أثناء إنهاء المسابقة") }
   }
 }

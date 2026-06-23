@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query, queryOne } from '@/lib/db'
+import { getActiveStage } from '@/lib/academy/competitions'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await params
+
+  // Judging always operates on the CURRENT round. Default to the active stage so
+  // a multi-stage competition never mixes entries from past rounds. For a
+  // single-stage competition the active stage owns every entry (unchanged).
+  const activeStage = await getActiveStage(id)
 
   const entries = await query(
     `SELECT
@@ -18,8 +24,14 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
      LEFT JOIN users evaluator ON evaluator.id = ce.evaluated_by
      WHERE ce.competition_id = $1
        AND ($2::uuid IS NULL OR ce.student_id = $2::uuid OR $3 = true)
+       AND ($4::uuid IS NULL OR ce.stage_id = $4::uuid)
      ORDER BY ce.rank ASC NULLS LAST, ce.score DESC NULLS LAST, ce.submitted_at DESC`,
-    [id, session.role === 'student' ? session.sub : null, ['admin', 'academy_admin', 'reader'].includes(session.role)]
+    [
+      id,
+      session.role === 'student' ? session.sub : null,
+      ['admin', 'academy_admin', 'reader'].includes(session.role),
+      activeStage?.id ?? null,
+    ]
   )
 
   return NextResponse.json({ data: entries })
@@ -68,13 +80,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'Minimum verses requirement not met' }, { status: 400 })
   }
 
+  // Entries are scoped to the current round. Resolve the active stage so the
+  // upsert matches the (competition_id, student_id, stage_id) unique index.
+  const submitStage = await getActiveStage(id)
+  if (!submitStage) {
+    return NextResponse.json({ error: 'No active stage to submit to' }, { status: 400 })
+  }
+
   const result = await query(
     `INSERT INTO competition_entries (
-       competition_id, student_id, recitation_id, submission_url, notes,
+       competition_id, student_id, stage_id, recitation_id, submission_url, notes,
        verses_count, halqa_id, status, submitted_at
      )
-     VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', NOW())
-     ON CONFLICT (competition_id, student_id)
+     VALUES ($1, $2, $8, $3, $4, $5, $6, $7, 'pending', NOW())
+     ON CONFLICT (competition_id, student_id, stage_id)
      DO UPDATE SET
        recitation_id = EXCLUDED.recitation_id,
        submission_url = EXCLUDED.submission_url,
@@ -92,6 +111,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       body.notes || null,
       Number.isFinite(versesCount) ? versesCount : 0,
       body.halqa_id || competition.halqa_id || null,
+      submitStage.id,
     ]
   )
 
