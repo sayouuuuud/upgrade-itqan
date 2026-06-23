@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     const start = new Date(start_date)
     const status = start > now ? 'upcoming' : 'active'
 
-    const result = await query(`
+    const result = await query<{ id: string }>(`
       INSERT INTO competitions (
         title, description, type, start_date, end_date, max_participants,
         prizes_description, rules, status, created_by, tajweed_rules,

@@ -9,6 +9,7 @@ import { Trophy, Calendar, Users, Star, Clock, ArrowRight, Loader2, Upload, Mic,
 import { cn } from '@/lib/utils'
 import FileUploader from '@/components/academy/file-uploader'
 import { useI18n } from "@/lib/i18n/context";
+import { StageProgress, type StudentStage, type StudentStageEntry } from '@/components/competitions/stage-progress'
 
 interface Competition {
   id: string
@@ -52,6 +53,10 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
   const { id } = use(params)
   const [competition, setCompetition] = useState<Competition | null>(null)
   const [entry, setEntry] = useState<Entry | null>(null)
+  const [stages, setStages] = useState<StudentStage[]>([])
+  const [activeStage, setActiveStage] = useState<StudentStage | null>(null)
+  const [stageEntries, setStageEntries] = useState<StudentStageEntry[]>([])
+  const [canSubmit, setCanSubmit] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [joining, setJoining] = useState(false)
@@ -60,15 +65,25 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
   useEffect(() => {
     async function load() {
       try {
-        const [compRes, entriesRes] = await Promise.all([
+        const [compRes, entriesRes, detailRes] = await Promise.all([
           fetch(`/api/academy/student/competitions?status=all`),
           fetch(`/api/academy/student/competitions?view=my_entries`),
+          // Rich per-stage context (rounds, active stage, eligibility).
+          fetch(`/api/academy/student/competitions/${id}`),
         ])
 
         if (compRes.ok) {
           const compData = await compRes.json()
           const found = (compData.data || []).find((c: Competition) => c.id === id)
           if (found) setCompetition(found)
+        }
+
+        if (detailRes.ok) {
+          const detail = await detailRes.json()
+          setStages(detail.stages || [])
+          setActiveStage(detail.activeStage || null)
+          setStageEntries(detail.entries || [])
+          setCanSubmit(Boolean(detail.canSubmit))
         }
 
         if (entriesRes.ok) {
@@ -216,6 +231,9 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
         )}
       </div>
 
+      {/* Round progress (multi-stage competitions only) */}
+      <StageProgress stages={stages} activeStage={activeStage} entries={stageEntries} />
+
       {/* Join / Submit Section */}
       {!competition.has_joined && !entry ? (
         <div className="bg-card border border-border rounded-2xl p-6 text-center">
@@ -295,8 +313,9 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
             )}
           </div>
 
-          {/* Submit Form (only if competition is active) */}
-          {competition.status === 'active' && (
+          {/* Submit Form: only while the active stage is open to this student
+              (single-stage competitions keep canSubmit semantics too). */}
+          {competition.status === 'active' && canSubmit && (
             <div className="bg-card border border-border rounded-2xl p-6">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Upload className="w-5 h-5 text-emerald-500" />

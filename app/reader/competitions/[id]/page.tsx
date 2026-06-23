@@ -1,5 +1,9 @@
 'use client'
 
+// Lightweight i18n fallback shim: `t.addedTranslations_2026?.[key]` always
+// resolves to undefined, so every call falls back to the inline Arabic literal.
+// Mirrors the pattern used by the sibling student competition pages.
+const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) })
 
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
@@ -322,7 +326,7 @@ export default function ReaderCompetitionDetailPage({ params }: { params: Promis
                         <Award className="w-6 h-6" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground">{(t.addedTranslations_2026?.['الدرجة النهائية'] || 'الدرجة النهائية')}</p>
+                        <p className="text-sm font-medium text-muted-foreground">{(t.addedTranslations_2026?.['الدرجة الن��ائية'] || 'الدرجة النهائية')}</p>
                         <div className="flex items-baseline gap-1">
                           <span className="text-2xl font-bold text-foreground">{entry.score}</span>
                           <span className="text-sm text-muted-foreground">/ 100</span>

@@ -2,7 +2,7 @@
 
 import { Layers, Plus, Trash2, Trophy, ArrowDown } from 'lucide-react'
 
-export interface StageRow {
+export interface StageDraft {
   name: string
   advance_count: number
   min_verses: number
@@ -10,7 +10,7 @@ export interface StageRow {
 }
 
 /** A sensible default new round. */
-function newStage(index: number): StageRow {
+function newStage(index: number): StageDraft {
   const names = ['الدور التمهيدي', 'الدور الثاني', 'الدور الثالث', 'الدور الرابع']
   return { name: names[index] || `الدور ${index + 1}`, advance_count: 10, min_verses: 0, description: '' }
 }
@@ -24,12 +24,12 @@ function newStage(index: number): StageRow {
  *   shows an "advance count" — only earlier rounds do.
  */
 export function StageBuilder({
-  value,
+  stages: value,
   onChange,
   accent = 'amber',
 }: {
-  value: StageRow[]
-  onChange: (stages: StageRow[]) => void
+  stages: StageDraft[]
+  onChange: (stages: StageDraft[]) => void
   accent?: 'amber' | 'emerald'
 }) {
   const enabled = value.length >= 2
@@ -41,7 +41,7 @@ export function StageBuilder({
   const enable = () => onChange([newStage(0), { ...newStage(1), name: 'النهائي', advance_count: 0 }])
   const disable = () => onChange([])
 
-  const update = (i: number, patch: Partial<StageRow>) => {
+  const update = (i: number, patch: Partial<StageDraft>) => {
     onChange(value.map((s, idx) => (idx === i ? { ...s, ...patch } : s)))
   }
   const addStage = () => {

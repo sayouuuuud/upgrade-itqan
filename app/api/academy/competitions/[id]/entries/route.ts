@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { query, queryOne } from '@/lib/db'
+import { getActiveStage } from '@/lib/academy/competitions'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await params
+
+  // Judging always operates on the CURRENT round. Default to the active stage so
+  // a multi-stage competition never mixes entries from past rounds. For a
+  // single-stage competition the active stage owns every entry (unchanged).
+  const activeStage = await getActiveStage(id)
 
   const entries = await query(
     `SELECT
@@ -18,8 +24,14 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
      LEFT JOIN users evaluator ON evaluator.id = ce.evaluated_by
      WHERE ce.competition_id = $1
        AND ($2::uuid IS NULL OR ce.student_id = $2::uuid OR $3 = true)
+       AND ($4::uuid IS NULL OR ce.stage_id = $4::uuid)
      ORDER BY ce.rank ASC NULLS LAST, ce.score DESC NULLS LAST, ce.submitted_at DESC`,
-    [id, session.role === 'student' ? session.sub : null, ['admin', 'academy_admin', 'reader'].includes(session.role)]
+    [
+      id,
+      session.role === 'student' ? session.sub : null,
+      ['admin', 'academy_admin', 'reader'].includes(session.role),
+      activeStage?.id ?? null,
+    ]
   )
 
   return NextResponse.json({ data: entries })

@@ -15,7 +15,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     const competition = await getCompetition(id)
     if (!competition) return NextResponse.json({ error: 'Competition not found' }, { status: 404 })
     const [stages, active] = await Promise.all([getStages(id), getActiveStage(id)])
-    return NextResponse.json({ stages, activeStageId: active?.id ?? null })
+    // Return the full active stage object (the StageManager UI needs its
+    // order_index/advance_count/name), plus activeStageId for any simpler caller.
+    return NextResponse.json({ stages, activeStage: active ?? null, activeStageId: active?.id ?? null })
   } catch (error) {
     console.error('Error fetching stages:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
