@@ -396,6 +396,12 @@ export async function createEligibilityRequest(
     )
 
     const initialStatus = skipDataStep ? "submitted" : "data_required"
+    // Compute submitted_at in JS and pass it as its own parameter. Previously
+    // this reused $11 (status) inside `CASE WHEN $11 = 'submitted'`, which made
+    // Postgres deduce two conflicting types for the same placeholder (varchar
+    // for the column vs text for the comparison) and threw "inconsistent types
+    // deduced for parameter $11" — silently breaking ALL certificate issuance.
+    const submittedAt = skipDataStep ? new Date() : null
 
     const insert = await queryOne<{
       id: string
@@ -408,7 +414,7 @@ export async function createEligibilityRequest(
        ) VALUES (
          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
          NOW(),
-         CASE WHEN $11 = 'submitted' THEN NOW() ELSE NULL END
+         $12
        )
        RETURNING id, status`,
       [
@@ -423,6 +429,7 @@ export async function createEligibilityRequest(
         template.id,
         language,
         initialStatus,
+        submittedAt,
       ],
     )
 

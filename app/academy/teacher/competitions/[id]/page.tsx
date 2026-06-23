@@ -31,6 +31,7 @@ interface Entry {
   submitted_at: string
   evaluated_at: string | null
   evaluated_by_name: string | null
+  judge_count?: number
 }
 
 const TAJWEED_RULES = [
@@ -229,11 +230,15 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
 
                   {entry.score !== null && (
                     <div className="mt-2 flex items-center gap-2">
-                      <span className="text-sm font-medium">{(t.addedTranslations_2026?.['الدرجة:'] || (t.addedTranslations_2026?.['الدرجة:'] || 'الدرجة:'))}</span>
+                      <span className="text-sm font-medium">{(t.addedTranslations_2026?.['الدرجة:'] || 'الدرجة:')}</span>
                       <span className="text-lg font-bold text-amber-600">{entry.score}</span>
-                      {entry.evaluated_by_name && (
-                        <span className="text-xs text-muted-foreground">{(t.addedTranslations_2026?.['— بواسطة'] || (t.addedTranslations_2026?.['— بواسطة'] || '— بواسطة'))} {entry.evaluated_by_name}</span>
-                      )}
+                      {(entry.judge_count ?? 0) > 1 ? (
+                        <span className="text-xs text-muted-foreground">
+                          {(t.addedTranslations_2026?.['متوسط'] || 'متوسط')} {entry.judge_count} {(t.addedTranslations_2026?.['محكّمين'] || 'محكّمين')}
+                        </span>
+                      ) : entry.evaluated_by_name ? (
+                        <span className="text-xs text-muted-foreground">{(t.addedTranslations_2026?.['— بواسطة'] || '— بواسطة')} {entry.evaluated_by_name}</span>
+                      ) : null}
                     </div>
                   )}
                   {entry.feedback && (

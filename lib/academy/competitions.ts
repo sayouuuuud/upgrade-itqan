@@ -1,6 +1,8 @@
 
-import { query, queryOne } from '@/lib/db'
+import { query, queryOne, withTransaction } from '@/lib/db'
 import { awardPoints } from '@/lib/academy/gamification'
+import { createNotification } from '@/lib/notifications'
+import { createEligibilityRequest } from '@/lib/certificate/eligibility'
 import { en } from '@/lib/i18n/locales/en';
 
 export async function getCompetitions(filters: { status?: string; type?: string; userId?: string; scope?: string } = {}) {
@@ -73,10 +75,16 @@ export async function getEntries(competitionId: string) {
   return query(`
     SELECT ce.*, u.name as student_name, u.email as student_email,
            u.avatar_url as student_avatar_url,
-           evaluator.name as evaluated_by_name
+           evaluator.name as evaluated_by_name,
+           COALESCE(js.judge_count, 0)::int AS judge_count
     FROM competition_entries ce
     JOIN users u ON u.id = ce.student_id
     LEFT JOIN users evaluator ON evaluator.id = ce.evaluated_by
+    LEFT JOIN (
+      SELECT entry_id, COUNT(*) AS judge_count
+      FROM competition_judge_scores
+      GROUP BY entry_id
+    ) js ON js.entry_id = ce.id
     WHERE ce.competition_id = $1
     ORDER BY ce.rank ASC NULLS LAST, ce.score DESC NULLS LAST, ce.submitted_at DESC
   `, [competitionId])
@@ -234,38 +242,116 @@ export async function evaluateEntry(entryId: string, judgeId: string, evaluation
       return { success: false, error: ((en.extracted_2026_v2 as any)?.["الدرجة يجب أن تكون بين 0 و 100"] || "الدرجة يجب أن تكون بين 0 و 100") }
     }
 
-    const entry = await queryOne<{ competition_id: string }>(
-      `SELECT competition_id FROM competition_entries WHERE id = $1`,
+    const entry = await queryOne<{
+      competition_id: string
+      submission_url: string | null
+      status: string
+    }>(
+      `SELECT competition_id, submission_url, status FROM competition_entries WHERE id = $1`,
       [entryId]
     )
     if (!entry) return { success: false, error: 'Entry not found' }
 
-    // Check if the judge is assigned to this competition
+    // Guard 1: a judge can only score an entry that was actually submitted.
+    // Without this a joined-but-not-submitted (pending, no URL) entry could be
+    // given a score and then sneak into the ranking.
+    if (!entry.submission_url) {
+      return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا يمكن تقييم مشاركة لم تُسلَّم بعد"] || "لا يمكن تقييم مشاركة لم تُسلَّم بعد") }
+    }
+
+    // Guard 2: never re-open scoring after results are official. Re-scoring an
+    // ended competition would silently desync ranks, winner flags and points.
+    const comp = await queryOne<{ status: string; scope: string; created_by: string | null }>(
+      `SELECT status, scope, created_by FROM competitions WHERE id = $1`,
+      [entry.competition_id]
+    )
+    if (!comp) return { success: false, error: 'Competition not found' }
+    if (comp.status === 'ended') {
+      return { success: false, error: ((en.extracted_2026_v2 as any)?.["تم اعتماد نتائج هذه المسابقة ولا يمكن تعديل التقييم"] || "تم اعتماد نتائج هذه المسابقة ولا يمكن تعديل التقييم") }
+    }
+
+    // Authorization: an assigned judge, the competition's own creator, or an
+    // administrator of THIS competition's scope. We intentionally do NOT treat
+    // every `reader` as an admin here — that previously let any reciter score
+    // any competition they were never assigned to. Reciters can only judge
+    // competitions they are explicitly assigned to (or created).
     const isJudge = await queryOne(
       `SELECT 1 FROM competition_judges WHERE competition_id = $1 AND judge_id = $2`,
       [entry.competition_id, judgeId]
     )
-    
-    // Also allow admins/academy_admins/reader
     const user = await queryOne<{ role: string }>(`SELECT role FROM users WHERE id = $1`, [judgeId])
-    const isAdmin = user && ['admin', 'academy_admin', 'reader'].includes(user.role)
-    
-    if (!isJudge && !isAdmin) {
+    const role = user?.role
+    // Global admins manage either scope; supervisors manage only the library
+    // (scope = 'library'); academy_admin manages only the academy.
+    const isScopeAdmin =
+      role === 'admin' ||
+      (comp.scope === 'academy' && role === 'academy_admin') ||
+      (comp.scope === 'library' && ['student_supervisor', 'reciter_supervisor'].includes(role || ''))
+    const isCreator = comp.created_by === judgeId
+
+    if (!isJudge && !isScopeAdmin && !isCreator) {
       return { success: false, error: 'Unauthorized judge' }
     }
 
+    // Record this judge's individual score (one row per judge per entry), then
+    // recompute the entry's official score as the average across all judges.
+    // This makes multi-judge competitions actually work instead of "last judge
+    // to click save overwrites everyone".
+    await query(
+      `INSERT INTO competition_judge_scores (entry_id, judge_id, score, tajweed_scores, feedback)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (entry_id, judge_id)
+       DO UPDATE SET score = EXCLUDED.score,
+                     tajweed_scores = EXCLUDED.tajweed_scores,
+                     feedback = EXCLUDED.feedback,
+                     evaluated_at = NOW()`,
+      [entryId, judgeId, score, JSON.stringify(evaluation.tajweedScores ?? {}), evaluation.feedback]
+    )
+
+    const agg = await queryOne<{ avg_score: string; judge_count: string }>(
+      `SELECT ROUND(AVG(score)::numeric, 2) AS avg_score, COUNT(*)::text AS judge_count
+         FROM competition_judge_scores WHERE entry_id = $1`,
+      [entryId]
+    )
+    const avgScore = Number(agg?.avg_score ?? score)
+    const judgeCount = Number(agg?.judge_count ?? 1)
+
+    // The entry keeps the averaged score and the most recent judge's tajweed
+    // breakdown/feedback as the headline; per-judge detail lives in the scores
+    // table. `evaluated_by` reflects the latest judge to act.
     await query(
       `UPDATE competition_entries
        SET score = $1, tajweed_scores = $2, feedback = $3, status = 'evaluated', evaluated_at = NOW(), evaluated_by = $4
        WHERE id = $5`,
-      [score, JSON.stringify(evaluation.tajweedScores), evaluation.feedback, judgeId, entryId]
+      [avgScore, JSON.stringify(evaluation.tajweedScores ?? {}), evaluation.feedback, judgeId, entryId]
     )
-    
-    return { success: true }
+
+    return { success: true, averageScore: avgScore, judgeCount }
   } catch (error) {
     console.error('Error evaluating entry:', error)
     return { success: false, error: 'Internal server error' }
   }
+}
+
+/** All individual judge scores for an entry (for transparency in the UI). */
+export async function getEntryJudgeScores(entryId: string) {
+  return query<{
+    judge_id: string
+    score: number
+    tajweed_scores: any
+    feedback: string | null
+    evaluated_at: string
+    judge_name: string | null
+    judge_role: string
+  }>(
+    `SELECT cjs.judge_id, cjs.score, cjs.tajweed_scores, cjs.feedback, cjs.evaluated_at,
+            u.name AS judge_name, u.role AS judge_role
+       FROM competition_judge_scores cjs
+       JOIN users u ON u.id = cjs.judge_id
+      WHERE cjs.entry_id = $1
+      ORDER BY cjs.evaluated_at ASC`,
+    [entryId]
+  )
 }
 
 /**
@@ -278,6 +364,72 @@ export async function evaluateEntry(entryId: string, judgeId: string, evaluation
  * Idempotent: if this student was already awarded competition points for this
  * competition we skip, so re-saving an evaluation never double-pays.
  */
+/**
+ * Tell a top-N finisher they placed, and (if the competition issues
+ * certificates) create their certificate-issuance request so it appears in
+ * "أكمل بيانات الشهادة" — auto-issuing when the admin enabled that setting.
+ *
+ * Both writes are idempotent (notification dedupKey + the eligibility request's
+ * unique index), and every failure is swallowed so the surrounding points/award
+ * flow is never interrupted.
+ */
+async function notifyAndCertifyCompetitionRank(opts: {
+  competitionId: string
+  studentId: string
+  rank: number
+  title: string | null
+  scope: string | null
+  certificateEnabled: boolean | null
+  awardTopN: number | null
+}): Promise<void> {
+  const { competitionId, studentId, rank, title } = opts
+  const topN = Math.max(3, Number(opts.awardTopN || 10))
+  if (rank > topN) return // only people who actually placed are notified
+
+  const compTitle = title || 'المسابقة'
+  const rankWord =
+    rank === 1 ? 'المركز الأول 🥇'
+    : rank === 2 ? 'المركز الثاني 🥈'
+    : rank === 3 ? 'المركز الثالث 🥉'
+    : `المركز ${rank}`
+  const isPodium = rank <= 3
+  const studentLink = opts.scope === 'academy' ? '/academy/student/competitions' : '/student/competitions'
+
+  // 1. Result notification (idempotent per student per competition).
+  try {
+    await createNotification({
+      userId: studentId,
+      type: 'general',
+      title: isPodium ? `مبارك! حصلت على ${rankWord} 🎉` : `نتيجة المسابقة: ${rankWord}`,
+      message: `لقد حصلت على ${rankWord} في «${compTitle}». اضغط لعرض النتيجة.`,
+      category: 'system',
+      link: studentLink,
+      dedupKey: `competition-result:${competitionId}:${studentId}`,
+    })
+  } catch (err) {
+    console.error('[competitions] result notification failed', err)
+  }
+
+  // 2. Certificate eligibility (only when the competition issues certificates).
+  if (opts.certificateEnabled === false) return
+  try {
+    const certScope: 'academy' | 'maqraa' = opts.scope === 'academy' ? 'academy' : 'maqraa'
+    await createEligibilityRequest({
+      scope: certScope,
+      kind: 'competition',
+      studentId,
+      sourceTable: 'competitions',
+      sourceId: competitionId,
+      sourceLabel: compTitle,
+      rank,
+      reason: `${rankWord} في ${compTitle}`,
+      language: 'ar',
+    })
+  } catch (err) {
+    console.error('[competitions] certificate eligibility failed', err)
+  }
+}
+
 export async function awardCompetitionRank(
   competitionId: string,
   studentId: string,
@@ -286,12 +438,16 @@ export async function awardCompetitionRank(
   try {
     const comp = await queryOne<{
       title: string | null
+      scope: string | null
+      certificate_enabled: boolean | null
+      award_top_n: number | null
       points_multiplier: number | null
       points_first: number | null
       points_second: number | null
       points_third: number | null
     }>(
-      `SELECT title, points_multiplier, points_first, points_second, points_third
+      `SELECT title, scope, certificate_enabled, award_top_n,
+              points_multiplier, points_first, points_second, points_third
          FROM competitions WHERE id = $1`,
       [competitionId],
     )
@@ -308,6 +464,21 @@ export async function awardCompetitionRank(
         [competitionId, studentId],
       )
     }
+
+    // Notify the student of their result and (when enabled) open the
+    // certificate-issuance flow. Best-effort and idempotent, so it runs for
+    // every awarded rank (top-N) regardless of whether the rank earns points,
+    // and never blocks the points award below. This is the single place both
+    // the reader-finalize flow and the admin manual-award flow pass through.
+    await notifyAndCertifyCompetitionRank({
+      competitionId,
+      studentId,
+      rank,
+      title: comp.title,
+      scope: comp.scope,
+      certificateEnabled: comp.certificate_enabled,
+      awardTopN: comp.award_top_n,
+    })
 
     const rankPoints: Record<number, number> = {
       1: Number(comp.points_first ?? 500),
@@ -402,14 +573,26 @@ export async function previewCompetitionResults(competitionId: string): Promise<
     [competitionId],
   )
 
-  const ranking: RankPreviewRow[] = evaluated.map((e, i) => ({
-    entry_id: e.id,
-    student_id: e.student_id,
-    student_name: e.student_name,
-    score: e.score,
-    rank: i + 1,
-    is_winner: i < topN,
-  }))
+  // Competition-style ranking with ties: equal scores share the same rank, and
+  // the next rank skips accordingly (e.g. 90, 90, 80 -> ranks 1, 1, 3). A
+  // student is a winner if their *rank* is within topN, so tied students at the
+  // cutoff are all included rather than arbitrarily split by submission time.
+  let lastScore: number | null = null
+  let lastRank = 0
+  const ranking: RankPreviewRow[] = evaluated.map((e, i) => {
+    const scoreNum = Number(e.score)
+    const rank = lastScore !== null && scoreNum === lastScore ? lastRank : i + 1
+    lastScore = scoreNum
+    lastRank = rank
+    return {
+      entry_id: e.id,
+      student_id: e.student_id,
+      student_name: e.student_name,
+      score: e.score,
+      rank,
+      is_winner: rank <= topN,
+    }
+  })
 
   return { ready: evaluated.length > 0, pending, topN, ranking }
 }
@@ -428,32 +611,54 @@ export async function finalizeCompetitionResults(
       return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مشاركات مُقيّمة لاعتماد نتائجها"] || "لا توجد مشاركات مُقيّمة لاعتماد نتائجها") }
     }
 
-    // Reset any previous winner flags so re-finalizing reflects the latest scores.
-    await query(
-      `UPDATE competition_entries SET status = 'evaluated'
-        WHERE competition_id = $1 AND status = 'winner'`,
-      [competitionId],
-    )
+    const winnerRows = ranking.filter((r) => r.is_winner)
+    const firstPlace = ranking.find((r) => r.rank === 1)
 
-    // Persist every entry's computed rank.
-    for (const row of ranking) {
-      await query(
-        `UPDATE competition_entries SET rank = $1 WHERE id = $2`,
-        [row.rank, row.entry_id],
+    // All the structural writes (rank reset, per-entry ranks, winner flags,
+    // winner_id, closing the competition) happen in ONE transaction so a
+    // crash or a concurrent double-submit can never leave the competition with
+    // partially-written ranks/winners. Points are awarded afterwards because
+    // they are independently idempotent and touch the global gamification
+    // tables.
+    await withTransaction(async (tx) => {
+      // Reset any previous winner flags so re-finalizing reflects latest scores.
+      await tx(
+        `UPDATE competition_entries SET status = 'evaluated'
+          WHERE competition_id = $1 AND status = 'winner'`,
+        [competitionId],
       )
-    }
 
-    // Award points + winner status for the top finishers (only ranks 1-3 earn points).
-    let winners = 0
-    for (const row of ranking) {
-      if (row.is_winner) {
-        await awardCompetitionRank(competitionId, row.student_id, row.rank)
-        winners++
+      // Persist every entry's computed rank.
+      for (const row of ranking) {
+        await tx(`UPDATE competition_entries SET rank = $1 WHERE id = $2`, [row.rank, row.entry_id])
       }
-    }
 
-    // Close the competition once results are official.
-    await query(`UPDATE competitions SET status = 'ended' WHERE id = $1`, [competitionId])
+      // Flag winners (rank within topN).
+      for (const row of winnerRows) {
+        await tx(
+          `UPDATE competition_entries SET status = 'winner'
+            WHERE competition_id = $1 AND student_id = $2`,
+          [competitionId, row.student_id],
+        )
+      }
+
+      // Record the single headline winner (rank #1). If there is a tie for
+      // first, the earliest submission (first in the ordered ranking) is used.
+      if (firstPlace) {
+        await tx(`UPDATE competitions SET winner_id = $1 WHERE id = $2`, [firstPlace.student_id, competitionId])
+      }
+
+      // Close the competition once results are official.
+      await tx(`UPDATE competitions SET status = 'ended' WHERE id = $1`, [competitionId])
+    })
+
+    // Award points to top finishers (ranks 1-3). Safe to run post-commit:
+    // awardCompetitionRank guards against double-paying on re-finalize.
+    let winners = 0
+    for (const row of winnerRows) {
+      await awardCompetitionRank(competitionId, row.student_id, row.rank)
+      winners++
+    }
 
     return { success: true, winners, ranked: ranking.length }
   } catch (error) {

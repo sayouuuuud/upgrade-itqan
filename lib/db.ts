@@ -94,6 +94,43 @@ export async function queryOne<T = Record<string, unknown>>(
   return rows[0] || null
 }
 
+/**
+ * Run a set of statements inside a single transaction on one dedicated client.
+ *
+ * The callback receives a scoped `query` function bound to that client, so all
+ * statements share the same connection. On success the transaction is
+ * committed; on any thrown error it is rolled back. Used by operations that
+ * must be all-or-nothing (e.g. finalizing competition ranks + winners + points)
+ * to avoid leaving partially-written results behind.
+ */
+export async function withTransaction<T>(
+  fn: (tx: <R = Record<string, unknown>>(text: string, params?: unknown[]) => Promise<R[]>) => Promise<T>
+): Promise<T> {
+  if (!pool) {
+    throw new Error("[DB] No database configured for transaction")
+  }
+  const client = await pool.connect()
+  const tx = async <R = Record<string, unknown>>(text: string, params?: unknown[]): Promise<R[]> => {
+    const result = await client.query(text, params as any[])
+    return result.rows as R[]
+  }
+  try {
+    await client.query("BEGIN")
+    const out = await fn(tx)
+    await client.query("COMMIT")
+    return out
+  } catch (error) {
+    try {
+      await client.query("ROLLBACK")
+    } catch (rollbackError) {
+      console.error("[DB] Rollback failed:", rollbackError)
+    }
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
 export const hasDatabase = () => !!pool
 
 export default pool

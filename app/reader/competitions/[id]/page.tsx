@@ -39,6 +39,7 @@ interface Entry {
   submitted_at: string
   evaluated_at: string | null
   evaluated_by_name: string | null
+  judge_count?: number
   rank: number | null
 }
 
@@ -347,11 +348,15 @@ export default function ReaderCompetitionDetailPage({ params }: { params: Promis
                       </div>
                     )}
                     
-                    {entry.evaluated_by_name && (
+                    {(entry.judge_count ?? 0) > 1 ? (
+                      <div className="text-xs text-muted-foreground bg-background px-3 py-1.5 rounded-md border border-border/50 text-center shrink-0">
+                        {(t.addedTranslations_2026?.['متوسط درجات'] || 'متوسط درجات')} <span className="font-medium text-foreground">{entry.judge_count}</span> {(t.addedTranslations_2026?.['محكّمين'] || 'محكّمين')}
+                      </div>
+                    ) : entry.evaluated_by_name ? (
                       <div className="text-xs text-muted-foreground bg-background px-3 py-1.5 rounded-md border border-border/50 text-center shrink-0">
                         {(t.addedTranslations_2026?.['المُقيّم:'] || 'المُقيّم:')} <span className="font-medium text-foreground">{entry.evaluated_by_name}</span>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )}
               </div>
