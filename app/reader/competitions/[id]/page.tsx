@@ -130,8 +130,7 @@ export default function ReaderCompetitionDetailPage({ params }: { params: Promis
   const startEvaluate = (entry: Entry) => {
     setEvaluatingId(entry.id)
     const initialScores: Record<string, number> = {}
-    const rules = competition?.tajweed_rules || TAJWEED_RULES.map(r => r.key)
-    rules.forEach(r => { initialScores[r] = entry.tajweed_scores?.[r] || 0 })
+    TAJWEED_RULES.forEach(r => { initialScores[r.key] = entry.tajweed_scores?.[r.key] || 0 })
     setEvalForm({
       score: entry.score || 0,
       tajweed_scores: competition?.type === 'tajweed' ? initialScores : {},
@@ -397,26 +396,23 @@ export default function ReaderCompetitionDetailPage({ params }: { params: Promis
                       <div className="space-y-4">
                         <label className="text-sm font-bold text-foreground bg-primary/10 text-primary px-3 py-1 rounded-md w-fit">{(t.addedTranslations_2026?.['تقييم أحكام التجويد (من 10)'] || 'تقييم أحكام التجويد (من 10)')}</label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {(competition.tajweed_rules || TAJWEED_RULES.map(r => r.key)).map(ruleKey => {
-                            const ruleLabel = TAJWEED_RULES.find(r => r.key === ruleKey)?.label || ruleKey
-                            return (
-                              <div key={ruleKey} className="flex items-center justify-between p-3.5 rounded-xl border border-border/50 bg-background hover:border-primary/30 transition-colors shadow-sm">
-                                <label className="text-sm font-semibold text-muted-foreground">{ruleLabel}</label>
+                          {TAJWEED_RULES.map(r => (
+                              <div key={r.key} className="flex items-center justify-between p-3.5 rounded-xl border border-border/50 bg-background hover:border-primary/30 transition-colors shadow-sm">
+                                <label className="text-sm font-semibold text-muted-foreground">{r.label}</label>
                                 <input
                                   type="number"
                                   min={0}
                                   max={10}
                                   step={0.5}
-                                  value={evalForm.tajweed_scores[ruleKey] || 0}
+                                  value={evalForm.tajweed_scores[r.key] || 0}
                                   onChange={e => setEvalForm(prev => ({
                                     ...prev,
-                                    tajweed_scores: { ...prev.tajweed_scores, [ruleKey]: parseFloat(e.target.value) || 0 },
+                                    tajweed_scores: { ...prev.tajweed_scores, [r.key]: parseFloat(e.target.value) || 0 },
                                   }))}
                                   className="w-20 px-3 py-1.5 text-sm font-bold rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center transition-all"
                                 />
                               </div>
-                            )
-                          })}
+                          ))}
                         </div>
                       </div>
                     ) : (
