@@ -14,7 +14,8 @@ export default async function AcademyAdminLayout({
     redirect('/login')
   }
 
-  const isAdmin = session.role === 'admin' || 
+  const allowedRoles = ['admin', 'academy_admin', 'student_supervisor', 'reciter_supervisor']
+  const isAdmin = allowedRoles.includes(session.role) || 
     session.academy_roles?.includes('admin') || 
     session.academy_roles?.includes('student_supervisor') || 
     session.academy_roles?.includes('reciter_supervisor')
