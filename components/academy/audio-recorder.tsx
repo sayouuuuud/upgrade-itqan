@@ -59,6 +59,13 @@ export default function AudioRecorder({
     return "audio/webm"
   }
 
+  const stopRecording = useCallback(() => {
+    const r = recorderRef.current
+    if (r && r.state === "recording") {
+      r.stop()
+    }
+  }, [])
+
   // Recording timer
   useEffect(() => {
     if (state === "recording") {
@@ -79,7 +86,7 @@ export default function AudioRecorder({
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state])
+  }, [state, stopRecording])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -161,13 +168,6 @@ export default function AudioRecorder({
       )
     }
   }, [disabled])
-
-  const stopRecording = useCallback(() => {
-    const r = recorderRef.current
-    if (r && r.state === "recording") {
-      r.stop()
-    }
-  }, [])
 
   const reset = () => {
     setState("idle")

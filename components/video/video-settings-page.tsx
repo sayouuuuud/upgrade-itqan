@@ -84,16 +84,16 @@ interface Props {
 }
 
 const KIND_LABEL: Record<string, string> = {
-  halaqa: ((t as any).extracted_2026_v2?.["حلقة"] || "حلقة"),
-  booking: ((t as any).extracted_2026_v2?.["جلسة 1:1"] || "جلسة 1:1"),
-  course_session: ((t as any).extracted_2026_v2?.["درس مباشر"] || "درس مباشر"),
+  halaqa: 'حلقة',
+  booking: 'جلسة 1:1',
+  course_session: 'درس مباشر',
 }
 
 const QUALITY_LABEL: Record<VideoSettings['default_video_quality'], string> = {
-  h180: ((t as any).extracted_2026_v2?.["180p (منخفضة جداً)"] || "180p (منخفضة جداً)"),
-  h360: ((t as any).extracted_2026_v2?.["360p (منخفضة)"] || "360p (منخفضة)"),
-  h540: ((t as any).extracted_2026_v2?.["540p (متوسطة)"] || "540p (متوسطة)"),
-  h720: ((t as any).extracted_2026_v2?.["720p HD (موصى بها)"] || "720p HD (موصى بها)"),
+  h180: '180p (منخفضة جداً)',
+  h360: '360p (منخفضة)',
+  h540: '540p (متوسطة)',
+  h720: '720p HD (موصى بها)',
   h1080: '1080p Full HD',
 }
 
@@ -217,7 +217,7 @@ export function VideoSettingsPage({ platform, sessionsBasePath }: Props) {
         <SettingsTab
           settings={settings}
           update={update}
-          save={save}
+          onSave={save}
           saving={saving}
           accentBtn={accentBtn}
           capabilities={capabilities}
@@ -236,6 +236,8 @@ function CapabilitiesBadge({
 }: {
   caps: { livekit_configured: boolean; recording_configured: boolean } | null
 }) {
+  const { t } = useI18n()
+
   if (!caps) return null
   return (
     <div className="flex flex-col gap-1.5">
@@ -313,6 +315,8 @@ function StatCard({
 }
 
 function OverviewTab({ stats, onViewAll }: { stats: Stats; onViewAll: () => void }) {
+  const { t } = useI18n()
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -384,19 +388,21 @@ function OverviewTab({ stats, onViewAll }: { stats: Stats; onViewAll: () => void
 
 function SettingsTab({
   settings,
-  update,
-  save,
-  saving,
-  accentBtn,
   capabilities,
+  saving,
+  update,
+  onSave,
+  accentBtn,
 }: {
   settings: VideoSettings
-  update: <K extends keyof VideoSettings>(key: K, value: VideoSettings[K]) => void
-  save: () => Promise<void>
-  saving: boolean
-  accentBtn: string
   capabilities: { livekit_configured: boolean; recording_configured: boolean } | null
+  saving: boolean
+  update: <K extends keyof VideoSettings>(key: K, value: VideoSettings[K]) => void
+  onSave: () => void
+  accentBtn: string
 }) {
+  const { t } = useI18n()
+
   return (
     <div className="space-y-6">
       <SettingsCard title={((t as any).extracted_2026_v2?.["جودة الفيديو والحدود"] || "جودة الفيديو والحدود")}>
@@ -501,7 +507,7 @@ function SettingsTab({
 
       <div className="sticky bottom-4 flex justify-end">
         <button
-          onClick={save}
+          onClick={onSave}
           disabled={saving}
           className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold shadow-lg ${accentBtn} disabled:opacity-50 disabled:cursor-not-allowed`}
         >
@@ -657,6 +663,8 @@ function SessionLogTab({
   sessions: SessionRow[]
   sessionsBasePath: string
 }) {
+  const { t } = useI18n()
+
   if (sessions.length === 0) {
     return (
       <div className="rounded-2xl border border-border bg-card p-10 text-center">

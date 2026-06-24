@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2, PlayCircle, Search, Users, Clock, Calendar, Filter, Video } from 'lucide-react'
 import { VideoPlayerModal } from '@/components/video/video-player-modal'
+import { useI18n } from '@/lib/i18n/context'
 
 interface Recording {
   id: string
@@ -23,9 +24,9 @@ interface Recording {
 }
 
 const KIND_LABEL: Record<string, string> = {
-  halaqa: ((t as any).extracted_2026_v2?.["حلقة"] || "حلقة"),
-  booking: ((t as any).extracted_2026_v2?.["جلسة فردية"] || "جلسة فردية"),
-  course_session: ((t as any).extracted_2026_v2?.["درس دورة"] || "درس دورة"),
+  halaqa: 'حلقة',
+  booking: 'جلسة فردية',
+  course_session: 'درس دورة',
 }
 
 function fmtDuration(seconds: number | null): string {

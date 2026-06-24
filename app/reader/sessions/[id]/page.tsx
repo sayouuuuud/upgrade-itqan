@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ProfileSkeleton } from '@/components/ui/skeletons'
+import { useI18n } from '@/lib/i18n/context'
 
 interface Booking {
   id: string
@@ -39,16 +40,16 @@ interface Booking {
 }
 
 const STATUS: Record<string, { label: string; cls: string }> = {
-  pending:   { label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["قيد الانتظار"] || "قيد الانتظار")] || ((t as any).extracted_2026_v2?.["قيد الانتظار"] || "قيد الانتظار")), cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-  confirmed: { label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["مؤكدة"] || "مؤكدة")] || ((t as any).extracted_2026_v2?.["مؤكدة"] || "مؤكدة")),        cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  completed: { label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["مكتملة"] || "مكتملة")] || ((t as any).extracted_2026_v2?.["مكتملة"] || "مكتملة")),       cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  cancelled: { label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["ملغاة"] || "ملغاة")] || ((t as any).extracted_2026_v2?.["ملغاة"] || "ملغاة")),        cls: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' },
+  pending:   { label: 'قيد الانتظار', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+  confirmed: { label: 'مؤكدة',        cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  completed: { label: 'مكتملة',       cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  cancelled: { label: 'ملغاة',        cls: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' },
 }
 
 interface Comment { id: string; author_name: string; comment_text: string; created_at: string }
 
 export default function ReaderSessionDetailPage() {
-  
+  const { t } = useI18n()
 
   const params = useParams()
   const router = useRouter()

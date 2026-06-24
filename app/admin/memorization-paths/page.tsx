@@ -177,7 +177,7 @@ export default function AdminMemorizationPathsPage() {
             <p className="text-sm font-medium">
               <strong>{tr("تنبيه:", "Notice:")}</strong> {tr("الميجريشن لم يتم تنفيذه بعد. يرجى تشغيل", "The migration has not been applied yet. Please run")}
               <code className="bg-amber-500/20 px-2 py-0.5 mx-2 rounded font-mono text-xs text-amber-800 dark:text-amber-400">
-                psql "$DATABASE_URL" -f scripts/022-memorization-paths.sql
+                psql &quot;$DATABASE_URL&quot; -f scripts/022-memorization-paths.sql
               </code>
             </p>
           </div>

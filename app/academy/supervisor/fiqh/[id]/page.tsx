@@ -7,6 +7,7 @@ import {
   ArrowRight, HelpCircle, User, Clock, Tag,
   CheckCircle, Loader2, Globe, EyeOff, Send, AlertCircle, Pencil, Info, ShieldCheck
 } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/context'
 
 interface FiqhQuestion {
   id: string

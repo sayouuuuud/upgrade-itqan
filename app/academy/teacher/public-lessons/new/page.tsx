@@ -3,6 +3,7 @@
 
 import { useRouter } from 'next/navigation'
 import { PublicLessonForm } from '@/components/academy/public-lesson-form'
+import { useI18n } from '@/lib/i18n/context'
 
 export default function NewPublicLessonPage() {
   const { t } = useI18n();

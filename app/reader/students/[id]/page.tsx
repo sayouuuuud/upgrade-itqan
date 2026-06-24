@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ProfileSkeleton } from '@/components/ui/skeletons'
+import { useI18n } from '@/lib/i18n/context'
 
 interface StudentData {
   id: string
@@ -63,20 +64,20 @@ interface PathItem {
 }
 
 const RECIT_STATUS: Record<string, { label: string; cls: string }> = {
-  pending:   { label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["بانتظار المراجعة"] || "بانتظار المراجعة")] || ((t as any).extracted_2026_v2?.["بانتظار المراجعة"] || "بانتظار المراجعة")), cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-  reviewing: { label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["قيد المراجعة"] || "قيد المراجعة")] || ((t as any).extracted_2026_v2?.["قيد المراجعة"] || "قيد المراجعة")),     cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  mastered:  { label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["متقن"] || "متقن")] || ((t as any).extracted_2026_v2?.["متقن"] || "متقن")),             cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  needs_work:{ label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["يحتاج مراجعة"] || "يحتاج مراجعة")] || ((t as any).extracted_2026_v2?.["يحتاج مراجعة"] || "يحتاج مراجعة")),     cls: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' },
+  pending:   { label: 'بانتظار المراجعة', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+  reviewing: { label: 'قيد المراجعة',     cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  mastered:  { label: 'متقن',             cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  needs_work:{ label: 'يحتاج مراجعة',     cls: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' },
 }
 const SESSION_STATUS: Record<string, { label: string; cls: string }> = {
-  scheduled: { label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["مجدولة"] || "مجدولة")] || ((t as any).extracted_2026_v2?.["مجدولة"] || "مجدولة")),  cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  completed: { label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["مكتملة"] || "مكتملة")] || ((t as any).extracted_2026_v2?.["مكتملة"] || "مكتملة")),  cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  cancelled: { label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["ملغاة"] || "ملغاة")] || ((t as any).extracted_2026_v2?.["ملغاة"] || "ملغاة")),   cls: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' },
-  in_progress:{ label: (t.addedTranslations_2026?.[((t as any).extracted_2026_v2?.["جارية"] || "جارية")] || ((t as any).extracted_2026_v2?.["جارية"] || "جارية")), cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+  scheduled: { label: 'مجدولة',  cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  completed: { label: 'مكتملة',  cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  cancelled: { label: 'ملغاة',   cls: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' },
+  in_progress:{ label: 'جارية', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
 }
 
 export default function ReaderStudentDetailPage() {
-  
+  const { t } = useI18n()
 
   const params = useParams()
   const router = useRouter()
@@ -409,6 +410,8 @@ function PathRow({
 }: {
   title: string; thumbnail: string | null; kind: string; done: number; total: number; status: string; onClick: () => void
 }) {
+  const { t } = useI18n()
+
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
   return (
     <div

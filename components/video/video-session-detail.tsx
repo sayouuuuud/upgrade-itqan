@@ -14,6 +14,7 @@ import {
   Video as VideoIcon,
 } from 'lucide-react'
 import { VideoPlayerModal } from '@/components/video/video-player-modal'
+import { useI18n } from '@/lib/i18n/context'
 
 interface Props {
   sessionId: string
@@ -60,9 +61,9 @@ interface SessionInfo {
 }
 
 const KIND_LABEL: Record<string, string> = {
-  halaqa: ((t as any).extracted_2026_v2?.["حلقة"] || "حلقة"),
-  booking: ((t as any).extracted_2026_v2?.["جلسة 1:1"] || "جلسة 1:1"),
-  course_session: ((t as any).extracted_2026_v2?.["درس مباشر"] || "درس مباشر"),
+  halaqa: 'حلقة',
+  booking: 'جلسة 1:1',
+  course_session: 'درس مباشر',
 }
 
 export function VideoSessionDetail({ sessionId, backHref }: Props) {

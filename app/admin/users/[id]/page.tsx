@@ -614,7 +614,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                                 </div>
                                             )}
                                             <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 text-foreground text-sm font-bold leading-relaxed italic">
-                                                "{error.detailed_feedback}"
+                                                &quot;{error.detailed_feedback}&quot;
                                             </div>
                                         </CardContent>
                                     </Card>

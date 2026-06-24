@@ -45,6 +45,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { VideoPlayerModal } from '@/components/video/video-player-modal'
+import { useI18n } from '@/lib/i18n/context'
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -100,9 +101,9 @@ interface RecordingRow {
 }
 
 const KIND_LABEL: Record<string, string> = {
-  halaqa: ((t as any).extracted_2026_v2?.["حلقة"] || "حلقة"),
-  booking: ((t as any).extracted_2026_v2?.["جلسة فردية"] || "جلسة فردية"),
-  course_session: ((t as any).extracted_2026_v2?.["درس دورة"] || "درس دورة"),
+  halaqa: 'حلقة',
+  booking: 'جلسة فردية',
+  course_session: 'درس دورة',
 }
 
 /* ------------------------------------------------------------------ */
@@ -597,6 +598,8 @@ function LiveSessionCard({
   onEnter: (id: string) => void
   onEnd: (id: string) => void
 }) {
+  const { t } = useI18n()
+
   return (
     <Card className="border-r-4 border-r-red-500 overflow-hidden">
       <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -633,6 +636,8 @@ function ScheduledSessionCard({
   onEdit: (id: string) => void
   onDelete: (id: string) => void
 }) {
+  const { t } = useI18n()
+
   return (
     <Card className="border-r-4 border-r-primary hover:shadow-md transition-all">
       <CardContent className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -677,6 +682,8 @@ function ScheduledSessionCard({
 }
 
 function PastSessionCard({ s, onDelete }: { s: SessionRow; onDelete: (id: string) => void }) {
+  const { t } = useI18n()
+
   return (
     <Card className="border-r-4 border-r-muted-foreground/30 hover:shadow-sm transition-all">
       <CardContent className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -772,6 +779,8 @@ function SessionRatingsDialog({
   open: boolean
   onOpenChange: (v: boolean) => void
 }) {
+  const { t } = useI18n()
+
   const [loading, setLoading] = useState(false)
   const [details, setDetails] = useState<RatingDetail[]>([])
   const [summary, setSummary] = useState<RatingSummary | null>(null)
@@ -956,6 +965,8 @@ function HistoryCard({ row }: { row: HistoryRow }) {
 }
 
 function RecordingCard({ r, onDelete }: { r: RecordingRow; onDelete: (id: string) => void }) {
+  const { t } = useI18n()
+
   const title = r.title || KIND_LABEL[r.kind]
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -1154,6 +1165,8 @@ function SessionDialog({
   onSaved: () => void
   onStartedNow: (id: string) => void
 }) {
+  const { t } = useI18n()
+
   const editing = editingId ? sessions.find((s) => s.id === editingId) || null : null
 
   const [mode, setMode] = useState<'instant' | 'schedule'>('instant')

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, use } from "react"
+import Link from "next/link"
 import { useI18n } from "@/lib/i18n/context"
 import { Loader2, Download, Award, ShieldCheck, ExternalLink } from "lucide-react"
 
@@ -67,9 +68,9 @@ export default function PublicCertificatePage({ params }: { params: Promise<{ id
                     </div>
                     <h1 className="text-xl font-bold text-slate-800 mb-2">{isAr ? "عذراً" : "Oops"}</h1>
                     <p className="text-slate-500 mb-6">{error || (isAr ? "لا تتوفر شهادة لهذا المستخدم" : "No certificate available for this user")}</p>
-                    <a href="/" className="inline-block bg-[#1B5E3B] text-white px-6 py-2 rounded-xl font-bold transition-all hover:bg-[#124028]">
+                    <Link href="/" className="inline-block bg-[#1B5E3B] text-white px-6 py-2 rounded-xl font-bold transition-all hover:bg-[#124028]">
                         {isAr ? "العودة للمنصة" : "Back to Platform"}
-                    </a>
+                    </Link>
                 </div>
             </div>
         )

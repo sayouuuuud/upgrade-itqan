@@ -20,6 +20,7 @@ import {
   Sparkles
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/context'
 
 interface Question {
   id: string
@@ -42,13 +43,13 @@ interface Question {
 }
 
 const STATUS_TEXT: Record<string, string> = {
-  pending: (t.addedTranslations_2026?.['في الانتظار'] || 'في الانتظار'),
-  assigned: (t.addedTranslations_2026?.['مُسند إليك'] || 'مُسند إليك'),
-  in_progress: (t.addedTranslations_2026?.['قيد العمل'] || 'قيد العمل'),
-  awaiting_consent: (t.addedTranslations_2026?.['بانتظار موافقة السائل'] || 'بانتظار موافقة السائل'),
-  published: (t.addedTranslations_2026?.['منشور في المكتبة'] || 'منشور في المكتبة'),
-  declined: (t.addedTranslations_2026?.['لم يُنشر (رفض السائل)'] || 'لم يُنشر (رفض السائل)'),
-  closed: (t.addedTranslations_2026?.['مغلق'] || 'مغلق'),
+  pending: 'في الانتظار',
+  assigned: 'مُسند إليك',
+  in_progress: 'قيد العمل',
+  awaiting_consent: 'بانتظار موافقة السائل',
+  published: 'منشور في المكتبة',
+  declined: 'لم يُنشر (رفض السائل)',
+  closed: 'مغلق',
 }
 
 export default function FiqhSupervisorQuestionDetailPage({
@@ -56,7 +57,7 @@ export default function FiqhSupervisorQuestionDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  
+  const { t } = useI18n()
 
   const { id } = use(params)
 

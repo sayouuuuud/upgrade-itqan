@@ -23,6 +23,7 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { GENDER_LABELS, type HalaqaPlatform } from '@/lib/halaqat'
+import { useI18n } from '@/lib/i18n/context'
 
 interface Halaqa {
   id: string
@@ -84,10 +85,10 @@ interface Overview {
 type Tab = 'overview' | 'sessions' | 'attendance' | 'classmates'
 
 const ATTENDANCE_STYLES: Record<string, { label: string; cls: string; Icon: typeof CheckCircle2 }> = {
-  present: { label: ((t as any).extracted_2026_v2?.["حاضر"] || "حاضر"), cls: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/15', Icon: CheckCircle2 },
-  late: { label: ((t as any).extracted_2026_v2?.["متأخر"] || "متأخر"), cls: 'text-amber-600 dark:text-amber-400 bg-amber-500/15', Icon: Clock },
-  excused: { label: ((t as any).extracted_2026_v2?.["بعذر"] || "بعذر"), cls: 'text-sky-600 dark:text-sky-400 bg-sky-500/15', Icon: AlertCircle },
-  absent: { label: ((t as any).extracted_2026_v2?.["غائب"] || "غائب"), cls: 'text-rose-600 dark:text-rose-400 bg-rose-500/15', Icon: XCircle },
+  present: { label: 'حاضر', cls: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/15', Icon: CheckCircle2 },
+  late: { label: 'متأخر', cls: 'text-amber-600 dark:text-amber-400 bg-amber-500/15', Icon: Clock },
+  excused: { label: 'بعذر', cls: 'text-sky-600 dark:text-sky-400 bg-sky-500/15', Icon: AlertCircle },
+  absent: { label: 'غائب', cls: 'text-rose-600 dark:text-rose-400 bg-rose-500/15', Icon: XCircle },
 }
 
 function fmtDate(value: string | null, withTime = false): string {

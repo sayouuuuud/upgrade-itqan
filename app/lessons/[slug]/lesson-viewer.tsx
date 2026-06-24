@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import Image from 'next/image'
 import { Calendar, Clock, User as UserIcon, Video, ExternalLink, Sparkles, Share2, Copy, Check, BookOpen, Mail, Loader2 } from 'lucide-react'
 
@@ -209,7 +210,7 @@ export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; i
 
         {/* Footer */}
         <div className="text-center text-sm text-slate-500 py-6">
-          <a href="/" className="hover:underline">منصة إتقان</a>
+          <Link href="/" className="hover:underline">منصة إتقان</Link>
           {' · '}
           درس عام مفتوح للجميع
         </div>

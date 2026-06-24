@@ -8,6 +8,7 @@ import { PublicLessonForm, PublicLessonFormValues } from '@/components/academy/p
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Eye, UserPlus, ExternalLink, Copy, ArrowRight } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/context'
 
 interface LessonData {
   id: string

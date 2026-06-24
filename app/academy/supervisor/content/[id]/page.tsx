@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { ArrowRight, CheckCircle, XCircle, Clock, Video, Mic, FileText, Download, BookOpen, AlertCircle, PlayCircle, Loader2, ShieldCheck, GraduationCap } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/context'
 
 interface LessonDetail {
     id: string
