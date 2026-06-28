@@ -19,6 +19,20 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  async redirects() {
+    return [
+      {
+        source: '/student_supervisor/:path*',
+        destination: '/admin/:path*',
+        permanent: false,
+      },
+      {
+        source: '/reciter_supervisor/:path*',
+        destination: '/admin/:path*',
+        permanent: false,
+      }
+    ]
   }
 };
 
