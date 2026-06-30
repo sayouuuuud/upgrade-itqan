@@ -206,7 +206,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
   }
 })
 
-export function DashboardShell({ role, children, headerTitle }: { role: 'student' | 'reader' | 'admin' | 'student_supervisor' | 'reciter_supervisor'; children: React.ReactNode; headerTitle?: string }) {
+export function DashboardShell({ role, children, headerTitle, adminMode }: { role: 'student' | 'reader' | 'admin' | 'super_admin' | 'maqraa_admin' | 'academy_admin' | 'student_supervisor' | 'reciter_supervisor'; children: React.ReactNode; headerTitle?: string; adminMode?: 'super' | 'maqraa' | 'academy' }) {
   const pathname = usePathname()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)

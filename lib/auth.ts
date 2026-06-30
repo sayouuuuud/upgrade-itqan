@@ -21,7 +21,7 @@ function getSecret() {
   return _jwtSecret
 }
 
-export type AllRoles = "student" | "reader" | "admin" | "student_supervisor" | "reciter_supervisor" | "teacher" | "parent" | "academy_admin" | "fiqh_supervisor" | "content_supervisor" | "supervisor" | "quality_supervisor"
+export type AllRoles = "student" | "reader" | "admin" | "super_admin" | "maqraa_admin" | "student_supervisor" | "reciter_supervisor" | "teacher" | "parent" | "academy_admin" | "fiqh_supervisor" | "content_supervisor" | "supervisor" | "quality_supervisor"
 
 export interface JWTPayload {
   sub: string
@@ -79,6 +79,38 @@ export function hasAcademyRole(
     return session.academy_roles.some(r => roles.includes(r))
   }
   return false
+}
+
+// A "super admin" has unrestricted access to the whole platform, including the
+// public site (homepage/SEO), theme, branding and role management. The legacy
+// `admin` role is treated as a super admin so every existing `role === 'admin'`
+// gate keeps working; `super_admin` is the new explicit alias for clarity.
+export function isSuperAdmin(session: JWTPayload | null): boolean {
+  if (!session) return false
+  return session.role === "admin" || session.role === "super_admin"
+}
+
+// A "maqraa admin" manages the Qur'an / recitation side (/admin maqraa pages).
+// Super admins implicitly have maqraa-admin powers.
+export function isMaqraaAdmin(session: JWTPayload | null): boolean {
+  if (!session) return false
+  if (isSuperAdmin(session)) return true
+  if (session.role === "maqraa_admin") return true
+  return session.academy_roles?.includes("maqraa_admin") ?? false
+}
+
+// An "academy admin" manages the academy side (/academy/admin pages).
+// Super admins implicitly have academy-admin powers.
+export function isAcademyAdmin(session: JWTPayload | null): boolean {
+  if (!session) return false
+  if (isSuperAdmin(session)) return true
+  if (session.role === "academy_admin") return true
+  return session.academy_roles?.includes("academy_admin") ?? false
+}
+
+// Any of the three admin tiers. Used to gate the shared /admin shell.
+export function isAnyAdmin(session: JWTPayload | null): boolean {
+  return isSuperAdmin(session) || isMaqraaAdmin(session) || isAcademyAdmin(session)
 }
 
 // Get the user's primary academy role for routing
