@@ -572,18 +572,21 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
         collapsed ? 'w-72 lg:w-20' : 'w-72'
       )}>
         <div className={cn(
-          'flex items-center border-b border-border relative overflow-hidden shrink-0',
+          'flex items-center gap-2 border-b border-border relative overflow-hidden shrink-0 min-h-16 py-3',
           isReader ? 'bg-primary/5' : 'bg-card',
-          collapsed ? 'lg:justify-center lg:px-2' : 'justify-center',
-          role === 'student' ? 'h-20' : 'h-16'
+          collapsed ? 'lg:flex-col lg:justify-center lg:gap-2 lg:px-2' : 'px-4',
+          // When the super-admin switcher is present it owns the full width;
+          // otherwise keep the (now empty) bar centered as before.
+          isSuperAdminRole ? 'justify-between' : 'justify-center'
         )}>
           {/* Desktop collapse toggle */}
           <button
             type="button"
             onClick={toggleCollapsed}
             className={cn(
-              'hidden lg:flex items-center justify-center p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
-              collapsed ? 'absolute top-2 left-1/2 -translate-x-1/2' : 'absolute top-2 left-2'
+              'hidden lg:flex items-center justify-center p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0',
+              // Keep it out of the flow only when there is nothing else to align with.
+              !isSuperAdminRole && (collapsed ? 'absolute top-2 left-1/2 -translate-x-1/2' : 'absolute top-2 left-2')
             )}
             aria-label={collapsed ? (t.shell?.expandSidebar || 'Expand sidebar') : (t.shell?.collapseSidebar || 'Collapse sidebar')}
             title={collapsed ? (t.shell?.expandSidebar || 'Expand sidebar') : (t.shell?.collapseSidebar || 'Collapse sidebar')}
@@ -591,20 +594,17 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
             {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
           </button>
 
-          <button className="lg:hidden p-1" onClick={() => setSidebarOpen(false)} aria-label="close">
+          {/* Super Admin platform switcher — now lives at the very top of the sidebar */}
+          {isSuperAdminRole && (
+            <div className={cn('min-w-0', collapsed ? 'lg:w-full' : 'flex-1')}>
+              <AdminRoleSwitcher currentMode={adminMode ?? 'super'} collapsed={collapsed} />
+            </div>
+          )}
+
+          <button className="lg:hidden p-1 shrink-0" onClick={() => setSidebarOpen(false)} aria-label="close">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
-
-        {/* Super Admin mode switcher — segmented control just above the nav */}
-        {isSuperAdminRole && (
-          <div className={cn(
-            'border-b border-border shrink-0',
-            collapsed ? 'lg:px-2 lg:py-2 px-4 py-3' : 'px-4 py-3'
-          )}>
-            <AdminRoleSwitcher currentMode={adminMode ?? 'super'} collapsed={collapsed} />
-          </div>
-        )}
 
         {/* Navigation */}
         <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-6 space-y-1', collapsed ? 'lg:px-2 px-4' : 'px-4')}>
