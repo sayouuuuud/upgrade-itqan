@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession, requireRole } from "@/lib/auth"
 import { query } from "@/lib/db"
+import { logAudit } from "@/lib/admin/audit"
 
 // Default templates to seed if none exist
 const DEFAULT_TEMPLATES = [
@@ -66,14 +67,31 @@ const DEFAULT_TEMPLATES = [
     }
 ]
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
         const session = await getSession()
         if (!session || !requireRole(session, ["admin"])) {
             return NextResponse.json({ error: "غير مصرح للمستخدم" }, { status: 401 })
         }
 
-        let templates = await query(`SELECT * FROM email_templates ORDER BY created_at ASC`)
+        const isSuperAdmin = session.role === 'admin' || (session.role as string) === 'super_admin'
+        const scopeParam = req.nextUrl.searchParams.get('scope') // maqraa | academy | general | all
+
+        // مدير المنصة يرى قوالبه فقط + العامة. السوبر أدمن يرى الكل أو يفلتر
+        let scopeCondition = ''
+        if (isSuperAdmin) {
+          if (scopeParam && scopeParam !== 'all') {
+            scopeCondition = `WHERE scope = '${scopeParam}'`
+          }
+          // scopeParam=all أو فارغ => يرى الكل
+        } else {
+          // مدير مقرأة: يرى maqraa + general
+          // مدير أكاديمية: يرى academy + general
+          const platformScope = (session.role as string) === 'academy_admin' ? 'academy' : 'maqraa'
+          scopeCondition = `WHERE scope IN ('${platformScope}', 'general')`
+        }
+
+        let templates = await query(`SELECT * FROM email_templates ${scopeCondition} ORDER BY scope, created_at ASC`)
 
         // Seed if empty
         if (!templates || templates.length === 0) {
@@ -109,6 +127,13 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ error: "بيانات ناقصة" }, { status: 400 })
         }
 
+        // فحص: القوالب العامة (general) للسوبر أدمن فقط
+        const isSuperAdminPut = session!.role === 'admin' || (session!.role as string) === 'super_admin'
+        const existing = await query(`SELECT scope FROM email_templates WHERE template_key = $1`, [template_key])
+        if (existing.length > 0 && existing[0].scope === 'general' && !isSuperAdminPut) {
+            return NextResponse.json({ error: "القوالب العامة للمدير العام فقط" }, { status: 403 })
+        }
+
         const result = await query(
             `UPDATE email_templates SET
          subject_ar = $1,
@@ -124,6 +149,18 @@ export async function PUT(req: NextRequest) {
 
         if (result.length === 0) {
             return NextResponse.json({ error: "القالب غير موجود" }, { status: 404 })
+        }
+
+        if (isSuperAdminPut) {
+            await logAudit({
+                actor_id: session!.sub,
+                actor_email: session!.email,
+                action: 'email_template_updated',
+                platform: existing[0]?.scope === 'academy' ? 'academy' : existing[0]?.scope === 'general' ? 'site' : 'maqraa',
+                entity_type: 'email_template',
+                entity_id: template_key,
+                new_value: { subject_ar, is_active },
+            })
         }
 
         return NextResponse.json({ success: true, template: result[0] })

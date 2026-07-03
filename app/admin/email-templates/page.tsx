@@ -25,11 +25,13 @@ export default function AdminEmailTemplatesPage() {
     const [searchTerm, setSearchTerm] = useState('')
     const [sendingTest, setSendingTest] = useState(false)
     const [testEmail, setTestEmail] = useState('')
+    const [activeScope, setActiveScope] = useState<'all' | 'maqraa' | 'academy' | 'general'>('all')
 
     const fetchTemplates = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await fetch('/api/admin/email-templates')
+            const scopeParam = activeScope !== 'all' ? `?scope=${activeScope}` : ''
+            const res = await fetch(`/api/admin/email-templates${scopeParam}`)
             const data = await res.json().catch(() => null)
             if (res.ok && data) {
                 setTemplates(data.templates || [])
@@ -37,7 +39,7 @@ export default function AdminEmailTemplatesPage() {
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [activeScope])
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { fetchTemplates() }, [fetchTemplates])
@@ -132,6 +134,28 @@ export default function AdminEmailTemplatesPage() {
                 </div>
             </div>
 
+            {/* Scope tabs */}
+            <div className="flex items-center gap-1 bg-muted rounded-xl p-1 w-fit">
+                {([
+                    { id: 'all',     label: 'الكل' },
+                    { id: 'general', label: 'عامة' },
+                    { id: 'maqraa',  label: 'المقرأة' },
+                    { id: 'academy', label: 'الأكاديمية' },
+                ] as const).map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveScope(tab.id)}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                            activeScope === tab.id
+                                ? 'bg-card shadow-sm text-foreground'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
             {loading ? (
                 <div className="flex justify-center p-20">
                     <Loader2 className="w-8 h-8 animate-spin text-[#1B5E3B]" />
@@ -162,7 +186,7 @@ export default function AdminEmailTemplatesPage() {
                                             <h3 className="font-bold text-foreground text-lg">{isAr ? tmpl.template_name_ar : tmpl.template_name_en}</h3>
                                             <span className={`flex h-2 w-2 rounded-full ${tmpl.is_active ? 'bg-primary' : 'bg-muted-foreground'}`} />
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-wrap">
                                             <button
                                                 onClick={() => copyToClipboard(tmpl.template_key)}
                                                 className="text-[10px] bg-muted px-2 py-0.5 rounded-md text-muted-foreground font-mono tracking-wider hover:bg-muted/80 transition-colors"
@@ -170,6 +194,13 @@ export default function AdminEmailTemplatesPage() {
                                             >
                                                 {tmpl.template_key}
                                             </button>
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium border w-fit ${
+                                                tmpl.scope === 'general' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                                tmpl.scope === 'academy' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                                                'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                                            }`}>
+                                                {tmpl.scope === 'general' ? 'عام' : tmpl.scope === 'academy' ? 'أكاديمية' : 'مقرأة'}
+                                            </span>
                                             <span className={`text-[10px] items-center px-1.5 py-0.5 rounded-md font-medium border
                                                 ${tmpl.is_active ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground border-border'}`}>
                                                 {tmpl.is_active
