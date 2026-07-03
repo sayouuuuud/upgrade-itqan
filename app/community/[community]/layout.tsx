@@ -1,6 +1,8 @@
+import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import type { JWTPayload } from "@/lib/auth"
 import { getSession } from "@/lib/auth"
+import { ADMIN_MODE_COOKIE, resolveAdminMode } from "@/lib/admin/roles"
 import {
   accessibleCommunities,
   canAccessCommunity,
@@ -109,7 +111,18 @@ export default async function CommunityLayout({
     )
   }
 
-  // maqraa
+  // maqraa — admin-tier users keep their active mode (e.g. super) so the
+  // sidebar stays consistent when navigating from the super-admin sidebar.
   const role = resolveMaqraaShellRole(session)
+  const adminTierRoles = ['admin', 'super_admin', 'maqraa_admin', 'academy_admin']
+  if (adminTierRoles.includes(session.role)) {
+    const cookieStore = await cookies()
+    const adminMode = resolveAdminMode(
+      cookieStore.get(ADMIN_MODE_COOKIE)?.value,
+      session.role,
+      session.academy_roles ?? [],
+    )
+    return <DashboardShell role={session.role as any} adminMode={adminMode}>{inner}</DashboardShell>
+  }
   return <DashboardShell role={role}>{inner}</DashboardShell>
 }
