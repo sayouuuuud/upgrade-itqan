@@ -610,7 +610,7 @@ export default function Home() {
             <Reveal delay={0.15}>
               <h1
                 className="text-[14vw] sm:text-[10vw] md:text-8xl lg:text-9xl font-bold leading-[0.95] tracking-tight text-hp-navy dark:text-hp-cream mb-10 md:mb-14"
-                style={{ fontFamily: "var(--font-heading)" }}
+                style={{ fontFamily: "'BIXIE', serif" }}
               >
                 {c.heroTitle}
               </h1>
@@ -627,7 +627,7 @@ export default function Home() {
             <Reveal delay={0.38}>
               <h2
                 className="text-[10vw] sm:text-[7vw] md:text-6xl lg:text-7xl font-light italic text-hp-bronze dark:text-hp-gold mb-12 md:mb-14"
-                style={{ fontFamily: "var(--font-heading)" }}
+                style={{ fontFamily: "'Amiri', serif" }}
               >
                 {c.heroSubtitle}
               </h2>
