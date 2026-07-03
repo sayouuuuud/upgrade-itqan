@@ -3,6 +3,44 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ── Thmanyah Serif Display (headings) ──────────────────────── */
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/thmanyah/thmanyahserifdisplay-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/thmanyah/thmanyahserifdisplay-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/thmanyah/thmanyahserifdisplay-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/thmanyah/thmanyahserifdisplay-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/thmanyah/thmanyahserifdisplay-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+/* ───────────────────────────────────────────────────────────── */
+
 :root {
   --background: #FAFAF8;
   --foreground: #0D1512;
@@ -139,6 +177,7 @@
   --font-sans: var(--font-cairo), sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --font-quran: var(--font-amiri), 'Amiri', serif;
+  --font-heading: 'Thmanyah', 'Cairo', serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -223,6 +262,26 @@
     @apply bg-background text-foreground;
     overflow-y: overlay;
   }
+}
+
+/* Homepage headings use the Thmanyah serif display font.
+   Scoped to .hp-root so the rest of the app keeps Cairo.
+   font-quran (Quran verses) is intentionally excluded. */
+.hp-root h1,
+.hp-root h2,
+.hp-root h3,
+.hp-root h4,
+.hp-root h5,
+.hp-root h6 {
+  font-family: var(--font-heading);
+}
+
+.hp-root h1.font-quran,
+.hp-root h2.font-quran,
+.hp-root h3.font-quran,
+.hp-root h4.font-quran,
+.hp-root .font-quran {
+  font-family: var(--font-quran);
 }
 
 /* Waveform animation for audio players */

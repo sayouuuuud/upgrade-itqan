@@ -350,7 +350,7 @@ export default function Home() {
 
   return (
     <div
-      className="min-h-screen bg-hp-parchment text-hp-ink dark:bg-hp-dark dark:text-hp-cream overflow-x-hidden font-sans transition-colors duration-500"
+      className="hp-root min-h-screen bg-hp-parchment text-hp-ink dark:bg-hp-dark dark:text-hp-cream overflow-x-hidden font-sans transition-colors duration-500"
       dir={dir}
       style={colorVars}
     >
