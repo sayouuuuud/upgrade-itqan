@@ -13,8 +13,10 @@ declare global {
 
 let pool: Pool | null = null
 
-// Use POSTGRES_URL (from Supabase) as primary, fallback to DATABASE_URL
-let databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL
+// Use ITQAN_DATABASE_URL (explicit override for the real Itqan Supabase project)
+// as highest priority, then POSTGRES_URL (from Supabase integration), then DATABASE_URL.
+// The override exists because a stale integration can force-inject an outdated POSTGRES_URL.
+let databaseUrl = process.env.ITQAN_DATABASE_URL || process.env.POSTGRES_URL || process.env.DATABASE_URL
 
 if (databaseUrl) {
   // For Supabase, ensure sslmode is set correctly.
