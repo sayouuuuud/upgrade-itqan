@@ -579,13 +579,19 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
           // otherwise keep the (now empty) bar centered as before.
           isSuperAdminRole ? 'justify-between' : 'justify-center'
         )}>
-          {/* Desktop collapse toggle */}
+          {/* Super Admin platform switcher — lives at the very top of the sidebar */}
+          {isSuperAdminRole && (
+            <div className={cn('min-w-0', collapsed ? 'lg:w-full' : 'flex-1')}>
+              <AdminRoleSwitcher currentMode={adminMode ?? 'super'} collapsed={collapsed} />
+            </div>
+          )}
+
+          {/* Desktop collapse toggle — comes after switcher in DOM so it renders to its left (sidebar is RTL) */}
           <button
             type="button"
             onClick={toggleCollapsed}
             className={cn(
               'hidden lg:flex items-center justify-center p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0',
-              // Keep it out of the flow only when there is nothing else to align with.
               !isSuperAdminRole && (collapsed ? 'absolute top-2 left-1/2 -translate-x-1/2' : 'absolute top-2 left-2')
             )}
             aria-label={collapsed ? (t.shell?.expandSidebar || 'Expand sidebar') : (t.shell?.collapseSidebar || 'Collapse sidebar')}
@@ -593,13 +599,6 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
           >
             {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
           </button>
-
-          {/* Super Admin platform switcher — now lives at the very top of the sidebar */}
-          {isSuperAdminRole && (
-            <div className={cn('min-w-0', collapsed ? 'lg:w-full' : 'flex-1')}>
-              <AdminRoleSwitcher currentMode={adminMode ?? 'super'} collapsed={collapsed} />
-            </div>
-          )}
 
           <button className="lg:hidden p-1 shrink-0" onClick={() => setSidebarOpen(false)} aria-label="close">
             <X className="w-5 h-5 text-muted-foreground" />
