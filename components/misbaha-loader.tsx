@@ -16,73 +16,73 @@ export function MisbahaLoader() {
     const H = 320
     canvas.width = W * DPR
     canvas.height = H * DPR
-    canvas.style.width = `${W}px`
+    canvas.style.width  = `${W}px`
     canvas.style.height = `${H}px`
     ctx.scale(DPR, DPR)
 
     // ── إعدادات المسبحة ──────────────────────────────────────
-    const BEAD_COUNT = 10        // عدد الخرزات في الدائرة
-    const BEAD_R     = 10        // نصف قطر الخرزة الأساسية
-    // RING_R تحسب تلقائياً بحيث تكون الخرز ملتصقة تقريباً
-    // المسافة بين مركزين خرز متجاورتين = 2 * RING_R * sin(PI/BEAD_COUNT)
-    // عشان تكون ملتصقة: 2*BEAD_R ≈ 2*RING_R*sin(PI/10)
-    // → RING_R ≈ BEAD_R / sin(PI/10) ≈ 10 / 0.309 ≈ 32.4 → نضيف 2px فراغ بسيط
-    const RING_R     = Math.round(BEAD_R / Math.sin(Math.PI / BEAD_COUNT)) + 2
+    const BEAD_COUNT = 10
+    const BEAD_R     = 10
+    // خرز ملتصقة: المسافة بين مركزين = 2*BEAD_R + 1px فراغ
+    const RING_R     = Math.round(BEAD_R / Math.sin(Math.PI / BEAD_COUNT)) + 1
     const CX         = W / 2
-    const CY         = W / 2 + 2   // مركز الدائرة في النص العلوي
-    const CYCLE_MS   = 3200      // كل دورة كاملة تاخد 3.2 ثانية (هادئة)
+    const CY         = W / 2 + 2
+    const CYCLE_MS   = 3200   // ثانية وثلاثة أعشار لكل دورة كاملة
 
-    // ── ألوان الخرزة الخشبية البنية ───────────────────────────
-    // بني خشبي دافئ
-    const BEAD_HI    = '#C68B4A'   // أعلى الخرزة (ضوء)
-    const BEAD_MID   = '#8B5E2E'   // منتصف
-    const BEAD_DARK  = '#4A2E10'   // أسفل الخرزة (ظل)
-    const BEAD_EDGE  = '#3A2008'   // حافة
+    // ── ألوان الخشب المطفي (بدون لمعة) ──────────────────────
+    // الخشب الطبيعي: بني دافئ مع تدرج هادئ بدون highlight ساطع
+    const WOOD_TOP   = '#A0622A'   // بني متوسط فاتح (وجه الخرزة)
+    const WOOD_MID   = '#7A4520'   // بني متوسط
+    const WOOD_DARK  = '#4E2A0C'   // بني غامق (عمق)
+    const WOOD_EDGE  = '#331A05'   // حافة داكنة جداً
 
-    // ── ألوان الخيط ────────────────────────────────────────────
-    const THREAD     = '#4A7C59'   // أخضر زيتي داكن يناسب المنصة
-    const THREAD_HI  = '#6BAF7A'   // أخضر أفتح للخيط
+    // ── ألوان الخيط ───────────────────────────────────────────
+    const THREAD     = '#3D6B4A'   // أخضر زيتي داكن
 
-    // ── ألوان النحاس (تيبيليك) ─────────────────────────────────
-    const BRASS_HI   = '#D4A843'
-    const BRASS_MID  = '#A07828'
-    const BRASS_DARK = '#6B4F10'
+    // ── ألوان النحاس (تيبيليك) ────────────────────────────────
+    const BRASS_HI   = '#C9A03E'
+    const BRASS_MID  = '#8F6920'
+    const BRASS_DARK = '#5C420D'
 
     let startTime: number | null = null
     let rafId = 0
 
-    // ── رسم خرزة واحدة ─────────────────────────────────────────
+    // ── رسم خرزة خشبية مطفية (بدون لمعة ساطعة) ──────────────
     function drawBead(
       x: number, y: number, r: number,
-      isActive: boolean, activeFraction: number
+      isActive: boolean, activeFrac: number
     ) {
-      // توهج ناعم حول الخرزة النشطة
-      if (isActive) {
-        const glow = ctx.createRadialGradient(x, y, r * 0.5, x, y, r * 2.2)
-        glow.addColorStop(0, `rgba(198,139,74,${0.35 * activeFraction})`)
-        glow.addColorStop(1, 'rgba(198,139,74,0)')
-        ctx.fillStyle = glow
+      // ظل خفيف أسفل الخرزة النشطة فقط — بدلاً من توهج ساطع
+      if (isActive && activeFrac > 0) {
+        ctx.save()
+        ctx.globalAlpha = 0.18 * activeFrac
+        ctx.fillStyle = '#2A1000'
         ctx.beginPath()
-        ctx.arc(x, y, r * 2.2, 0, Math.PI * 2)
+        ctx.ellipse(x, y + r + 2, r * 0.7, r * 0.25, 0, 0, Math.PI * 2)
         ctx.fill()
+        ctx.restore()
       }
 
-      // جسم الخرزة بـ radial gradient يعطيها شكل كروي
+      // جسم الخرزة — gradient يحاكي سطح الخشب المطفي
+      // مركز الضوء منزاح للأعلى-اليسار بشكل هادئ (ليس ساطعاً)
       const grad = ctx.createRadialGradient(
-        x - r * 0.3, y - r * 0.35, r * 0.05,
-        x,           y,             r
+        x - r * 0.25, y - r * 0.28, r * 0.08,
+        x,            y,             r
       )
+
       if (isActive) {
-        grad.addColorStop(0.00, '#E8B060')
-        grad.addColorStop(0.30, BEAD_HI)
-        grad.addColorStop(0.65, BEAD_MID)
-        grad.addColorStop(0.88, BEAD_DARK)
-        grad.addColorStop(1.00, BEAD_EDGE)
+        // الخرزة النشطة: أفتح قليلاً لكن ليست لامعة
+        grad.addColorStop(0.00, '#B8742E')
+        grad.addColorStop(0.30, WOOD_TOP)
+        grad.addColorStop(0.60, WOOD_MID)
+        grad.addColorStop(0.85, WOOD_DARK)
+        grad.addColorStop(1.00, WOOD_EDGE)
       } else {
-        grad.addColorStop(0.00, '#C8902A')
-        grad.addColorStop(0.35, BEAD_MID)
-        grad.addColorStop(0.75, BEAD_DARK)
-        grad.addColorStop(1.00, BEAD_EDGE)
+        // الخرزة العادية: أغمق وأكثر طبيعية
+        grad.addColorStop(0.00, '#8C5222')
+        grad.addColorStop(0.40, WOOD_MID)
+        grad.addColorStop(0.80, WOOD_DARK)
+        grad.addColorStop(1.00, WOOD_EDGE)
       }
 
       ctx.fillStyle = grad
@@ -90,43 +90,41 @@ export function MisbahaLoader() {
       ctx.arc(x, y, r, 0, Math.PI * 2)
       ctx.fill()
 
-      // حافة خفيفة
-      ctx.strokeStyle = `rgba(58,32,8,0.55)`
-      ctx.lineWidth = 0.8
+      // حافة داكنة خفيفة
+      ctx.strokeStyle = `rgba(40,15,0,0.5)`
+      ctx.lineWidth = 0.7
       ctx.stroke()
 
-      // انعكاس ضوء صغير فوق اليسار
-      const shine = ctx.createRadialGradient(
-        x - r * 0.32, y - r * 0.36, 0,
-        x - r * 0.32, y - r * 0.36, r * 0.42
+      // لمسة ضوء صغيرة جداً مطفية (ليست لامعة)
+      // تحاكي مسام الخشب لا المعدن
+      const sheen = ctx.createRadialGradient(
+        x - r * 0.28, y - r * 0.30, 0,
+        x - r * 0.28, y - r * 0.30, r * 0.36
       )
-      shine.addColorStop(0,   `rgba(255,235,190,${isActive ? 0.7 : 0.45})`)
-      shine.addColorStop(0.6, `rgba(255,235,190,0.08)`)
-      shine.addColorStop(1,   'rgba(255,235,190,0)')
-      ctx.fillStyle = shine
+      sheen.addColorStop(0,   `rgba(210,160,100,${isActive ? 0.22 : 0.13})`)
+      sheen.addColorStop(1,   'rgba(210,160,100,0)')
+      ctx.fillStyle = sheen
       ctx.beginPath()
       ctx.arc(x, y, r, 0, Math.PI * 2)
       ctx.fill()
     }
 
-    // ── رسم قطعة النحاس (تيبيليك) ──────────────────────────────
+    // ── رسم التيبيليك (قطعة النحاس) ──────────────────────────
     function drawBrassConnector(cx: number, topY: number) {
-      const capW = 9
-      const capH = 18
+      const capW = 8
+      const capH = 16
+      const r    = 2.5
 
-      // جسم النحاس
       const brassGrad = ctx.createLinearGradient(cx - capW, topY, cx + capW, topY)
       brassGrad.addColorStop(0,    BRASS_DARK)
-      brassGrad.addColorStop(0.25, BRASS_MID)
+      brassGrad.addColorStop(0.2,  BRASS_MID)
       brassGrad.addColorStop(0.5,  BRASS_HI)
-      brassGrad.addColorStop(0.75, BRASS_MID)
+      brassGrad.addColorStop(0.8,  BRASS_MID)
       brassGrad.addColorStop(1,    BRASS_DARK)
 
-      ctx.fillStyle = brassGrad
-      // شكل مستطيل مع زوايا مدورة قليلاً للنحاسة
-      const r = 3
       const x = cx - capW
       const y = topY
+      ctx.fillStyle = brassGrad
       ctx.beginPath()
       ctx.moveTo(x + r, y)
       ctx.lineTo(x + capW * 2 - r, y)
@@ -140,55 +138,49 @@ export function MisbahaLoader() {
       ctx.closePath()
       ctx.fill()
 
-      // حواف النحاس
       ctx.strokeStyle = BRASS_DARK
-      ctx.lineWidth = 1
+      ctx.lineWidth = 0.8
       ctx.stroke()
 
-      // خط أفقي زينة في النحاس
-      ctx.strokeStyle = `rgba(212,168,67,0.6)`
-      ctx.lineWidth = 1.5
-      ctx.beginPath()
-      ctx.moveTo(cx - capW + 2, topY + capH * 0.4)
-      ctx.lineTo(cx + capW - 2, topY + capH * 0.4)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.moveTo(cx - capW + 2, topY + capH * 0.65)
-      ctx.lineTo(cx + capW - 2, topY + capH * 0.65)
-      ctx.stroke()
+      // خطوط زينة أفقية
+      ctx.strokeStyle = `rgba(200,160,60,0.55)`
+      ctx.lineWidth = 1
+      ;[0.35, 0.62].forEach(frac => {
+        ctx.beginPath()
+        ctx.moveTo(cx - capW + 2, topY + capH * frac)
+        ctx.lineTo(cx + capW - 2, topY + capH * frac)
+        ctx.stroke()
+      })
     }
 
-    // ── رسم الشراشيب (tassel) ───────────────────────────────────
-    // الشراشيب بها ميل بسيط لليمين وأطول
-    const TILT = 6  // مقدار الميل الأفقي للشعرة الخارجية
+    // ── رسم الشراشيب — أقصر ومتقاربة مع ميل بسيط ────────────
+    const TILT = 5   // ميل الشراشيب لليمين
 
-    function drawTassel(cx: number, startY: number) {
-      const strands = 11
-      const tasselLen = 52   // أطول من قبل
-      const spread = 13
+    function drawTassel(cx: number, startY: number, elapsed: number) {
+      const strands   = 10
+      const tasselLen = 36    // أقصر من قبل
+      const spread    = 6     // أضيق من قبل (متقاربة)
 
       for (let i = 0; i < strands; i++) {
-        const t = (i / (strands - 1)) - 0.5        // -0.5 → 0.5
-        // ميل عام لليمين + انتشار طبيعي
+        const t    = (i / (strands - 1)) - 0.5   // -0.5 → 0.5
+        // ميل عام لليمين مع انتشار ضيق
         const endX = cx + t * spread * 2 + TILT
-        const endY = startY + tasselLen + Math.abs(t) * 5
+        // الشراشيب الجانبية أطول قليلاً بشكل طبيعي
+        const endY = startY + tasselLen + Math.abs(t) * 4
 
-        // تذبذب خفيف بناءً على الوقت
-        const elapsed = (startTime !== null)
-          ? (performance.now() - startTime) / 1000 : 0
-        const wobble = Math.sin(elapsed * 1.2 + i * 0.65) * 1.4
+        // تذبذب ناعم جداً
+        const wobble = Math.sin(elapsed * 0.9 + i * 0.8) * 0.9
 
-        const alpha = i === 0 || i === strands - 1 ? 0.35 : 0.88
+        const alpha = Math.abs(t) > 0.45 ? 0.4 : 0.82
 
-        ctx.strokeStyle = `rgba(74,124,89,${alpha})`
-        ctx.lineWidth = 1.4
-        ctx.lineCap = 'round'
+        ctx.strokeStyle = `rgba(61,107,74,${alpha})`
+        ctx.lineWidth   = 1.2
+        ctx.lineCap     = 'round'
         ctx.beginPath()
-        // نبدأ من المركز بميل بسيط
-        ctx.moveTo(cx + TILT * 0.2 + wobble * 0.2, startY)
+        ctx.moveTo(cx + TILT * 0.15 + wobble * 0.15, startY)
         ctx.quadraticCurveTo(
-          endX + wobble * 0.6,
-          startY + tasselLen * 0.55,
+          endX + wobble * 0.5,
+          startY + tasselLen * 0.5,
           endX + wobble,
           endY
         )
@@ -196,115 +188,103 @@ export function MisbahaLoader() {
       }
     }
 
-    // ── رسم الخيط بين الخرزات ──────────────────────────────────
-    function drawThread(progress: number) {
+    // ── رسم الخيط الثابت ──────────────────────────────────────
+    // الخيط ثابت لا يدور — يُرسم كدائرة في موضع ثابت
+    function drawThread() {
       ctx.save()
-      ctx.globalAlpha = 0.6
+      ctx.globalAlpha = 0.55
       ctx.strokeStyle = THREAD
-      ctx.lineWidth = 1.8
-      ctx.lineCap = 'round'
+      ctx.lineWidth   = 1.6
+      ctx.lineCap     = 'round'
       ctx.beginPath()
-
-      for (let i = 0; i <= BEAD_COUNT; i++) {
-        const angle = ((i % BEAD_COUNT) / BEAD_COUNT) * Math.PI * 2 + progress * Math.PI * 2
-        const x = CX + Math.cos(angle) * RING_R
-        const y = CY + Math.sin(angle) * RING_R
-        if (i === 0) ctx.moveTo(x, y)
-        else ctx.lineTo(x, y)
-      }
-      ctx.closePath()
+      ctx.arc(CX, CY, RING_R, 0, Math.PI * 2)
       ctx.stroke()
       ctx.restore()
     }
 
-    // ── الخرزتان في الطرف (imam beads) ─────────────────────────
-    function drawTailBeads(imamX: number, imamY: number) {
-      // خط رابط من الدائرة لأسفل
+    // ── رسم خرز الذيل الثابتة ─────────────────────────────────
+    function drawTailBeads(elapsed: number) {
+      // نقطة الخروج: أسفل الدائرة (الساعة 6)
+      const tailX = CX
+      const tailY = CY + RING_R
+
+      // خيط من حافة الدائرة للخرزة الأولى
       ctx.strokeStyle = THREAD
-      ctx.lineWidth = 1.6
-      ctx.lineCap = 'round'
+      ctx.lineWidth   = 1.5
+      ctx.lineCap     = 'round'
       ctx.beginPath()
-      ctx.moveTo(imamX, imamY + BEAD_R)
-      ctx.lineTo(imamX, imamY + BEAD_R + 8)
+      ctx.moveTo(tailX, tailY)
+      ctx.lineTo(tailX, tailY + 7)
       ctx.stroke()
 
-      // الخرزة الأولى (imam) - أصغر تناسباً مع الحجم الجديد
-      const b1Y = imamY + BEAD_R + 8 + 10
-      drawBead(imamX, b1Y, 10, false, 0)
+      // الخرزة الأولى (imam) — حجم 10
+      const b1Y = tailY + 7 + 10
+      drawBead(tailX, b1Y, 10, false, 0)
 
-      // رابط قصير
+      // خيط قصير
       ctx.strokeStyle = THREAD
-      ctx.lineWidth = 1.6
+      ctx.lineWidth   = 1.5
       ctx.beginPath()
-      ctx.moveTo(imamX, b1Y + 10)
-      ctx.lineTo(imamX, b1Y + 10 + 6)
+      ctx.moveTo(tailX, b1Y + 10)
+      ctx.lineTo(tailX, b1Y + 10 + 5)
       ctx.stroke()
 
-      // الخرزة الثانية (أصغر)
-      const b2Y = b1Y + 10 + 6 + 7
-      drawBead(imamX, b2Y, 7, false, 0)
+      // الخرزة الثانية — حجم 7
+      const b2Y = b1Y + 10 + 5 + 7
+      drawBead(tailX, b2Y, 7, false, 0)
 
-      // رابط للنحاس
+      // خيط للتيبيليك
       ctx.strokeStyle = THREAD
-      ctx.lineWidth = 1.6
+      ctx.lineWidth   = 1.5
       ctx.beginPath()
-      ctx.moveTo(imamX, b2Y + 7)
-      ctx.lineTo(imamX, b2Y + 7 + 6)
+      ctx.moveTo(tailX, b2Y + 7)
+      ctx.lineTo(tailX, b2Y + 7 + 5)
       ctx.stroke()
 
-      // النحاس (تيبيليك)
-      drawBrassConnector(imamX, b2Y + 7 + 6)
+      // التيبيليك (النحاس)
+      drawBrassConnector(tailX, b2Y + 7 + 5)
 
       // الشراشيب
-      drawTassel(imamX, b2Y + 7 + 6 + 18)
+      drawTassel(tailX, b2Y + 7 + 5 + 16, elapsed)
     }
 
-    // ── حلقة الرسم الرئيسية ────────────────────────────────────
+    // ── حلقة الرسم الرئيسية ───────────────────────────────────
     const animate = (ts: number) => {
       if (startTime === null) startTime = ts
+      const elapsed = ts - startTime
 
       ctx.clearRect(0, 0, W, H)
 
-      const elapsed = (ts - startTime) % CYCLE_MS
-      const progress = elapsed / CYCLE_MS  // 0 → 1
+      // تقدم الدورة (0 → 1)
+      const progress  = (elapsed % CYCLE_MS) / CYCLE_MS
+      const floatIdx  = progress * BEAD_COUNT
+      const activeIdx = Math.floor(floatIdx) % BEAD_COUNT
+      const frac      = floatIdx - Math.floor(floatIdx)  // 0 → 1
 
-      // أي خرزة تنمو الآن؟
-      const floatIdx = (progress * BEAD_COUNT) % BEAD_COUNT
-      const activeIdx = Math.floor(floatIdx)
-      const frac = floatIdx - activeIdx  // 0 → 1 (مدى تقدم الخرزة)
+      // ── الخيط الثابت (لا يدور)
+      drawThread()
 
-      // ── رسم الخيط أولاً (خلف الخرزات)
-      drawThread(progress)
-
-      // ── رسم الخرزات
+      // ── الخرزات في مواضعها الثابتة — فقط الحجم يتغير
       for (let i = 0; i < BEAD_COUNT; i++) {
-        const angle = (i / BEAD_COUNT) * Math.PI * 2 + progress * Math.PI * 2
+        // مواضع ثابتة (لا يُضاف progress للزاوية)
+        const angle = (i / BEAD_COUNT) * Math.PI * 2 - Math.PI / 2
+        const bx    = CX + Math.cos(angle) * RING_R
+        const by    = CY + Math.sin(angle) * RING_R
 
         const isActive = i === activeIdx
         let r = BEAD_R
 
         if (isActive) {
-          // تكبير سلس من 1.0 → 1.28 → 1.0 خلال الثلث الأول ثم يهبط
-          const upPhase   = Math.min(frac / 0.35, 1)
-          const downPhase = frac > 0.35 ? (frac - 0.35) / 0.65 : 0
-          const scalePeak = 0.28
-          const scaleAdd  = upPhase < 1
-            ? upPhase * scalePeak
-            : scalePeak * (1 - downPhase)
-          r = BEAD_R * (1 + scaleAdd)
+          // الخرزة تكبر بسلاسة ثم تصغر خلال cycle الخرزة الواحدة
+          const scale = 0.28 * Math.sin(frac * Math.PI)  // 0 → peak → 0
+          r = BEAD_R * (1 + scale)
         }
 
-        const bx = CX + Math.cos(angle) * RING_R
-        const by = CY + Math.sin(angle) * RING_R
         drawBead(bx, by, r, isActive, isActive ? Math.sin(frac * Math.PI) : 0)
       }
 
-      // ── رسم ذيل المسبحة عند الزاوية السفلية الثابتة
-      // نقطة الالتقاء الثابتة في الأسفل (الخرزة التي لا تدور)
-      const tailAngle = -Math.PI / 2 // أعلى الدائرة في البداية نحدد ثابت
-      const tailX = CX
-      const tailY = CY + RING_R  // أسفل الدائرة مباشرة
-      drawTailBeads(tailX, tailY)
+      // ── ذيل المسبحة الثابت
+      drawTailBeads(elapsed / 1000)
 
       rafId = requestAnimationFrame(animate)
     }
