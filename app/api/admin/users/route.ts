@@ -19,6 +19,8 @@ export async function GET(req: NextRequest) {
     const role = searchParams.get("role")
     const search = searchParams.get("search")
     const platform = searchParams.get("platform")
+    const status = searchParams.get("status")   // "active" | "inactive" | null
+    const gender = searchParams.get("gender")   // "male" | "female" | null
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "10")
     const offset = (page - 1) * limit
@@ -62,6 +64,18 @@ export async function GET(req: NextRequest) {
         params.push(scope.ids)
         whereClause += ` AND u.id = ANY($${params.length}::uuid[])`
       }
+    }
+
+    if (status === "active") {
+      whereClause += ` AND u.is_active = true`
+    } else if (status === "inactive") {
+      whereClause += ` AND u.is_active = false`
+    }
+
+    if (gender === "male") {
+      whereClause += ` AND (u.gender = 'male' OR u.gender IS NULL)`
+    } else if (gender === "female") {
+      whereClause += ` AND u.gender = 'female'`
     }
 
     if (search) {
