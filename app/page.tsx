@@ -367,13 +367,18 @@ export default function Home() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.7 }}
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? "bg-hp-parchment/85 dark:bg-hp-dark/85 backdrop-blur-xl border-b border-hp-ink/10 dark:border-hp-cream/10 py-3"
-            : "bg-transparent py-5"
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 px-3 sm:px-6 ${
+          scrolled ? "pt-2 sm:pt-3" : "pt-3 sm:pt-5"
         }`}
       >
-        <div className="container mx-auto px-6 flex items-center justify-between">
+        <div className="container mx-auto">
+        <div
+          className={`flex items-center justify-between gap-4 rounded-full border transition-all duration-500 px-4 sm:px-6 ${
+            scrolled
+              ? "bg-hp-parchment/90 dark:bg-hp-dark/90 backdrop-blur-2xl border-hp-ink/10 dark:border-hp-cream/10 py-2 sm:py-2.5 shadow-xl shadow-hp-ink/10 dark:shadow-black/30"
+              : "bg-hp-parchment/50 dark:bg-hp-dark/40 backdrop-blur-xl border-hp-ink/10 dark:border-hp-cream/15 py-2.5 sm:py-3 shadow-lg shadow-hp-ink/5 dark:shadow-black/20"
+          }`}
+        >
           <Link href="/" className="flex items-center gap-3">
             <div className="relative w-11 h-11">
               <Logo />
@@ -455,6 +460,7 @@ export default function Home() {
             </button>
           </div>
         </div>
+        </div>
 
         <AnimatePresence>
           {isMenuOpen && (
@@ -462,9 +468,9 @@ export default function Home() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-hp-parchment dark:bg-hp-dark border-t border-hp-ink/10 dark:border-hp-cream/10 overflow-hidden"
+              className="lg:hidden overflow-hidden px-3 sm:px-6 mt-2"
             >
-              <div className="container mx-auto px-6 py-6 space-y-3">
+              <div className="container mx-auto rounded-3xl bg-hp-parchment/95 dark:bg-hp-dark/95 backdrop-blur-2xl border border-hp-ink/10 dark:border-hp-cream/10 shadow-xl shadow-hp-ink/10 dark:shadow-black/30 px-6 py-6 space-y-3">
                 {c.nav.map((item) => (
                   <Link
                     key={item.href}
