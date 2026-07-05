@@ -393,12 +393,12 @@ export default function Home() {
             </div>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-10">
+          <nav className="hidden lg:flex items-center gap-8">
             {c.nav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm text-hp-ink/70 dark:text-hp-cream/70 hover:text-hp-navy dark:hover:text-hp-gold transition-colors relative group"
+                className="text-base font-medium text-hp-ink/75 dark:text-hp-cream/75 hover:text-hp-navy dark:hover:text-hp-gold transition-colors relative group px-1 py-2"
               >
                 {item.label}
                 <span className="absolute -bottom-1.5 right-0 h-px w-0 bg-hp-bronze transition-all duration-500 group-hover:w-full" />
@@ -430,13 +430,13 @@ export default function Home() {
             </button>
             <Link
               href="/login"
-              className="text-sm text-hp-ink/70 dark:text-hp-cream/70 hover:text-hp-navy dark:hover:text-hp-gold px-4 py-2 transition-colors"
+              className="text-base font-medium text-hp-ink/70 dark:text-hp-cream/70 hover:text-hp-navy dark:hover:text-hp-gold px-5 py-2.5 transition-colors"
             >
               {c.loginText}
             </Link>
             <Link
               href="/register"
-              className="text-sm font-medium px-5 py-2.5 rounded-full bg-hp-navy text-hp-parchment dark:bg-hp-gold dark:text-hp-dark hover:bg-hp-green dark:hover:bg-hp-gold-light transition-all duration-500 shadow-sm hover:shadow-lg"
+              className="text-base font-bold px-6 py-2.5 rounded-full bg-hp-navy text-hp-parchment dark:bg-hp-gold dark:text-hp-dark hover:bg-hp-green dark:hover:bg-hp-gold-light transition-all duration-500 shadow-sm hover:shadow-lg"
             >
               {c.registerText}
             </Link>
@@ -470,23 +470,31 @@ export default function Home() {
               exit={{ opacity: 0, height: 0 }}
               className="lg:hidden overflow-hidden px-3 sm:px-6 mt-2"
             >
-              <div className="container mx-auto rounded-3xl bg-hp-parchment/95 dark:bg-hp-dark/95 backdrop-blur-2xl border border-hp-ink/10 dark:border-hp-cream/10 shadow-xl shadow-hp-ink/10 dark:shadow-black/30 px-6 py-6 space-y-3">
+              <div className="container mx-auto rounded-3xl bg-hp-parchment/95 dark:bg-hp-dark/95 backdrop-blur-2xl border border-hp-ink/10 dark:border-hp-cream/10 shadow-xl shadow-hp-ink/10 dark:shadow-black/30 px-6 py-6 space-y-2">
                 {c.nav.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="block py-2 text-hp-ink/75 dark:text-hp-cream/75 hover:text-hp-navy dark:hover:text-hp-gold"
+                    className="block text-base font-medium px-5 py-3 rounded-xl text-hp-ink dark:text-hp-cream hover:bg-hp-ink/8 dark:hover:bg-hp-cream/8 transition-colors"
                   >
                     {item.label}
                   </Link>
                 ))}
-                <div className="pt-4 border-t border-hp-ink/10 dark:border-hp-cream/10 flex gap-3">
-                  <Link href="/login" className="flex-1 py-3 text-center border border-hp-navy/20 dark:border-hp-gold/30 dark:text-hp-gold rounded-full">
+                <div className="border-t border-hp-ink/10 dark:border-hp-cream/10 pt-3 mt-3 space-y-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block text-center text-base font-medium px-5 py-3 rounded-xl text-hp-ink dark:text-hp-cream hover:bg-hp-ink/8 dark:hover:bg-hp-cream/8 transition-colors"
+                  >
                     {c.loginText}
                   </Link>
-                  <Link href="/register" className="flex-1 py-3 text-center bg-hp-navy text-hp-parchment dark:bg-hp-gold dark:text-hp-dark rounded-full">
-                    {c.registerShort}
+                  <Link
+                    href="/register"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block text-center text-base font-bold px-5 py-3 rounded-xl bg-hp-navy text-hp-parchment dark:bg-hp-gold dark:text-hp-dark hover:bg-hp-green dark:hover:bg-hp-gold-light transition-all shadow-sm"
+                  >
+                    {c.registerText}
                   </Link>
                 </div>
               </div>
