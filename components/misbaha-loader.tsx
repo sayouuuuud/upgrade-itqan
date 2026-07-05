@@ -12,8 +12,8 @@ export function MisbahaLoader() {
     if (!ctx) return
 
     const DPR = window.devicePixelRatio || 1
-    const W = 200
-    const H = 320
+    const W = 160
+    const H = 260
     canvas.width = W * DPR
     canvas.height = H * DPR
     canvas.style.width  = `${W}px`
@@ -26,7 +26,7 @@ export function MisbahaLoader() {
     // خرز أرفع مع مسافة بسيطة: المسافة بين مركزين = 2*BEAD_R + 4px فراغ
     const RING_R     = Math.round(BEAD_R / Math.sin(Math.PI / BEAD_COUNT)) + 4
     const CX         = W / 2
-    const CY         = W / 2 + 2
+    const CY         = W / 2
     const CYCLE_MS   = 3200   // ثانية وثلاثة أعشار لكل دورة كاملة
 
     // ── ألوان الخشب المطفي (بدون لمعة) ──────────────────────
@@ -296,7 +296,9 @@ export function MisbahaLoader() {
   return (
     <canvas
       ref={canvasRef}
-      style={{ display: 'block', margin: '0 auto' }}
+      width={160}
+      height={260}
+      style={{ display: 'block', margin: '0 auto', width: '160px', height: '260px' }}
       aria-label="مسبحة صلاة متحركة"
     />
   )

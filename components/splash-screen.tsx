@@ -112,13 +112,13 @@ export function SplashScreen({ isLoading, onLoadingComplete }: SplashScreenProps
           </div>
 
           <h1
-            className="text-5xl font-bold text-[#1B5E3B] leading-tight"
-            style={{ fontFamily: 'var(--font-amiri)', letterSpacing: '0.5px' }}
+            className="text-7xl font-bold text-[#1B5E3B] leading-tight"
+            style={{ fontFamily: 'var(--font-amiri)', letterSpacing: '1px' }}
           >
             مُتقِن
           </h1>
           <p
-            className="text-lg text-[#1B5E3B]/60 font-medium tracking-widest"
+            className="text-xl text-[#1B5E3B]/60 font-medium tracking-widest"
             style={{ fontFamily: 'var(--font-cairo)' }}
           >
             منصة التعلم القرآني

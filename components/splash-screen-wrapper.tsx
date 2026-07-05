@@ -8,10 +8,10 @@ export function SplashScreenWrapper({ children }: { children: React.ReactNode })
   const [showSplash, setShowSplash] = useState(true)
 
   useEffect(() => {
-    // Simulate page load - splash shows for 1 second
+    // إخفاء السبلاش بعد ثانية واحدة من أول render
     const loadTimer = setTimeout(() => {
       setIsLoading(false)
-    }, 1000)
+    }, 800)
 
     return () => clearTimeout(loadTimer)
   }, [])
