@@ -22,9 +22,9 @@ export function MisbahaLoader() {
 
     // ── إعدادات المسبحة ──────────────────────────────────────
     const BEAD_COUNT = 10
-    const BEAD_R     = 10
-    // خرز ملتصقة: المسافة بين مركزين = 2*BEAD_R + 1px فراغ
-    const RING_R     = Math.round(BEAD_R / Math.sin(Math.PI / BEAD_COUNT)) + 1
+    const BEAD_R     = 8
+    // خرز أرفع مع مسافة بسيطة: المسافة بين مركزين = 2*BEAD_R + 4px فراغ
+    const RING_R     = Math.round(BEAD_R / Math.sin(Math.PI / BEAD_COUNT)) + 4
     const CX         = W / 2
     const CY         = W / 2 + 2
     const CYCLE_MS   = 3200   // ثانية وثلاثة أعشار لكل دورة كاملة
@@ -217,28 +217,28 @@ export function MisbahaLoader() {
       ctx.lineTo(tailX, tailY + 7)
       ctx.stroke()
 
-      // الخرزة الأولى (imam) — حجم 10
-      const b1Y = tailY + 7 + 10
-      drawBead(tailX, b1Y, 10, false, 0)
+      // الخرزة الأولى (imam) — حجم 8
+      const b1Y = tailY + 7 + 8
+      drawBead(tailX, b1Y, 8, false, 0)
 
       // خيط قصير
       ctx.strokeStyle = THREAD
       ctx.lineWidth   = 1.5
       ctx.beginPath()
-      ctx.moveTo(tailX, b1Y + 10)
-      ctx.lineTo(tailX, b1Y + 10 + 5)
+      ctx.moveTo(tailX, b1Y + 8)
+      ctx.lineTo(tailX, b1Y + 8 + 5)
       ctx.stroke()
 
-      // الخرزة الثانية — حجم 7
-      const b2Y = b1Y + 10 + 5 + 7
-      drawBead(tailX, b2Y, 7, false, 0)
+      // الخرزة الثانية — حجم 6
+      const b2Y = b1Y + 8 + 5 + 6
+      drawBead(tailX, b2Y, 6, false, 0)
 
       // خيط للتيبيليك
       ctx.strokeStyle = THREAD
       ctx.lineWidth   = 1.5
       ctx.beginPath()
-      ctx.moveTo(tailX, b2Y + 7)
-      ctx.lineTo(tailX, b2Y + 7 + 5)
+      ctx.moveTo(tailX, b2Y + 6)
+      ctx.lineTo(tailX, b2Y + 6 + 5)
       ctx.stroke()
 
       // التيبيليك (النحاس)
