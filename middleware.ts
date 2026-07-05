@@ -19,6 +19,28 @@ function isFiqhLibraryPath(pathname: string) {
   )
 }
 
+// In-process cache for maintenance status (avoids hammering the DB on every request)
+let maintenanceCache: { enabled: boolean; message: string; expiry: number } | null = null
+
+async function getMaintenanceStatus(baseUrl: string): Promise<{ enabled: boolean; message: string }> {
+    const now = Date.now()
+    if (maintenanceCache && maintenanceCache.expiry > now) {
+        return { enabled: maintenanceCache.enabled, message: maintenanceCache.message }
+    }
+    try {
+        const res = await Promise.race([
+            fetch(`${baseUrl}/api/internal/maintenance-status`, { cache: "no-store" }),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 2000)),
+        ])
+        const data = await (res as Response).json()
+        maintenanceCache = { enabled: !!data.enabled, message: data.message ?? "", expiry: now + 60_000 }
+        return { enabled: maintenanceCache.enabled, message: maintenanceCache.message }
+    } catch {
+        // On error, assume maintenance is OFF so the site keeps running
+        return { enabled: false, message: "" }
+    }
+}
+
 export default async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
 
@@ -31,6 +53,35 @@ export default async function middleware(req: NextRequest) {
     if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) {
         return NextResponse.next()
     }
+
+    // ── Maintenance Mode ─────────────────────────────────────────────────────
+    // Check BEFORE everything else. Only admins can pass through.
+    const isMaintenancePage = pathname === "/maintenance"
+    const isInternalOrApi   = pathname.startsWith("/api/internal") || pathname.startsWith("/api/auth")
+    if (!isMaintenancePage && !isInternalOrApi) {
+        const baseUrl = req.nextUrl.origin
+        const { enabled } = await getMaintenanceStatus(baseUrl)
+        if (enabled) {
+            // Peek at the session cookie to see if this is an admin
+            const sessionCookie =
+                req.cookies.get("auth-token")?.value ||
+                req.cookies.get("better-auth.session_token")?.value
+            let isAdmin = false
+            if (sessionCookie) {
+                try {
+                    const { verifyToken } = await import("@/lib/auth")
+                    const payload = await verifyToken(sessionCookie)
+                    isAdmin = payload?.role === "admin" || payload?.role === "super_admin"
+                } catch {
+                    isAdmin = false
+                }
+            }
+            if (!isAdmin) {
+                return NextResponse.redirect(new URL("/maintenance", req.url))
+            }
+        }
+    }
+    // ── End Maintenance Mode ─────────────────────────────────────────────────
 
     // Allow public paths
     if (publicPaths.includes(pathname)) {
