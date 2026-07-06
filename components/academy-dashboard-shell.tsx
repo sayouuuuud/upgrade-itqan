@@ -500,7 +500,7 @@ export function AcademyDashboardShell({
           </button>
         </div>
 
-        {/* Academy Badge */}
+        {/* Academy Badge + Mode Switcher */}
         <div className={cn('border-b border-border', collapsed ? 'lg:px-2 lg:py-2 px-4 py-3' : 'px-4 py-3')}>
           <div className={cn(
             'rounded-lg bg-[#1E3A5F]/10 text-[#1E3A5F] dark:text-[#7faad6]',
@@ -510,6 +510,19 @@ export function AcademyDashboardShell({
             <span className={cn('font-semibold text-sm', collapsed && 'lg:hidden')}>{t.academy?.title || 'الأكاديمية'}</span>
             <Sparkles className={cn('w-4 h-4 mr-auto', collapsed && 'lg:hidden')} />
           </div>
+
+          {/* Mode Switcher — only shown when user has access to both modes */}
+          {showModeSwitcher && libraryRole && (user?.has_quran_access || user?.has_academy_access) && (
+            <div className={cn('mt-2', collapsed && 'lg:hidden')}>
+              <ModeSwitcher
+                currentMode="academy"
+                userRole={libraryRole}
+                academyRole={role}
+                hasQuranAccess={user?.has_quran_access}
+                hasAcademyAccess={user?.has_academy_access}
+              />
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
@@ -652,17 +665,6 @@ export function AcademyDashboardShell({
             </h2>
           </div>
           <div className="flex items-center gap-4">
-            {/* Mode Switcher */}
-            {showModeSwitcher && libraryRole && (
-              <ModeSwitcher
-                currentMode="academy"
-                userRole={libraryRole}
-                academyRole={role}
-                hasQuranAccess={user?.has_quran_access}
-                hasAcademyAccess={user?.has_academy_access}
-              />
-            )}
-
             <ThemeToggle />
             <LanguageSwitcher variant="outline" />
 
