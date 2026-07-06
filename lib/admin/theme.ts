@@ -12,6 +12,11 @@ export type ThemeColors = {
   background: string
   foreground: string
   ring: string
+  // Academy & Maintenance brand colors — exposed so the theme editor can
+  // change them without touching globals.css or source files.
+  academyPrimary: string
+  maintenanceBg: string
+  maintenanceGold: string
 }
 
 export type ThemeConfig = {
@@ -77,6 +82,9 @@ export const DEFAULT_THEME: ThemeConfig = {
     background: "#FAFAF8",
     foreground: "#0D1512",
     ring: "#0D5A3C",
+    academyPrimary: "#1E3A5F",
+    maintenanceBg: "#0B3D2E",
+    maintenanceGold: "#D4A843",
   },
   radius: "0.625rem",
   font: "cairo",
@@ -109,6 +117,9 @@ export function normalizeTheme(raw: any): ThemeConfig {
       background: safeHex(c.background, d.background),
       foreground: safeHex(c.foreground, d.foreground),
       ring: safeHex(c.ring, d.ring),
+      academyPrimary: safeHex(c.academyPrimary, d.academyPrimary),
+      maintenanceBg: safeHex(c.maintenanceBg, d.maintenanceBg),
+      maintenanceGold: safeHex(c.maintenanceGold, d.maintenanceGold),
     },
     radius,
     font,
@@ -131,6 +142,13 @@ export function buildThemeCss(theme: ThemeConfig): string {
   return `:root{
 --radius:${radius};
 --font-cairo:${stack};
+--academy-primary:${cc.academyPrimary};
+--academy-primary-light:color-mix(in srgb,${cc.academyPrimary} 80%,#ffffff);
+--academy-primary-dark:color-mix(in srgb,${cc.academyPrimary} 80%,#000000);
+--maintenance-bg:${cc.maintenanceBg};
+--maintenance-gold:${cc.maintenanceGold};
+--maintenance-gold-light:color-mix(in srgb,${cc.maintenanceGold} 60%,#ffffff);
+--maintenance-cream:color-mix(in srgb,${cc.maintenanceGold} 10%,#ffffff);
 }
 :root:not(.dark){
 --primary:${cc.primary};

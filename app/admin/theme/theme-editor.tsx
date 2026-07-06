@@ -33,6 +33,12 @@ const COLOR_FIELDS: { key: keyof ThemeColors; labelAr: string; descAr: string }[
   { key: "ring", labelAr: "لون التحديد", descAr: "إطار التركيز حول الحقول" },
 ]
 
+const BRAND_COLOR_FIELDS: { key: keyof ThemeColors; labelAr: string; descAr: string }[] = [
+  { key: "academyPrimary", labelAr: "لون الأكاديمية", descAr: "اللون الأساسي للسايدبار والعناصر في واجهة الأكاديمية" },
+  { key: "maintenanceBg", labelAr: "خلفية الصيانة", descAr: "لون خلفية صفحة وضع الصيانة" },
+  { key: "maintenanceGold", labelAr: "الذهبي للصيانة", descAr: "لون العناوين والحدود في صفحة الصيانة" },
+]
+
 const RADIUS_OPTIONS = [
   { value: "0rem", label: "حاد" },
   { value: "0.375rem", label: "خفيف" },
@@ -129,6 +135,39 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {COLOR_FIELDS.map((f) => (
+                <div key={f.key} className="space-y-1.5">
+                  <Label className="text-sm font-medium">{f.labelAr}</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      aria-label={f.labelAr}
+                      value={theme.colors[f.key]}
+                      onChange={(e) => setColor(f.key, e.target.value)}
+                      className="h-10 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-transparent p-1"
+                    />
+                    <Input
+                      value={theme.colors[f.key]}
+                      onChange={(e) => setColor(f.key, e.target.value)}
+                      className="font-mono text-sm uppercase"
+                      dir="ltr"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">{f.descAr}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Brand / section-specific colors */}
+          <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+            <h2 className="flex items-center gap-2 text-base font-semibold text-card-foreground mb-1">
+              <Palette className="h-4 w-4 text-primary" /> ألوان الواجهات الخاصة
+            </h2>
+            <p className="text-xs text-muted-foreground mb-4">
+              ألوان الأكاديمية وصفحة الصيانة — تنعكس فور الحفظ على كامل المنصة.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {BRAND_COLOR_FIELDS.map((f) => (
                 <div key={f.key} className="space-y-1.5">
                   <Label className="text-sm font-medium">{f.labelAr}</Label>
                   <div className="flex items-center gap-2">
