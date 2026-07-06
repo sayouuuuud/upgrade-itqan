@@ -25,6 +25,12 @@ export interface MaqraahSettings {
     phone?: string
     address?: string
   }
+  social_links?: {
+    twitter?: string
+    facebook?: string
+    instagram?: string
+    youtube?: string
+  }
 
   // Readers & Applications
   maqraah_readers_student_self_signup?: boolean
@@ -151,6 +157,12 @@ export const defaultMaqraahSettings: MaqraahSettings = {
     email: "",
     phone: "",
     address: "",
+  },
+  social_links: {
+    twitter: "",
+    facebook: "",
+    instagram: "",
+    youtube: "",
   },
 
   // Readers

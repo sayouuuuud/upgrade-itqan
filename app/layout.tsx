@@ -5,6 +5,7 @@ import { AnalyticsTracker } from '@/components/analytics-tracker'
 import { LanguageProvider } from '@/lib/i18n/context'
 import { ThemeProvider } from '@/components/theme-provider'
 import { ThemeStyleInjector } from '@/components/theme-style-injector'
+import { SplashScreenWrapper } from '@/components/splash-screen-wrapper'
 import { Suspense } from 'react'
 import './globals.css'
 
@@ -70,7 +71,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
-            {children}
+            <SplashScreenWrapper>
+              {children}
+            </SplashScreenWrapper>
           </LanguageProvider>
         </ThemeProvider>
         <Analytics />

@@ -24,7 +24,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { AdminModeBanner } from '@/components/admin/admin-mode-banner'
 import { AdminRoleSwitcher } from '@/components/admin/admin-role-switcher'
 import { AdminOnboardingTour } from '@/components/admin/admin-onboarding-tour'
- import { Palette, Sparkles, Settings2, Grid, UserPlus, HelpCircle } from 'lucide-react'
+ import { Palette, Sparkles, Grid, UserPlus, HelpCircle } from 'lucide-react'
 
 type NavItem = { href: string; label: string; icon: React.ElementType; badge?: number | string | null }
 type NavSection = { title?: string; items: NavItem[] }
@@ -253,7 +253,6 @@ const getSuperConfig = (t: any): ShellConfig => ({
     {
       title: 'إعدادات المنصة',
       items: [
-        { href: '/admin/site-settings',   label: 'إعدادات الموقع العامة', icon: Settings2 },
         { href: '/admin/settings',         label: t.admin?.systemSettings || 'إعدادات النظام', icon: Settings },
         { href: '/admin/email-templates',  label: t.admin?.emailTemplates || 'قوالب البريد', icon: ScrollText },
       ],
@@ -275,7 +274,7 @@ const getSuperConfig = (t: any): ShellConfig => ({
   label: 'المدير العام', name: 'المدير العام', sublabel: 'المدير العام',
 })
 
-// ── Maqraa mode ──────────────────────────────────────────────────────���──────
+// ── Maqraa mode ────────────────────────���─────────────────────────────���──────
 // The classic admin sidebar, minus every platform-wide / general item that now
 // lives exclusively in the Super Admin (super mode) sidebar — so nothing is
 // duplicated across modes. Site identity (homepage/seo), security, backup,

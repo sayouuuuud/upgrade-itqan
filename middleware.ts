@@ -19,6 +19,32 @@ function isFiqhLibraryPath(pathname: string) {
   )
 }
 
+// In-process cache for maintenance status (avoids hammering the DB on every request).
+// TTL is short (20s) so enabling/disabling maintenance takes effect quickly.
+let maintenanceCache: { enabled: boolean; message: string; expiry: number } | null = null
+
+async function getMaintenanceStatus(req: NextRequest): Promise<{ enabled: boolean; message: string }> {
+    const now = Date.now()
+    if (maintenanceCache && maintenanceCache.expiry > now) {
+        return { enabled: maintenanceCache.enabled, message: maintenanceCache.message }
+    }
+    // Resolve the internal API URL against the incoming request. This mirrors the
+    // proven /api/internal/user-status self-fetch used elsewhere in this middleware
+    // and works correctly behind Vercel's proxy.
+    try {
+        const res = await Promise.race([
+            fetch(new URL("/api/internal/maintenance-status", req.url), { cache: "no-store" }),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 2000)),
+        ])
+        const data = await (res as Response).json()
+        maintenanceCache = { enabled: !!data.enabled, message: data.message ?? "", expiry: now + 20_000 }
+        return { enabled: maintenanceCache.enabled, message: maintenanceCache.message }
+    } catch {
+        // On error, assume maintenance is OFF so the site keeps running
+        return { enabled: false, message: "" }
+    }
+}
+
 export default async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl
 
@@ -32,6 +58,39 @@ export default async function middleware(req: NextRequest) {
         return NextResponse.next()
     }
 
+    // ── Maintenance Mode ─────────────────────────────────────────────────────
+    // Check BEFORE everything else. Only admins can pass through.
+    // Paths that must ALWAYS work during maintenance so an admin can log in and
+    // disable it: the maintenance page itself, the login page, and auth/internal
+    // APIs. Reaching /login is harmless for non-admins — after logging in they are
+    // still bounced to /maintenance since they lack an admin role.
+    const maintenanceAllowlist =
+        pathname === "/maintenance" ||
+        pathname === "/login" ||
+        pathname.startsWith("/api/internal") ||
+        pathname.startsWith("/api/auth")
+    if (!maintenanceAllowlist) {
+        const { enabled } = await getMaintenanceStatus(req)
+        if (enabled) {
+            // Peek at the session cookie to see if this is an admin
+            const sessionCookie = req.cookies.get("auth-token")?.value
+            let isAdmin = false
+            if (sessionCookie) {
+                try {
+                    const { verifyToken } = await import("@/lib/auth")
+                    const payload = await verifyToken(sessionCookie)
+                    isAdmin = payload?.role === "admin" || payload?.role === "super_admin"
+                } catch {
+                    isAdmin = false
+                }
+            }
+            if (!isAdmin) {
+                return NextResponse.redirect(new URL("/maintenance", req.url))
+            }
+        }
+    }
+    // ── End Maintenance Mode ─────────────────────────────────────────────────
+
     // Allow public paths
     if (publicPaths.includes(pathname)) {
         return NextResponse.next()
@@ -42,7 +101,8 @@ export default async function middleware(req: NextRequest) {
         return NextResponse.next()
     }
 
-    // Allow API public paths
+    // Allow API public paths (INCLUDING /api/internal/*)
+    // MUST check BEFORE rejecting unauthenticated API requests (line ~120)
     if (apiPublicPaths.some((p) => pathname.startsWith(p))) {
         return NextResponse.next()
     }

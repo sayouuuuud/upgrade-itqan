@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import {
   Search, Users, BookOpen, UserCheck,
   UserX, Edit, Trash2, UserPlus, Filter, TrendingUp, Loader2,
-  Mail, Shield, User as UserIcon, ChevronLeft, ChevronRight
+  Mail, Shield, User as UserIcon, ChevronLeft, ChevronRight, X, SlidersHorizontal
 } from "lucide-react"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -19,6 +19,122 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { TableSkeleton } from "@/components/admin/skeletons"
 
+// ── Filter Panel ──────────────────────────────────────────────────────────────
+function FilterPanel({
+  status, gender, onApply, onClose, isAr
+}: {
+  status: "" | "active" | "inactive"
+  gender: "" | "male" | "female"
+  onApply: (s: "" | "active" | "inactive", g: "" | "male" | "female") => void
+  onClose: () => void
+  isAr: boolean
+}) {
+  const [localStatus, setLocalStatus] = useState(status)
+  const [localGender, setLocalGender] = useState(gender)
+
+  const statusOptions: { value: "" | "active" | "inactive"; label: string }[] = [
+    { value: "", label: "الكل" },
+    { value: "active", label: "نشط" },
+    { value: "inactive", label: "موقوف" },
+  ]
+  const genderOptions: { value: "" | "male" | "female"; label: string }[] = [
+    { value: "", label: "الكل" },
+    { value: "male", label: "ذكر" },
+    { value: "female", label: "أنثى" },
+  ]
+
+  const hasChanges = localStatus !== status || localGender !== gender
+  const isReset = localStatus === "" && localGender === ""
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      className="bg-card border border-border rounded-2xl shadow-xl p-5 space-y-5"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-black text-foreground flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-primary" />
+          تصفية العملاء
+        </span>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {/* Status */}
+        <div className="space-y-2.5">
+          <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">الحالة</p>
+          <div className="flex gap-2 flex-wrap">
+            {statusOptions.map(o => (
+              <button
+                key={o.value}
+                onClick={() => setLocalStatus(o.value)}
+                className={`px-4 py-2 rounded-xl text-xs font-black transition-all border ${
+                  localStatus === o.value
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20"
+                    : "bg-muted/50 text-muted-foreground border-border hover:border-primary/30 hover:text-foreground"
+                }`}
+              >
+                {o.value === "active" && <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 me-1.5 align-middle" />}
+                {o.value === "inactive" && <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-400 me-1.5 align-middle" />}
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Gender */}
+        <div className="space-y-2.5">
+          <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">الجنس</p>
+          <div className="flex gap-2 flex-wrap">
+            {genderOptions.map(o => (
+              <button
+                key={o.value}
+                onClick={() => setLocalGender(o.value)}
+                className={`px-4 py-2 rounded-xl text-xs font-black transition-all border ${
+                  localGender === o.value
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20"
+                    : "bg-muted/50 text-muted-foreground border-border hover:border-primary/30 hover:text-foreground"
+                }`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 pt-1">
+        <Button
+          onClick={() => onApply(localStatus, localGender)}
+          disabled={!hasChanges}
+          className="flex-1 h-10 rounded-xl font-black text-xs bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+        >
+          تطبيق الفلتر
+        </Button>
+        {!isReset && (
+          <Button
+            variant="outline"
+            onClick={() => { setLocalStatus(""); setLocalGender(""); onApply("", "") }}
+            className="h-10 px-4 rounded-xl font-black text-xs border-border"
+          >
+            مسح الكل
+          </Button>
+        )}
+      </div>
+    </motion.div>
+  )
+}
+
 export default function AdminUsersPage() {
   const { t, locale } = useI18n()
   const a = t.admin
@@ -27,6 +143,9 @@ export default function AdminUsersPage() {
 
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState<"all" | "students" | "readers" | "admins" | "supervisors" | "academy">("students")
+  const [filterStatus, setFilterStatus] = useState<"" | "active" | "inactive">("")
+  const [filterGender, setFilterGender] = useState<"" | "male" | "female">("")
+  const [filterOpen, setFilterOpen] = useState(false)
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState<any>(null)
@@ -68,15 +187,15 @@ export default function AdminUsersPage() {
 
   // Fetch users based on activeTab
   useEffect(() => {
-    setCurrentPage(1) // Reset to first page when changing tabs
-    fetchUsers(1)
+    setCurrentPage(1)
+    fetchUsers(1, searchQuery, filterStatus, filterGender)
   }, [activeTab])
 
   useEffect(() => {
     fetchUsers(currentPage, searchQuery)
   }, [currentPage])
 
-  const fetchUsers = async (page: number = 1, search: string = "") => {
+  const fetchUsers = async (page: number = 1, search: string = "", status = filterStatus, gender = filterGender) => {
     setLoading(true)
     try {
       const roleMap: Record<string, string> = {
@@ -92,7 +211,9 @@ export default function AdminUsersPage() {
       const roleParam = roleMap[activeTab] ? `&role=${roleMap[activeTab]}` : ""
       const platformParam = `platform=${platformMap[activeTab] ?? "quran"}`
       const searchParam = search ? `&search=${encodeURIComponent(search)}` : ""
-      const res = await fetch(`/api/admin/users?${platformParam}${roleParam}&page=${page}&limit=10${searchParam}`)
+      const statusParam = status ? `&status=${status}` : ""
+      const genderParam = gender ? `&gender=${gender}` : ""
+      const res = await fetch(`/api/admin/users?${platformParam}${roleParam}&page=${page}&limit=10${searchParam}${statusParam}${genderParam}`)
       if (res.ok) {
         const data = await res.json()
         setUsers(data.users || [])
@@ -107,9 +228,19 @@ export default function AdminUsersPage() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
-    setCurrentPage(1) // Reset to first page when searching
-    fetchUsers(1, query) // Fetch with search
+    setCurrentPage(1)
+    fetchUsers(1, query)
   }
+
+  const handleApplyFilter = (status: "" | "active" | "inactive", gender: "" | "male" | "female") => {
+    setFilterStatus(status)
+    setFilterGender(gender)
+    setFilterOpen(false)
+    setCurrentPage(1)
+    fetchUsers(1, searchQuery, status, gender)
+  }
+
+  const activeFilterCount = (filterStatus ? 1 : 0) + (filterGender ? 1 : 0)
 
 
   const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
@@ -269,16 +400,47 @@ export default function AdminUsersPage() {
             </button>
           ))}
         </div>
-        <div className="relative w-full lg:max-w-sm">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder={t.search}
-            className="pr-12 h-12 border-border bg-card rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all font-bold w-full"
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-          />
+        {/* Search + Filter Button */}
+        <div className="flex gap-2 w-full lg:max-w-sm">
+          <div className="relative flex-1">
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder={t.search}
+              className="pr-12 h-12 border-border bg-card rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all font-bold w-full"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Filter Toggle Button */}
+          <button
+            onClick={() => setFilterOpen(v => !v)}
+            className={`relative h-12 w-12 shrink-0 rounded-2xl border flex items-center justify-center transition-all ${
+              activeFilterCount > 0
+                ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
+                : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+            }`}
+          >
+            <SlidersHorizontal className="w-5 h-5" />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Filter Panel — slides down inline (works great on mobile) */}
+      {filterOpen && (
+        <FilterPanel
+          status={filterStatus}
+          gender={filterGender}
+          onApply={handleApplyFilter}
+          onClose={() => setFilterOpen(false)}
+          isAr={isAr}
+        />
+      )}
 
       {/* Table Card */}
       <div className="bg-card rounded-3xl shadow-sm border border-border overflow-hidden">

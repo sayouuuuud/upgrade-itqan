@@ -10,6 +10,7 @@ const SYSTEM_KEYS: Record<string, string> = {
   storage_config: "storage",
   branding: "general",
   contact_info: "general",
+  social_links: "general",
   reader_assignment_strategy: "general",
 }
 
@@ -47,7 +48,7 @@ export async function GET() {
          FROM system_settings s
          LEFT JOIN users u ON u.id = s.updated_by
         WHERE s.setting_key LIKE 'maqraah_%'
-           OR s.setting_key IN ('app_url', 'smtp_config', 'storage_config', 'branding', 'contact_info', 'reader_assignment_strategy')
+           OR s.setting_key IN ('app_url', 'smtp_config', 'storage_config', 'branding', 'contact_info', 'social_links', 'reader_assignment_strategy')
         ORDER BY s.setting_key`
     )
 

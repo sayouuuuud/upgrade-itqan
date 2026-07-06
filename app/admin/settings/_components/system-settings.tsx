@@ -15,6 +15,7 @@ import {
   Loader2,
   User,
   Image as ImageIcon,
+  Share2,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -41,6 +42,7 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
   const a = t.admin
   const branding = settings.branding || {}
   const contact = settings.contact_info || {}
+  const social = settings.social_links || {}
 
   const timezones = [
     { value: "Asia/Riyadh", label: a.tzRiyadh },
@@ -90,6 +92,10 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
 
   const updateContact = (field: "email" | "phone" | "address", value: string) => {
     onUpdate({ contact_info: { ...contact, [field]: value } })
+  }
+
+  const updateSocial = (field: "twitter" | "facebook" | "instagram" | "youtube", value: string) => {
+    onUpdate({ social_links: { ...social, [field]: value } })
   }
 
   const uploadFile = async (file: File): Promise<string | null> => {
@@ -347,6 +353,23 @@ export function SystemSettings({ settings, metadata, onUpdate, onReset }: Props)
               className="h-11"
             />
           </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard icon={Share2} title={a.ssSocialLinks} description={a.ssSocialLinksDesc}>
+        <div className="grid gap-4 md:grid-cols-2">
+          {(["twitter", "facebook", "instagram", "youtube"] as const).map((platform) => (
+            <div key={platform} className="space-y-2">
+              <Label className="font-medium text-sm capitalize">{platform}</Label>
+              <Input
+                dir="ltr"
+                value={social[platform] || ""}
+                onChange={(e) => updateSocial(platform, e.target.value)}
+                placeholder={`https://${platform}.com/...`}
+                className="h-11"
+              />
+            </div>
+          ))}
         </div>
       </SectionCard>
 
