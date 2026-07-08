@@ -1,28 +1,45 @@
 import { NextResponse } from 'next/server'
-import { query } from '@/lib/db'
+import { createClient } from '@supabase/supabase-js'
 
 /**
  * GET /api/homepage
  *
  * Public, unauthenticated endpoint that powers the live homepage
- * (`app/page.tsx`). Returns the homepage settings + maintenance flags from
- * `system_settings`. The companion admin endpoint at
- * `/api/admin/homepage` is what writes these values.
+ * (`app/page.tsx`). Returns the homepage settings from `system_settings` via
+ * Supabase client. The admin endpoint at `/api/admin/homepage` writes these values.
  */
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function GET() {
   try {
-    const rows = await query(
-      `SELECT setting_key, setting_value
-         FROM system_settings
-        WHERE setting_type = 'homepage'`,
-    )
-    const settings: Record<string, any> = {}
-    for (const r of rows as Array<{ setting_key: string; setting_value: any }>) {
-      settings[r.setting_key] = r.setting_value
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('[GET /api/homepage] Missing Supabase env vars')
+      return NextResponse.json({ settings: {} })
     }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+    const { data: rows, error } = await supabase
+      .from('system_settings')
+      .select('setting_key, setting_value')
+      .eq('setting_type', 'homepage')
+
+    if (error) {
+      console.error('[GET /api/homepage] Supabase error:', error.message)
+      return NextResponse.json({ settings: {} })
+    }
+
+    const settings: Record<string, any> = {}
+    if (rows) {
+      for (const r of rows) {
+        settings[r.setting_key] = r.setting_value
+      }
+    }
+
     return NextResponse.json(
       { settings },
       {
@@ -33,7 +50,6 @@ export async function GET() {
       },
     )
   } catch (e: any) {
-    // Public endpoint: never leak details, just fall back to empty settings.
     console.error('[GET /api/homepage] error:', e?.message)
     return NextResponse.json({ settings: {} })
   }
