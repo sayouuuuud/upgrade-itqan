@@ -221,46 +221,46 @@ const getSuperConfig = (t: any): ShellConfig => ({
       title: t.main,
       items: [
         { href: '/admin', label: t.admin.dashboard, icon: LayoutDashboard },
-        { href: '/admin/analytics', label: t.admin?.sidebarPlatformOverview || 'نظرة عامة على المنصة', icon: PieChart },
+        { href: '/admin/analytics', label: t.locale === 'ar' ? 'نظرة عامة على المنصة' : 'Platform Overview', icon: PieChart },
       ],
     },
     {
-      title: 'هوية الموقع',
+      title: t.locale === 'ar' ? 'هوية الموقع' : 'Site Identity',
       items: [
-        { href: '/admin/homepage',      label: t.admin?.sidebarHomepage    || t.admin.homepage || 'الصفحة الرئيسية', icon: Home },
-        { href: '/admin/seo',           label: t.admin?.sidebarSEO         || t.admin.seo || 'SEO والميتا داتا',      icon: Globe },
-        { href: '/admin/theme',         label: t.admin?.sidebarThemeEditor || 'التصميم والألوان',      icon: Palette },
-        { href: '/admin/branding',      label: t.admin?.sidebarBranding    || 'الهوية البصرية',        icon: Sparkles },
-        { href: '/admin/content-pages', label: 'صفحات المحتوى الثابت',                                 icon: FileText },
+        { href: '/admin/homepage',      label: t.locale === 'ar' ? 'الصفحة الرئيسية' : 'Homepage', icon: Home },
+        { href: '/admin/seo',           label: t.locale === 'ar' ? 'SEO والميتا داتا' : 'SEO & Metadata', icon: Globe },
+        { href: '/admin/theme',         label: t.locale === 'ar' ? 'التصميم والألوان' : 'Theme Editor', icon: Palette },
+        { href: '/admin/branding',      label: t.locale === 'ar' ? 'الهوية البصرية' : 'Branding', icon: Sparkles },
+        { href: '/admin/content-pages', label: t.locale === 'ar' ? 'صفحات المحتوى الثابت' : 'Static Content Pages', icon: FileText },
       ],
     },
     {
-      title: 'الحوكمة والصلاحيات',
+      title: t.locale === 'ar' ? 'الحوكمة والصلاحيات' : 'Governance & Permissions',
       items: [
         { href: '/admin/users',           label: t.admin.users, icon: Users },
-        { href: '/admin/role-management', label: t.admin?.sidebarRoleManagement || 'إدارة الأدوار',  icon: ShieldCheck },
-        { href: '/admin/security',        label: t.admin?.security              || 'الأمان',          icon: Shield },
-        { href: '/admin/audit-log',       label: 'سجل التدقيق الموحد',                                icon: ScrollText },
+        { href: '/admin/role-management', label: t.locale === 'ar' ? 'إدارة الأدوار' : 'Role Management',  icon: ShieldCheck },
+        { href: '/admin/security',        label: t.locale === 'ar' ? 'الأمان' : 'Security', icon: Shield },
+        { href: '/admin/audit-log',       label: t.locale === 'ar' ? 'سجل التدقيق الموحد' : 'Unified Audit Log', icon: ScrollText },
       ],
     },
     {
       // Forum moderation is centralised under the Super Admin.
-      title: 'إدارة المنتدى',
+      title: t.locale === 'ar' ? 'إدارة المنتدى' : 'Forum Management',
       items: [
-        { href: '/community/academy/admin/manage', label: 'إدارة المنتدى', icon: MessagesSquare },
+        { href: '/community/academy/admin/manage', label: t.locale === 'ar' ? 'إدارة المنتدى' : 'Manage Forum', icon: MessagesSquare },
       ],
     },
     {
-      title: 'إعدادات المنصة',
+      title: t.locale === 'ar' ? 'إعدادات المنصة' : 'Platform Settings',
       items: [
-        { href: '/admin/settings',         label: t.admin?.systemSettings || 'إعدادات النظام', icon: Settings },
-        { href: '/admin/email-templates',  label: t.admin?.emailTemplates || 'قوالب البريد', icon: ScrollText },
+        { href: '/admin/settings',         label: t.admin?.systemSettings || (t.locale === 'ar' ? 'إعدادات النظام' : 'System Settings'), icon: Settings },
+        { href: '/admin/email-templates',  label: t.locale === 'ar' ? 'قوالب البريد' : 'Email Templates', icon: ScrollText },
       ],
     },
     {
-      title: 'الإشراف والمراقبة',
+      title: t.locale === 'ar' ? 'الإشراف والمراقبة' : 'Supervision & Monitoring',
       items: [
-        { href: '/admin/backup', label: t.admin?.backup || 'النسخ الاحتياطي', icon: Archive },
+        { href: '/admin/backup', label: t.locale === 'ar' ? 'النسخ الاحتياطي' : 'System Backup', icon: Archive },
       ],
     },
     {
@@ -271,7 +271,9 @@ const getSuperConfig = (t: any): ShellConfig => ({
       ],
     },
   ],
-  label: 'المدير العام', name: 'المدير العام', sublabel: 'المدير العام',
+  label: t.locale === 'ar' ? 'المدير العام' : 'Super Admin', 
+  name: t.locale === 'ar' ? 'المدير العام' : 'Super Admin', 
+  sublabel: t.locale === 'ar' ? 'المدير العام' : 'Super Admin',
 })
 
 // ── Maqraa mode ────────────────────────���─────────────────────────────���──────

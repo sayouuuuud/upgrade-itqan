@@ -55,7 +55,7 @@ export function DashboardSuper() {
   if (error || !data) {
     return (
       <div className="flex flex-col items-center justify-center p-20 gap-4">
-        <div className="text-red-500 font-bold text-xl">حدث خطأ أثناء تحميل النظرة الشاملة</div>
+        <div className="text-red-500 font-bold text-xl">{isAr ? "حدث خطأ أثناء تحميل النظرة الشاملة" : "An error occurred while loading overview"}</div>
         {error && <code className="bg-red-50 text-red-800 p-2 rounded text-sm">{error}</code>}
       </div>
     )
@@ -83,17 +83,17 @@ export function DashboardSuper() {
 
   const globalCards = [
     {
-      label: "إجمالي المستخدمين",
+      label: isAr ? isAr ? "إجمالي المستخدمين" : "Total Users" : "Total Users",
       value: users.total,
-      sub: `${users.active} نشط • ${users.new_30} جديد هذا الشهر`,
+      sub: isAr ? isAr ? `${users.active} نشط • ${users.new_30} جديد هذا الشهر` : `${users.active} Active • ${users.new_30} New this month` : `${users.active} Active • ${users.new_30} New this month`,
       icon: Users,
       color: "bg-primary/10 text-primary border-primary/20",
       href: "/admin/users",
     },
     {
-      label: "المستخدمون النشطون",
+      label: isAr ? isAr ? "المستخدمون النشطون" : "Active Users" : "Active Users",
       value: users.active,
-      sub: `${Math.round((users.active / Math.max(users.total, 1)) * 100)}% من الإجمالي`,
+      sub: isAr ? isAr ? `${Math.round((users.active / Math.max(users.total, 1)) * 100)}% من الإجمالي` : `${Math.round((users.active / Math.max(users.total, 1)) * 100)}% of total` : `${Math.round((users.active / Math.max(users.total, 1)) * 100)}% of total`,
       icon: Activity,
       color: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
       href: "/admin/users",
