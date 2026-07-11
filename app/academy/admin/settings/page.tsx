@@ -3,15 +3,11 @@
 import { useState, useEffect, useCallback } from "react"
 import {
   Settings,
-  Globe,
   UserPlus,
   Video,
   VideoIcon,
   Trophy,
-  Bell,
   MessageSquare,
-  Shield,
-  Wrench,
   Save,
   X,
   Loader2,
@@ -32,49 +28,38 @@ import { cn } from "@/lib/utils"
 import { useI18n } from "@/lib/i18n/context"
 import { useAcademySettings } from "./hooks/use-academy-settings"
 import {
-  GeneralSettings,
   RegistrationSettings,
   CoursesContentSettings,
   LiveSessionsSettings,
   GamificationSettings,
-  NotificationsEmailSettings,
   ForumFiqhSettings,
-  SecurityPrivacySettings,
-  MaintenanceSettings,
 } from "./_components"
 
 export default function AcademyAdminSettingsPage() {
   const {
     settings,
-    metadata,
     isLoading,
     saving,
     hasUnsavedChanges,
     unsavedCount,
-    updateSetting,
     updateSettings,
     saveChanges,
     discardChanges,
     resetSection,
-    testSmtp,
   } = useAcademySettings()
 
   const { t } = useI18n()
   const a = t.academyAdmin
 
   const tabs = [
-    { id: "general", label: a.settingsGeneral, icon: Globe, keywords: a.settingsKeywordsGeneral },
     { id: "registration", label: a.settingsRegistration, icon: UserPlus, keywords: a.settingsKeywordsRegistration },
     { id: "courses", label: a.settingsCourses, icon: Video, keywords: a.settingsKeywordsCourses },
     { id: "sessions", label: a.settingsLiveSessions, icon: VideoIcon, keywords: a.settingsKeywordsSessions },
     { id: "gamification", label: a.settingsGamification, icon: Trophy, keywords: a.settingsKeywordsGamification },
-    { id: "notifications", label: a.settingsNotifications, icon: Bell, keywords: a.settingsKeywordsNotifications },
     { id: "forum", label: a.settingsForum, icon: MessageSquare, keywords: a.settingsKeywordsForum },
-    { id: "security", label: a.settingsSecurity, icon: Shield, keywords: a.settingsKeywordsSecurity },
-    { id: "maintenance", label: a.settingsMaintenance, icon: Wrench, keywords: a.settingsKeywordsMaintenance },
   ]
 
-  const [activeTab, setActiveTab] = useState("general")
+  const [activeTab, setActiveTab] = useState("registration")
   const [searchQuery, setSearchQuery] = useState("")
   const [isMobile, setIsMobile] = useState(false)
 
@@ -119,15 +104,6 @@ export default function AcademyAdminSettingsPage() {
   // Render active tab content
   const renderTabContent = () => {
     switch (activeTab) {
-      case "general":
-        return (
-          <GeneralSettings
-            settings={settings}
-            metadata={metadata}
-            onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_general_")}
-          />
-        )
       case "registration":
         return (
           <RegistrationSettings
@@ -160,15 +136,6 @@ export default function AcademyAdminSettingsPage() {
             onReset={() => handleResetSection("academy_gamification_")}
           />
         )
-      case "notifications":
-        return (
-          <NotificationsEmailSettings
-            settings={settings}
-            onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_notifications_")}
-            onTestSmtp={testSmtp}
-          />
-        )
       case "forum":
         return (
           <ForumFiqhSettings
@@ -177,16 +144,6 @@ export default function AcademyAdminSettingsPage() {
             onReset={() => handleResetSection("academy_forum_")}
           />
         )
-      case "security":
-        return (
-          <SecurityPrivacySettings
-            settings={settings}
-            onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_security_")}
-          />
-        )
-      case "maintenance":
-        return <MaintenanceSettings settings={settings} onUpdate={updateSettings} />
       default:
         return null
     }
@@ -224,7 +181,7 @@ export default function AcademyAdminSettingsPage() {
               <Settings className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">{a.settingsTitle}</h1>
+              <h1 className="text-xl font-bold text-foreground">إعدادات الأكاديمية</h1>
               <p className="text-xs text-muted-foreground">
                 {tabs.find((t) => t.id === activeTab)?.label}
               </p>

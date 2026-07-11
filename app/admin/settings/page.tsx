@@ -3,16 +3,12 @@
 import { useState, useEffect, useCallback } from "react"
 import {
   Settings,
-  Globe,
   Users,
   BookOpen,
   Mic,
   Route,
   Trophy,
   Award,
-  Bell,
-  Shield,
-  Wrench,
   Save,
   X,
   Loader2,
@@ -32,29 +28,21 @@ import { cn } from "@/lib/utils"
 import { useI18n } from "@/lib/i18n/context"
 import { useMaqraahSettings } from "./hooks/use-maqraah-settings"
 import {
-  SystemSettings,
   ReadersSettings,
   HalaqatSettings,
   RecitationsSettings,
   PathsSettings,
   GamificationSettings,
   CompetitionsSettings,
-  NotificationsSettings,
-  SecuritySettings,
-  MaintenanceSettings,
 } from "./_components"
 
 const getTabs = (a: any) => [
-  { id: "system", label: a.setTabSystem, icon: Globe, prefix: "maqraah_general_", keywords: ["name", "logo", "link", "description", "language", "timezone", "account", "contact", "email", "اسم", "شعار", "رابط", "وصف", "لغة", "توقيت", "حساب", "تواصل", "بريد"] },
   { id: "readers", label: a.setTabReaders, icon: Users, prefix: "maqraah_readers_", keywords: ["reader", "application", "approval", "ijazah", "assignment", "مقرئ", "طلب", "موافقة", "إجازة", "توزيع", "تقديم"] },
   { id: "halaqat", label: a.setTabHalaqat, icon: BookOpen, prefix: "maqraah_halaqat_", keywords: ["halaqa", "session", "reminder", "recording", "attendance", "video", "حلقة", "جلسة", "تذكير", "تسجيل", "حضور", "فيديو"] },
   { id: "recitations", label: a.setTabRecitations, icon: Mic, prefix: "maqraah_recitations_", keywords: ["recitation", "evaluation", "audio", "riwayah", "tajweed", "score", "تلاوة", "تقييم", "صوت", "رواية", "تجويد", "درجة"] },
   { id: "paths", label: a.setTabPaths, icon: Route, prefix: "maqraah_paths_", keywords: ["memorization", "tajweed", "path", "wird", "target", "stage", "حفظ", "تجويد", "مسار", "ورد", "هدف", "مرحلة"] },
   { id: "gamification", label: a.setTabGamification, icon: Trophy, prefix: "maqraah_points_", keywords: ["points", "level", "badge", "streak", "leaderboard", "نقاط", "مستوى", "شارة"] },
   { id: "competitions", label: a.setTabCompetitions, icon: Award, prefix: "maqraah_competitions_", keywords: ["competition", "certificate", "signature", "template", "issue", "مسابقة", "شهادة", "توقيع", "قالب", "إصدار"] },
-  { id: "notifications", label: a.setTabNotifications, icon: Bell, prefix: "maqraah_notifications_", keywords: ["notification", "email", "smtp", "reminder", "report", "إشعار", "بريد", "إيميل", "تذكير", "تقرير"] },
-  { id: "security", label: a.setTabSecurity, icon: Shield, prefix: "maqraah_security_", keywords: ["security", "password", "2fa", "ip", "session", "rate limit", "أمان", "كلمة سر", "جلسة"] },
-  { id: "maintenance", label: a.setTabMaintenance, icon: Wrench, prefix: "maqraah_maintenance_", keywords: ["maintenance", "cache", "backup", "storage", "صيانة", "نسخة احتياطية", "تخزين"] },
 ]
 
 export default function MaqraahAdminSettingsPage() {
@@ -63,7 +51,6 @@ export default function MaqraahAdminSettingsPage() {
   const tabs = getTabs(a)
   const {
     settings,
-    metadata,
     isLoading,
     saving,
     hasUnsavedChanges,
@@ -72,10 +59,9 @@ export default function MaqraahAdminSettingsPage() {
     saveChanges,
     discardChanges,
     resetSection,
-    testSmtp,
   } = useMaqraahSettings()
 
-  const [activeTab, setActiveTab] = useState("system")
+  const [activeTab, setActiveTab] = useState("readers")
   const [searchQuery, setSearchQuery] = useState("")
   const [isMobile, setIsMobile] = useState(false)
 
@@ -115,15 +101,6 @@ export default function MaqraahAdminSettingsPage() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "system":
-        return (
-          <SystemSettings
-            settings={settings}
-            metadata={metadata}
-            onUpdate={updateSettings}
-            onReset={() => handleResetSection("maqraah_general_")}
-          />
-        )
       case "readers":
         return (
           <ReadersSettings
@@ -172,31 +149,6 @@ export default function MaqraahAdminSettingsPage() {
             onReset={() => handleResetSection("maqraah_competitions_")}
           />
         )
-      case "notifications":
-        return (
-          <NotificationsSettings
-            settings={settings}
-            onUpdate={updateSettings}
-            onReset={() => handleResetSection("maqraah_notifications_")}
-            onTestSmtp={testSmtp}
-          />
-        )
-      case "security":
-        return (
-          <SecuritySettings
-            settings={settings}
-            onUpdate={updateSettings}
-            onReset={() => handleResetSection("maqraah_security_")}
-          />
-        )
-      case "maintenance":
-        return (
-          <MaintenanceSettings
-            settings={settings}
-            onUpdate={updateSettings}
-            onReset={() => handleResetSection("maqraah_maintenance_")}
-          />
-        )
       default:
         return null
     }
@@ -234,7 +186,7 @@ export default function MaqraahAdminSettingsPage() {
               <Settings className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">{a.setTabSystem}</h1>
+              <h1 className="text-xl font-bold text-foreground">إعدادات المقرأة</h1>
               <p className="text-xs text-muted-foreground">
                 {tabs.find((t) => t.id === activeTab)?.label}
               </p>

@@ -41,6 +41,7 @@ export interface MaqraahSettings {
   maqraah_readers_max_students?: number
   maqraah_readers_allow_student_choose?: boolean
   maqraah_readers_gender_match?: boolean
+  maqraah_readers_assignment_strategy?: string
 
   // Halaqat & Sessions
   maqraah_halaqat_max_students?: number
@@ -174,6 +175,7 @@ export const defaultMaqraahSettings: MaqraahSettings = {
   maqraah_readers_max_students: 20,
   maqraah_readers_allow_student_choose: true,
   maqraah_readers_gender_match: true,
+  maqraah_readers_assignment_strategy: "least_booked_today",
 
   // Halaqat
   maqraah_halaqat_max_students: 8,

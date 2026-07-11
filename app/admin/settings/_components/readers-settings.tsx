@@ -1,8 +1,9 @@
 "use client"
 
-import { UserCheck, Users } from "lucide-react"
+import { Shuffle, UserCheck, Users } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { MaqraahSettings } from "../hooks/use-maqraah-settings"
 import { SectionCard, ToggleRow } from "./section-card"
 import { useI18n } from "@/lib/i18n/context"
@@ -41,6 +42,24 @@ export function ReadersSettings({ settings, onUpdate, onReset }: Props) {
         <div className="grid gap-4 md:grid-cols-2">
           <ToggleRow label={a.rdsetAllowStudentChoose} description={a.rdsetAllowStudentChooseDesc} checked={settings.maqraah_readers_allow_student_choose ?? true} onChange={(v) => onUpdate({ maqraah_readers_allow_student_choose: v })} />
           <ToggleRow label={a.rdsetGenderMatch} description={a.rdsetGenderMatchDesc} checked={settings.maqraah_readers_gender_match ?? true} onChange={(v) => onUpdate({ maqraah_readers_gender_match: v })} />
+        </div>
+      </SectionCard>
+
+      <SectionCard icon={Shuffle} title={a.ssReaderAssignment} description={a.ssReaderAssignmentDesc}>
+        <div className="flex max-w-md flex-col gap-2">
+          <Label className="text-sm font-medium">{a.ssAssignmentStrategy}</Label>
+          <Select
+            value={settings.maqraah_readers_assignment_strategy || "least_booked_today"}
+            onValueChange={(value) => onUpdate({ maqraah_readers_assignment_strategy: value })}
+          >
+            <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="least_booked_today">{a.ssStrategyLeastBookedToday}</SelectItem>
+              <SelectItem value="least_total_bookings">{a.ssStrategyLeastTotal}</SelectItem>
+              <SelectItem value="random">{a.ssStrategyRandom}</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs leading-5 text-muted-foreground">{a.ssAssignmentHint}</p>
         </div>
       </SectionCard>
     </div>

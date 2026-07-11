@@ -142,7 +142,7 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
           { href: '/admin/notifications', label: t.student.notifications, icon: Bell },
           { href: '/admin/announcements', label: t.admin.announcements, icon: Megaphone },
           { href: '/admin/email-templates', label: t.admin.emailTemplates, icon: ScrollText },
-          { href: '/admin/settings', label: t.admin.systemSettings, icon: Settings },
+          { href: '/admin/settings', label: 'إعدادات المقرأة', icon: Settings },
         ]
       },
       {
@@ -253,7 +253,7 @@ const getSuperConfig = (t: any): ShellConfig => ({
     {
       title: 'إعدادات المنصة',
       items: [
-        { href: '/admin/settings',         label: t.admin?.systemSettings || 'إعدادات النظام', icon: Settings },
+        { href: '/admin/system-settings',  label: 'إعدادات النظام', icon: Settings },
         { href: '/admin/email-templates',  label: t.admin?.emailTemplates || 'قوالب البريد', icon: ScrollText },
       ],
     },
@@ -271,10 +271,10 @@ const getSuperConfig = (t: any): ShellConfig => ({
       ],
     },
   ],
-  label: 'المدير العام', name: 'المدير العام', sublabel: 'المدير العام',
+  label: 'المدير العام', name: 'المدير العام', sublabel: 'ال��دير العام',
 })
 
-// ── Maqraa mode ────────────────────────���─────────────────────────────���──────
+// ── Maqraa mode ────────────────────────���─────────────────────────────���────��─
 // The classic admin sidebar, minus every platform-wide / general item that now
 // lives exclusively in the Super Admin (super mode) sidebar — so nothing is
 // duplicated across modes. Site identity (homepage/seo), security, backup,
@@ -285,7 +285,6 @@ const MAQRAA_EXCLUDED_HREFS = [
   '/admin/security',
   '/admin/backup',
   '/admin/users',
-  '/admin/settings',
   '/admin/email-templates',
   // Academy-only content — the fiqh library lives under /academy and belongs to
   // the Academy sidebar, so it must not leak into the Maqraa sidebar.
@@ -363,7 +362,7 @@ const getAcademyConfig = (t: any): ShellConfig => ({
       items: [
         { href: '/academy/admin/certificates', label: t.academy?.certificatesCenter || t.academy?.certificates || 'مركز الشهادات', icon: Award },
         { href: '/academy/admin/access-control', label: t.academy?.accessControl || 'التحكم بالوصول', icon: Shield },
-        { href: '/academy/admin/settings', label: t.admin?.systemSettings || 'إعدادات النظام', icon: Settings },
+        { href: '/academy/admin/settings', label: 'إعدادات الأكاديمية', icon: Settings },
       ],
     },
   ],
