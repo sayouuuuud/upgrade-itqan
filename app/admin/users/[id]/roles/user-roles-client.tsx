@@ -7,25 +7,26 @@ import { Loader2, ShieldCheck, ChevronRight, Check, AlertTriangle, Save } from "
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useI18n } from "@/lib/i18n/context"
 
-const PRIMARY_ROLES: { id: string; labelAr: string; descAr: string }[] = [
-  { id: "admin", labelAr: "المدير العام (Super Admin)", descAr: "تحكم كامل في المنصة والموقع الخارجي والتصميم." },
-  { id: "maqraa_admin", labelAr: "مدير المقرأة", descAr: "إدارة جانب التلاوة والتسميع والمقرئين." },
-  { id: "academy_admin", labelAr: "مدير الأكاديمية", descAr: "إدارة الدورات والطلاب والمعلمين." },
-  { id: "student_supervisor", labelAr: "مشرف الطلاب", descAr: "متابعة الطلاب ومهام الإشراف." },
-  { id: "reciter_supervisor", labelAr: "مشرف المقرئين", descAr: "متابعة المقرئين وطلبات الانضمام." },
-  { id: "student", labelAr: "طالب", descAr: "حساب طالب عادي." },
-  { id: "reader", labelAr: "مقرئ معتمد", descAr: "حساب مقرئ يقيّم التلاوات." },
+const PRIMARY_ROLES: { id: string; labelAr: string; labelEn: string; descAr: string; descEn: string }[] = [
+  { id: "admin", labelAr: "المدير العام (Super Admin)", labelEn: "Super Admin", descAr: "تحكم كامل في المنصة والموقع الخارجي والتصميم.", descEn: "Full control over the platform, external site, and design." },
+  { id: "maqraa_admin", labelAr: "مدير المقرأة", labelEn: "Maqraa Admin", descAr: "إدارة جانب التلاوة والتسميع والمقرئين.", descEn: "Managing recitation, listening sessions, and reciters." },
+  { id: "academy_admin", labelAr: "مدير الأكاديمية", labelEn: "Academy Admin", descAr: "إدارة الدورات والطلاب والمعلمين.", descEn: "Managing courses, students, and teachers." },
+  { id: "student_supervisor", labelAr: "مشرف الطلاب", labelEn: "Student Supervisor", descAr: "متابعة الطلاب ومهام الإشراف.", descEn: "Tracking students and supervisory tasks." },
+  { id: "reciter_supervisor", labelAr: "مشرف المقرئين", labelEn: "Reciter Supervisor", descAr: "متابعة المقرئين وطلبات الانضمام.", descEn: "Tracking reciters and join applications." },
+  { id: "student", labelAr: "طالب", labelEn: "Student", descAr: "حساب طالب عادي.", descEn: "Standard student account." },
+  { id: "reader", labelAr: "مقرئ معتمد", labelEn: "Certified Reciter", descAr: "حساب مقرئ يقيّم التلاوات.", descEn: "Account of a reciter who evaluates recitations." },
 ]
 
-const ACADEMY_ROLES: { id: string; labelAr: string }[] = [
-  { id: "maqraa_admin", labelAr: "مدير المقرأة" },
-  { id: "academy_admin", labelAr: "مدير الأكاديمية" },
-  { id: "teacher", labelAr: "معلم" },
-  { id: "content_supervisor", labelAr: "مشرف المحتوى" },
-  { id: "fiqh_supervisor", labelAr: "مشرف الفقه" },
-  { id: "quality_supervisor", labelAr: "مشرف الجودة" },
-  { id: "supervisor", labelAr: "مشرف عام" },
+const ACADEMY_ROLES: { id: string; labelAr: string; labelEn: string }[] = [
+  { id: "maqraa_admin", labelAr: "مدير المقرأة", labelEn: "Maqraa Admin" },
+  { id: "academy_admin", labelAr: "مدير الأكاديمية", labelEn: "Academy Admin" },
+  { id: "teacher", labelAr: "معلم", labelEn: "Teacher" },
+  { id: "content_supervisor", labelAr: "مشرف المحتوى", labelEn: "Content Supervisor" },
+  { id: "fiqh_supervisor", labelAr: "مشرف الفقه", labelEn: "Fiqh Supervisor" },
+  { id: "quality_supervisor", labelAr: "مشرف الجودة", labelEn: "Quality Supervisor" },
+  { id: "supervisor", labelAr: "مشرف عام", labelEn: "General Supervisor" },
 ]
 
 type UserData = {
@@ -37,6 +38,8 @@ type UserData = {
 }
 
 export function UserRolesClient({ userId }: { userId: string }) {
+  const { t, locale } = useI18n()
+  const isAr = locale === "ar"
   const router = useRouter()
   const [user, setUser] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -51,7 +54,7 @@ export function UserRolesClient({ userId }: { userId: string }) {
     async function load() {
       try {
         const res = await fetch(`/api/admin/users/${userId}/roles`)
-        if (!res.ok) throw new Error("تعذر تحميل بيانات المستخدم")
+        if (!res.ok) throw new Error(isAr ? "تعذر تحميل بيانات المستخدم" : "Failed to load user data")
         const json = await res.json()
         setUser(json.user)
         setRole(json.user.role)
@@ -63,7 +66,7 @@ export function UserRolesClient({ userId }: { userId: string }) {
       }
     }
     load()
-  }, [userId])
+  }, [userId, isAr])
 
   function toggleAcademyRole(id: string) {
     setAcademyRoles((prev) => (prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]))
@@ -80,7 +83,7 @@ export function UserRolesClient({ userId }: { userId: string }) {
         body: JSON.stringify({ role, academyRoles }),
       })
       const json = await res.json()
-      if (!res.ok) throw new Error(json?.error || "تعذر حفظ التغييرات")
+      if (!res.ok) throw new Error(json?.error || (isAr ? "تعذر حفظ التغييرات" : "Failed to save changes"))
       setSuccess(true)
       router.refresh()
       setTimeout(() => setSuccess(false), 3000)
@@ -103,9 +106,9 @@ export function UserRolesClient({ userId }: { userId: string }) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 text-destructive">
         <AlertTriangle className="h-12 w-12" />
-        <p className="text-lg font-bold">{error || "المستخدم غير موجود"}</p>
+        <p className="text-lg font-bold">{error || (isAr ? "المستخدم غير موجود" : "User not found")}</p>
         <Button onClick={() => router.back()} variant="outline">
-          رجوع
+          {isAr ? "رجوع" : "Back"}
         </Button>
       </div>
     )
@@ -118,7 +121,7 @@ export function UserRolesClient({ userId }: { userId: string }) {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/admin/role-management" className="transition-colors hover:text-primary">
-          إدارة الأدوار
+          {isAr ? "إدارة الأدوار" : "Role Management"}
         </Link>
         <ChevronRight className="h-4 w-4 rtl:rotate-180" />
         <span className="font-bold text-foreground">{user.name}</span>
@@ -130,7 +133,7 @@ export function UserRolesClient({ userId }: { userId: string }) {
           <ShieldCheck className="h-6 w-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-foreground">تعيين الأدوار</h1>
+          <h1 className="text-2xl font-black text-foreground">{isAr ? "تعيين الأدوار" : "Assign Roles"}</h1>
           <p className="text-sm text-muted-foreground">
             {user.name} · {user.email}
           </p>
@@ -140,9 +143,9 @@ export function UserRolesClient({ userId }: { userId: string }) {
       {/* Primary role */}
       <Card className="rounded-3xl border border-border bg-card/60">
         <CardHeader>
-          <CardTitle className="text-base font-black text-foreground">الدور الأساسي</CardTitle>
+          <CardTitle className="text-base font-black text-foreground">{isAr ? "الدور الأساسي" : "Primary Role"}</CardTitle>
           <p className="text-xs text-muted-foreground">
-            يحدد الدور الأساسي لوحة التحكم الافتراضية للمستخدم وصلاحياته الرئيسية.
+            {isAr ? "يحدد الدور الأساسي لوحة التحكم الافتراضية للمستخدم وصلاحياته الرئيسية." : "Primary role determines default dashboard and main permissions."}
           </p>
         </CardHeader>
         <CardContent>
@@ -168,8 +171,8 @@ export function UserRolesClient({ userId }: { userId: string }) {
                     {selected && <Check className="h-3 w-3" />}
                   </span>
                   <span className="min-w-0">
-                    <span className="block font-bold text-foreground">{r.labelAr}</span>
-                    <span className="block text-xs leading-relaxed text-muted-foreground">{r.descAr}</span>
+                    <span className="block font-bold text-foreground">{isAr ? r.labelAr : r.labelEn}</span>
+                    <span className="block text-xs leading-relaxed text-muted-foreground">{isAr ? r.descAr : r.descEn}</span>
                   </span>
                 </button>
               )
@@ -181,9 +184,9 @@ export function UserRolesClient({ userId }: { userId: string }) {
       {/* Secondary academy roles */}
       <Card className="rounded-3xl border border-border bg-card/60">
         <CardHeader>
-          <CardTitle className="text-base font-black text-foreground">أدوار إضافية</CardTitle>
+          <CardTitle className="text-base font-black text-foreground">{isAr ? "أدوار إضافية" : "Additional Roles"}</CardTitle>
           <p className="text-xs text-muted-foreground">
-            صلاحيات إضافية يملكها المستخدم بجانب دوره الأساسي (مثلاً مدير عام يدير المقرأة أيضاً).
+            {isAr ? "صلاحيات إضافية يملكها المستخدم بجانب دوره الأساسي (مثلاً مدير عام يدير المقرأة أيضاً)." : "Additional permissions besides primary role (e.g., General Manager also managing Maqraa)."}
           </p>
         </CardHeader>
         <CardContent>
@@ -201,7 +204,7 @@ export function UserRolesClient({ userId }: { userId: string }) {
                       : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
                   }`}
                 >
-                  {r.labelAr}
+                  {isAr ? r.labelAr : r.labelEn}
                 </button>
               )
             })}
@@ -209,7 +212,7 @@ export function UserRolesClient({ userId }: { userId: string }) {
           {isSuperSelected && (
             <p className="mt-4 flex items-start gap-2 rounded-xl bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              المدير العام يملك بالفعل كل الصلاحيات. الأدوار الإضافية اختيارية في هذه الحالة.
+              {isAr ? "المدير العام يملك بالفعل كل الصلاحيات. الأدوار الإضافية اختيارية في هذه الحالة." : "General Manager already has all permissions. Additional roles are optional in this case."}
             </p>
           )}
         </CardContent>
@@ -225,17 +228,17 @@ export function UserRolesClient({ userId }: { userId: string }) {
       {success && (
         <p className="flex items-center gap-2 rounded-xl bg-emerald-500/10 p-3 text-sm font-bold text-emerald-600 dark:text-emerald-400">
           <Check className="h-4 w-4" />
-          تم حفظ الأدوار بنجاح.
+          {isAr ? "تم حفظ الأدوار بنجاح." : "Roles saved successfully."}
         </p>
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
         <Button variant="outline" onClick={() => router.push("/admin/role-management")} className="rounded-xl font-bold">
-          إلغاء
+          {isAr ? "إلغاء" : "Cancel"}
         </Button>
         <Button onClick={handleSave} disabled={saving} className="gap-2 rounded-xl font-bold">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          حفظ التغييرات
+          {isAr ? "حفظ التغييرات" : "Save Changes"}
         </Button>
       </div>
     </div>

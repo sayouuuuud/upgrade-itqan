@@ -33,14 +33,14 @@ function FilterPanel({
   const [localGender, setLocalGender] = useState(gender)
 
   const statusOptions: { value: "" | "active" | "inactive"; label: string }[] = [
-    { value: "", label: "الكل" },
-    { value: "active", label: "نشط" },
-    { value: "inactive", label: "موقوف" },
+    { value: "", label: isAr ? "الكل" : "All" },
+    { value: "active", label: isAr ? "نشط" : "Active" },
+    { value: "inactive", label: isAr ? "موقوف" : "Suspended" },
   ]
   const genderOptions: { value: "" | "male" | "female"; label: string }[] = [
-    { value: "", label: "الكل" },
-    { value: "male", label: "ذكر" },
-    { value: "female", label: "أنثى" },
+    { value: "", label: isAr ? "الكل" : "All" },
+    { value: "male", label: isAr ? "ذكر" : "Male" },
+    { value: "female", label: isAr ? "أنثى" : "Female" },
   ]
 
   const hasChanges = localStatus !== status || localGender !== gender
@@ -58,7 +58,7 @@ function FilterPanel({
       <div className="flex items-center justify-between">
         <span className="text-sm font-black text-foreground flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-primary" />
-          تصفية العملاء
+          {isAr ? "تصفية العملاء" : "Filter Clients"}
         </span>
         <button
           onClick={onClose}
@@ -71,7 +71,7 @@ function FilterPanel({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {/* Status */}
         <div className="space-y-2.5">
-          <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">الحالة</p>
+          <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">{isAr ? "الحالة" : "Status"}</p>
           <div className="flex gap-2 flex-wrap">
             {statusOptions.map(o => (
               <button
@@ -93,7 +93,7 @@ function FilterPanel({
 
         {/* Gender */}
         <div className="space-y-2.5">
-          <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">الجنس</p>
+          <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">{isAr ? "الجنس" : "Gender"}</p>
           <div className="flex gap-2 flex-wrap">
             {genderOptions.map(o => (
               <button
@@ -119,7 +119,7 @@ function FilterPanel({
           disabled={!hasChanges}
           className="flex-1 h-10 rounded-xl font-black text-xs bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
         >
-          تطبيق الفلتر
+          {isAr ? "تطبيق الفلتر" : "Apply Filter"}
         </Button>
         {!isReset && (
           <Button
@@ -127,7 +127,7 @@ function FilterPanel({
             onClick={() => { setLocalStatus(""); setLocalGender(""); onApply("", "") }}
             className="h-10 px-4 rounded-xl font-black text-xs border-border"
           >
-            مسح الكل
+            {isAr ? "مسح الكل" : "Clear All"}
           </Button>
         )}
       </div>
@@ -381,10 +381,10 @@ export default function AdminUsersPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="flex p-1 bg-muted/50 border border-border rounded-2xl w-full lg:w-auto flex-1 overflow-x-auto overflow-y-hidden hide-scrollbar gap-1">
           {[
-            { id: "all", label: "الكل" },
+            { id: "all", label: isAr ? "الكل" : "All" },
             { id: "students", label: t.admin.students },
             { id: "readers", label: t.admin.readers },
-            { id: "academy", label: "الأكاديمية" },
+            { id: "academy", label: isAr ? "الأكاديمية" : "Academy" },
             { id: "admins", label: t.admin.admins },
             { id: "supervisors", label: t.admin.supervisors }
           ].map((tab) => (
@@ -456,7 +456,7 @@ export default function AdminUsersPage() {
                   <th className="px-6 py-5 font-black whitespace-nowrap">{t.admin.joinDate}</th>
                   <th className="px-6 py-5 font-black whitespace-nowrap">{t.auth.role}</th>
                   {(activeTab === 'all' || activeTab === 'academy') && (
-                    <th className="px-6 py-5 font-black whitespace-nowrap">المنصة</th>
+                    <th className="px-6 py-5 font-black whitespace-nowrap">{isAr ? "المنصة" : "Platform"}</th>
                   )}
                   {activeTab === 'readers' && (
                     <th className="px-6 py-5 font-black whitespace-nowrap">{t.readerRegister.nationality}</th>
@@ -557,12 +557,12 @@ export default function AdminUsersPage() {
                           <div className="flex flex-col gap-1">
                             {user.has_quran_access !== false && (
                               <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 border-emerald-500/30 text-emerald-600 bg-emerald-500/5 w-fit">
-                                مقرأة
+                                {isAr ? "مقرأة" : "Maqraa"}
                               </Badge>
                             )}
                             {user.has_academy_access && (
                               <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 border-blue-500/30 text-blue-600 bg-blue-500/5 w-fit">
-                                أكاديمية
+                                {isAr ? "أكاديمية" : "Academy"}
                               </Badge>
                             )}
                           </div>

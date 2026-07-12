@@ -82,7 +82,7 @@ export default function AdminEmailTemplatesPage() {
                     to: testEmail,
                     subject: previewLang === 'ar' ? editForm.subject_ar : editForm.subject_en,
                     body: previewLang === 'ar' ? editForm.body_ar : editForm.body_en,
-                    variables: { userName: (t.addedTranslations_2026?.['تجربة'] || 'تجربة'), studentName: (t.addedTranslations_2026?.['تجربة'] || 'تجربة'), readerName: (t.addedTranslations_2026?.['تجربة'] || 'تجربة'), certificateLink: '#' }
+                    variables: { userName: (isAr ? "تجربة" : "Test"), studentName: (isAr ? "تجربة" : "Test"), readerName: (isAr ? "تجربة" : "Test"), certificateLink: '#' }
                 }),
             })
             const data = await res.json().catch(() => null)
@@ -90,7 +90,9 @@ export default function AdminEmailTemplatesPage() {
                 alert(t.admin.testEmailSent)
             } else {
                 alert(
-                    (t.addedTranslations_2026?.['لم يتم إرسال البريد التجريبي. السبب: ${data?.error || "إعدادات البريد غير مكتملة"}'] || 'لم يتم إرسال البريد التجريبي. السبب: ${data?.error || "إعدادات البريد غير مكتملة"}')
+                    isAr
+                      ? `لم يتم إرسال البريد التجريبي. السبب: ${data?.error || "إعدادات البريد غير مكتملة"}`
+                      : `Test email not sent. Reason: ${data?.error || "Mail settings are incomplete"}`
                 )
             }
         } finally {
@@ -137,10 +139,10 @@ export default function AdminEmailTemplatesPage() {
             {/* Scope tabs */}
             <div className="flex items-center gap-1 bg-muted rounded-xl p-1 w-fit">
                 {([
-                    { id: 'all',     label: 'الكل' },
-                    { id: 'general', label: 'عامة' },
-                    { id: 'maqraa',  label: 'المقرأة' },
-                    { id: 'academy', label: 'الأكاديمية' },
+                    { id: 'all',     label: isAr ? 'الكل' : 'All' },
+                    { id: 'general', label: isAr ? 'عامة' : 'General' },
+                    { id: 'maqraa',  label: isAr ? 'المقرأة' : 'Maqraa' },
+                    { id: 'academy', label: isAr ? 'الأكاديمية' : 'Academy' },
                 ] as const).map(tab => (
                     <button
                         key={tab.id}
@@ -199,7 +201,7 @@ export default function AdminEmailTemplatesPage() {
                                                 tmpl.scope === 'academy' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
                                                 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                                             }`}>
-                                                {tmpl.scope === 'general' ? 'عام' : tmpl.scope === 'academy' ? 'أكاديمية' : 'مقرأة'}
+                                                {tmpl.scope === 'general' ? (isAr ? 'عام' : 'General') : tmpl.scope === 'academy' ? (isAr ? 'أكاديمية' : 'Academy') : (isAr ? 'مقرأة' : 'Maqraa')}
                                             </span>
                                             <span className={`text-[10px] items-center px-1.5 py-0.5 rounded-md font-medium border
                                                 ${tmpl.is_active ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground border-border'}`}>
@@ -262,9 +264,11 @@ export default function AdminEmailTemplatesPage() {
                     <DialogHeader className="px-6 py-5 border-b border-border bg-muted/40">
                         <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                <Edit className="w-4 h-4 text-primary" />
+                                <Mail className="w-4 h-4 text-primary" />
                             </div>
-                            {(t.addedTranslations_2026?.['تعديل القالب: ${editTemplate?.template_name_ar}'] || 'تعديل القالب: ${editTemplate?.template_name_ar}')}
+                            {isAr
+                              ? `تعديل القالب: ${editTemplate?.template_name_ar}`
+                              : `Edit Template: ${editTemplate?.template_name_en || editTemplate?.template_name_ar}`}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -289,7 +293,7 @@ export default function AdminEmailTemplatesPage() {
                                     onClick={() => setPreviewLang('ar')}
                                     className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${previewLang === 'ar' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 >
-                                    {(t.addedTranslations_2026?.['النسخة العربية'] || 'النسخة العربية')}
+                                    {(isAr ? "النسخة العربية" : "Arabic Version")}
                                 </button>
                                 <button
                                     onClick={() => setPreviewLang('en')}
@@ -303,21 +307,21 @@ export default function AdminEmailTemplatesPage() {
                         {previewLang === 'ar' ? (
                             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                 <div className="space-y-1.5">
-                                    <Label className="text-foreground font-bold ml-1">{(t.addedTranslations_2026?.['موضوع الرسالة'] || 'موضوع الرسالة')}</Label>
+                                    <Label className="text-foreground font-bold ml-1">{(isAr ? "موضوع الرسالة" : "Subject")}</Label>
                                     <Input
                                         value={editForm.subject_ar || ''}
                                         onChange={e => setEditForm((f: any) => ({ ...f, subject_ar: e.target.value }))}
                                         className="h-12 border-border bg-card text-foreground focus-visible:ring-1 focus-visible:ring-primary rounded-xl px-4"
-                                        placeholder={(t.addedTranslations_2026?.['اكتب عنوان البريد الإلكتروني هنا...'] || 'اكتب عنوان البريد الإلكتروني هنا...')}
+                                        placeholder={isAr ? "اكتب عنوان البريد الإلكتروني هنا..." : "Enter email subject here..."}
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-foreground font-bold ml-1">{(t.addedTranslations_2026?.['نص الرسالة'] || 'نص الرسالة')}</Label>
+                                    <Label className="text-foreground font-bold ml-1">{(isAr ? "نص الرسالة" : "Message Body")}</Label>
                                     <textarea
                                         className="w-full rounded-2xl border border-border bg-card text-foreground px-4 py-3 text-sm min-h-[240px] resize-y focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed transition-shadow"
                                         value={editForm.body_ar || ''}
                                         onChange={e => setEditForm((f: any) => ({ ...f, body_ar: e.target.value }))}
-                                        placeholder={(t.addedTranslations_2026?.['اكتب محتوى الرسالة هنا. يمكنك استخدام المتغيرات المتاحة...'] || 'اكتب محتوى الرسالة هنا. يمكنك استخدام المتغيرات المتاحة...')}
+                                        placeholder={isAr ? "اكتب محتوى الرسالة هنا. يمكنك استخدام المتغيرات المتاحة..." : "Type email content here. You can use available variables..."}
                                     />
                                 </div>
                             </div>

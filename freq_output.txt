@@ -1,0 +1,50 @@
+3: <p className={
+3: }>
+2: {saved ? "تم الحفظ" : "حفظ التغييرات"}
+2: <span className="text-[11px] text-muted-foreground">العربية</span>
+2: رجوع
+2: معاينة
+2: { value: "", label: "الكل" },
+2: title="تحميل"
+2: sub:
+2: ,
+2: <h1 className="text-2xl font-black text-foreground">{name ?
+2: <CardDescription>{data?.total ?? 0} حدث إجمالاً</CardDescription>
+2: <RefreshCw className="h-4 w-4 ml-1" /> تحديث
+2: <div className="flex items-center justify-center py-12 text-muted-foreground">جاري التحميل...</div>
+2: <th className="px-4 py-2 font-medium">التاريخ</th>
+1: admin: "المدير العام",
+1: super_admin: "المدير العام",
+1: maqraa_admin: "مدير المقرأة",
+1: academy_admin: "مدير الأكاديمية",
+1: teacher: "معلم",
+1: reader: "مقرئ",
+1: student: "طالب",
+1: parent: "ولي أمر",
+1: student_supervisor: "مشرف طلاب",
+1: reciter_supervisor: "مشرف مقرئين",
+1: content_supervisor: "مشرف محتوى",
+1: fiqh_supervisor: "مشرف فقه",
+1: quality_supervisor: "مشرف جودة",
+1: supervisor: "مشرف",
+1: return <p className="py-12 text-center text-sm text-muted-foreground">تعذر تحميل الإحصائيات.</p>
+1: <h1 className="text-2xl font-black text-foreground">نظرة عامة على المنصة</h1>
+1: <p className="text-sm text-muted-foreground">إحصائيات شاملة للمدير العام تجمع بين الأكاديمية والمقرأة.</p>
+1: <h2 className="text-sm font-black uppercase tracking-wide text-muted-foreground">الأعضاء</h2>
+1: <StatCard icon={Users} label="إجمالي الأعضاء" value={data.users.total} tone="bg-primary/10 text-primary" />
+1: label="الأعضاء النشطون"
+1: label="أعضاء جدد (30 يوم)"
+1: الأكاديمية
+1: <p className="text-xs text-muted-foreground">الدورات</p>
+1: <p className="text-xs text-muted-foreground">الدروس</p>
+1: <p className="text-xs text-muted-foreground">الالتحاقات</p>
+1: المقرأة
+1: <p className="text-xs text-muted-foreground">التلاوات</p>
+1: <p className="text-xs text-muted-foreground">قيد المراجعة</p>
+1: <p className="text-xs text-muted-foreground">مُراجعة (7 أيام)</p>
+1: <h2 className="text-sm font-black uppercase tracking-wide text-muted-foreground">توزيع الأدوار</h2>
+1: <p className="text-center text-sm text-muted-foreground">لا توجد بيانات.</p>
+1: { key: "logoUrl", labelAr: "الشعار الرئيسي", descAr: "يظهر في الموقع الخارجي والرسائل" },
+1: { key: "dashboardLogoUrl", labelAr: "شعار لوحة التحكم", descAr: "يظهر في لوحات المستخدمين" },
+1: { key: "faviconUrl", labelAr: "أيقونة المتصفح (Favicon)", descAr: "تظهر في تبويب المتصفح" },
+1: <h1 className="text-xl sm:text-2xl font-bold text-foreground">الهوية البصرية وبيانات التواصل</h1>

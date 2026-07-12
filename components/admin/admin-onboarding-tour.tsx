@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { ShieldCheck, Palette, Sparkles, Users, ArrowLeft, ArrowRight, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useI18n } from "@/lib/i18n/context";
 
 type Step = {
   icon: typeof ShieldCheck
@@ -56,6 +57,8 @@ function getSteps(isSuper: boolean): Step[] {
 }
 
 export function AdminOnboardingTour({ role, adminMode }: { role: string; adminMode?: "super" | "maqraa" | "academy" }) {
+  const { t } = useI18n();
+  const isAr = t.locale === "ar";
   const isSuper = role === "admin" || role === "super_admin"
   const storageKey = `itqaan_admin_tour_v1_${isSuper ? "super" : "scoped"}`
   const [open, setOpen] = useState(false)
@@ -109,23 +112,23 @@ export function AdminOnboardingTour({ role, adminMode }: { role: string; adminMo
 
         <div className="flex items-center justify-between gap-3">
           <button onClick={dismiss} className="text-sm font-bold text-muted-foreground hover:text-foreground">
-            تخطّي
+            {isAr ? "تخطّي" : "Translated"}
           </button>
           <div className="flex items-center gap-2">
             {step > 0 && (
               <Button variant="outline" size="sm" onClick={() => setStep((s) => s - 1)} className="gap-1 rounded-xl font-bold">
                 <ArrowRight className="h-4 w-4" />
-                السابق
+                {isAr ? "السابق" : "Translated"}
               </Button>
             )}
             {isLast ? (
               <Button size="sm" onClick={dismiss} className="gap-1 rounded-xl font-bold">
                 <Check className="h-4 w-4" />
-                ابدأ
+                {isAr ? "ابدأ" : "Translated"}
               </Button>
             ) : (
               <Button size="sm" onClick={() => setStep((s) => s + 1)} className="gap-1 rounded-xl font-bold">
-                التالي
+                {isAr ? "التالي" : "Translated"}
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}

@@ -80,7 +80,7 @@ export default function ReaderApplicationsPage() {
       if (!res.ok) {
         const msg =
           (data && (data.error || data.detail)) ||
-          ((t.addedTranslations_2026?.['فشل تحميل الطلبات (${res.status})'] || 'فشل تحميل الطلبات (${res.status})'))
+          ((t.addedTranslations_2026?.['{isAr ? "فشل تحميل الطلبات" : "فشل Loading الطلبات"} (${res.status})'] || 'فشل تحميل الطلبات (${res.status})'))
         setFetchError(typeof msg === "string" ? msg : a.raLoadFailed)
         setApplications([])
         return
@@ -131,7 +131,7 @@ export default function ReaderApplicationsPage() {
         setApplications(prev => prev.map(a => a.id === userId ? { ...a, approval_status: data.status } : a))
         if (data.emailSent === false) {
           alert(
-            (t.addedTranslations_2026?.['تم تحديث الطلب، لكن لم يتم إرسال البريد الإلكتروني. السبب: ${data.emailError || "إعدادات البريد غير مكتملة"}'] || 'تم تحديث الطلب، لكن لم يتم إرسال البريد الإلكتروني. السبب: ${data.emailError || "إعدادات البريد غير مكتملة"}')
+            (t.addedTranslations_2026?.['{isAr ? "تم تحديث الطلب، لكن لم يتم إرسال البريد الإلكتروني" : "تم Refresh الطلب، لكن لم يتم إرسال البريد الإلكتروني"}. السبب: ${data.emailError || "إعدادات البريد غير مكتملة"}'] || 'تم تحديث الطلب، لكن لم يتم إرسال البريد الإلكتروني. السبب: ${data.emailError || "إعدادات البريد غير مكتملة"}')
           )
         }
         setRejectionDialogOpen(false)
@@ -414,7 +414,7 @@ export default function ReaderApplicationsPage() {
                                 {a.raDeleteApplication}
                               </AlertDialogTitle>
                               <AlertDialogDescription className="text-muted-foreground font-bold leading-relaxed pt-2">
-                                {(t.addedTranslations_2026?.['هل أنت متأكد من حذف طلب التسجيل الخاص بـ "${selectedApp.full_name_triple || selectedApp.name}"? سيتم حذف الحساب وجميع البيانات المرتبطة نهائياً.'] || 'هل أنت متأكد من حذف طلب التسجيل الخاص بـ "${selectedApp.full_name_triple || selectedApp.name}"? سيتم حذف الحساب وجميع البيانات المرتبطة نهائياً.')}
+                                {(t.addedTranslations_2026?.['{isAr ? "هل أنت متأكد من حذف طلب التسجيل الخاص بـ" : "هل أنت متأكد من Delete طلب التسجيل الخاص بـ"} "${selectedApp.full_name_triple || selectedApp.name}"? سيتم حذف الحساب وجميع البيانات المرتبطة نهائياً.'] || 'هل أنت متأكد من حذف طلب التسجيل الخاص بـ "${selectedApp.full_name_triple || selectedApp.name}"? سيتم حذف الحساب وجميع البيانات المرتبطة نهائياً.')}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter className="pt-6 gap-3">
@@ -624,7 +624,7 @@ export default function ReaderApplicationsPage() {
                 onClick={() => setRejectionDialogOpen(false)}
                 className="flex-1 h-12 rounded-xl font-bold"
               >
-                {(t.addedTranslations_2026?.['إلغاء'] || 'إلغاء')}
+                {(t.addedTranslations_2026?.[isAr ? "إلغاء" : "Cancel"] || 'إلغاء')}
               </Button>
               <Button
                 onClick={confirmReject}

@@ -66,9 +66,12 @@ export const ADMIN_MODE_META: Record<
 export type RoleCatalogEntry = {
   id: string
   labelAr: string
+  labelEn: string
   group: "admin" | "academy" | "maqraa" | "general"
   summaryAr: string
+  summaryEn: string
   capabilitiesAr: string[]
+  capabilitiesEn: string[]
   assignableAsPrimary: boolean
   tone: "amber" | "emerald" | "blue" | "slate"
 }
@@ -77,9 +80,11 @@ export const ROLE_CATALOG: RoleCatalogEntry[] = [
   {
     id: "admin",
     labelAr: "المدير العام (Super Admin)",
+    labelEn: "Super Admin",
     group: "admin",
     tone: "amber",
     summaryAr: "تحكم كامل في المنصة بالكامل بما في ذلك الموقع الخارجي والتصميم والحوكمة.",
+    summaryEn: "Full control over the entire platform, including the public website, design, and governance.",
     capabilitiesAr: [
       "كل صلاحيات مدير المقرأة ومدير الأكاديمية",
       "التبديل بين أوضاع المقرأة والأكاديمية",
@@ -88,14 +93,24 @@ export const ROLE_CATALOG: RoleCatalogEntry[] = [
       "إدارة الأدوار والصلاحيات للمستخدمين",
       "النسخ الاحتياطي وإعدادات الأمان والإحصائيات الشاملة",
     ],
+    capabilitiesEn: [
+      "All permissions of Maqraa Admin and Academy Admin",
+      "Switching between Maqraa and Academy modes",
+      "Editing public website (homepage) and SEO",
+      "Editing design, colors, and fonts",
+      "Managing user roles and permissions",
+      "Backups, security settings, and global analytics",
+    ],
     assignableAsPrimary: true,
   },
   {
     id: "maqraa_admin",
     labelAr: "مدير المقرأة",
+    labelEn: "Maqraa Admin",
     group: "maqraa",
     tone: "emerald",
     summaryAr: "إدارة جانب التلاوة والتسميع والمقرئين والحلقات.",
+    summaryEn: "Managing recitation, listening sessions, reciters, and halaqat.",
     capabilitiesAr: [
       "إدارة المقرئين وطلبات الانضمام",
       "متابعة التلاوات والتسميع والتقييم",
@@ -103,14 +118,23 @@ export const ROLE_CATALOG: RoleCatalogEntry[] = [
       "المسابقات والشهادات الخاصة بالمقرأة",
       "لا يصل إلى الموقع الخارجي أو التصميم أو الأمان",
     ],
+    capabilitiesEn: [
+      "Managing reciters and join applications",
+      "Tracking recitations, listening sessions, and evaluations",
+      "Managing halaqat, memorization, and tajweed paths",
+      "Competitions and certificates for the Maqraa",
+      "No access to external website, design, or security settings",
+    ],
     assignableAsPrimary: true,
   },
   {
     id: "academy_admin",
     labelAr: "مدير الأكاديمية",
+    labelEn: "Academy Admin",
     group: "academy",
     tone: "blue",
     summaryAr: "إدارة جانب الأكاديمية من دورات وطلاب ومعلمين.",
+    summaryEn: "Managing the academy, including courses, students, and teachers.",
     capabilitiesAr: [
       "إدارة الدورات والدروس والمحتوى",
       "إدارة الطلاب والمعلمين",
@@ -118,73 +142,98 @@ export const ROLE_CATALOG: RoleCatalogEntry[] = [
       "إحصائيات الأكاديمية",
       "لا يصل إلى الموقع الخارجي أو التصميم أو الأمان",
     ],
+    capabilitiesEn: [
+      "Managing courses, lessons, and content",
+      "Managing students and teachers",
+      "Academy competitions and certificates",
+      "Academy statistics",
+      "No access to external website, design, or security settings",
+    ],
     assignableAsPrimary: true,
   },
   {
     id: "student_supervisor",
     labelAr: "مشرف الطلاب",
+    labelEn: "Student Supervisor",
     group: "general",
     tone: "slate",
     summaryAr: "متابعة الطلاب والمهام الإشرافية الخاصة بهم.",
+    summaryEn: "Tracking students and their supervisory tasks.",
     capabilitiesAr: ["متابعة الطلاب", "مهام الإشراف", "متابعة التلاوات"],
+    capabilitiesEn: ["Tracking students", "Supervisory tasks", "Tracking recitations"],
     assignableAsPrimary: true,
   },
   {
     id: "reciter_supervisor",
     labelAr: "مشرف المقرئين",
+    labelEn: "Reciter Supervisor",
     group: "general",
     tone: "slate",
     summaryAr: "متابعة المقرئين وطلبات انضمامهم.",
+    summaryEn: "Tracking reciters and their join applications.",
     capabilitiesAr: ["متابعة المقرئين", "طلبات انضمام المقرئين", "متابعة التلاوات"],
+    capabilitiesEn: ["Tracking reciters", "Reciter join applications", "Tracking recitations"],
     assignableAsPrimary: true,
   },
   {
     id: "teacher",
     labelAr: "معلم",
+    labelEn: "Teacher",
     group: "academy",
     tone: "slate",
     summaryAr: "إنشاء وإدارة دوراته ودروسه وطلابه.",
+    summaryEn: "Creating and managing courses, lessons, and students.",
     capabilitiesAr: ["إنشاء الدورات والدروس", "تقييم الطلاب", "الجلسات المباشرة"],
+    capabilitiesEn: ["Creating courses and lessons", "Evaluating students", "Live sessions"],
     assignableAsPrimary: false,
   },
   {
     id: "reader",
     labelAr: "مقرئ معتمد",
+    labelEn: "Certified Reciter",
     group: "maqraa",
     tone: "slate",
     summaryAr: "تقييم التلاوات وإدارة جلسات التسميع.",
+    summaryEn: "Evaluating recitations and managing listening sessions.",
     capabilitiesAr: ["تقييم التلاوات", "إدارة جلسات التسميع", "متابعة طلابه"],
+    capabilitiesEn: ["Evaluating recitations", "Managing listening sessions", "Tracking students"],
     assignableAsPrimary: false,
   },
   {
     id: "parent",
     labelAr: "ولي أمر",
+    labelEn: "Parent",
     group: "general",
     tone: "slate",
     summaryAr: "متابعة تقدم أبنائه فقط دون تعديل.",
+    summaryEn: "Tracking only the progress of their children without modification.",
     capabilitiesAr: ["متابعة تقارير الأبناء"],
+    capabilitiesEn: ["Tracking children's reports"],
     assignableAsPrimary: false,
   },
   {
     id: "student",
     labelAr: "طالب",
+    labelEn: "Student",
     group: "general",
     tone: "slate",
     summaryAr: "الوصول للمحتوى والتلاوة والمسابقات.",
+    summaryEn: "Accessing content, recitations, and competitions.",
     capabilitiesAr: ["المقررات المسجل بها", "إرسال التلاوات", "المسابقات والشهادات"],
+    capabilitiesEn: ["Enrolled courses", "Submitting recitations", "Competitions and certificates"],
     assignableAsPrimary: false,
   },
 ]
 
 // Academy roles a Super Admin can grant in addition to the primary role.
-export const ASSIGNABLE_ACADEMY_ROLES: { id: string; labelAr: string }[] = [
-  { id: "maqraa_admin", labelAr: "مدير المقرأة" },
-  { id: "academy_admin", labelAr: "مدير الأكاديمية" },
-  { id: "teacher", labelAr: "معلم" },
-  { id: "content_supervisor", labelAr: "مشرف المحتوى" },
-  { id: "fiqh_supervisor", labelAr: "مشرف الفقه" },
-  { id: "quality_supervisor", labelAr: "مشرف الجودة" },
-  { id: "supervisor", labelAr: "مشرف عام" },
+export const ASSIGNABLE_ACADEMY_ROLES: { id: string; labelAr: string; labelEn: string }[] = [
+  { id: "maqraa_admin", labelAr: "مدير المقرأة", labelEn: "Maqraa Admin" },
+  { id: "academy_admin", labelAr: "مدير الأكاديمية", labelEn: "Academy Admin" },
+  { id: "teacher", labelAr: "معلم", labelEn: "Teacher" },
+  { id: "content_supervisor", labelAr: "مشرف المحتوى", labelEn: "Content Supervisor" },
+  { id: "fiqh_supervisor", labelAr: "مشرف الفقه", labelEn: "Fiqh Supervisor" },
+  { id: "quality_supervisor", labelAr: "مشرف الجودة", labelEn: "Quality Supervisor" },
+  { id: "supervisor", labelAr: "مشرف عام", labelEn: "General Supervisor" },
 ]
 
 // Primary roles a Super Admin can assign from the user-roles screen.

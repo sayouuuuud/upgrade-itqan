@@ -3,11 +3,14 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { GraduationCap, Mic, Loader2, X } from "lucide-react"
+import { useI18n } from "@/lib/i18n/context";
 
 // Shown ONLY when a Super Admin is operating inside a borrowed mode
 // (maqraa or academy). It is a loud, full-width reminder that the admin is not
 // in their default super-admin context, so changes go to that area.
 export function AdminModeBanner({ mode }: { mode: "maqraa" | "academy" }) {
+  const { t } = useI18n();
+  const isAr = t.locale === "ar";
   const router = useRouter()
   const [exiting, setExiting] = useState(false)
 
@@ -68,7 +71,7 @@ export function AdminModeBanner({ mode }: { mode: "maqraa" | "academy" }) {
         className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${config.btn}`}
       >
         {exiting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
-        العودة لوضع المدير العام
+        {isAr ? "العودة لوضع المدير العام" : "العودة لوضع Super Admin"}
       </button>
     </div>
   )

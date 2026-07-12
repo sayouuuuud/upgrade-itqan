@@ -15,6 +15,7 @@ import {
   FileText,
   Pencil,
   ArrowRight,
+  ArrowLeft,
   Save,
   Eye,
   EyeOff,
@@ -22,14 +23,15 @@ import {
   Clock,
 } from "lucide-react"
 import { toast } from "sonner"
+import { useI18n } from "@/lib/i18n/context";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-const SLUG_LABELS: Record<string, { ar: string; icon: string }> = {
-  about:   { ar: "من نحن",           icon: "👥" },
-  terms:   { ar: "الشروط والأحكام",  icon: "📋" },
-  privacy: { ar: "سياسة الخصوصية",  icon: "🔒" },
-  faq:     { ar: "الأسئلة الشائعة",  icon: "❓" },
+const SLUG_LABELS: Record<string, { ar: string; en: string; icon: string }> = {
+  about:   { ar: "من نحن",           en: "About Us",           icon: "👥" },
+  terms:   { ar: "الشروط والأحكام",  en: "Terms & Conditions",  icon: "📋" },
+  privacy: { ar: "سياسة الخصوصية",  en: "Privacy Policy",      icon: "🔒" },
+  faq:     { ar: "الأسئلة الشائعة",  en: "FAQ",                 icon: "❓" },
 }
 
 interface PageSummary {
@@ -50,6 +52,8 @@ interface PageDetail extends PageSummary {
 }
 
 export function ContentPagesManager() {
+  const { t } = useI18n();
+  const isAr = t.locale === "ar";
   const { data, mutate } = useSWR<{ pages: PageSummary[] }>(
     "/api/admin/content-pages",
     fetcher
@@ -83,10 +87,10 @@ export function ContentPagesManager() {
         body: JSON.stringify(form),
       })
       if (!res.ok) throw new Error()
-      toast.success("تم حفظ الصفحة بنجاح")
+      toast.success(isAr ? "تم حفظ الصفحة بنجاح" : "Page saved successfully")
       mutate()
     } catch {
-      toast.error("فشل في حفظ الصفحة")
+      toast.error(isAr ? "فشل في حفظ الصفحة" : "Failed to save page")
     } finally {
       setSaving(false)
     }
@@ -99,9 +103,11 @@ export function ContentPagesManager() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">صفحات المحتوى الثابت</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {isAr ? "صفحات المحتوى الثابت" : "Static Content Pages"}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            تحرير محتوى صفحات الموقع العامة التي يراها الزوار
+            {isAr ? "تحرير محتوى صفحات الموقع العامة التي يراها الزوار" : "Edit the content of public site pages seen by visitors"}
           </p>
         </div>
 
@@ -122,7 +128,7 @@ export function ContentPagesManager() {
                       </div>
                       <div>
                         <p className="font-semibold text-foreground text-sm">
-                          {label?.ar ?? page.title_ar}
+                          {isAr ? (label?.ar ?? page.title_ar) : (label?.en ?? page.title_en)}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           /{page.slug}
@@ -134,7 +140,7 @@ export function ContentPagesManager() {
                         variant={page.is_published ? "default" : "secondary"}
                         className="text-xs"
                       >
-                        {page.is_published ? "منشور" : "مسودة"}
+                        {isAr ? (page.is_published ? "منشور" : "مسودة") : (page.is_published ? "Published" : "Draft")}
                       </Badge>
                       <Button variant="ghost" size="icon" className="h-7 w-7">
                         <Pencil className="w-3.5 h-3.5" />
@@ -147,8 +153,8 @@ export function ContentPagesManager() {
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3 shrink-0" />
                     <span>
-                      آخر تعديل:{" "}
-                      {new Date(page.updated_at).toLocaleDateString("ar-EG", {
+                      {isAr ? "آخر تعديل:" : "Last Modified:"}{" "}
+                      {new Date(page.updated_at).toLocaleDateString(isAr ? "ar-EG" : "en-US", {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
@@ -167,6 +173,7 @@ export function ContentPagesManager() {
 
   // ─── Edit view ────────────────────────────────────────────────────────────
   const label = SLUG_LABELS[selectedSlug]
+  const BackIcon = isAr ? ArrowRight : ArrowLeft
 
   return (
     <div className="space-y-6">
@@ -179,11 +186,11 @@ export function ContentPagesManager() {
             className="h-8 w-8"
             onClick={() => { setSelectedSlug(null); setForm(null) }}
           >
-            <ArrowRight className="w-4 h-4" />
+            <BackIcon className="w-4 h-4" />
           </Button>
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              {label?.ar ?? selectedSlug}
+              {isAr ? (label?.ar ?? selectedSlug) : (label?.en ?? selectedSlug)}
             </h1>
             <p className="text-xs text-muted-foreground">/{selectedSlug}</p>
           </div>
@@ -197,19 +204,19 @@ export function ContentPagesManager() {
           >
             <a href={`/${selectedSlug}`} target="_blank" rel="noreferrer">
               <Globe className="w-3.5 h-3.5" />
-              معاينة
+              {isAr ? "معاينة" : "Preview"}
             </a>
           </Button>
           <Button size="sm" onClick={handleSave} disabled={saving} className="gap-1.5">
             <Save className="w-4 h-4" />
-            {saving ? "جاري الحفظ..." : "حفظ"}
+            {saving ? (isAr ? "جاري الحفظ..." : "Saving...") : (isAr ? "حفظ" : "Save")}
           </Button>
         </div>
       </div>
 
       {loadingPage || !form ? (
         <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
-          جاري التحميل...
+          {isAr ? "جاري التحميل..." : "Loading..."}
         </div>
       ) : (
         <div className="space-y-6">
@@ -224,12 +231,14 @@ export function ContentPagesManager() {
                   }
                   <div>
                     <p className="text-sm font-medium text-foreground">
-                      {form.is_published ? "الصفحة منشورة" : "الصفحة مسودة"}
+                      {isAr
+                        ? (form.is_published ? "الصفحة منشورة" : "الصفحة مسودة")
+                        : (form.is_published ? "Page is Published" : "Page is Draft")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {form.is_published
-                        ? "مرئية للزوار على الموقع"
-                        : "مخفية عن الزوار حتى تنشر"}
+                      {isAr
+                        ? (form.is_published ? "مرئية للزوار على الموقع" : "مخفية عن الزوار حتى تنشر")
+                        : (form.is_published ? "Visible to visitors on the website" : "Hidden from visitors until published")}
                     </p>
                   </div>
                 </div>
@@ -244,49 +253,53 @@ export function ContentPagesManager() {
           {/* Content tabs: AR / EN */}
           <Tabs defaultValue="ar">
             <TabsList className="mb-4">
-              <TabsTrigger value="ar">العربية</TabsTrigger>
+              <TabsTrigger value="ar">{isAr ? "العربية" : "Arabic"}</TabsTrigger>
               <TabsTrigger value="en">English</TabsTrigger>
             </TabsList>
 
             <TabsContent value="ar" className="space-y-4">
               <Card className="border-border/60">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold text-foreground">المحتوى العربي</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-foreground">
+                    {isAr ? "المحتوى العربي" : "Arabic Content"}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="title_ar">عنوان الصفحة</Label>
+                    <Label htmlFor="title_ar">{isAr ? "عنوان الصفحة" : "Page Title"}</Label>
                     <Input
                       id="title_ar"
                       value={form.title_ar ?? ""}
                       onChange={(e) => handleChange("title_ar", e.target.value)}
                       dir="rtl"
-                      placeholder="عنوان الصفحة بالعربية"
+                      placeholder={isAr ? "عنوان الصفحة بالعربية" : "Page Title in Arabic"}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="meta_desc_ar">وصف SEO</Label>
+                    <Label htmlFor="meta_desc_ar">{isAr ? "وصف SEO" : "SEO Description"}</Label>
                     <Input
                       id="meta_desc_ar"
                       value={form.meta_desc_ar ?? ""}
                       onChange={(e) => handleChange("meta_desc_ar", e.target.value)}
                       dir="rtl"
-                      placeholder="وصف قصير يظهر في نتائج البحث"
+                      placeholder={isAr ? "وصف قصير يظهر في نتائج البحث" : "Short description shown in search results"}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="content_ar">المحتوى</Label>
+                    <Label htmlFor="content_ar">{isAr ? "المحتوى" : "Content"}</Label>
                     <Textarea
                       id="content_ar"
                       value={form.content_ar ?? ""}
                       onChange={(e) => handleChange("content_ar", e.target.value)}
                       dir="rtl"
                       rows={14}
-                      placeholder="محتوى الصفحة بالعربية..."
+                      placeholder={isAr ? "محتوى الصفحة بالعربية..." : "Page content in Arabic..."}
                       className="resize-none font-mono text-sm"
                     />
                     <p className="text-xs text-muted-foreground">
-                      يدعم Markdown: **عريض**، *مائل*، ## عنوان، - قائمة
+                      {isAr
+                        ? "يدعم Markdown: **عريض**، *مائل*، ## عنوان، - قائمة"
+                        : "Supports Markdown: **bold**, *italic*, ## heading, - list"}
                     </p>
                   </div>
                 </CardContent>
@@ -296,39 +309,43 @@ export function ContentPagesManager() {
             <TabsContent value="en" className="space-y-4">
               <Card className="border-border/60">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold text-foreground">English Content</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-foreground">
+                    {isAr ? "المحتوى الإنجليزي" : "English Content"}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="title_en">Page Title</Label>
+                    <Label htmlFor="title_en">{isAr ? "عنوان الصفحة (إنجليزي)" : "Page Title"}</Label>
                     <Input
                       id="title_en"
                       value={form.title_en ?? ""}
                       onChange={(e) => handleChange("title_en", e.target.value)}
-                      placeholder="Page title in English"
+                      placeholder={isAr ? "عنوان الصفحة بالإنجليزية" : "Page title in English"}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="meta_desc_en">SEO Description</Label>
+                    <Label htmlFor="meta_desc_en">{isAr ? "وصف SEO (إنجليزي)" : "SEO Description"}</Label>
                     <Input
                       id="meta_desc_en"
                       value={form.meta_desc_en ?? ""}
                       onChange={(e) => handleChange("meta_desc_en", e.target.value)}
-                      placeholder="Short description shown in search results"
+                      placeholder={isAr ? "وصف قصير بالإنجليزية يظهر في نتائج البحث" : "Short description shown in search results"}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="content_en">Content</Label>
+                    <Label htmlFor="content_en">{isAr ? "المحتوى (إنجليزي)" : "Content"}</Label>
                     <Textarea
                       id="content_en"
                       value={form.content_en ?? ""}
                       onChange={(e) => handleChange("content_en", e.target.value)}
                       rows={14}
-                      placeholder="Page content in English..."
+                      placeholder={isAr ? "محتوى الصفحة بالإنجليزية..." : "Page content in English..."}
                       className="resize-none font-mono text-sm"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Markdown supported: **bold**, *italic*, ## heading, - list
+                      {isAr
+                        ? "يدعم Markdown: **عريض**، *مائل*، ## عنوان، - قائمة"
+                        : "Markdown supported: **bold**, *italic*, ## heading, - list"}
                     </p>
                   </div>
                 </CardContent>

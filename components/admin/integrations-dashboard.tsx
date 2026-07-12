@@ -9,6 +9,7 @@ import {
   CheckCircle2, XCircle, Loader2, Send, Plug
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from "@/lib/i18n/context";
 
 interface Integration {
   id: string
@@ -45,6 +46,8 @@ const INTEGRATION_ICONS: Record<string, React.ElementType> = {
 }
 
 export default function IntegrationsDashboard() {
+  const { t } = useI18n();
+  const isAr = t.locale === "ar";
   const [data, setData] = useState<IntegrationsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [testingEmail, setTestingEmail] = useState(false)
@@ -96,15 +99,15 @@ export default function IntegrationsDashboard() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Plug className="w-6 h-6 text-primary" />
-            التكاملات والخدمات الخارجية
+            {isAr ? "التكاملات والخدمات الخارجية" : "Translated"}
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            حالة الاتصال بالخدمات المستخدمة في المنصة — لا تُعرض أي مفاتيح سرية.
+            {isAr ? "حالة الاتصال بالخدمات المستخدمة في المنصة" : "Status الاتصال بالخدمات المستخدمة في المنصة"} — لا تُعرض أي مفاتيح سرية.
           </p>
         </div>
         <Button variant="outline" onClick={fetch_} disabled={loading} className="gap-2 shrink-0">
           <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
-          تحديث
+          {isAr ? "تحديث" : "Refresh"}
         </Button>
       </div>
 
@@ -213,7 +216,7 @@ export default function IntegrationsDashboard() {
 
                         {!isConnected && (
                           <p className="text-xs text-red-600 font-medium">
-                            متغيرات البيئة المطلوبة غير مضبوطة
+                            {isAr ? "متغيرات البيئة المطلوبة غير مضبوطة" : "Translated"}
                           </p>
                         )}
 
@@ -230,7 +233,7 @@ export default function IntegrationsDashboard() {
                                 ? <Loader2 className="w-3 h-3 animate-spin" />
                                 : <Send className="w-3 h-3" />
                               }
-                              إرسال بريد تجريبي
+                              {isAr ? "إرسال بريد تجريبي" : "Translated"}
                             </Button>
                             {testResult && (
                               <p className={cn(
@@ -253,7 +256,7 @@ export default function IntegrationsDashboard() {
           {/* Checked at */}
           {data?.checkedAt && (
             <p className="text-xs text-muted-foreground text-center pt-2">
-              آخر فحص: {new Intl.DateTimeFormat('ar-SA', {
+              {isAr ? "آخر فحص" : "Translated"}: {new Intl.DateTimeFormat('ar-SA', {
                 dateStyle: 'medium', timeStyle: 'short'
               }).format(new Date(data.checkedAt))}
             </p>

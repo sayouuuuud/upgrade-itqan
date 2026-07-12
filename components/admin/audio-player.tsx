@@ -2,12 +2,15 @@
 
 import { useRef, useState } from "react"
 import { Play, Pause, Volume2, VolumeX, Download } from "lucide-react"
+import { useI18n } from "@/lib/i18n/context";
 
 /**
  * Compact audio player for admin review of applicant recordings.
  * Shows play/pause, scrubber, time, volume mute, and direct-download.
  */
 export default function AdminAudioPlayer({ src, label }: { src: string; label?: string }) {
+  const { t } = useI18n();
+  const isAr = t.locale === "ar";
     const audioRef = useRef<HTMLAudioElement | null>(null)
     const [playing, setPlaying] = useState(false)
     const [progress, setProgress] = useState(0)
@@ -102,7 +105,7 @@ export default function AdminAudioPlayer({ src, label }: { src: string; label?: 
                     rel="noreferrer"
                     download
                     className="text-blue-900/70 dark:text-blue-200/70 hover:bg-blue-100 dark:hover:bg-blue-800 p-2 rounded-lg shrink-0"
-                    title="تحميل"
+                    title={isAr ? "تحميل" : "Loading"}
                 >
                     <Download className="w-4 h-4" />
                 </a>

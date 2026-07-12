@@ -2,18 +2,22 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Loader2, ShieldCheck, Users, ChevronLeft, Search } from "lucide-react"
+import { Loader2, ShieldCheck, Users, ChevronLeft, ChevronRight, Search } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useI18n } from "@/lib/i18n/context"
 
 type RoleCatalogEntry = {
   id: string
   labelAr: string
+  labelEn: string
   group: "admin" | "academy" | "maqraa" | "general"
   summaryAr: string
+  summaryEn: string
   capabilitiesAr: string[]
+  capabilitiesEn: string[]
   assignableAsPrimary: boolean
   tone: "amber" | "emerald" | "blue" | "slate"
 }
@@ -40,14 +44,16 @@ const TONE_BADGE: Record<RoleCatalogEntry["tone"], string> = {
   slate: "bg-muted text-muted-foreground border-border",
 }
 
-const GROUP_LABELS: Record<RoleCatalogEntry["group"], string> = {
-  admin: "الإدارة العليا",
-  maqraa: "المقرأة",
-  academy: "الأكاديمية",
-  general: "أدوار عامة",
+const GROUP_LABELS: Record<RoleCatalogEntry["group"], { ar: string; en: string }> = {
+  admin: { ar: "الإدارة العليا", en: "Super Administration" },
+  maqraa: { ar: "المقرأة", en: "Maqraa" },
+  academy: { ar: "الأكاديمية", en: "Academy" },
+  general: { ar: "أدوار عامة", en: "General Roles" },
 }
 
 export function RoleManagementClient() {
+  const { t, locale } = useI18n()
+  const isAr = locale === "ar"
   const [catalog, setCatalog] = useState<RoleCatalogEntry[]>([])
   const [counts, setCounts] = useState<Record<string, number>>({})
   const [admins, setAdmins] = useState<AdminUser[]>([])
@@ -91,6 +97,8 @@ export function RoleManagementClient() {
     roles: catalog.filter((r) => r.group === group),
   }))
 
+  const DirectionIcon = isAr ? ChevronLeft : ChevronRight
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-2">
@@ -99,9 +107,11 @@ export function RoleManagementClient() {
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-foreground">إدارة الأدوار والصلاحيات</h1>
+            <h1 className="text-2xl font-black text-foreground">
+              {isAr ? "إدارة الأدوار والصلاحيات" : "Roles and Permissions Management"}
+            </h1>
             <p className="text-sm text-muted-foreground">
-              نظرة شاملة على كل الأدوار في المنصة وما يملكه كل دور من صلاحيات.
+              {isAr ? "نظرة شاملة على كل الأدوار في المنصة وما يملكه كل دور من صلاحيات." : "Comprehensive overview of all platform roles and permissions."}
             </p>
           </div>
         </div>
@@ -113,23 +123,27 @@ export function RoleManagementClient() {
           roles.length === 0 ? null : (
             <div key={group} className="space-y-3">
               <h2 className="text-sm font-black uppercase tracking-wide text-muted-foreground">
-                {GROUP_LABELS[group]}
+                {isAr ? GROUP_LABELS[group].ar : GROUP_LABELS[group].en}
               </h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {roles.map((role) => (
                   <Card key={role.id} className={`rounded-3xl border ${TONE_STYLES[role.tone]}`}>
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-base font-black text-foreground">{role.labelAr}</CardTitle>
+                        <CardTitle className="text-base font-black text-foreground">
+                          {isAr ? role.labelAr : role.labelEn}
+                        </CardTitle>
                         <Badge variant="outline" className={`shrink-0 rounded-full font-bold ${TONE_BADGE[role.tone]}`}>
                           {counts[role.id] ?? 0}
                         </Badge>
                       </div>
-                      <p className="text-xs leading-relaxed text-muted-foreground">{role.summaryAr}</p>
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        {isAr ? role.summaryAr : role.summaryEn}
+                      </p>
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-1.5">
-                        {role.capabilitiesAr.map((cap, i) => (
+                        {(isAr ? role.capabilitiesAr : role.capabilitiesEn).map((cap, i) => (
                           <li key={i} className="flex items-start gap-2 text-xs text-foreground/80">
                             <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
                             <span className="leading-relaxed">{cap}</span>
@@ -151,14 +165,14 @@ export function RoleManagementClient() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2 text-base font-black text-foreground">
               <Users className="h-5 w-5 text-primary" />
-              المستخدمون الإداريون
+              {isAr ? "المستخدمون الإداريون" : "Administrative Users"}
             </CardTitle>
             <div className="relative w-full sm:w-72">
               <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="ابحث بالاسم أو البريد..."
+                placeholder={isAr ? "ابحث بالاسم أو البريد..." : "Search by name or email..."}
                 className="rounded-xl pr-10"
               />
             </div>
@@ -166,35 +180,46 @@ export function RoleManagementClient() {
         </CardHeader>
         <CardContent>
           {filteredAdmins.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">لا يوجد مستخدمون مطابقون.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              {isAr ? "لا يوجد مستخدمون مطابقون." : "No matching users found."}
+            </p>
           ) : (
             <div className="divide-y divide-border/60">
-              {filteredAdmins.map((user) => (
-                <div key={user.id} className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="truncate font-bold text-foreground">{user.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">{user.email || "—"}</p>
+              {filteredAdmins.map((user) => {
+                const primaryRoleObj = catalog.find((c) => c.id === user.role)
+                const primaryLabel = primaryRoleObj ? (isAr ? primaryRoleObj.labelAr : primaryRoleObj.labelEn) : user.role
+
+                return (
+                  <div key={user.id} className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="truncate font-bold text-foreground">{user.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{user.email || "—"}</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {primaryLabel && (
+                        <Badge variant="outline" className="rounded-full font-bold">
+                          {primaryLabel}
+                        </Badge>
+                      )}
+                      {(user.academy_roles ?? []).map((r) => {
+                        const secRoleObj = catalog.find((c) => c.id === r)
+                        const secLabel = secRoleObj ? (isAr ? secRoleObj.labelAr : secRoleObj.labelEn) : r
+                        return (
+                          <Badge key={r} variant="secondary" className="rounded-full text-xs">
+                            {secLabel}
+                          </Badge>
+                        )
+                      })}
+                      <Button asChild size="sm" variant="outline" className="gap-1 rounded-xl font-bold">
+                        <Link href={`/admin/users/${user.id}/roles`}>
+                          {isAr ? "تعديل الأدوار" : "Edit Roles"}
+                          <DirectionIcon className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {(catalog.find((c) => c.id === user.role)?.labelAr ?? user.role) && (
-                      <Badge variant="outline" className="rounded-full font-bold">
-                        {catalog.find((c) => c.id === user.role)?.labelAr ?? user.role}
-                      </Badge>
-                    )}
-                    {(user.academy_roles ?? []).map((r) => (
-                      <Badge key={r} variant="secondary" className="rounded-full text-xs">
-                        {catalog.find((c) => c.id === r)?.labelAr ?? r}
-                      </Badge>
-                    ))}
-                    <Button asChild size="sm" variant="outline" className="gap-1 rounded-xl font-bold">
-                      <Link href={`/admin/users/${user.id}/roles`}>
-                        تعديل الأدوار
-                        <ChevronLeft className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </CardContent>

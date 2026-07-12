@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { FileText, ExternalLink, Download, Maximize2, Minimize2 } from "lucide-react"
+import { useI18n } from "@/lib/i18n/context";
 
 // Route cross-origin file-host PDFs through our same-origin proxy so the
 // browser's built-in <iframe> viewer isn't blocked by CORS.
@@ -25,6 +26,8 @@ function toViewableSrc(src: string): string {
  * built-in viewer) and offers fullscreen + download + open-in-new-tab.
  */
 export default function AdminPdfViewer({ src, label }: { src: string; label?: string }) {
+  const { t } = useI18n();
+  const isAr = t.locale === "ar";
     const [expanded, setExpanded] = useState(false)
 
     return (
@@ -48,7 +51,7 @@ export default function AdminPdfViewer({ src, label }: { src: string; label?: st
                         target="_blank"
                         rel="noreferrer"
                         className="text-muted-foreground hover:bg-muted p-1.5 rounded"
-                        title="فتح في تبويب جديد"
+                        title={isAr ? "فتح في تبويب جديد" : "Translated"}
                     >
                         <ExternalLink className="w-4 h-4" />
                     </a>
@@ -56,7 +59,7 @@ export default function AdminPdfViewer({ src, label }: { src: string; label?: st
                         href={src}
                         download
                         className="text-muted-foreground hover:bg-muted p-1.5 rounded"
-                        title="تحميل"
+                        title={isAr ? "تحميل" : "Loading"}
                     >
                         <Download className="w-4 h-4" />
                     </a>

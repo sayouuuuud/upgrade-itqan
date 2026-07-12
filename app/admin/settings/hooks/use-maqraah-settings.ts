@@ -3,6 +3,7 @@
 import useSWR from "swr"
 import { useCallback, useState } from "react"
 import { toast } from "sonner"
+import { useI18n } from "@/lib/i18n/context";
 
 // Types for all maqraah settings
 export interface MaqraahSettings {
@@ -286,6 +287,8 @@ export const defaultMaqraahSettings: MaqraahSettings = {
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function useMaqraahSettings() {
+  const { t } = useI18n();
+  const isAr = t.locale === "ar";
   const { data, error, isLoading, mutate } = useSWR("/api/admin/settings", fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 30000,
@@ -326,7 +329,7 @@ export function useMaqraahSettings() {
 
   const saveChanges = useCallback(async () => {
     if (Object.keys(unsavedChanges).length === 0) {
-      toast.info("لا توجد تغييرات للحفظ")
+      toast.info(isAr ? "لا توجد تغييرات للحفظ" : "Translated")
       return false
     }
 
@@ -343,7 +346,7 @@ export function useMaqraahSettings() {
         throw new Error(err.error || "فشل في الحفظ")
       }
 
-      toast.success("تم حفظ الإعدادات بنجاح")
+      toast.success(isAr ? "تم حفظ الإعدادات بنجاح" : "Translated")
       setUnsavedChanges({})
       mutate()
       return true

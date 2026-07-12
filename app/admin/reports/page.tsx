@@ -69,7 +69,7 @@ export default function AdminReportsPage() {
     <div className="flex flex-col items-center justify-center p-24 gap-4">
       <Loader2 className="w-10 h-10 animate-spin text-primary" />
       <p className="text-xs font-black uppercase tracking-widest text-muted-foreground animate-pulse">
-        {(t.addedTranslations_2026?.['جاري تحضير التقارير...'] || (t.addedTranslations_2026?.['جاري تحضير التقارير...'] || 'جاري تحضير التقارير...'))}
+        {(t.addedTranslations_2026?.['{isAr ? "جاري تحضير التقارير" : "Translated"}...'] || (t.addedTranslations_2026?.['جاري تحضير التقارير...'] || 'جاري تحضير التقارير...'))}
       </p>
     </div>
   )

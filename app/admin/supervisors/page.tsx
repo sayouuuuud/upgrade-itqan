@@ -123,7 +123,7 @@ export default function AdminSupervisorsPage() {
             {a.svManage}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {(t.addedTranslations_2026?.['حدّد نطاق إشراف كل مشرف على الطلاب أو المقرئين المُسندين له'] || 'حدّد نطاق إشراف كل مشرف على الطلاب أو المقرئين المُسندين له')}
+            {(t.addedTranslations_2026?.[isAr ? "حدّد نطاق إشراف كل مشرف على الطلاب أو المقرئين المُسندين له" : "حدّد نطاق إشراف كل مشرف على الطلاب أو الReciterين المُسندين له"] || 'حدّد نطاق إشراف كل مشرف على الطلاب أو المقرئين المُسندين له')}
           </p>
         </div>
       </header>
@@ -198,7 +198,7 @@ export default function AdminSupervisorsPage() {
               {a.svSetScopeTitle} — {active?.name}
             </DialogTitle>
             <DialogDescription>
-              {(t.addedTranslations_2026?.['اختر المستخدمين المُسندين. ترك الكل بدون تحديد يعني نطاقاً كاملاً (يرى الجميع).'] || 'اختر المستخدمين المُسندين. ترك الكل بدون تحديد يعني نطاقاً كاملاً (يرى الجميع).')}
+              {(t.addedTranslations_2026?.['{isAr ? "اختر المستخدمين المُسندين" : "Translated"}. ترك الكل بدون تحديد يعني نطاقاً كاملاً (يرى الجميع).'] || 'اختر المستخدمين المُسندين. ترك الكل بدون تحديد يعني نطاقاً كاملاً (يرى الجميع).')}
             </DialogDescription>
           </DialogHeader>
 
@@ -246,7 +246,7 @@ export default function AdminSupervisorsPage() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            {(t.addedTranslations_2026?.['${selected.size} مُحدد'] || '${selected.size} مُحدد')}
+            {(t.addedTranslations_2026?.['${selected.size} {isAr ? "مُحدد" : "Translated"}'] || '${selected.size} مُحدد')}
           </p>
 
           <DialogFooter className="gap-2">
