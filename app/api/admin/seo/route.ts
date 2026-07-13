@@ -33,7 +33,7 @@ export async function PUT(req: NextRequest) {
     for (const [key, value] of Object.entries(settings)) {
         await query(
             `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public)
-       VALUES ($1, $2::jsonb, 'seo', $1, true)
+       VALUES ($1::varchar, $2::jsonb, 'seo', $1::text, true)
        ON CONFLICT (setting_key) DO UPDATE SET setting_value = $2::jsonb, updated_at = NOW()`,
             [key, JSON.stringify(value)]
         )

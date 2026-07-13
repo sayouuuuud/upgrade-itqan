@@ -185,7 +185,8 @@ function normalizeColors(c: any, d: ThemeColors): ThemeColors {
 }
 
 // Coerce arbitrary stored/incoming data into a valid ThemeConfig so a malformed
-// row can never inject broken CSS or crash a render.
+// row can never inject broken CSS or crash a render. Supports both old (single colors)
+// and new (light/dark separated) data formats for backward compatibility.
 export function normalizeTheme(raw: any): ThemeConfig {
   const font: ThemeFontId = THEME_FONTS[raw?.font as ThemeFontId] ? raw.font : "cairo"
   const radius =
@@ -193,12 +194,18 @@ export function normalizeTheme(raw: any): ThemeConfig {
       ? raw.radius.trim()
       : DEFAULT_THEME.radius
 
+  // Support old data format (single colors) by migrating to new format
+  // If raw has light/dark, use them; otherwise use old colors field for light and defaults for dark
+  const hasNewFormat = raw?.light?.colors || raw?.dark?.colors
+  const lightColors = hasNewFormat ? raw?.light?.colors : raw?.colors
+  const darkColors = hasNewFormat ? raw?.dark?.colors : undefined
+
   return {
     light: {
-      colors: normalizeColors(raw?.light?.colors ?? {}, DEFAULT_THEME.light.colors),
+      colors: normalizeColors(lightColors ?? {}, DEFAULT_THEME.light.colors),
     },
     dark: {
-      colors: normalizeColors(raw?.dark?.colors ?? {}, DEFAULT_THEME.dark.colors),
+      colors: normalizeColors(darkColors ?? {}, DEFAULT_THEME.dark.colors),
     },
     radius,
     font,

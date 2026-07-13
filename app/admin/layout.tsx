@@ -29,5 +29,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     session.academy_roles ?? [],
   )
 
-  return <DashboardShell role={session.role as any} adminMode={adminMode}>{children}</DashboardShell>
+  return (
+    <DashboardShell role={session.role as any} adminMode={adminMode}>
+      {children}
+    </DashboardShell>
+  )
 }

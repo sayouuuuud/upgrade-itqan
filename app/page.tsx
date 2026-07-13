@@ -474,9 +474,9 @@ export default function Home() {
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-6 relative z-10">
           <div className="max-w-5xl mx-auto text-center pt-4 md:pt-8">
             <Reveal delay={0} y={20}>
-              <div className="inline-flex items-center gap-3 mb-16 md:mb-20">
+              <div className="inline-flex items-center gap-4 mb-16 md:mb-20">
                 <div className="h-px w-12 bg-hp-bronze" />
-                <span className="text-xs tracking-[0.4em] text-hp-bronze uppercase font-medium">
+                <span className="text-lg md:text-2xl tracking-[0.15em] text-hp-bronze font-semibold">
                   {c.bismillah}
                 </span>
                 <div className="h-px w-12 bg-hp-bronze" />

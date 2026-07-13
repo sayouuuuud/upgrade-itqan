@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/auth'
+import { getSession, isSuperAdmin } from '@/lib/auth'
 import { query } from '@/lib/db'
 
 export async function GET() {
     try {
         const session = await getSession()
-        if (!session || session.role !== 'admin') {
+        if (!session || !isSuperAdmin(session)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
         const rows = await query(
@@ -25,7 +25,7 @@ export async function GET() {
 export async function PUT(req: NextRequest) {
     try {
         const session = await getSession()
-        if (!session || session.role !== 'admin') {
+        if (!session || !isSuperAdmin(session)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 

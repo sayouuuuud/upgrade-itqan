@@ -4,8 +4,20 @@ import { useState, useEffect } from 'react'
 import {
   Home, Save, AlertTriangle, Eye, EyeOff, Megaphone, Loader2, CheckCircle,
   Layout, Type, Palette, Sparkles, Route, MessageSquareQuote, PanelBottom, Navigation,
+  RotateCcw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -42,6 +54,7 @@ export default function AdminHomepagePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -55,6 +68,28 @@ export default function AdminHomepagePage() {
 
   const set = (key: string, value: any) => setSettings(prev => ({ ...prev, [key]: value }))
   const get = (key: string) => (settings[key] != null ? settings[key] : (DEFAULT_HOMEPAGE_CONTENT as AnyMap)[key])
+
+  const handleReset = async () => {
+    setResetting(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/admin/homepage/reset', { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.error || `${res.status}`)
+      // Revert local state to defaults so the form reflects the reset immediately
+      setSettings({
+        ...DEFAULT_HOMEPAGE_CONTENT,
+        ...DEFAULT_HOMEPAGE_COLORS,
+        ...DEFAULT_HOMEPAGE_FLAGS,
+      })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch (e: any) {
+      setError(e?.message || tr('فشل إعادة الضبط', 'Reset failed'))
+    } finally {
+      setResetting(false)
+    }
+  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -103,25 +138,64 @@ export default function AdminHomepagePage() {
 
   return (
     <div dir={isAr ? 'rtl' : 'ltr'}>
-      {/* Header - Fixed at top */}
-      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-3 px-4 sm:px-6 max-w-5xl mx-auto">
-        <div className="flex items-center gap-3">
-          <Home className="w-8 h-8 text-[#1B5E3B]" />
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{tr('إدارة الصفحة الرئيسية', 'Homepage Management')}</h1>
-            <p className="text-muted-foreground text-sm">{tr('تحكَّم في كل نص ولون وقسم في الصفحة الرئيسية', 'Control every text, color and section of the homepage')}</p>
+      {/* Sticky header — negative margin exactly cancels the <main> p-6 lg:p-8 padding
+          so the bar sticks flush to the very top of the scroll viewport */}
+      <div className="sticky top-[-1.5rem] lg:top-[-2rem] z-20 -mt-6 lg:-mt-8 -mx-6 lg:-mx-8 bg-background/95 backdrop-blur-md border-b border-border">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-3 px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <Home className="w-8 h-8 text-[#1B5E3B]" />
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{tr('إدارة الصفحة الرئيسية', 'Homepage Management')}</h1>
+              <p className="text-muted-foreground text-sm">{tr('تحكَّم في كل نص ولون وقسم في الصفحة الرئيسية', 'Control every text, color and section of the homepage')}</p>
+            </div>
           </div>
-        </div>
-        <Button onClick={handleSave} disabled={saving} className="bg-[#1B5E3B] hover:bg-[#1B5E3B]/90 text-white gap-2 shrink-0">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-          {saved ? tr('تم الحفظ', 'Saved') : tr('حفظ التغييرات', 'Save changes')}
-        </Button>
+          <div className="flex items-center gap-2">
+            {/* Reset to defaults */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  disabled={resetting || saving}
+                  className="gap-2 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
+                >
+                  {resetting
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <RotateCcw className="w-4 h-4" />}
+                  {tr('إعادة الضبط', 'Reset to defaults')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{tr('إعادة الضبط إلى القيم الافتراضية؟', 'Reset to default values?')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {tr(
+                      'سيُحذف كل ما حفظته وستعود الصفحة الرئيسية إلى نصوصها وألوانها الأصلية. لا يمكن التراجع.',
+                      'All saved changes will be deleted and the homepage will revert to its original texts and colours. This cannot be undone.'
+                    )}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{tr('إلغاء', 'Cancel')}</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleReset}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    {tr('نعم، أعد الضبط', 'Yes, reset')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <Button onClick={handleSave} disabled={saving || resetting} className="bg-[#1B5E3B] hover:bg-[#1B5E3B]/90 text-white gap-2 shrink-0">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+              {saved ? tr('تم الحفظ', 'Saved') : tr('حفظ التغييرات', 'Save changes')}
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
+      <div className="p-4 sm:p-6 max-w-5xl mx-auto w-full space-y-6">
         {error && (
         <div className="bg-red-50 dark:bg-red-500/10 border border-red-300 dark:border-red-500/20 rounded-xl p-4 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-500 mt-0.5 shrink-0" />
@@ -495,7 +569,7 @@ export default function AdminHomepagePage() {
               <div className="flex items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg border border-border">
                 <div>
                   <p className="font-medium text-foreground text-sm">{tr('صفحة صيانة كاملة', 'Full maintenance page')}</p>
-                  <p className="text-xs text-muted-foreground">{tr('يُخفي الصفحة بالكامل ويعرض الرسالة فقط.', 'Hides the whole page and shows only the message.')}</p>
+                  <p className="text-xs text-muted-foreground">{tr('يُخفي ا��صفحة بالكامل ويعرض الرسالة فقط.', 'Hides the whole page and shows only the message.')}</p>
                 </div>
                 <Switch checked={asBool(settings.maintenance_full_page, false)} onCheckedChange={v => set('maintenance_full_page', v)} />
               </div>

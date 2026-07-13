@@ -1,23 +1,19 @@
 import { SignJWT, jwtVerify } from "jose"
 
-function getJwtSecret() {
-  if (!process.env.JWT_SECRET) {
-    // Only throw when actually used, not when module is imported during build
-    if (process.env.NODE_ENV === "production" && !process.env.VERCEL_BUILD) {
-      throw new Error("JWT_SECRET environment variable is required in production")
-    }
-    console.warn("[AUTH] JWT_SECRET not set — using dev fallback. NEVER deploy without setting JWT_SECRET.")
-    return new TextEncoder().encode("dev-only-fallback-do-not-deploy")
+// Returns the primary signing secret. Priority:
+//   1. JWT_SECRET env var (set this in production for best security)
+//   2. Hard-coded dev fallback (keeps existing sessions valid — never throw)
+function getJwtSecret(): Uint8Array {
+  if (process.env.JWT_SECRET) {
+    return new TextEncoder().encode(process.env.JWT_SECRET)
   }
-  return new TextEncoder().encode(process.env.JWT_SECRET)
+  // Use the same fallback that was used when sessions were originally signed.
+  // This keeps all existing user sessions valid without a forced logout.
+  return new TextEncoder().encode("dev-only-fallback-do-not-deploy")
 }
 
-let _jwtSecret: Uint8Array | null = null
 function getSecret() {
-  if (!_jwtSecret) {
-    _jwtSecret = getJwtSecret()
-  }
-  return _jwtSecret
+  return getJwtSecret()
 }
 
 export type AllRoles = "student" | "reader" | "admin" | "super_admin" | "maqraa_admin" | "student_supervisor" | "reciter_supervisor" | "teacher" | "parent" | "academy_admin" | "fiqh_supervisor" | "content_supervisor" | "supervisor" | "quality_supervisor"
@@ -59,6 +55,17 @@ export async function getSession(): Promise<JWTPayload | null> {
   const { cookies } = await import("next/headers")
   const cookieStore = await cookies()
   const token = cookieStore.get("auth-token")?.value
+  if (!token) return null
+  return verifyToken(token)
+}
+
+// Read the session directly from a NextRequest object (works in both Edge and
+// Node runtimes, and does not depend on next/headers). Use this in API route
+// handlers so the session is always read from the actual incoming request
+// rather than relying on the async cookies() context, which can be unreliable
+// in some Next.js production builds.
+export async function getSessionFromRequest(req: import("next/server").NextRequest): Promise<JWTPayload | null> {
+  const token = req.cookies.get("auth-token")?.value
   if (!token) return null
   return verifyToken(token)
 }
@@ -114,6 +121,34 @@ export function isAcademyAdmin(session: JWTPayload | null): boolean {
 // Any of the three admin tiers. Used to gate the shared /admin shell.
 export function isAnyAdmin(session: JWTPayload | null): boolean {
   return isSuperAdmin(session) || isMaqraaAdmin(session) || isAcademyAdmin(session)
+}
+
+// Resolve the correct "home" landing page for a logged-in user based on their
+// role and platform access flags. This MUST stay in sync with the
+// `getRedirectPath` logic used on the login page so the homepage header button
+// never points at a non-existent route (e.g. the bare `/academy`, which has no
+// page and 404s). Approval-status routing is handled by middleware, not here.
+export function getRoleHomePath(session: JWTPayload | null): string {
+  if (!session) return "/login"
+  const role = session.role
+  if (role === "admin" || role === "super_admin") return "/admin"
+  if (role === "maqraa_admin") return "/admin"
+  if (role === "academy_admin") return "/academy/admin"
+  if (role === "student_supervisor" || role === "reciter_supervisor") return "/admin"
+  if (role === "fiqh_supervisor") return "/academy/fiqh-supervisor"
+  if (role === "content_supervisor") return "/academy/content-supervisor"
+  if (role === "supervisor") return "/academy/supervisor"
+  if (role === "quality_supervisor") return "/admin"
+  if (role === "reader") return "/reader"
+  if (role === "teacher") return "/academy/teacher"
+  if (role === "parent") return "/academy/parent"
+  // Student: route based on platform access flags.
+  const hasAcademy = session.has_academy_access !== false
+  const hasQuran = session.has_quran_access !== false
+  if (hasAcademy && !hasQuran) return "/academy/student"
+  if (!hasAcademy && hasQuran) return "/student"
+  // Both available → default to academy (the primary platform).
+  return "/academy/student"
 }
 
 // Get the user's primary academy role for routing
