@@ -46,9 +46,9 @@ export default function HeaderNavClient({
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="sticky top-0 z-50 px-4 sm:px-6 lg:px-8 pt-3 pb-1 bg-hp-parchment dark:bg-hp-dark"
+      className="sticky top-0 z-50 px-4 sm:px-6 lg:px-8 pt-3 pb-0"
     >
-      <div className="max-w-[1000px] lg:max-w-[1400px] w-full mx-auto bg-hp-cream/95 dark:bg-hp-dark/95 backdrop-blur-md border border-hp-ink/10 dark:border-hp-cream/10 shadow-xl rounded-full h-16 px-4 sm:px-5 lg:px-6 flex items-center justify-between gap-4">
+      <div className="max-w-[1000px] lg:max-w-[1400px] w-full mx-auto bg-hp-cream/95 dark:bg-hp-dark/95 backdrop-blur-md border border-hp-ink/10 dark:border-hp-cream/10 shadow-lg rounded-full h-[68px] px-4 sm:px-5 lg:px-6 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hp-green text-hp-gold shadow-sm">
