@@ -93,15 +93,18 @@ export function ContentPagesManager() {
       const res = await fetch(`/api/admin/content-pages/${selectedSlug}/reset`, {
         method: "POST",
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body?.error || `خطأ ${res.status}`)
+      }
       toast.success("تمت إعادة الضبط إلى القيم الافتراضية")
       // Re-fetch the page to refresh the form
       mutate()
       // Trigger SWR revalidation of the current page detail
       const detail = await fetch(`/api/admin/content-pages/${selectedSlug}`).then(r => r.json())
       if (detail?.page) setForm(detail.page)
-    } catch {
-      toast.error("فشل في إعادة الضبط")
+    } catch (e: any) {
+      toast.error(e?.message || "فشل في إعادة الضبط")
     } finally {
       setResetting(false)
     }
@@ -116,11 +119,14 @@ export function ContentPagesManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body?.error || `خطأ ${res.status}`)
+      }
       toast.success("تم حفظ الصفحة بنجاح")
       mutate()
-    } catch {
-      toast.error("فشل في حفظ الصفحة")
+    } catch (e: any) {
+      toast.error(e?.message || "فشل في حفظ الصفحة")
     } finally {
       setSaving(false)
     }
