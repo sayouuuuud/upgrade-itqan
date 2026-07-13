@@ -24,31 +24,56 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { AdminModeBanner } from '@/components/admin/admin-mode-banner'
 import { AdminRoleSwitcher } from '@/components/admin/admin-role-switcher'
 import { AdminOnboardingTour } from '@/components/admin/admin-onboarding-tour'
- import { Palette, Sparkles, Grid, UserPlus, HelpCircle } from 'lucide-react'
+import { Palette, Sparkles, Grid, UserPlus, HelpCircle, ChevronDown } from 'lucide-react'
 
 type NavItem = { href: string; label: string; icon: React.ElementType; badge?: number | string | null }
 type NavSection = { title?: string; items: NavItem[] }
+
+/**
+ * Wrap regular dashboard pages with this to get consistent padding.
+ * Pages that need a full-bleed sticky header (like admin/homepage) should
+ * NOT use this wrapper — they manage their own layout instead.
+ */
+export function DashboardPageWrapper({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={cn('p-6 lg:p-8', className)}>{children}</div>
+}
 
 const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student_supervisor' | 'reciter_supervisor', { sections: NavSection[], label: string, name: string, sublabel: string }> => ({
   student: {
     sections: [
       {
+        title: t.main || 'الرئيسية',
         items: [
           { href: '/student', label: t.student.dashboard, icon: LayoutDashboard },
+          { href: '/student/wird', label: t.admin.sidebarDailyWird, icon: BookMarked },
+        ]
+      },
+      {
+        title: t.admin.sidebarEducationalProcess || 'التلاوة والتعليم',
+        items: [
           { href: '/student/submit', label: t.student.submitTask || t.admin.sidebarSubmitTask, icon: Mic || null },
           { href: '/student/recitations', label: t.student.recitations, icon: FileText },
           { href: '/student/memorization-paths', label: t.student.memorizationPaths || t.admin.sidebarMemorizationPaths, icon: Route },
           { href: '/student/tajweed-paths', label: t.tajweedPaths?.tajweedTitle || t.admin.sidebarTajweedPaths, icon: GraduationCap },
           { href: '/student/mushaf', label: t.student.mushaf || t.admin.sidebarMyMushaf, icon: BookOpen },
           { href: '/student/mushaf-progress', label: t.admin.sidebarMushafMap, icon: Target },
-          { href: '/student/competitions', label: t.admin.sidebarCompetitions, icon: Trophy },
           { href: '/student/sessions', label: t.student.sessions, icon: CalendarCheck },
           { href: '/student/halaqat', label: t.admin.sidebarMyHalaqat, icon: GraduationCap },
-          { href: '/student/chat', label: t.student.chat, icon: MessageSquare },
+        ]
+      },
+      {
+        title: t.shell?.statsAndReports || 'الإنجازات',
+        items: [
           { href: '/student/certificates', label: t.student.certificates || t.student.certificate, icon: Award },
           { href: '/student/points', label: t.admin.sidebarMyPoints, icon: Star },
           { href: '/student/badges', label: t.admin.sidebarMyBadges, icon: Medal },
-          { href: '/student/wird', label: t.admin.sidebarDailyWird, icon: BookMarked },
+          { href: '/student/competitions', label: t.admin.sidebarCompetitions, icon: Trophy },
+        ]
+      },
+      {
+        title: t.admin.sidebarCommunity || 'المجتمع والمكتبة',
+        items: [
+          { href: '/student/chat', label: t.student.chat, icon: MessageSquare },
           { href: '/community/maqraa/forum', label: t.admin.sidebarMaqraaForum || t.admin.sidebarForum, icon: MessagesSquare },
           { href: '/academy/fiqh', label: t.admin.sidebarFiqhLibrary || t.academy?.fiqhLibrary, icon: Library },
           { href: '/library', label: t.admin.sidebarBooksLibrary || t.academy?.booksLibrary, icon: BookOpen },
@@ -68,24 +93,45 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
   reader: {
     sections: [
       {
+        title: t.main || 'الرئيسية',
         items: [
           { href: '/reader', label: t.reader.dashboard, icon: LayoutDashboard },
           { href: '/reader/calendar', label: t.reader.calendar || t.admin.calendar, icon: Calendar },
+          { href: '/reader/schedule', label: t.reader.schedule, icon: Clock },
+        ]
+      },
+      {
+        title: t.admin.sidebarEducationalProcess || 'الطلاب والجلسات',
+        items: [
           { href: '/reader/recitations', label: t.reader.reviewList, icon: ClipboardList },
           { href: '/reader/students', label: t.admin.sidebarMyStudents, icon: Users },
           { href: '/reader/enrollment-requests', label: t.admin.sidebarEnrollmentRequests, icon: UserCheck },
-          { href: '/reader/memorization-paths', label: t.reader.memorizationPaths?.title || t.admin.sidebarMemorizationPaths, icon: Route },
-          { href: '/reader/learning-paths', label: t.admin.sidebarLearningPaths, icon: GraduationCap },
-          { href: '/reader/competitions', label: t.admin.sidebarJudgeCompetitions, icon: Trophy },
           { href: '/reader/sessions', label: t.reader.sessions || t.admin.sidebarMySessions, icon: Calendar },
           { href: '/reader/halaqat', label: t.admin.sidebarMyHalaqat, icon: GraduationCap },
           { href: '/reader/certificates', label: t.admin.sidebarCertificatesCenter, icon: Award },
-          { href: '/reader/schedule', label: t.reader.schedule, icon: Clock },
+          { href: '/reader/competitions', label: t.admin.sidebarJudgeCompetitions, icon: Trophy },
+        ]
+      },
+      {
+        title: t.admin.sidebarUsersPermissions || 'المسارات والمحتوى',
+        items: [
+          { href: '/reader/memorization-paths', label: t.reader.memorizationPaths?.title || t.admin.sidebarMemorizationPaths, icon: Route },
+          { href: '/reader/learning-paths', label: t.admin.sidebarLearningPaths, icon: GraduationCap },
+        ]
+      },
+      {
+        title: t.admin.sidebarCommunity || 'المجتمع والمكتبة',
+        items: [
           { href: '/reader/chat', label: t.reader.chat, icon: MessageSquare },
           { href: '/reader/parent-messages', label: t.admin.sidebarParentMessages, icon: Mail },
           { href: '/community/maqraa/forum', label: t.admin.sidebarMaqraaForum || t.admin.sidebarForum, icon: MessagesSquare },
           { href: '/academy/fiqh', label: t.admin.sidebarFiqhLibrary || t.academy?.fiqhLibrary, icon: Library },
           { href: '/library', label: t.admin.sidebarBooksLibrary || t.academy?.booksLibrary, icon: BookOpen },
+        ]
+      },
+      {
+        title: t.shell.account,
+        items: [
           { href: '/reader/notifications', label: t.student.notifications, icon: Bell },
           { href: '/reader/profile', label: t.reader.profile, icon: User },
         ]
@@ -159,12 +205,23 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
   student_supervisor: {
     sections: [
       {
+        title: t.main || 'الرئيسية',
         items: [
           { href: '/admin', label: t.admin.dashboard, icon: LayoutDashboard },
           { href: '/admin/supervisor-tasks', label: t.admin.sidebarSupervisorTasks, icon: ListChecks },
+        ]
+      },
+      {
+        title: t.admin.sidebarEducationalProcess || 'الإشراف التعليمي',
+        items: [
           { href: '/admin/users', label: t.admin.users, icon: Users },
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/competitions', label: t.admin.sidebarCompetitions || t.academy?.competitions, icon: Trophy },
+        ]
+      },
+      {
+        title: t.admin.sidebarCommunity || 'المجتمع والمكتبة',
+        items: [
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
           { href: '/community/maqraa/forum', label: t.admin.sidebarForum || t.academy?.forum, icon: MessagesSquare },
           { href: '/academy/fiqh', label: t.admin.sidebarFiqhLibrary || t.academy?.fiqhLibrary, icon: Library },
@@ -184,13 +241,24 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
   reciter_supervisor: {
     sections: [
       {
+        title: t.main || 'الرئيسية',
         items: [
           { href: '/admin', label: t.admin.dashboard, icon: LayoutDashboard },
           { href: '/admin/supervisor-tasks', label: t.admin.sidebarSupervisorTasks, icon: ListChecks },
+        ]
+      },
+      {
+        title: t.admin.sidebarEducationalProcess || 'إشراف القراء',
+        items: [
           { href: '/admin/readers', label: t.admin.readers, icon: BookOpen },
           { href: '/admin/reader-applications', label: t.admin.readerApplications, icon: UserCheck },
           { href: '/admin/recitations', label: t.admin.recitations, icon: FileText },
           { href: '/admin/competitions', label: t.admin.sidebarCompetitions, icon: Trophy },
+        ]
+      },
+      {
+        title: t.admin.sidebarCommunity || 'المجتمع والمكتبة',
+        items: [
           { href: '/admin/conversations', label: t.admin.conversations, icon: MessagesSquare },
           { href: '/community/maqraa/forum', label: t.admin.sidebarForum || t.academy?.forum, icon: MessagesSquare },
           { href: '/community/maqraa/admin/manage', label: t.admin.sidebarManageForum, icon: Shield },
@@ -254,7 +322,7 @@ const getSuperConfig = (t: any): ShellConfig => ({
       title: 'إعدادات المنصة',
       items: [
         { href: '/admin/settings',         label: t.admin?.systemSettings || 'إعدادات النظام', icon: Settings },
-        { href: '/admin/email-templates',  label: t.admin?.emailTemplates || 'قوالب البريد', icon: ScrollText },
+        { href: '/admin/email-templates',  label: t.admin?.emailTemplates || 'قوالب البري��', icon: ScrollText },
       ],
     },
     {
@@ -271,10 +339,10 @@ const getSuperConfig = (t: any): ShellConfig => ({
       ],
     },
   ],
-  label: 'المدير العام', name: 'المدير العام', sublabel: 'المدير العام',
+  label: 'المدير العام', name: 'المدير العام', sublabel: 'ال������دير العام',
 })
 
-// ── Maqraa mode ────────────────────────���─────────────────────────────���──────
+// ── Maqraa mode ────────────────────────���─────────────────────────────���─���──��─
 // The classic admin sidebar, minus every platform-wide / general item that now
 // lives exclusively in the Super Admin (super mode) sidebar — so nothing is
 // duplicated across modes. Site identity (homepage/seo), security, backup,
@@ -305,7 +373,7 @@ const getMaqraaConfig = (t: any): ShellConfig => {
 const getAcademyConfig = (t: any): ShellConfig => ({
   sections: [
     {
-      title: t.main || 'الرئيسية',
+      title: t.main || 'الر��يسية',
       items: [
         { href: '/academy/admin', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
         { href: '/academy/admin/analytics', label: t.academy?.analytics || 'التحليلات', icon: BarChart3 },
@@ -387,6 +455,131 @@ function resolveConfigRole(
 ): 'student' | 'reader' | 'admin' | 'student_supervisor' | 'reciter_supervisor' {
   if (role === 'super_admin' || role === 'maqraa_admin' || role === 'academy_admin') return 'admin'
   return role
+}
+
+// ── Collapsible nav section ────────────────────────────────────────────────
+function CollapsibleNavSection({
+  section, si, isCollapsedSidebar, isActive, sectionKey, sectionHasActive,
+  unreadCount, t, onLinkClick, activeClass, hoverClass, indicatorClass,
+}: {
+  section: NavSection
+  si: number
+  isCollapsedSidebar: boolean
+  isActive: (href: string) => boolean
+  sectionKey: string
+  sectionHasActive: boolean
+  unreadCount: number
+  t: any
+  onLinkClick: () => void
+  activeClass: string
+  hoverClass: string
+  indicatorClass: string
+}) {
+  // Sections without a title are always visible (no accordion header).
+  const hasTitle = !!section.title
+
+  // Initialise open state: sections with active items start open,
+  // others read from localStorage (default open).
+  const [open, setOpen] = useState<boolean>(() => {
+    if (!hasTitle || sectionHasActive) return true
+    if (typeof window === 'undefined') return true
+    const stored = localStorage.getItem(sectionKey)
+    return stored === null ? true : stored === '1'
+  })
+
+  // When an active item appears in this section (e.g. navigation), force open.
+  useEffect(() => {
+    if (sectionHasActive) setOpen(true)
+  }, [sectionHasActive])
+
+  const toggle = () => {
+    if (!hasTitle) return
+    const next = !open
+    setOpen(next)
+    try { localStorage.setItem(sectionKey, next ? '1' : '0') } catch {}
+  }
+
+  // In icon-only collapsed mode: skip the accordion header, show all items.
+  const showAccordion = hasTitle && !isCollapsedSidebar
+
+  const items = section.items.map((item) => {
+    const active = isActive(item.href)
+    const isNotifications = item.label === t.student?.notifications || item.label === t.notifications?.title || item.href.includes('notifications')
+    const badgeNode = item.badge ? (
+      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">{item.badge}</span>
+    ) : isNotifications && unreadCount > 0 ? (
+      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">
+        {unreadCount > 99 ? '99+' : unreadCount}
+      </span>
+    ) : null
+    const collapsedDot = item.badge
+      ? item.badge
+      : (isNotifications && unreadCount > 0) ? (unreadCount > 99 ? '99+' : unreadCount) : null
+
+    const linkEl = (
+      <Link key={item.href} href={item.href} onClick={onLinkClick}
+        className={cn(
+          'flex items-center gap-3 rounded-xl transition-all text-sm group relative',
+          isCollapsedSidebar ? 'lg:justify-center lg:px-0 lg:py-3 px-4 py-2.5' : 'px-3 py-2.5',
+          active ? activeClass : hoverClass
+        )}
+      >
+        <item.icon className={cn("w-5 h-5 shrink-0 transition-transform duration-200", active && "scale-110")} />
+        <span className={cn('font-medium truncate', isCollapsedSidebar && 'lg:hidden')}>{item.label}</span>
+        {!isCollapsedSidebar && badgeNode}
+        {isCollapsedSidebar && collapsedDot != null && (
+          <span className="hidden lg:flex absolute -top-1 -left-1 bg-destructive text-destructive-foreground text-[9px] leading-none px-1 py-0.5 rounded-full min-w-[16px] h-[16px] items-center justify-center font-bold">{collapsedDot}</span>
+        )}
+        {active && <div className={cn('absolute right-0 w-1 h-6 rounded-l-full', indicatorClass, isCollapsedSidebar && 'lg:hidden')} />}
+      </Link>
+    )
+
+    if (isCollapsedSidebar) {
+      return (
+        <Tooltip key={item.href}>
+          <TooltipTrigger asChild>{linkEl}</TooltipTrigger>
+          <TooltipContent side="left" className="hidden lg:block">{item.label}</TooltipContent>
+        </Tooltip>
+      )
+    }
+    return linkEl
+  })
+
+  return (
+    <div className={cn(si > 0 && !showAccordion && 'mt-2')}>
+      {showAccordion ? (
+        <div className={cn('mb-0.5', si > 0 && 'mt-4')}>
+          {/* Section accordion header */}
+          <button
+            type="button"
+            onClick={toggle}
+            className={cn(
+              'w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-left transition-colors',
+              'text-muted-foreground hover:text-foreground hover:bg-muted/60 group',
+              sectionHasActive && 'text-foreground'
+            )}
+          >
+            <span className="text-[11px] font-bold uppercase tracking-widest select-none">
+              {section.title}
+            </span>
+            <ChevronDown className={cn(
+              'w-3.5 h-3.5 shrink-0 transition-transform duration-200',
+              open && 'rotate-180'
+            )} />
+          </button>
+          {/* Items */}
+          <div className={cn(
+            'overflow-hidden transition-all duration-200',
+            open ? 'max-h-[1000px] opacity-100 mt-0.5' : 'max-h-0 opacity-0'
+          )}>
+            <div className="space-y-0.5">{items}</div>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-0.5">{items}</div>
+      )}
+    </div>
+  )
 }
 
 export function DashboardShell({ role, children, headerTitle, adminMode }: { role: 'student' | 'reader' | 'admin' | 'super_admin' | 'maqraa_admin' | 'academy_admin' | 'student_supervisor' | 'reciter_supervisor'; children: React.ReactNode; headerTitle?: string; adminMode?: 'super' | 'maqraa' | 'academy' }) {
@@ -487,7 +680,7 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
   // Inject unread direct message counts + pending-certificate badge
   // into the sidebar items. When the maqraa student has data_required
   // certificate requests we also surface a dedicated
-  // "إكمال بيانات الشهادة" entry below /student/certificates.
+  // "إكمال بيا��ات الشهادة" entry below /student/certificates.
   const sectionsWithBadges = rawConfig.sections.map(section => {
     let items = section.items.map(item => {
       const isChat = item.href.endsWith('/chat') || item.href.endsWith('/conversations')
@@ -601,65 +794,28 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
         </div>
 
         {/* Navigation */}
-        <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-6 space-y-1', collapsed ? 'lg:px-2 px-4' : 'px-4')}>
-          {config.sections.map((section, si) => (
-            <div key={si}>
-              {section.title && (
-                <div className={cn(
-                  'text-[10px] font-bold uppercase tracking-widest mb-4 px-3 text-muted-foreground/60',
-                  si > 0 && 'mt-8',
-                  collapsed && 'lg:hidden'
-                )}>
-                  {section.title}
-                </div>
-              )}
-              {section.items.map((item) => {
-                const active = isActive(item.href)
-                const badgeNode = item.badge ? (
-                  <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">{item.badge}</span>
-                ) : (item.label === t.student.notifications || item.label === t.notifications.title || item.href.includes('notifications')) ? (
-                  unreadCount > 0 && (
-                    <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )
-                ) : null
-                const collapsedDot = item.badge
-                  ? item.badge
-                  : ((item.label === t.student.notifications || item.label === t.notifications.title || item.href.includes('notifications')) && unreadCount > 0)
-                    ? (unreadCount > 99 ? '99+' : unreadCount)
-                    : null
-                const linkEl = (
-                  <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}
-                    className={cn(
-                      'flex items-center gap-3 rounded-xl transition-all text-sm group relative',
-                      collapsed ? 'lg:justify-center lg:px-0 lg:py-3 px-4 py-3' : 'px-4 py-3',
-                      active
-                        ? 'bg-primary/10 text-primary font-bold shadow-sm'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    )}
-                  >
-                    <item.icon className={cn("w-5 h-5 shrink-0 transition-transform duration-200", active && "scale-110")} />
-                    <span className={cn('font-medium', collapsed && 'lg:hidden')}>{item.label}</span>
-                    {!collapsed && badgeNode}
-                    {collapsed && collapsedDot != null && (
-                      <span className="hidden lg:flex absolute -top-1 -left-1 bg-destructive text-destructive-foreground text-[9px] leading-none px-1 py-0.5 rounded-full min-w-[16px] h-[16px] items-center justify-center font-bold">{collapsedDot}</span>
-                    )}
-                    {active && <div className={cn('absolute right-0 w-1 h-6 bg-primary rounded-l-full', collapsed && 'lg:hidden')} />}
-                  </Link>
-                )
-                if (collapsed) {
-                  return (
-                    <Tooltip key={item.href}>
-                      <TooltipTrigger asChild>{linkEl}</TooltipTrigger>
-                      <TooltipContent side="left" className="hidden lg:block">{item.label}</TooltipContent>
-                    </Tooltip>
-                  )
-                }
-                return linkEl
-              })}
-            </div>
-          ))}
+        <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-0.5', collapsed ? 'lg:px-2 px-4' : 'px-3')}>
+          {config.sections.map((section, si) => {
+            const sectionKey = `itqan_nav_open_${section.title ?? si}`
+            const sectionHasActive = section.items.some(i => isActive(i.href))
+            return (
+              <CollapsibleNavSection
+                key={si}
+                section={section}
+                si={si}
+                isCollapsedSidebar={collapsed}
+                isActive={isActive}
+                sectionKey={sectionKey}
+                sectionHasActive={sectionHasActive}
+                unreadCount={unreadCount}
+                t={t}
+                onLinkClick={() => setSidebarOpen(false)}
+                activeClass="bg-primary text-primary-foreground font-bold shadow-md"
+                hoverClass="text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                indicatorClass="bg-primary-foreground"
+              />
+            )
+          })}
         </nav>
 
         {/* Bottom section */}
@@ -710,7 +866,7 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
           <AdminModeBanner mode={adminMode} />
         )}
         <header className={cn(
-          'border-b border-border flex items-center justify-between px-6 lg:px-8 bg-background/95 backdrop-blur-md z-10 sticky top-0',
+          'border-b border-border flex items-center justify-between px-6 lg:px-8 bg-background/95 backdrop-blur-md z-40 sticky top-0 left-0 right-0',
           role === 'student' ? 'h-20' : 'h-16'
         )}>
           <div className="flex items-center gap-4">

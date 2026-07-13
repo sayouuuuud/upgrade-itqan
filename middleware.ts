@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
-const publicPaths = ["/", "/about", "/contact", "/sitemap-page", "/login", "/login-admin", "/register", "/reader-register", "/teacher-register", "/forgot-password", "/reset-password", "/verify", "/privacy", "/terms", "/maintenance", "/change-password", "/rejected"]
-const apiPublicPaths = ["/api/auth", "/api/admin/homepage", "/api/admin/analytics", "/api/internal"]
+const publicPaths = ["/", "/about", "/contact", "/sitemap-page", "/login", "/login-admin", "/register", "/reader-register", "/teacher-register", "/forgot-password", "/reset-password", "/verify", "/privacy", "/terms", "/faq", "/maintenance", "/change-password", "/rejected"]
+const apiPublicPaths = ["/api/auth", "/api/admin/homepage", "/api/admin/analytics", "/api/internal", "/api/homepage", "/api/content-pages"]
 
 // Academy public paths (for public lessons and invitations)
 const academyPublicPaths = ["/academy/public", "/academy/invite", "/academy/lesson"]

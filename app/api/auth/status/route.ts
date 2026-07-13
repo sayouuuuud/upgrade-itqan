@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getSession, isAnyAdmin, getAcademyRole } from "@/lib/auth"
+import { getSession, getRoleHomePath } from "@/lib/auth"
 
 export async function GET() {
     const session = await getSession()
@@ -7,16 +7,9 @@ export async function GET() {
         return NextResponse.json({ authenticated: false })
     }
 
-    // Compute where the user should be routed from the homepage header.
-    let dashboardLink = "/dashboard"
-    let dashboardText = "حسابي"
-    if (isAnyAdmin(session)) {
-        dashboardLink = "/admin"
-        dashboardText = "لوحة التحكم"
-    } else if (getAcademyRole(session)) {
-        dashboardLink = "/academy"
-        dashboardText = "الأكاديمية"
-    }
+    // Route the homepage header button to the user's real landing page.
+    const dashboardLink = getRoleHomePath(session)
+    const dashboardText = dashboardLink.startsWith("/admin") ? "لوحة التحكم" : "حسابي"
 
     return NextResponse.json({
         authenticated: true,

@@ -20,8 +20,20 @@ import {
   EyeOff,
   Globe,
   Clock,
+  RotateCcw,
 } from "lucide-react"
 import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -57,6 +69,7 @@ export function ContentPagesManager() {
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const [form, setForm] = useState<Partial<PageDetail> | null>(null)
 
   const { data: pageData, isLoading: loadingPage } = useSWR<{ page: PageDetail }>(
@@ -73,6 +86,30 @@ export function ContentPagesManager() {
     setForm((prev) => (prev ? { ...prev, [field]: value } : prev))
   }
 
+  async function handleReset() {
+    if (!selectedSlug) return
+    setResetting(true)
+    try {
+      const res = await fetch(`/api/admin/content-pages/${selectedSlug}/reset`, {
+        method: "POST",
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body?.error || `خطأ ${res.status}`)
+      }
+      toast.success("تمت إعادة الضبط إلى القيم الافتراضية")
+      // Re-fetch the page to refresh the form
+      mutate()
+      // Trigger SWR revalidation of the current page detail
+      const detail = await fetch(`/api/admin/content-pages/${selectedSlug}`).then(r => r.json())
+      if (detail?.page) setForm(detail.page)
+    } catch (e: any) {
+      toast.error(e?.message || "فشل في إعادة الضبط")
+    } finally {
+      setResetting(false)
+    }
+  }
+
   async function handleSave() {
     if (!selectedSlug || !form) return
     setSaving(true)
@@ -82,11 +119,14 @@ export function ContentPagesManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body?.error || `خطأ ${res.status}`)
+      }
       toast.success("تم حفظ الصفحة بنجاح")
       mutate()
-    } catch {
-      toast.error("فشل في حفظ الصفحة")
+    } catch (e: any) {
+      toast.error(e?.message || "فشل في حفظ الصفحة")
     } finally {
       setSaving(false)
     }
@@ -200,6 +240,40 @@ export function ContentPagesManager() {
               معاينة
             </a>
           </Button>
+
+          {/* Reset to defaults */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+                disabled={resetting}
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                {resetting ? "جاري الإعادة..." : "إعادة الضبط"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>إعادة الضبط إلى القيم الافتراضية؟</AlertDialogTitle>
+                <AlertDialogDescription>
+                  سيتم استبدال المحتوى الحالي بالنص الافتراضي الأصلي لهذه الصفحة.
+                  لا يمكن التراجع عن هذا الإجراء.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleReset}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  نعم، أعد الضبط
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
           <Button size="sm" onClick={handleSave} disabled={saving} className="gap-1.5">
             <Save className="w-4 h-4" />
             {saving ? "جاري الحفظ..." : "حفظ"}

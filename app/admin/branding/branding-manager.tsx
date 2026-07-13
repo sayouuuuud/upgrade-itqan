@@ -40,6 +40,7 @@ export function BrandingManager() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState<keyof Branding | null>(null)
   const fileInputs = {
     logoUrl: useRef<HTMLInputElement>(null),
@@ -75,6 +76,7 @@ export function BrandingManager() {
 
   const handleSave = async () => {
     setSaving(true)
+    setError(null)
     try {
       const res = await fetch("/api/admin/branding", {
         method: "PUT",
@@ -85,7 +87,12 @@ export function BrandingManager() {
         setSaved(true)
         setTimeout(() => setSaved(false), 3000)
         router.refresh()
+      } else {
+        const body = await res.json().catch(() => ({}))
+        setError(body?.error || `تعذّر الحفظ (خطأ ${res.status})`)
       }
+    } catch {
+      setError("تعذّر الاتصال بالخادم")
     } finally {
       setSaving(false)
     }
@@ -113,6 +120,12 @@ export function BrandingManager() {
           {saved ? "تم الحفظ" : "حفظ التغييرات"}
         </Button>
       </div>
+
+      {error && (
+        <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       {/* Logos */}
       <section className="rounded-xl border border-border bg-card p-4 sm:p-5">

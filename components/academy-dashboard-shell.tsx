@@ -16,7 +16,7 @@ import {
   GraduationCap, PlayCircle, FileText, Target, Award, Star,
   HelpCircle, Megaphone, UserPlus, BarChart3, Clock, Video,
   BookMarked, Route, Globe, Sparkles, Grid, UserCheck, Shield, ShieldCheck, Archive,
-  PanelLeftClose, PanelLeftOpen, Library
+  PanelLeftClose, PanelLeftOpen, Library, ChevronDown
 } from 'lucide-react'
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed'
@@ -27,26 +27,144 @@ type NavSection = { title?: string; items: NavItem[] }
 
 type AcademyRole = 'academy_student' | 'teacher' | 'academy_admin' | 'parent' | 'supervisor' | 'fiqh_questions_supervisor' | 'content_supervisor'
 
+// ── Collapsible nav section ────────────────────────────────────────────────
+function AcademyCollapsibleNavSection({
+  section, si, isCollapsedSidebar, isActive, sectionKey, sectionHasActive,
+  unreadCount, onLinkClick,
+}: {
+  section: NavSection
+  si: number
+  isCollapsedSidebar: boolean
+  isActive: (href: string) => boolean
+  sectionKey: string
+  sectionHasActive: boolean
+  unreadCount: number
+  onLinkClick: () => void
+}) {
+  const hasTitle = !!section.title
+
+  const [open, setOpen] = useState<boolean>(() => {
+    if (!hasTitle || sectionHasActive) return true
+    if (typeof window === 'undefined') return true
+    const stored = localStorage.getItem(sectionKey)
+    return stored === null ? true : stored === '1'
+  })
+
+  useEffect(() => {
+    if (sectionHasActive) setOpen(true)
+  }, [sectionHasActive])
+
+  const toggle = () => {
+    if (!hasTitle) return
+    const next = !open
+    setOpen(next)
+    try { localStorage.setItem(sectionKey, next ? '1' : '0') } catch {}
+  }
+
+  const showAccordion = hasTitle && !isCollapsedSidebar
+
+  const items = section.items.map((item) => {
+    const active = isActive(item.href)
+    const isNotifications = item.href.includes('notifications')
+    const collapsedDot = item.badge
+      ? item.badge
+      : (isNotifications && unreadCount > 0) ? (unreadCount > 99 ? '99+' : unreadCount) : null
+
+    const linkEl = (
+      <Link key={item.href} href={item.href} onClick={onLinkClick}
+        className={cn(
+          'flex items-center gap-3 rounded-xl transition-all text-sm group relative',
+          isCollapsedSidebar ? 'lg:justify-center lg:px-0 lg:py-3 px-4 py-2.5' : 'px-3 py-2.5',
+          active
+            ? 'bg-academy text-white font-bold shadow-md'
+            : 'text-muted-foreground hover:bg-muted hover:text-academy'
+        )}
+      >
+        <item.icon className={cn("w-5 h-5 shrink-0 transition-transform duration-200", active && "scale-110")} />
+        <span className={cn('font-medium truncate', isCollapsedSidebar && 'lg:hidden')}>{item.label}</span>
+        {!isCollapsedSidebar && item.badge && (
+          <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">{item.badge}</span>
+        )}
+        {!isCollapsedSidebar && isNotifications && unreadCount > 0 && !item.badge && (
+          <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
+        {isCollapsedSidebar && collapsedDot != null && (
+          <span className="hidden lg:flex absolute -top-1 -left-1 bg-destructive text-destructive-foreground text-[9px] leading-none px-1 py-0.5 rounded-full min-w-[16px] h-[16px] items-center justify-center font-bold">{collapsedDot}</span>
+        )}
+        {active && <div className={cn('absolute right-0 w-1 h-6 bg-white rounded-l-full', isCollapsedSidebar && 'lg:hidden')} />}
+      </Link>
+    )
+
+    if (isCollapsedSidebar) {
+      return (
+        <Tooltip key={item.href}>
+          <TooltipTrigger asChild>{linkEl}</TooltipTrigger>
+          <TooltipContent side="left" className="hidden lg:block">{item.label}</TooltipContent>
+        </Tooltip>
+      )
+    }
+    return linkEl
+  })
+
+  return (
+    <div className={cn(si > 0 && !showAccordion && 'mt-2')}>
+      {showAccordion ? (
+        <div className={cn('mb-0.5', si > 0 && 'mt-4')}>
+          <button
+            type="button"
+            onClick={toggle}
+            className={cn(
+              'w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-left transition-colors',
+              'text-muted-foreground hover:text-foreground hover:bg-muted/60',
+              sectionHasActive && 'text-foreground'
+            )}
+          >
+            <span className="text-[11px] font-bold uppercase tracking-widest select-none">
+              {section.title}
+            </span>
+            <ChevronDown className={cn(
+              'w-3.5 h-3.5 shrink-0 transition-transform duration-200',
+              open && 'rotate-180'
+            )} />
+          </button>
+          <div className={cn(
+            'overflow-hidden transition-all duration-200',
+            open ? 'max-h-[1000px] opacity-100 mt-0.5' : 'max-h-0 opacity-0'
+          )}>
+            <div className="space-y-0.5">{items}</div>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-0.5">{items}</div>
+      )}
+    </div>
+  )
+}
+
 const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection[], label: string, name: string, sublabel: string } => {
   const configs: Record<AcademyRole, { sections: NavSection[], label: string, name: string, sublabel: string }> = {
     academy_student: {
       sections: [
         {
+          title: t.main || 'الرئيسية',
           items: [
             { href: '/academy/student', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
             { href: '/academy/student/calendar', label: t.academy?.calendar || 'التقويم', icon: Calendar },
+            { href: '/academy/student/path', label: t.academy?.learningPath || 'المسار التعليمي', icon: Route },
+          ]
+        },
+        {
+          title: t.academyAdmin?.sidebarEducationalProcess || 'الدراسة',
+          items: [
             { href: '/academy/student/courses', label: t.academy?.myCourses || 'دوراتي', icon: BookOpen },
             { href: '/academy/student/courses/browse', label: t.academy?.browseCourses || 'تصفح الدورات', icon: GraduationCap },
             { href: '/academy/student/courses/archive', label: t.academy?.archive || 'الأرشيف', icon: Archive },
             { href: '/academy/student/enrollment-requests', label: t.academy?.enrollmentRequests || 'طلبات الانضمام', icon: UserPlus },
             { href: '/academy/student/tasks', label: t.academy?.tasks || 'المهام', icon: ClipboardList },
-            { href: '/academy/student/sessions', label: t.academy?.liveSessions || 'الجلسات الحية والتسجيلات', icon: Video },
+            { href: '/academy/student/sessions', label: t.academy?.liveSessions || 'الجلسات الحية', icon: Video },
             { href: '/academy/student/halaqat', label: t.academy?.halaqat || 'حلقاتي', icon: GraduationCap },
-            { href: '/academy/student/path', label: t.academy?.learningPath || 'المسار التعليمي', icon: Route },
-            { href: '/academy/student/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
-            { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
-            { href: '/academy/library', label: t.academy?.booksLibrary || 'مكتبة الكتب', icon: BookOpen },
-            { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: MessageSquare },
           ]
         },
         {
@@ -57,6 +175,15 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
             { href: '/academy/student/leaderboard', label: t.academy?.leaderboard || 'لوحة المتصدرين', icon: Trophy },
             { href: '/academy/student/badges', label: t.academy?.badges || 'الشارات', icon: Award },
             { href: '/academy/student/certificates', label: t.academy?.certificates || 'الشهادات', icon: GraduationCap },
+          ]
+        },
+        {
+          title: t.academyAdmin?.sidebarCommunity || 'المجتمع والمكتبة',
+          items: [
+            { href: '/academy/student/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
+            { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: MessageSquare },
+            { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
+            { href: '/academy/library', label: t.academy?.booksLibrary || 'مكتبة الكتب', icon: BookOpen },
           ]
         },
         {
@@ -75,18 +202,29 @@ const getAcademyRoleConfig = (t: any, role: AcademyRole): { sections: NavSection
     teacher: {
       sections: [
         {
+          title: t.main || 'الرئيسية',
           items: [
             { href: '/academy/teacher', label: t.academy?.dashboard || 'لوحة التحكم', icon: LayoutDashboard },
             { href: '/academy/teacher/calendar', label: t.academy?.calendar || 'التقويم', icon: Calendar },
+          ]
+        },
+        {
+          title: t.academyAdmin?.sidebarEducationalProcess || 'التدريس',
+          items: [
             { href: '/academy/teacher/courses', label: t.academy?.myCourses || 'دوراتي', icon: BookOpen },
             { href: '/academy/teacher/enrollment-requests', label: t.academy?.enrollmentRequests || 'طلبات الانضمام', icon: Bell },
             { href: '/academy/teacher/sessions', label: t.academy?.liveSessions || 'الجلسات والبث المباشر', icon: Video },
             { href: '/academy/teacher/tasks', label: t.academy?.tasks || 'المهام', icon: ClipboardList },
-            { href: '/academy/teacher/competitions', label: t.academyAdmin?.sidebarCompetitionJudging || t.academy?.competitions || 'Competition Judging', icon: Trophy },
             { href: '/academy/teacher/students', label: t.academy?.myStudents || 'طلابي', icon: Users },
-            { href: '/academy/teacher/certificates', label: t.academy?.certificatesCenter || 'اعتماد الشهادات', icon: Award },
-            { href: '/academy/teacher/paths', label: t.academy?.learningPaths || 'المسارات التعليمية', icon: Route },
             { href: '/academy/teacher/halaqat', label: t.academy?.halaqat || 'الحلقات', icon: GraduationCap },
+            { href: '/academy/teacher/paths', label: t.academy?.learningPaths || 'المسارات التعليمية', icon: Route },
+            { href: '/academy/teacher/certificates', label: t.academy?.certificatesCenter || 'اعتماد الشهادات', icon: Award },
+            { href: '/academy/teacher/competitions', label: t.academyAdmin?.sidebarCompetitionJudging || 'تحكيم المسابقات', icon: Trophy },
+          ]
+        },
+        {
+          title: t.academyAdmin?.sidebarCommunity || 'المجتمع والمكتبة',
+          items: [
             { href: '/academy/teacher/chat', label: t.academy?.chat || 'الرسائل', icon: MessageSquare },
             { href: '/community/academy/forum', label: t.academy?.forum || 'المنتدى والمقالات', icon: FileText },
             { href: '/academy/fiqh', label: t.academy?.fiqhLibrary || 'المكتبة الفقهية', icon: Library },
@@ -514,89 +652,25 @@ export function AcademyDashboardShell({
           </button>
         </div>
 
-        {/* Academy Badge — only for non-admin roles */}
-        {!(showModeSwitcher && libraryRole === 'admin') && (
-        <div className={cn('border-b border-border', collapsed ? 'lg:px-2 lg:py-2 px-4 py-3' : 'px-4 py-3')}>
-          <div className={cn(
-            'rounded-lg bg-academy/10 text-academy',
-            collapsed ? 'lg:flex lg:items-center lg:justify-center lg:p-2 flex items-center gap-2 px-3 py-2' : 'flex items-center gap-2 px-3 py-2'
-          )}>
-            <GraduationCap className="w-5 h-5 shrink-0" />
-            <span className={cn('font-semibold text-sm', collapsed && 'lg:hidden')}>{t.academy?.title || 'الأكاديمية'}</span>
-            <Sparkles className={cn('w-4 h-4 mr-auto', collapsed && 'lg:hidden')} />
-          </div>
-        </div>
-        )}
-
         {/* Navigation */}
-        <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-6 space-y-1', collapsed ? 'lg:px-2 px-4' : 'px-4')}>
-          {finalConfig.sections.map((section, si) => (
-            <div key={si}>
-              {section.title && (
-                <div className={cn(
-                  'text-[10px] font-bold uppercase tracking-widest mb-4 px-3 text-muted-foreground/60',
-                  si > 0 && 'mt-8',
-                  collapsed && 'lg:hidden'
-                )}>
-                  {section.title}
-                </div>
-              )}
-              {section.items.map((item) => {
-                const active = isActive(item.href)
-                const isNotifications = item.href.includes('notifications')
-                const collapsedDot = item.badge
-                  ? item.badge
-                  : (isNotifications && unreadCount > 0)
-                    ? (unreadCount > 99 ? '99+' : unreadCount)
-                    : null
-                const linkEl = (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setSidebarOpen(false)}
-                    className={cn(
-                      'flex items-center gap-3 rounded-xl transition-all text-sm group relative',
-                      collapsed ? 'lg:justify-center lg:px-0 lg:py-3 px-4 py-3' : 'px-4 py-3',
-                      active
-                        ? 'bg-academy/10 text-academy font-bold shadow-sm'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    )}
-                  >
-                    <item.icon className={cn(
-                      "w-5 h-5 shrink-0 transition-transform duration-200",
-                      active && "scale-110"
-                    )} />
-                    <span className={cn('font-medium', collapsed && 'lg:hidden')}>{item.label}</span>
-                    {!collapsed && item.badge && (
-                      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">
-                        {item.badge}
-                      </span>
-                    )}
-                    {!collapsed && isNotifications && unreadCount > 0 && !item.badge && (
-                      <span className="mr-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center font-bold animate-pulse">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
-                    {collapsed && collapsedDot != null && (
-                      <span className="hidden lg:flex absolute -top-1 -left-1 bg-destructive text-destructive-foreground text-[9px] leading-none px-1 py-0.5 rounded-full min-w-[16px] h-[16px] items-center justify-center font-bold">{collapsedDot}</span>
-                    )}
-                    {active && (
-                      <div className={cn('absolute right-0 w-1 h-6 bg-academy rounded-l-full', collapsed && 'lg:hidden')} />
-                    )}
-                  </Link>
-                )
-                if (collapsed) {
-                  return (
-                    <Tooltip key={item.href}>
-                      <TooltipTrigger asChild>{linkEl}</TooltipTrigger>
-                      <TooltipContent side="left" className="hidden lg:block">{item.label}</TooltipContent>
-                    </Tooltip>
-                  )
-                }
-                return linkEl
-              })}
-            </div>
-          ))}
+        <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-0.5', collapsed ? 'lg:px-2 px-4' : 'px-3')}>
+          {finalConfig.sections.map((section, si) => {
+            const sectionKey = `itqan_academy_nav_open_${section.title ?? si}`
+            const sectionHasActive = section.items.some(i => isActive(i.href))
+            return (
+              <AcademyCollapsibleNavSection
+                key={si}
+                section={section}
+                si={si}
+                isCollapsedSidebar={collapsed}
+                isActive={isActive}
+                sectionKey={sectionKey}
+                sectionHasActive={sectionHasActive}
+                unreadCount={unreadCount}
+                onLinkClick={() => setSidebarOpen(false)}
+              />
+            )
+          })}
         </nav>
 
         {/* Bottom section */}
