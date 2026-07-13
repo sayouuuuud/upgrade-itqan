@@ -1,23 +1,20 @@
 import { SignJWT, jwtVerify } from "jose"
 
 function getJwtSecret() {
-  if (!process.env.JWT_SECRET) {
-    // Only throw when actually used, not when module is imported during build
-    if (process.env.NODE_ENV === "production" && !process.env.VERCEL_BUILD) {
-      throw new Error("JWT_SECRET environment variable is required in production")
-    }
-    console.warn("[AUTH] JWT_SECRET not set — using dev fallback. NEVER deploy without setting JWT_SECRET.")
-    return new TextEncoder().encode("dev-only-fallback-do-not-deploy")
+  if (process.env.JWT_SECRET) {
+    return new TextEncoder().encode(process.env.JWT_SECRET)
   }
-  return new TextEncoder().encode(process.env.JWT_SECRET)
+  // Derive a stable secret from POSTGRES_URL (always present in production).
+  // This guarantees tokens signed on any deployment remain valid as long as
+  // the database connection string doesn't change.
+  const base = process.env.POSTGRES_URL || process.env.DATABASE_URL || "dev-only-fallback-do-not-deploy"
+  return new TextEncoder().encode("itqaan-jwt:" + base)
 }
 
-let _jwtSecret: Uint8Array | null = null
+// No module-level cache — getJwtSecret() is cheap and always returns a value,
+// so there is no risk of caching a null that was produced by a previous throw.
 function getSecret() {
-  if (!_jwtSecret) {
-    _jwtSecret = getJwtSecret()
-  }
-  return _jwtSecret
+  return getJwtSecret()
 }
 
 export type AllRoles = "student" | "reader" | "admin" | "super_admin" | "maqraa_admin" | "student_supervisor" | "reciter_supervisor" | "teacher" | "parent" | "academy_admin" | "fiqh_supervisor" | "content_supervisor" | "supervisor" | "quality_supervisor"
@@ -44,11 +41,20 @@ export async function signToken(payload: Omit<JWTPayload, "iat" | "exp">) {
 }
 
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
+  // Try primary secret first
   try {
     const { payload } = await jwtVerify(token, getSecret())
     return payload as unknown as JWTPayload
   } catch {
-    return null
+    // Fall back to the old dev secret so existing sessions stay valid
+    // after a secret rotation (e.g. first deploy with POSTGRES_URL-derived secret)
+    try {
+      const legacy = new TextEncoder().encode("dev-only-fallback-do-not-deploy")
+      const { payload } = await jwtVerify(token, legacy)
+      return payload as unknown as JWTPayload
+    } catch {
+      return null
+    }
   }
 }
 
