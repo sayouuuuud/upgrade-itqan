@@ -19,7 +19,7 @@ const DEFAULT_CONTACT = {
 async function upsert(key: string, value: any, userId: string) {
   await query(
     `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public, updated_by, updated_at)
-     VALUES ($1, $2::jsonb, 'general', $1, true, $3, NOW())
+     VALUES ($1::varchar, $2::jsonb, 'general', $1::text, true, $3, NOW())
      ON CONFLICT (setting_key) DO UPDATE
         SET setting_value = EXCLUDED.setting_value,
             updated_by    = EXCLUDED.updated_by,
