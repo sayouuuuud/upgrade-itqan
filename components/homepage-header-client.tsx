@@ -46,9 +46,9 @@ export default function HeaderNavClient({
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="sticky top-0 z-50 bg-hp-parchment/80 dark:bg-hp-dark/80 backdrop-blur-md border-b border-hp-ink/10 dark:border-hp-cream/10"
+      className="sticky top-4 z-50 px-4 sm:px-6 relative"
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+      <div className="max-w-6xl mx-auto bg-hp-parchment/90 dark:bg-hp-dark/90 backdrop-blur-md border border-hp-ink/10 dark:border-hp-cream/10 shadow-lg rounded-full px-4 sm:px-6 flex items-center justify-between h-14">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-hp-navy text-hp-parchment dark:bg-hp-gold dark:text-hp-dark font-bold text-sm">
@@ -129,11 +129,11 @@ export default function HeaderNavClient({
         {isMenuOpen && (
           <motion.div
             key="mobile-menu"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="lg:hidden border-t border-hp-ink/10 dark:border-hp-cream/10 bg-hp-parchment dark:bg-hp-dark"
+            className="lg:hidden absolute top-full left-0 right-0 mt-2 mx-4 sm:mx-6 rounded-3xl border border-hp-ink/10 dark:border-hp-cream/10 bg-hp-parchment/95 dark:bg-hp-dark/95 backdrop-blur-md shadow-xl overflow-hidden"
           >
             <div className="px-4 sm:px-6 py-4 space-y-3">
               {navItems.map((item) => (
