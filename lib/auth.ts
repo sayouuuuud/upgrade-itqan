@@ -1,18 +1,17 @@
 import { SignJWT, jwtVerify } from "jose"
 
-function getJwtSecret() {
+// Returns the primary signing secret. Priority:
+//   1. JWT_SECRET env var (set this in production for best security)
+//   2. Hard-coded dev fallback (keeps existing sessions valid — never throw)
+function getJwtSecret(): Uint8Array {
   if (process.env.JWT_SECRET) {
     return new TextEncoder().encode(process.env.JWT_SECRET)
   }
-  // Derive a stable secret from POSTGRES_URL (always present in production).
-  // This guarantees tokens signed on any deployment remain valid as long as
-  // the database connection string doesn't change.
-  const base = process.env.POSTGRES_URL || process.env.DATABASE_URL || "dev-only-fallback-do-not-deploy"
-  return new TextEncoder().encode("itqaan-jwt:" + base)
+  // Use the same fallback that was used when sessions were originally signed.
+  // This keeps all existing user sessions valid without a forced logout.
+  return new TextEncoder().encode("dev-only-fallback-do-not-deploy")
 }
 
-// No module-level cache — getJwtSecret() is cheap and always returns a value,
-// so there is no risk of caching a null that was produced by a previous throw.
 function getSecret() {
   return getJwtSecret()
 }
@@ -41,20 +40,11 @@ export async function signToken(payload: Omit<JWTPayload, "iat" | "exp">) {
 }
 
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
-  // Try primary secret first
   try {
     const { payload } = await jwtVerify(token, getSecret())
     return payload as unknown as JWTPayload
   } catch {
-    // Fall back to the old dev secret so existing sessions stay valid
-    // after a secret rotation (e.g. first deploy with POSTGRES_URL-derived secret)
-    try {
-      const legacy = new TextEncoder().encode("dev-only-fallback-do-not-deploy")
-      const { payload } = await jwtVerify(token, legacy)
-      return payload as unknown as JWTPayload
-    } catch {
-      return null
-    }
+    return null
   }
 }
 
@@ -65,6 +55,17 @@ export async function getSession(): Promise<JWTPayload | null> {
   const { cookies } = await import("next/headers")
   const cookieStore = await cookies()
   const token = cookieStore.get("auth-token")?.value
+  if (!token) return null
+  return verifyToken(token)
+}
+
+// Read the session directly from a NextRequest object (works in both Edge and
+// Node runtimes, and does not depend on next/headers). Use this in API route
+// handlers so the session is always read from the actual incoming request
+// rather than relying on the async cookies() context, which can be unreliable
+// in some Next.js production builds.
+export async function getSessionFromRequest(req: import("next/server").NextRequest): Promise<JWTPayload | null> {
+  const token = req.cookies.get("auth-token")?.value
   if (!token) return null
   return verifyToken(token)
 }

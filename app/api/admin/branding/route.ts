@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession, isSuperAdmin } from "@/lib/auth"
+import { getSessionFromRequest, isSuperAdmin } from "@/lib/auth"
 import { query } from "@/lib/db"
 import { getSetting, clearSettingCache } from "@/lib/settings"
 
@@ -30,8 +30,8 @@ async function upsert(key: string, value: any, userId: string) {
 }
 
 // GET /api/admin/branding
-export async function GET() {
-  const session = await getSession()
+export async function GET(req: NextRequest) {
+  const session = await getSessionFromRequest(req)
   if (!isSuperAdmin(session)) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
   }
@@ -46,7 +46,7 @@ export async function GET() {
 
 // PUT /api/admin/branding
 export async function PUT(req: NextRequest) {
-  const session = await getSession()
+  const session = await getSessionFromRequest(req)
   if (!isSuperAdmin(session)) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
   }
