@@ -191,7 +191,7 @@ export default function MaqraahAdminSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 p-4 md:p-6">
+      <div dir="rtl" className="space-y-4 p-4 md:p-6">
         <Skeleton className="h-10 w-48" />
         <div className="space-y-2">
           <Skeleton className="h-20 w-full" />
@@ -203,7 +203,7 @@ export default function MaqraahAdminSettingsPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div dir="rtl" className="flex h-screen flex-col bg-background text-right">
       {/* Header */}
       <div className="border-b p-4 md:p-6">
         <div className="flex items-center justify-between">
@@ -252,12 +252,12 @@ export default function MaqraahAdminSettingsPage() {
         {/* Sidebar Tabs */}
         <div
           className={cn(
-            "border-r bg-muted/50 p-4",
+            "border-l bg-muted/50 p-4",
             isMobile ? "hidden" : "w-48"
           )}
         >
           <ScrollArea className="h-full">
-            <div className="space-y-2 pr-4">
+            <div className="space-y-2 pl-4">
               {tabs.map((tab) => {
                 const Icon = tab.icon
                 return (
@@ -265,7 +265,7 @@ export default function MaqraahAdminSettingsPage() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                      "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-right text-sm transition-colors",
                       activeTab === tab.id
                         ? "bg-primary text-primary-foreground"
                         : "hover:bg-accent text-foreground"
