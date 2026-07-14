@@ -8,8 +8,8 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <div className="flex flex-col min-h-screen">
-      <PublicNavbar initialUser={user} />
-      <main className="flex-1">
+      <main className="flex-1 relative">
+        <PublicNavbar initialUser={user} />
         {children}
       </main>
       <PublicFooter />

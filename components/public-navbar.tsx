@@ -41,118 +41,136 @@ export function PublicNavbar({ initialUser = null }: { initialUser?: { role: str
   }, [])
 
   return (
-    <nav className={`${isHome ? 'absolute' : 'sticky bg-primary dark:bg-card shadow-md'} top-0 left-0 right-0 z-40 transition-all duration-300`}>
-      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+    <nav className="absolute top-4 inset-x-4 md:inset-x-6 z-40">
+      {/* Floating pill card */}
+      <div className="bg-white/95 dark:bg-card/95 backdrop-blur-md rounded-2xl shadow-md shadow-black/8 border border-black/6 dark:border-white/10 px-4 md:px-6 py-3 flex justify-between items-center max-w-screen-xl mx-auto">
+
+        {/* Logo — right side in RTL */}
         <Link href="/" className="hover:opacity-80 transition-opacity flex-shrink-0">
-          <Image 
-            src={branding.logoUrl || "/branding/main-logo.png"} 
-            alt={t.appName} 
+          <Image
+            src={branding.logoUrl || "/branding/main-logo.png"}
+            alt={t.appName}
             width={140}
             height={56}
             priority
-            className="h-12 md:h-14 w-auto object-contain" 
+            className="h-11 md:h-13 w-auto object-contain"
           />
         </Link>
 
-        {/* Desktop nav links */}
+        {/* Desktop nav links — centre */}
         <div className="hidden md:flex items-center gap-1">
           <Link
             href="/about"
-            className="text-sm text-white/75 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
+            className="text-sm text-foreground/70 hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           >
             {t.about}
           </Link>
           <Link
             href="/faq"
-            className="text-sm text-white/75 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
+            className="text-sm text-foreground/70 hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           >
             {t.footer.faq}
           </Link>
           <Link
             href="/contact"
-            className="text-sm text-white/75 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
+            className="text-sm text-foreground/70 hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           >
             {t.contact}
           </Link>
         </div>
 
-        <div className="hidden md:flex items-center gap-4">
-          <ThemeToggle className="text-white hover:text-white/80" />
-          <LanguageSwitcher variant="ghost" className="text-white hover:text-white/80" />
-          <div className="h-6 w-px bg-white/10 mx-1" />
-          <div className="flex items-center gap-3">
+        {/* Desktop right controls */}
+        <div className="hidden md:flex items-center gap-3">
+          <ThemeToggle className="text-foreground/70 hover:text-foreground" />
+          <LanguageSwitcher variant="ghost" className="text-foreground/70 hover:text-foreground" />
+          <div className="h-5 w-px bg-foreground/15 mx-1" />
+          {!loading && (
+            user ? (
+              <Link
+                href={["admin", "student_supervisor", "reciter_supervisor"].includes(user.role) ? "/admin" : `/${user.role}`}
+                className="text-sm font-semibold px-5 py-2 rounded-full transition-all bg-primary text-white hover:bg-primary/90 shadow-sm flex items-center gap-2"
+              >
+                {t.locale === 'ar' ? 'الدخول للحساب' : 'Go to Account'}
+                <ArrowLeft className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-medium px-4 py-2 rounded-full transition-all text-foreground/80 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
+                >
+                  {t.login}
+                </Link>
+                <Link
+                  href="/register"
+                  className="text-sm font-semibold px-5 py-2 rounded-full bg-primary text-white hover:bg-primary/90 transition-all shadow-sm"
+                >
+                  {t.register}
+                </Link>
+              </>
+            )
+          )}
+        </div>
+
+        {/* Mobile controls */}
+        <div className="md:hidden flex items-center gap-2">
+          <ThemeToggle className="text-foreground/70" />
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="p-2 text-foreground/70 bg-black/5 dark:bg-white/10 rounded-full hover:bg-black/10 dark:hover:bg-white/20 transition-colors"
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile dropdown — extends below the pill */}
+      {mobileOpen && (
+        <div className="md:hidden mt-2 bg-white/95 dark:bg-card/95 backdrop-blur-md rounded-2xl shadow-md border border-black/6 dark:border-white/10 overflow-hidden">
+          <div className="px-4 py-4 flex flex-col gap-2">
+            {/* Nav links */}
+            <div className="flex flex-col gap-1 pb-3 border-b border-black/8 dark:border-white/10">
+              <Link href="/about" onClick={() => setMobileOpen(false)} className="text-sm text-foreground/80 hover:text-foreground py-2 px-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                {t.about}
+              </Link>
+              <Link href="/faq" onClick={() => setMobileOpen(false)} className="text-sm text-foreground/80 hover:text-foreground py-2 px-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                {t.footer.faq}
+              </Link>
+              <Link href="/contact" onClick={() => setMobileOpen(false)} className="text-sm text-foreground/80 hover:text-foreground py-2 px-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                {t.contact}
+              </Link>
+            </div>
+
+            {/* Auth + language */}
             {!loading && (
               user ? (
-                <Link 
-                  href={["admin", "student_supervisor", "reciter_supervisor"].includes(user.role) ? "/admin" : `/${user.role}`} 
-                  className="text-sm font-semibold px-6 py-2.5 rounded-full transition-all bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20 flex items-center gap-2"
+                <Link
+                  href={["admin", "student_supervisor", "reciter_supervisor"].includes(user.role) ? "/admin" : `/${user.role}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="text-center text-sm font-semibold py-2.5 rounded-full bg-primary text-white flex items-center justify-center gap-2"
                 >
                   {t.locale === 'ar' ? 'الدخول للحساب' : 'Go to Account'}
                   <ArrowLeft className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
                 </Link>
               ) : (
-                <Link href="/login" className="text-sm font-medium px-8 py-2.5 rounded-full transition-all text-white border border-primary/40 hover:bg-primary/10">
-                  {t.login}
-                </Link>
+                <div className="flex gap-2">
+                  <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center text-sm font-medium py-2.5 rounded-full text-foreground border border-black/15 dark:border-white/20 hover:bg-black/5">
+                    {t.login}
+                  </Link>
+                  <Link href="/register" onClick={() => setMobileOpen(false)} className="flex-1 text-center text-sm font-semibold py-2.5 rounded-full bg-primary text-white">
+                    {t.register}
+                  </Link>
+                </div>
               )
             )}
-          </div>
 
-        </div>
-
-        <div className="md:hidden flex items-center gap-3">
-          <ThemeToggle className="text-white bg-white/10 hover:bg-white/20" />
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="p-2 text-white bg-white/10 rounded-full hover:bg-white/20 transition-colors"
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
-      </div>
-
-      {
-        mobileOpen && (
-          <div className="md:hidden bg-primary/95 dark:bg-card/95 backdrop-blur-md border-t border-white/10">
-            <div className="container mx-auto px-6 py-4 flex flex-col gap-3">
-              {/* Mobile nav links */}
-              <div className="flex flex-col gap-1 pb-3 border-b border-white/10">
-                <Link href="/about" onClick={() => setMobileOpen(false)} className="text-sm text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors">
-                  {t.about}
-                </Link>
-                <Link href="/faq" onClick={() => setMobileOpen(false)} className="text-sm text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors">
-                  {t.footer.faq}
-                </Link>
-                <Link href="/contact" onClick={() => setMobileOpen(false)} className="text-sm text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors">
-                  {t.contact}
-                </Link>
-              </div>
-
-              {!loading && (
-                user ? (
-                  <Link 
-                    href={["admin", "student_supervisor", "reciter_supervisor"].includes(user.role) ? "/admin" : `/${user.role}`} 
-                    onClick={() => setMobileOpen(false)} 
-                    className="flex-1 text-center text-sm font-semibold py-2.5 rounded-full bg-primary text-white flex items-center justify-center gap-2"
-                  >
-                    {t.locale === 'ar' ? 'الدخول للحساب' : 'Go to Account'}
-                    <ArrowLeft className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
-                  </Link>
-                ) : (
-                  <>
-                    <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center text-sm font-medium py-3 rounded-full text-white border border-primary/40">{t.login}</Link>
-                  </>
-                )
-              )}
-              <div className="flex justify-center items-center gap-4 pt-1 border-t border-white/10">
-                <LanguageSwitcher variant="ghost" className="text-white border border-white/20 hover:bg-white/10 rounded-full px-8 h-12 w-full justify-center" />
-              </div>
+            <div className="pt-1 border-t border-black/8 dark:border-white/10">
+              <LanguageSwitcher variant="ghost" className="text-foreground/70 border border-black/15 dark:border-white/20 hover:bg-black/5 rounded-full px-8 h-10 w-full justify-center" />
             </div>
           </div>
-        )
-      }
-    </nav >
+        </div>
+      )}
+    </nav>
   )
 }
-
