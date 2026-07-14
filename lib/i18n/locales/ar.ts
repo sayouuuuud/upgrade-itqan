@@ -2577,7 +2577,7 @@ export const ar = {
     sidebarManageSupervisors: 'إدارة المشرفين',
     sidebarInvitations: 'الدعوات',
     sidebarEducationalProcess: 'العملية التعليمية',
-    sidebarMemorizationPaths: '��سارات الحفظ',
+    sidebarMemorizationPaths: 'مسارات الحفظ',
     sidebarTajweedPaths: 'مسارات التجويد',
     sidebarHalaqat: 'الحلقات',
     sidebarVideoBroadcast: 'إعدادات البث والفيديو',
