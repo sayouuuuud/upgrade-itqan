@@ -23,7 +23,7 @@ WHERE setting_key LIKE 'homepage\_%' ESCAPE '\';
 -- Brand / navbar
 -- ---------------------------------------------------------------------------
 INSERT INTO system_settings (setting_key, setting_value, setting_type) VALUES
-('homepage_brand_name',    '{"ar":"إتْقان","en":"Itqan"}', 'homepage'),
+('homepage_brand_name',    '{"ar":"متقن","en":"Itqan"}', 'homepage'),
 ('homepage_brand_tagline', '{"ar":"Itqan Platform","en":"Itqan Platform"}', 'homepage'),
 ('homepage_login_text',    '{"ar":"دخول","en":"Login"}', 'homepage'),
 ('homepage_register_text', '{"ar":"التسجيل","en":"Register"}', 'homepage'),
@@ -198,7 +198,7 @@ INSERT INTO system_settings (setting_key, setting_value, setting_type) VALUES
     {"label":{"ar":"الشُّروط","en":"Terms"},"href":"/terms"}
   ]}
 ]', 'homepage'),
-('homepage_footer_copyright', '{"ar":"إتْقان. جميعُ الحقوقِ محفوظة.","en":"Itqan. All rights reserved."}', 'homepage'),
+('homepage_footer_copyright', '{"ar":"متقن. جميعُ الحقوقِ محفوظة.","en":"Itqan. All rights reserved."}', 'homepage'),
 ('homepage_footer_made_pre',  '{"ar":"صُنِعَ بِـ","en":"Made with"}', 'homepage'),
 ('homepage_footer_made_post', '{"ar":"لِخدمةِ كتابِ الله","en":"in service of the Book of Allah"}', 'homepage')
 ON CONFLICT (setting_key) DO NOTHING;

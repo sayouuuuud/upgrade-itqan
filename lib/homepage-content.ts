@@ -18,7 +18,7 @@ export type Bi = { ar: string; en: string }
 
 export const DEFAULT_HOMEPAGE_CONTENT = {
   // Brand / navbar
-  homepage_brand_name: { ar: 'إتْقان', en: 'Itqan' } as Bi,
+  homepage_brand_name: { ar: 'متقن', en: 'Itqan' } as Bi,
   homepage_brand_tagline: { ar: 'Itqan Platform', en: 'Itqan Platform' } as Bi,
   homepage_login_text: { ar: 'دخول', en: 'Login' } as Bi,
   homepage_register_text: { ar: 'التسجيل', en: 'Register' } as Bi,
@@ -138,7 +138,7 @@ export const DEFAULT_HOMEPAGE_CONTENT = {
     { q: { ar: 'حفظتُ ربعَ القرآن في ستَّةِ أشهرٍ بفضلِ المتابعةِ المُنظَّمةِ والمُقرئةِ المُتميِّزة.', en: 'I memorized a quarter of the Qur’an in six months thanks to the organized follow-up and an excellent reciter.' }, n: { ar: 'فاطمة الزهراء', en: 'Fatimah Al-Zahraa' }, r: { ar: 'طالبةُ تحفيظ', en: 'Memorization student' } },
     { q: { ar: 'الجَودةُ، التَّنظيمُ، الاحترامُ في التعامل، كلُّ شيءٍ يَدلُّ على أنَّ القائمين أهلُ علمٍ وصِدق.', en: 'Quality, organization, and respect — everything shows the team are people of knowledge and sincerity.' }, n: { ar: 'د. خالد الأنصاري', en: 'Dr. Khalid Al-Ansari' }, r: { ar: 'وَلِيُّ أمر', en: 'Parent' } },
     { q: { ar: 'ما مرَّ يومٌ بعد التحاقي بالمَقْرأة إلا وذُقتُ حلاوةَ القرآنِ من جديد.', en: 'Not a day has passed since I joined the Maqra���ah without tasting the sweetness of the Qur’an anew.' }, n: { ar: 'محمد العبسي', en: 'Mohammed Al-Absi' }, r: { ar: 'طالبُ تجويد', en: 'Tajwid student' } },
-    { q: { ar: 'المنصَّةُ راقيةٌ، والأساتذةُ مُجازون، والإدارةُ تَسمعُ لكلِّ مُلاحظةٍ بِصَدرٍ رَحب.', en: 'A refined platform, certified teachers, and an administration that welcomes every note warmly.' }, n: { ar: 'أم عبد الله', en: 'Umm Abdullah' }, r: { ar: 'وَلِيَّةُ أمر', en: 'Parent' } },
+    { q: { ar: 'المنصَّةُ راقيةٌ، والأساتذ��ُ مُجازون، والإدارةُ تَسمعُ لكلِّ مُلاحظةٍ بِصَدرٍ رَحب.', en: 'A refined platform, certified teachers, and an administration that welcomes every note warmly.' }, n: { ar: 'أم عبد الله', en: 'Umm Abdullah' }, r: { ar: 'وَلِيَّةُ أمر', en: 'Parent' } },
     { q: { ar: 'أَخذتُ إجازتي في رواية حفصٍ هنا، بعد سنواتٍ من التشتُّتِ بين منصَّاتٍ أخرى.', en: 'I earned my ijazah in the Hafs narration here, after years of drifting between other platforms.' }, n: { ar: 'يوسف الإدريسي', en: 'Yusuf Al-Idrisi' }, r: { ar: 'حاصلٌ على إجازة', en: 'Ijazah holder' } },
     { q: { ar: 'الجلساتُ المباشرةُ فيها رُوحٌ لا تَجدُها في أيِّ تسجيلٍ مُسبَّق.', en: 'Live sessions carry a spirit you won’t find in any pre-recorded lesson.' }, n: { ar: 'سارة المغربي', en: 'Sara Al-Maghribi' }, r: { ar: 'طالبةُ تجويد', en: 'Tajwid student' } },
     { q: { ar: 'أَشعرُ أنَّ الأستاذَ يُكلِّمُني وحدي، كأنَّنا في حَلْقةٍ خاصَّة.', en: 'I feel the teacher is speaking to me alone, as if we’re in a private circle.' }, n: { ar: 'طارق الزيات', en: 'Tariq Al-Zayyat' }, r: { ar: 'طالبٌ مبتدئ', en: 'Beginner student' } },
@@ -211,7 +211,7 @@ export const DEFAULT_HOMEPAGE_CONTENT = {
       ],
     },
   ],
-  homepage_footer_copyright: { ar: 'إتْقان. جميعُ الحقوقِ محفوظة.', en: 'Itqan. All rights reserved.' } as Bi,
+  homepage_footer_copyright: { ar: 'متقن. جميعُ الحقوقِ محفوظة.', en: 'Itqan. All rights reserved.' } as Bi,
   homepage_footer_made_pre: { ar: 'صُنِعَ بِـ', en: 'Made with' } as Bi,
   homepage_footer_made_post: { ar: 'لِخدمةِ كتابِ الله', en: 'in service of the Book of Allah' } as Bi,
 

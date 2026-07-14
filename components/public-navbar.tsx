@@ -54,6 +54,28 @@ export function PublicNavbar({ initialUser = null }: { initialUser?: { role: str
           />
         </Link>
 
+        {/* Desktop nav links */}
+        <div className="hidden md:flex items-center gap-1">
+          <Link
+            href="/about"
+            className="text-sm text-white/75 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            {t.about}
+          </Link>
+          <Link
+            href="/faq"
+            className="text-sm text-white/75 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            {t.footer.faq}
+          </Link>
+          <Link
+            href="/contact"
+            className="text-sm text-white/75 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            {t.contact}
+          </Link>
+        </div>
+
         <div className="hidden md:flex items-center gap-4">
           <ThemeToggle className="text-white hover:text-white/80" />
           <LanguageSwitcher variant="ghost" className="text-white hover:text-white/80" />
@@ -93,7 +115,20 @@ export function PublicNavbar({ initialUser = null }: { initialUser?: { role: str
       {
         mobileOpen && (
           <div className="md:hidden bg-primary/95 dark:bg-card/95 backdrop-blur-md border-t border-white/10">
-            <div className="container mx-auto px-6 py-4 flex flex-col gap-4">
+            <div className="container mx-auto px-6 py-4 flex flex-col gap-3">
+              {/* Mobile nav links */}
+              <div className="flex flex-col gap-1 pb-3 border-b border-white/10">
+                <Link href="/about" onClick={() => setMobileOpen(false)} className="text-sm text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors">
+                  {t.about}
+                </Link>
+                <Link href="/faq" onClick={() => setMobileOpen(false)} className="text-sm text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors">
+                  {t.footer.faq}
+                </Link>
+                <Link href="/contact" onClick={() => setMobileOpen(false)} className="text-sm text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors">
+                  {t.contact}
+                </Link>
+              </div>
+
               {!loading && (
                 user ? (
                   <Link 
@@ -110,7 +145,7 @@ export function PublicNavbar({ initialUser = null }: { initialUser?: { role: str
                   </>
                 )
               )}
-              <div className="flex justify-center items-center gap-4 pt-4 border-t border-white/10">
+              <div className="flex justify-center items-center gap-4 pt-1 border-t border-white/10">
                 <LanguageSwitcher variant="ghost" className="text-white border border-white/20 hover:bg-white/10 rounded-full px-8 h-12 w-full justify-center" />
               </div>
             </div>

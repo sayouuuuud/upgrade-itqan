@@ -32,6 +32,8 @@ export function PublicFooter() {
           <div>
             <h4 className="font-bold text-white mb-4">{t.footer.quickLinks}</h4>
             <ul className="space-y-2 text-sm text-white/40">
+              <li><Link href="/about" className="hover:text-[#D4A843] transition-colors">{t.about}</Link></li>
+              <li><Link href="/faq" className="hover:text-[#D4A843] transition-colors">{t.footer.faq}</Link></li>
               <li><Link href="/login" className="hover:text-[#D4A843] transition-colors">{t.landing.footerLogin}</Link></li>
               <li><Link href="/reader-register" className="hover:text-[#D4A843] transition-colors">{t.landing.footerJoin}</Link></li>
               <li><Link href="/contact" className="hover:text-[#D4A843] transition-colors">{t.contact}</Link></li>
