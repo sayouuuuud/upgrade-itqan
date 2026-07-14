@@ -2,6 +2,7 @@
 
 import { Bell } from "lucide-react"
 import { SectionCard, ToggleRow } from "./section-card"
+import { useI18n } from "@/lib/i18n/context"
 
 interface Props {
   settings: Record<string, any>
@@ -9,6 +10,9 @@ interface Props {
 }
 
 export function NotificationsSettings({ settings, onUpdate }: Props) {
+  const { t } = useI18n()
+  const a = t.admin
+
   const ns = settings.notification_settings ?? {}
 
   const updateNs = (patch: Record<string, any>) =>
@@ -18,30 +22,30 @@ export function NotificationsSettings({ settings, onUpdate }: Props) {
     <div className="space-y-6">
       <SectionCard
         icon={Bell}
-        title="إشعارات البريد الإلكتروني"
-        description="إعدادات إرسال الإشعارات التلقائية عبر البريد"
+        title={a.notifEmailTitle}
+        description={a.notifEmailDesc}
       >
         <ToggleRow
-          label="إشعارات التسجيل الجديد"
-          description="إرسال بريد للمدير عند تسجيل عضو جديد"
+          label={a.notifNewRegLabel}
+          description={a.notifNewRegDesc}
           checked={ns.notify_on_registration ?? true}
           onChange={(v) => updateNs({ notify_on_registration: v })}
         />
         <ToggleRow
-          label="إشعارات الطلبات المعلّقة"
-          description="تنبيه عند وجود طلبات تحتاج مراجعة"
+          label={a.notifPendingLabel}
+          description={a.notifPendingDesc}
           checked={ns.notify_on_pending ?? true}
           onChange={(v) => updateNs({ notify_on_pending: v })}
         />
         <ToggleRow
-          label="إعادة إرسال البريد عند تحديث النتيجة"
-          description="إرسال تنبيه للمستخدم عند تغيير نتيجة تلاوته"
+          label={a.notifResendResultLabel}
+          description={a.notifResendResultDesc}
           checked={settings.resend_email_on_result_change ?? false}
           onChange={(v) => onUpdate({ resend_email_on_result_change: v })}
         />
         <ToggleRow
-          label="إعادة إرسال البريد عند التحديث"
-          description="إرسال تنبيه عند أي تحديث على السجل"
+          label={a.notifResendUpdateLabel}
+          description={a.notifResendUpdateDesc}
           checked={settings.resend_email_on_result_update ?? false}
           onChange={(v) => onUpdate({ resend_email_on_result_update: v })}
         />
