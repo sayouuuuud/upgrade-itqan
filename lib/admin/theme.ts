@@ -14,6 +14,15 @@ export type ThemeColors = {
   ring: string
   card: string
   cardForeground: string
+  popover: string
+  popoverForeground: string
+  input: string
+  success: string
+  successForeground: string
+  warning: string
+  warningForeground: string
+  destructive: string
+  destructiveForeground: string
   muted: string
   mutedForeground: string
   border: string
@@ -100,6 +109,15 @@ const DEFAULT_COLORS: ThemeColors = {
   ring: "#0D5A3C",
   card: "#FFFFFF",
   cardForeground: "#0D1512",
+  popover: "#FFFFFF",
+  popoverForeground: "#0D1512",
+  input: "#E8E8E3",
+  success: "#16A34A",
+  successForeground: "#FFFFFF",
+  warning: "#F59E0B",
+  warningForeground: "#0D1512",
+  destructive: "#DC2626",
+  destructiveForeground: "#FFFFFF",
   muted: "#F5F5F0",
   mutedForeground: "#6B7280",
   border: "#E8E8E3",
@@ -131,6 +149,15 @@ export const DEFAULT_THEME: ThemeConfig = {
       ring: "#3B6BA5",
       card: "#0F1614",
       cardForeground: "#F5F5F0",
+      popover: "#0F1614",
+      popoverForeground: "#F5F5F0",
+      input: "#1F2D28",
+      success: "#22C55E",
+      successForeground: "#FFFFFF",
+      warning: "#FBBF24",
+      warningForeground: "#080D0B",
+      destructive: "#EF4444",
+      destructiveForeground: "#FFFFFF",
       muted: "#1A2420",
       mutedForeground: "#9CA3AF",
       border: "#1F2D28",
@@ -169,6 +196,15 @@ function normalizeColors(c: any, d: ThemeColors): ThemeColors {
     ring: safeHex(c.ring, d.ring),
     card: safeHex(c.card, d.card),
     cardForeground: safeHex(c.cardForeground, d.cardForeground),
+    popover: safeHex(c.popover, d.popover),
+    popoverForeground: safeHex(c.popoverForeground, d.popoverForeground),
+    input: safeHex(c.input, d.input),
+    success: safeHex(c.success, d.success),
+    successForeground: safeHex(c.successForeground, d.successForeground),
+    warning: safeHex(c.warning, d.warning),
+    warningForeground: safeHex(c.warningForeground, d.warningForeground),
+    destructive: safeHex(c.destructive, d.destructive),
+    destructiveForeground: safeHex(c.destructiveForeground, d.destructiveForeground),
     muted: safeHex(c.muted, d.muted),
     mutedForeground: safeHex(c.mutedForeground, d.mutedForeground),
     border: safeHex(c.border, d.border),
@@ -242,6 +278,15 @@ export function buildThemeCss(theme: ThemeConfig): string {
 --ring:${lc.ring};
 --card:${lc.card};
 --card-foreground:${lc.cardForeground};
+--popover:${lc.popover};
+--popover-foreground:${lc.popoverForeground};
+--input:${lc.input};
+--success:${lc.success};
+--success-foreground:${lc.successForeground};
+--warning:${lc.warning};
+--warning-foreground:${lc.warningForeground};
+--destructive:${lc.destructive};
+--destructive-foreground:${lc.destructiveForeground};
 --muted:${lc.muted};
 --muted-foreground:${lc.mutedForeground};
 --border:${lc.border};
@@ -264,6 +309,15 @@ export function buildThemeCss(theme: ThemeConfig): string {
 --ring:${dc.ring};
 --card:${dc.card};
 --card-foreground:${dc.cardForeground};
+--popover:${dc.popover};
+--popover-foreground:${dc.popoverForeground};
+--input:${dc.input};
+--success:${dc.success};
+--success-foreground:${dc.successForeground};
+--warning:${dc.warning};
+--warning-foreground:${dc.warningForeground};
+--destructive:${dc.destructive};
+--destructive-foreground:${dc.destructiveForeground};
 --muted:${dc.muted};
 --muted-foreground:${dc.mutedForeground};
 --border:${dc.border};
