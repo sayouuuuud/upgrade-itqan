@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/lib/i18n/context"
 import { useSystemSettings } from "./hooks/use-system-settings"
 import {
   IdentitySettings,
@@ -27,18 +28,20 @@ import {
   SeoSettings,
 } from "./_components"
 
-const TABS = [
-  { id: "identity",      label: "هوية المنصة",        icon: Globe,     description: "الاسم والشعار وبيانات التواصل" },
-  { id: "email",         label: "البريد الإلكتروني",  icon: Mail,      description: "إعدادات SMTP والإرسال" },
-  { id: "security",      label: "الأمان والخصوصية",   icon: Shield,    description: "الجلسات والتحقق وسجلات النشاط" },
-  { id: "notifications", label: "الإشعارات",           icon: Bell,      description: "إشعارات البريد التلقائية" },
-  { id: "maintenance",   label: "الصيانة",             icon: Wrench,    description: "وضع الصيانة ونطاق تطبيقه" },
-  { id: "seo",           label: "SEO",                 icon: Search,    description: "بيانات محركات البحث" },
-] as const
-
-type TabId = (typeof TABS)[number]["id"]
+type TabId = "identity" | "email" | "security" | "notifications" | "maintenance" | "seo"
 
 export default function SystemSettingsPage() {
+  const { t } = useI18n()
+
+  const TABS = [
+    { id: "identity"      as TabId, label: t.admin.settingsTabIdentityLabel,      icon: Globe,   description: t.admin.settingsTabIdentityDesc },
+    { id: "email"         as TabId, label: t.admin.settingsTabEmailLabel,          icon: Mail,    description: t.admin.settingsTabEmailDesc },
+    { id: "security"      as TabId, label: t.admin.settingsTabSecurityLabel,       icon: Shield,  description: t.admin.settingsTabSecurityDesc },
+    { id: "notifications" as TabId, label: t.admin.settingsTabNotificationsLabel,  icon: Bell,    description: t.admin.settingsTabNotificationsDesc },
+    { id: "maintenance"   as TabId, label: t.admin.settingsTabMaintenanceLabel,    icon: Wrench,  description: t.admin.settingsTabMaintenanceDesc },
+    { id: "seo"           as TabId, label: t.admin.settingsTabSeoLabel,            icon: Search,  description: t.admin.settingsTabSeoDesc },
+  ]
+
   const {
     settings,
     isLoading,
@@ -96,7 +99,7 @@ export default function SystemSettingsPage() {
     }
   }
 
-  const activeTabMeta = TABS.find((t) => t.id === activeTab)
+  const activeTabMeta = TABS.find((tab) => tab.id === activeTab)
 
   return (
     <div className="flex flex-col gap-6">
@@ -108,7 +111,7 @@ export default function SystemSettingsPage() {
             <Settings className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-lg font-bold leading-none">إعدادات النظام</h1>
+            <h1 className="text-lg font-bold leading-none">{t.admin.settingsTitle}</h1>
             <p className="mt-1 text-xs text-muted-foreground">
               {activeTabMeta?.description}
             </p>
@@ -121,7 +124,7 @@ export default function SystemSettingsPage() {
               variant="outline"
               className="hidden sm:flex border-amber-300 bg-amber-50 text-amber-700"
             >
-              {pendingCount} تعديل غير محفوظ
+              {pendingCount} {t.admin.settingsUnsaved}
             </Badge>
             <Button
               size="sm"
@@ -130,7 +133,7 @@ export default function SystemSettingsPage() {
               disabled={saving}
             >
               <X className="h-3.5 w-3.5 me-1" />
-              تجاهل
+              {t.admin.settingsDiscard}
             </Button>
             <Button size="sm" onClick={saveChanges} disabled={saving}>
               {saving ? (
@@ -138,7 +141,7 @@ export default function SystemSettingsPage() {
               ) : (
                 <Save className="h-3.5 w-3.5 me-1" />
               )}
-              حفظ
+              {t.admin.settingsSave}
             </Button>
           </div>
         )}
@@ -146,7 +149,7 @@ export default function SystemSettingsPage() {
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
 
-        {/* ─── Desktop Sidebar (أولاً في JSX = يمين في RTL) ── */}
+        {/* ─── Desktop Sidebar ── */}
         {!isMobile && (
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <nav className="space-y-1 rounded-xl border bg-card p-2">

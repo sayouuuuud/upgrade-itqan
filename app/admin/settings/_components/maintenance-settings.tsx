@@ -5,39 +5,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Wrench, Globe, BookOpen, BookMarked } from "lucide-react"
 import { SectionCard, ToggleRow } from "./section-card"
+import { useI18n } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
 
 type MaintenanceScope = "site" | "academy" | "maqraah"
-
-const SCOPE_OPTIONS: {
-  value: MaintenanceScope
-  label: string
-  description: string
-  icon: React.ElementType
-  badgeClass: string
-}[] = [
-  {
-    value: "site",
-    label: "الموقع كله",
-    description: "تعطيل جميع المنصات (المقرأة + الأكاديمية + الرئيسية)",
-    icon: Globe,
-    badgeClass: "bg-destructive/10 text-destructive border-destructive/20",
-  },
-  {
-    value: "academy",
-    label: "الأكاديمية فقط",
-    description: "يستمر عمل المقرأة — تُوقَف الأكاديمية وحدها",
-    icon: BookOpen,
-    badgeClass: "bg-amber-100 text-amber-700 border-amber-200",
-  },
-  {
-    value: "maqraah",
-    label: "المقرأة فقط",
-    description: "يستمر عمل الأكاديمية — تُوقَف المقرأة وحدها",
-    icon: BookMarked,
-    badgeClass: "bg-blue-100 text-blue-700 border-blue-200",
-  },
-]
 
 interface Props {
   settings: Record<string, any>
@@ -45,22 +16,55 @@ interface Props {
 }
 
 export function MaintenanceSettings({ settings, onUpdate }: Props) {
+  const { t } = useI18n()
+  const a = t.admin
+
   const enabled = settings.maintenance_enabled === true || settings.maintenance_enabled === "true"
   const scope: MaintenanceScope = settings.maintenance_scope ?? "site"
+
+  const SCOPE_OPTIONS: {
+    value: MaintenanceScope
+    label: string
+    description: string
+    icon: React.ElementType
+    badgeClass: string
+  }[] = [
+    {
+      value: "site",
+      label: a.maintenanceScopeAll,
+      description: a.maintenanceScopeAllDesc,
+      icon: Globe,
+      badgeClass: "bg-destructive/10 text-destructive border-destructive/20",
+    },
+    {
+      value: "academy",
+      label: a.maintenanceScopeAcademy,
+      description: a.maintenanceScopeAcademyDesc,
+      icon: BookOpen,
+      badgeClass: "bg-amber-100 text-amber-700 border-amber-200",
+    },
+    {
+      value: "maqraah",
+      label: a.maintenanceScopeMaqraah,
+      description: a.maintenanceScopeMaqraahDesc,
+      icon: BookMarked,
+      badgeClass: "bg-blue-100 text-blue-700 border-blue-200",
+    },
+  ]
 
   return (
     <div className="space-y-6">
       <SectionCard
         icon={Wrench}
-        title="وضع الصيانة"
-        description="عند التفعيل تظهر صفحة الصيانة للزوار حسب النطاق المحدد"
+        title={a.maintenanceModeTitle}
+        description={a.maintenanceModeDesc}
       >
         <ToggleRow
-          label="تفعيل وضع الصيانة"
+          label={a.maintenanceModeToggle}
           description={
             enabled
-              ? `الحالة: مفعّل على ${SCOPE_OPTIONS.find((s) => s.value === scope)?.label ?? scope}`
-              : "الموقع يعمل بشكل طبيعي"
+              ? `${a.maintenanceModeActivePrefix} ${SCOPE_OPTIONS.find((s) => s.value === scope)?.label ?? scope}`
+              : a.maintenanceModeOff
           }
           checked={enabled}
           onChange={(v) => onUpdate({ maintenance_enabled: v })}
@@ -71,8 +75,8 @@ export function MaintenanceSettings({ settings, onUpdate }: Props) {
       {/* Scope selector — always visible so admin can prepare before enabling */}
       <SectionCard
         icon={Globe}
-        title="نطاق الصيانة"
-        description="اختر أي جزء من الموقع سيتأثر بوضع الصيانة"
+        title={a.maintenanceScopeTitle}
+        description={a.maintenanceScopeDesc}
       >
         <div className="grid gap-3 md:grid-cols-3">
           {SCOPE_OPTIONS.map((option) => {
@@ -102,7 +106,7 @@ export function MaintenanceSettings({ settings, onUpdate }: Props) {
                       variant="outline"
                       className={cn("text-xs font-medium", option.badgeClass)}
                     >
-                      محدد
+                      {a.maintenanceScopeSelected}
                     </Badge>
                   )}
                 </div>
@@ -125,16 +129,16 @@ export function MaintenanceSettings({ settings, onUpdate }: Props) {
 
       <SectionCard
         icon={Wrench}
-        title="رسالة الصيانة"
-        description="النص الذي يراه الزائر عند فتح الصفحة أثناء الصيانة"
+        title={a.maintenanceMsgSectionTitle}
+        description={a.maintenanceMsgSectionDesc}
       >
         <div className="space-y-1.5">
-          <Label className="text-sm">الرسالة</Label>
+          <Label className="text-sm">{a.maintenanceMsgLabel}</Label>
           <Textarea
             rows={3}
-            value={settings.maintenance_message ?? "المنصة تحت الصيانة حالياً، نعود قريباً بإذن الله."}
+            value={settings.maintenance_message ?? a.maintenanceMsgDefault}
             onChange={(e) => onUpdate({ maintenance_message: e.target.value })}
-            placeholder="المنصة تحت الصيانة حالياً، نعود قريباً بإذن الله."
+            placeholder={a.maintenanceMsgDefault}
           />
         </div>
       </SectionCard>

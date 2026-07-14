@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Shield, KeyRound, Activity } from "lucide-react"
 import { SectionCard, ToggleRow } from "./section-card"
+import { useI18n } from "@/lib/i18n/context"
 
 interface Props {
   settings: Record<string, any>
@@ -11,6 +12,9 @@ interface Props {
 }
 
 export function SecuritySettings({ settings, onUpdate }: Props) {
+  const { t } = useI18n()
+  const a = t.admin
+
   const sec = settings.security_settings ?? {}
 
   const updateSec = (patch: Record<string, any>) =>
@@ -20,12 +24,12 @@ export function SecuritySettings({ settings, onUpdate }: Props) {
     <div className="space-y-6">
       <SectionCard
         icon={Shield}
-        title="الحماية والجلسات"
-        description="إعدادات حماية الحسابات وتسجيل الدخول"
+        title={a.secProtectionTitle}
+        description={a.secProtectionDesc}
       >
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="text-sm">مهلة انتهاء الجلسة (دقيقة)</Label>
+            <Label className="text-sm">{a.secSessionTimeout}</Label>
             <Input
               type="number"
               min={5}
@@ -34,7 +38,7 @@ export function SecuritySettings({ settings, onUpdate }: Props) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-sm">الحد الأقصى لمحاولات الدخول</Label>
+            <Label className="text-sm">{a.secMaxAttempts}</Label>
             <Input
               type="number"
               min={1}
@@ -43,7 +47,7 @@ export function SecuritySettings({ settings, onUpdate }: Props) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-sm">مدة قفل الحساب بعد الفشل (دقيقة)</Label>
+            <Label className="text-sm">{a.secLockoutDuration}</Label>
             <Input
               type="number"
               min={1}
@@ -56,12 +60,12 @@ export function SecuritySettings({ settings, onUpdate }: Props) {
 
       <SectionCard
         icon={KeyRound}
-        title="التحقق الثنائي"
-        description="حماية إضافية لحسابات المدراء"
+        title={a.sec2FATitle}
+        description={a.sec2FADesc}
       >
         <ToggleRow
-          label="تفعيل التحقق الثنائي للمدراء"
-          description="يُلزم المدراء بالتحقق عند كل تسجيل دخول"
+          label={a.sec2FALabel}
+          description={a.sec2FAToggleDesc}
           checked={settings.two_factor_auth ?? false}
           onChange={(v) => onUpdate({ two_factor_auth: v })}
         />
@@ -69,12 +73,12 @@ export function SecuritySettings({ settings, onUpdate }: Props) {
 
       <SectionCard
         icon={Activity}
-        title="سجلات النشاط"
-        description="تتبع عمليات المستخدمين والمدراء"
+        title={a.secLogsTitle}
+        description={a.secLogsDesc}
       >
         <ToggleRow
-          label="تفعيل سجلات النشاط"
-          description="يسجّل جميع عمليات الدخول والتعديلات"
+          label={a.secLogsLabel}
+          description={a.secLogsToggleDesc}
           checked={settings.activity_logging ?? true}
           onChange={(v) => onUpdate({ activity_logging: v })}
         />
