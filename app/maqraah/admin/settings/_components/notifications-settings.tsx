@@ -15,8 +15,8 @@ import { useI18n } from "@/lib/i18n/context"
 interface Props {
   settings: MaqraahSettings
   onUpdate: (updates: Partial<MaqraahSettings>) => void
-  onReset: () => void
-  onTestSmtp: (smtp: MaqraahSettings["smtp_config"]) => Promise<boolean>
+  onReset?: () => void
+  onTestSmtp?: (smtp: MaqraahSettings["smtp_config"]) => Promise<boolean>
 }
 
 export function NotificationsSettings({ settings, onUpdate, onReset, onTestSmtp }: Props) {

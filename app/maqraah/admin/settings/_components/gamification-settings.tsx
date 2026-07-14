@@ -10,7 +10,7 @@ import { useI18n } from "@/lib/i18n/context"
 interface Props {
   settings: MaqraahSettings
   onUpdate: (updates: Partial<MaqraahSettings>) => void
-  onReset: () => void
+  onReset?: () => void
 }
 
 export function GamificationSettings({ settings, onUpdate, onReset }: Props) {

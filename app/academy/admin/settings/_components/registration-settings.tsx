@@ -16,7 +16,7 @@ import { useI18n } from "@/lib/i18n/context"
 interface RegistrationSettingsProps {
   settings: AcademySettings
   onUpdate: (updates: Partial<AcademySettings>) => void
-  onReset: () => void
+  onReset?: () => void
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -64,7 +64,7 @@ export function RegistrationSettings({ settings, onUpdate, onReset }: Registrati
                 <CardDescription className="text-xs mt-0.5">{a.rsDesc}</CardDescription>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground">
+            <Button variant="ghost" size="sm" onClick={() => onReset?.()} className="text-muted-foreground">
               <RotateCcw className="w-4 h-4 ml-1" />
               {a.gsRestore}
             </Button>

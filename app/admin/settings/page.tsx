@@ -129,14 +129,14 @@ export default function SystemSettingsPage() {
               onClick={discardChanges}
               disabled={saving}
             >
-              <X className="h-3.5 w-3.5 ml-1" />
+              <X className="h-3.5 w-3.5 me-1" />
               تجاهل
             </Button>
             <Button size="sm" onClick={saveChanges} disabled={saving}>
               {saving ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin ml-1" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin me-1" />
               ) : (
-                <Save className="h-3.5 w-3.5 ml-1" />
+                <Save className="h-3.5 w-3.5 me-1" />
               )}
               حفظ
             </Button>
@@ -144,9 +144,14 @@ export default function SystemSettingsPage() {
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
 
-        {/* ─── Desktop Sidebar ─────────────────────── */}
+        {/* ─── Content ─────────────────────────────── */}
+        <div className="min-w-0">
+          {renderContent()}
+        </div>
+
+        {/* ─── Desktop Sidebar (يمين في RTL) ───────── */}
         {!isMobile && (
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <nav className="space-y-1 rounded-xl border bg-card p-2">
@@ -175,7 +180,7 @@ export default function SystemSettingsPage() {
 
         {/* ─── Mobile Selector ─────────────────────── */}
         {isMobile && (
-          <div className="w-full">
+          <div className="w-full lg:hidden">
             <select
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value as TabId)}
@@ -189,11 +194,6 @@ export default function SystemSettingsPage() {
             </select>
           </div>
         )}
-
-        {/* ─── Content ─────────────────────────────── */}
-        <div className="min-w-0">
-          {renderContent()}
-        </div>
       </div>
     </div>
   )

@@ -16,8 +16,8 @@ import { useI18n } from "@/lib/i18n/context"
 interface NotificationsEmailSettingsProps {
   settings: AcademySettings
   onUpdate: (updates: Partial<AcademySettings>) => void
-  onReset: () => void
-  onTestSmtp: (smtp: AcademySettings["smtp_config"]) => Promise<boolean>
+  onReset?: () => void
+  onTestSmtp?: (smtp: AcademySettings["smtp_config"]) => Promise<boolean>
 }
 
 export function NotificationsEmailSettings({
@@ -106,7 +106,7 @@ export function NotificationsEmailSettings({
                 <CardDescription className="text-xs mt-0.5">{a.neNotificationChannelsDesc}</CardDescription>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground">
+            <Button variant="ghost" size="sm" onClick={() => onReset?.()} className="text-muted-foreground">
               <RotateCcw className="w-4 h-4 ml-1" />
               {a.gsRestore}
             </Button>

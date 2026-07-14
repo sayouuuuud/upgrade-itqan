@@ -11,7 +11,7 @@ import { useI18n } from "@/lib/i18n/context"
 interface Props {
   settings: MaqraahSettings
   onUpdate: (updates: Partial<MaqraahSettings>) => void
-  onReset: () => void
+  onReset?: () => void
 }
 
 export function PathsSettings({ settings, onUpdate, onReset }: Props) {

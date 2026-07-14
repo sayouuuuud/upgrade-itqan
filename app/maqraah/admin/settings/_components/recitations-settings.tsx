@@ -13,7 +13,7 @@ import { useI18n } from "@/lib/i18n/context"
 interface Props {
   settings: MaqraahSettings
   onUpdate: (updates: Partial<MaqraahSettings>) => void
-  onReset: () => void
+  onReset?: () => void
 }
 
 const audioFormats = ["mp3", "m4a", "ogg", "wav", "aac"]

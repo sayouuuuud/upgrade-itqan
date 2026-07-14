@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import {
   Settings,
   Globe,
@@ -17,9 +17,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useI18n } from "@/lib/i18n/context"
 import { useMaqraahSettings } from "./hooks/use-maqraah-settings"
@@ -191,7 +189,7 @@ export default function MaqraahAdminSettingsPage() {
 
   if (isLoading) {
     return (
-      <div dir="rtl" className="space-y-4 p-4 md:p-6">
+      <div className="space-y-4">
         <Skeleton className="h-10 w-48" />
         <div className="space-y-2">
           <Skeleton className="h-20 w-full" />
@@ -203,106 +201,95 @@ export default function MaqraahAdminSettingsPage() {
   }
 
   return (
-    <div dir="rtl" className="flex h-screen flex-col bg-background text-right">
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="border-b p-4 md:p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Settings className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <Settings className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold leading-none">
               {a.maqraahSettingsTitle || "إعدادات المقرأة"}
             </h1>
           </div>
-          {hasUnsavedChanges && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-amber-600">
-                {a.unsavedChanges || "Unsaved changes"}
-              </span>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={discardChanges}
-                disabled={saving}
-              >
-                {a.discard || "Discard"}
-              </Button>
-              <Button
-                size="sm"
-                onClick={saveChanges}
-                disabled={saving}
-              >
-                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {a.save || "Save"}
-              </Button>
-            </div>
-          )}
         </div>
+        {hasUnsavedChanges && (
+          <div className="flex items-center gap-2">
+            <span className="hidden text-sm text-amber-600 sm:block">
+              {a.unsavedChanges || "تعديلات غير محفوظة"}
+            </span>
+            <Button size="sm" variant="ghost" onClick={discardChanges} disabled={saving}>
+              <X className="h-3.5 w-3.5 me-1" />
+              {a.discard || "تجاهل"}
+            </Button>
+            <Button size="sm" onClick={saveChanges} disabled={saving}>
+              {saving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin me-1" />
+              ) : (
+                <Save className="h-3.5 w-3.5 me-1" />
+              )}
+              {a.save || "حفظ"}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Info Alert */}
-      <Alert className="m-4 md:m-6 border-blue-200 bg-blue-50">
+      <Alert className="border-blue-200 bg-blue-50">
         <AlertDescription className="text-blue-700">
-          {a.maqraahSettingsHint ||
-            "إعدادات خاصة بالمقرأة فقط. لا تؤثر هذه الإعدادات على الأكاديمية أو باقي الموقع."}
+          {a.maqraahSettingsHint || "إعدادات خاصة بالمقرأة فقط. لا تؤثر على الأكاديمية أو باقي الموقع."}
         </AlertDescription>
       </Alert>
 
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar Tabs */}
-        <div
-          className={cn(
-            "border-l bg-muted/50 p-4",
-            isMobile ? "hidden" : "w-48"
-          )}
-        >
-          <ScrollArea className="h-full">
-            <div className="space-y-2 pl-4">
+      {/* Grid: content | sidebar (RTL: sidebar على اليمين) */}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_200px]">
+        {/* Content */}
+        <div className="min-w-0">
+          {renderTabContent()}
+        </div>
+
+        {/* Desktop Sidebar */}
+        {!isMobile && (
+          <aside className="lg:sticky lg:top-6 lg:self-start">
+            <nav className="space-y-1 rounded-xl border bg-card p-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon
                 return (
                   <button
                     key={tab.id}
+                    type="button"
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-right text-sm transition-colors",
+                      "flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       activeTab === tab.id
                         ? "bg-primary text-primary-foreground"
-                        : "hover:bg-accent text-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
                     )}
                   >
-                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <Icon className="h-4 w-4 shrink-0" />
                     <span className="truncate">{tab.label}</span>
                   </button>
                 )
               })}
-            </div>
-          </ScrollArea>
-        </div>
+            </nav>
+          </aside>
+        )}
 
-        {/* Mobile Tab Selector */}
+        {/* Mobile Selector */}
         {isMobile && (
-          <div className="border-b p-2">
+          <div className="w-full">
             <select
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
-              className="w-full rounded-lg border bg-background p-2 text-sm"
+              className="w-full rounded-lg border bg-card px-3 py-2.5 text-sm font-medium"
             >
               {tabs.map((tab) => (
-                <option key={tab.id} value={tab.id}>
-                  {tab.label}
-                </option>
+                <option key={tab.id} value={tab.id}>{tab.label}</option>
               ))}
             </select>
           </div>
         )}
-
-        {/* Content Area */}
-        <ScrollArea className="flex-1">
-          <div className="p-4 md:p-6">
-            {renderTabContent()}
-          </div>
-        </ScrollArea>
       </div>
     </div>
   )
