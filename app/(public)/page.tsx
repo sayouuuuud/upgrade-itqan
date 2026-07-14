@@ -20,9 +20,9 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden bg-[#0B3D2E]">
       {/* ========== HERO ========== */}
-      <section className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden px-4 pt-28 pb-16 text-center text-white bg-[#0B3D2E]">
+      <section className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden px-4 pt-24 pb-16 text-center text-white bg-[#0B3D2E]">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 opacity-5" style={{ background: 'radial-gradient(circle at center, #D4A843 0%, transparent 50%)' }} />
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D4A843] rounded-full mix-blend-multiply blur-3xl opacity-5 animate-blob-float" />
