@@ -9,7 +9,8 @@ import { isAcademyAdmin } from "@/lib/auth"
 const fetcher = async (url: string) => {
   const res = await fetch(url)
   if (!res.ok) throw new Error("Failed to fetch session")
-  return res.json()
+  const data = await res.json()
+  return data.user ?? null
 }
 
 export default function AcademyAdminSettingsLayout({
@@ -18,7 +19,7 @@ export default function AcademyAdminSettingsLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const { data: session, isLoading, error } = useSWR("/api/internal/user-status", fetcher)
+  const { data: session, isLoading } = useSWR("/api/auth/me", fetcher)
   const [isAuthorized, setIsAuthorized] = useState(false)
 
   useEffect(() => {
