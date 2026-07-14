@@ -144,14 +144,9 @@ export default function SystemSettingsPage() {
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
+      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
 
-        {/* ─── Content ─────────────────────────────── */}
-        <div className="min-w-0">
-          {renderContent()}
-        </div>
-
-        {/* ─── Desktop Sidebar (يمين في RTL) ───────── */}
+        {/* ─── Desktop Sidebar (أولاً في JSX = يمين في RTL) ── */}
         {!isMobile && (
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <nav className="space-y-1 rounded-xl border bg-card p-2">
@@ -180,7 +175,7 @@ export default function SystemSettingsPage() {
 
         {/* ─── Mobile Selector ─────────────────────── */}
         {isMobile && (
-          <div className="w-full lg:hidden">
+          <div className="w-full">
             <select
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value as TabId)}
@@ -194,6 +189,11 @@ export default function SystemSettingsPage() {
             </select>
           </div>
         )}
+
+        {/* ─── Content ─────────────────────────────── */}
+        <div className="min-w-0">
+          {renderContent()}
+        </div>
       </div>
     </div>
   )

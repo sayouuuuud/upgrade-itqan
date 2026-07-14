@@ -229,12 +229,8 @@ export default function AcademyAdminSettingsPage() {
         </AlertDescription>
       </Alert>
 
-      {/* Grid: content | sidebar (RTL: sidebar على اليمين) */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_200px]">
-        {/* Content */}
-        <div className="min-w-0">
-          {renderTabContent()}
-        </div>
+      {/* Grid: sidebar أولاً في JSX = يمين في RTL */}
+      <div className="grid gap-6 lg:grid-cols-[200px_minmax(0,1fr)]">
 
         {/* Desktop Sidebar */}
         {!isMobile && (
@@ -277,6 +273,11 @@ export default function AcademyAdminSettingsPage() {
             </select>
           </div>
         )}
+
+        {/* Content */}
+        <div className="min-w-0">
+          {renderTabContent()}
+        </div>
       </div>
     </div>
   )
