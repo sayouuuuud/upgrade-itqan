@@ -838,6 +838,7 @@ export default function SubmitTaskPage() {
 }
 
 function TaskTypeBadge({ type }: { type: TaskType }) {
+  const { t } = useI18n()
   const map: Record<string, { label: string; cls: string; icon: any }> = {
     written: { label: (t.addedTranslations_2026?.['مهمة كتابية'] || 'مهمة كتابية'), cls: "bg-primary text-primary-foreground", icon: PenTool },
     quiz: { label: (t.addedTranslations_2026?.['اختبار'] || 'اختبار'), cls: "bg-primary text-primary-foreground", icon: FileText },

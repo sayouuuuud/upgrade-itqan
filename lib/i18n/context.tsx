@@ -14,11 +14,19 @@ export type Locale = 'ar' | 'en'
 // Their keys legitimately differ between locales, so we loosen them to a string
 // map instead of forcing key-for-key parity — everything else stays strictly typed.
 type RawSchema = typeof ar
+
+// Build a version of every namespace that also accepts unknown string keys.
+// This lets components use keys that have not yet been added to ar.ts without
+// triggering TS2339 errors while still providing autocomplete on known keys.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TranslationSchema = Omit<RawSchema, 'addedTranslations_2026' | 'extracted_2026_v2'> & {
+type LooseRecord<T> = T extends Record<string, any> ? T & { [key: string]: any } : T
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LoosenNamespaces<T> = { [K in keyof T]: LooseRecord<T[K]> }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TranslationSchema = LoosenNamespaces<Omit<RawSchema, 'addedTranslations_2026' | 'extracted_2026_v2'>> & {
   addedTranslations_2026: Record<string, string>
   extracted_2026_v2: Record<string, any>
-  // Allow extra root-level keys that are added progressively to ar.ts
   [key: string]: any
 }
 

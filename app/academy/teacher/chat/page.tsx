@@ -37,7 +37,7 @@ interface Message {
 
 function ChatContent() {
   const searchParams = useSearchParams()
-  const { locale } = useI18n()
+  const { locale, t } = useI18n()
   const isAr = locale === 'ar'
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConv, setActiveConv] = useState<Conversation | null>(null)

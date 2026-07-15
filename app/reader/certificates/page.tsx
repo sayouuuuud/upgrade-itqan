@@ -265,7 +265,7 @@ function RequestCard({
   onApprove: () => void;
   onReject: () => void;
 }) {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const isAr = locale === "ar";
 
   const isPending = req.status === "submitted";
@@ -433,7 +433,7 @@ function RequestCard({
 }
 
 function CertificatesSkeleton() {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const isAr = locale === "ar";
   return (
     <div className="grid gap-4" aria-busy="true" aria-label={(t.addedTranslations_2026?.['جاري التحميل'] || (t.addedTranslations_2026?.['جاري التحميل'] || 'جاري التحميل'))}>
