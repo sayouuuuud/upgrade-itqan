@@ -79,10 +79,10 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
       try {
         const res = await fetch(`/api/video/sessions/${sessionId}`)
         const json = await res.json()
-        if (!res.ok) throw new Error(json.error || ((t as any).extracted_2026_v2?.["تعذر تحميل الجلسة"] || "تعذر تحميل الجلسة"))
+        if (!res.ok) throw new Error(json.error || "تعذر تحميل الجلسة")
         if (!cancelled) setInfo(json)
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : ((t as any).extracted_2026_v2?.["حدث خطأ"] || "حدث خطأ"))
+        if (!cancelled) setError(e instanceof Error ? e.message : "حدث خطأ")
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -107,10 +107,10 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
         <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
           <VideoIcon className="w-8 h-8" />
         </div>
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2">{((t as any).extracted_2026_v2?.["عذراً، حدث خطأ"] || "عذراً، حدث خطأ")}</h2>
-        <p className="text-sm text-rose-500 mb-6">{error || ((t as any).extracted_2026_v2?.["تعذر تحميل بيانات الجلسة"] || "تعذر تحميل بيانات الجلسة")}</p>
+        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2">{"عذراً، حدث خطأ"}</h2>
+        <p className="text-sm text-rose-500 mb-6">{error || "تعذر تحميل بيانات الجلسة"}</p>
         <Link href={backHref} className="inline-flex items-center justify-center h-10 px-6 rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 transition-colors font-medium text-sm">
-          {((t as any).extracted_2026_v2?.["العودة للسجل"] || "العودة للسجل")}</Link>
+          {"العودة للسجل"}</Link>
       </div>
     )
   }
@@ -127,7 +127,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
       <div className="flex items-center gap-2 text-sm text-zinc-500">
         <Link href={backHref} className="inline-flex items-center gap-1.5 hover:text-emerald-600 transition-colors">
           <ArrowRight className="w-4 h-4" /> 
-          <span>{((t as any).extracted_2026_v2?.["العودة لسجل الجلسات"] || "العودة لسجل الجلسات")}</span>
+          <span>{"العودة لسجل الجلسات"}</span>
         </Link>
       </div>
 
@@ -145,7 +145,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
               {!s.ended_at && !s.recording_url && (
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300">
                   <span className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-400 animate-pulse" /> 
-                  {((t as any).extracted_2026_v2?.["مباشر الآن"] || "مباشر الآن")}</span>
+                  {"مباشر الآن"}</span>
               )}
             </div>
             
@@ -172,14 +172,14 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
                 target="_blank"
               >
                 <VideoIcon className="w-4 h-4" /> 
-                {((t as any).extracted_2026_v2?.["مراقبة خفية"] || "مراقبة خفية")}</Link>
+                {"مراقبة خفية"}</Link>
             )}
             
             {s.recording_url && (
               <VideoPlayerModal url={s.recording_url} title={s.title || KIND_LABEL[s.kind]}>
                 <button className="inline-flex flex-1 md:flex-none justify-center items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors text-sm font-bold shadow-sm">
                   <PlayCircle className="w-4 h-4" /> 
-                  {((t as any).extracted_2026_v2?.["تشغيل التسجيل"] || "تشغيل التسجيل")}</button>
+                  {"تشغيل التسجيل"}</button>
               </VideoPlayerModal>
             )}
           </div>
@@ -190,23 +190,23 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard 
           icon={<Clock className="w-5 h-5 text-blue-500" />} 
-          label={((t as any).extracted_2026_v2?.["مدة الجلسة"] || "مدة الجلسة")} 
+          label={"مدة الجلسة"} 
           value={s.duration_seconds ? `${Math.round(s.duration_seconds / 60)} دقيقة` : '—'} 
         />
         <MetricCard 
           icon={<Users className="w-5 h-5 text-emerald-500" />} 
-          label={((t as any).extracted_2026_v2?.["ذروة المشاركين"] || "ذروة المشاركين")} 
+          label={"ذروة المشاركين"} 
           value={s.peak_participants} 
         />
         <MetricCard 
           icon={<VideoIcon className="w-5 h-5 text-indigo-500" />} 
-          label={((t as any).extracted_2026_v2?.["إجمالي الحضور"] || "إجمالي الحضور")} 
+          label={"إجمالي الحضور"} 
           value={info.participants.length} 
         />
         <MetricCard 
           icon={<Star className="w-5 h-5 text-amber-500" />} 
-          label={((t as any).extracted_2026_v2?.["متوسط التقييم"] || "متوسط التقييم")} 
-          value={avgRating != null ? `${avgRating.toFixed(1)} من 5` : ((t as any).extracted_2026_v2?.["لم يتم التقييم"] || "لم يتم التقييم")} 
+          label={"متوسط التقييم"} 
+          value={avgRating != null ? `${avgRating.toFixed(1)} من 5` : "لم يتم التقييم"} 
         />
       </div>
 
@@ -216,7 +216,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
           <div className="p-6 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/20 flex items-center justify-between">
             <h3 className="font-bold text-lg inline-flex items-center gap-2">
               <Users className="w-5 h-5 text-zinc-400" /> 
-              {((t as any).extracted_2026_v2?.["سجل المشاركين"] || "سجل المشاركين")}<span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded-full ml-1">
+              {"سجل المشاركين"}<span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded-full ml-1">
                 {info.participants.length}
               </span>
             </h3>
@@ -226,7 +226,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
             {info.participants.length === 0 ? (
               <div className="p-12 text-center text-zinc-500">
                 <Users className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p>{((t as any).extracted_2026_v2?.["لم يسجل أي مشارك الدخول لهذه الجلسة."] || "لم يسجل أي مشارك الدخول لهذه الجلسة.")}</p>
+                <p>{"لم يسجل أي مشارك الدخول لهذه الجلسة."}</p>
               </div>
             ) : (
               <ul className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -244,7 +244,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
                             {p.name}
                             {p.role === 'host' && (
                               <span className="text-[10px] bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 px-1.5 py-0.5 rounded-md uppercase tracking-wider">
-                                {((t as any).extracted_2026_v2?.["مضيف"] || "مضيف")}</span>
+                                {"مضيف"}</span>
                             )}
                           </p>
                           <p className="text-xs text-zinc-500">{p.email}</p>
@@ -253,16 +253,16 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
                       
                       <div className="flex items-center gap-4 text-xs bg-zinc-50 dark:bg-zinc-900/50 px-3 py-2 rounded-lg w-fit">
                         <div className="flex flex-col">
-                          <span className="text-zinc-400 mb-0.5 text-[10px] uppercase">{((t as any).extracted_2026_v2?.["دخول - خروج"] || "دخول - خروج")}</span>
+                          <span className="text-zinc-400 mb-0.5 text-[10px] uppercase">{"دخول - خروج"}</span>
                           <span className="text-zinc-700 dark:text-zinc-300 font-medium">
                             {new Date(p.joined_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
-                            {p.left_at ? ` ← ${new Date(p.left_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}` : ((t as any).extracted_2026_v2?.[" ← مستمر"] || " ← مستمر")}
+                            {p.left_at ? ` ← ${new Date(p.left_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}` : " ← مستمر"}
                           </span>
                         </div>
                         {p.duration_seconds != null && (
                           <div className="flex flex-col pl-4 border-l border-zinc-200 dark:border-zinc-700">
-                            <span className="text-zinc-400 mb-0.5 text-[10px] uppercase">{((t as any).extracted_2026_v2?.["البقاء"] || "البقاء")}</span>
-                            <span className="text-zinc-700 dark:text-zinc-300 font-bold">{Math.round(p.duration_seconds / 60)} {((t as any).extracted_2026_v2?.["د"] || "د")}</span>
+                            <span className="text-zinc-400 mb-0.5 text-[10px] uppercase">{"البقاء"}</span>
+                            <span className="text-zinc-700 dark:text-zinc-300 font-bold">{Math.round(p.duration_seconds / 60)} {"د"}</span>
                           </div>
                         )}
                       </div>
@@ -279,7 +279,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
           <div className="p-6 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/20 flex items-center justify-between">
             <h3 className="font-bold text-lg inline-flex items-center gap-2">
               <Star className="w-5 h-5 text-amber-500" /> 
-              {((t as any).extracted_2026_v2?.["التقييمات"] || "التقييمات")}<span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded-full ml-1">
+              {"التقييمات"}<span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded-full ml-1">
                 {info.ratings.length}
               </span>
             </h3>
@@ -289,7 +289,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
             {info.ratings.length === 0 ? (
               <div className="p-12 text-center text-zinc-500">
                 <Star className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p>{((t as any).extracted_2026_v2?.["لم يقم أي طالب بتقييم هذه الجلسة بعد."] || "لم يقم أي طالب بتقييم هذه الجلسة بعد.")}</p>
+                <p>{"لم يقم أي طالب بتقييم هذه الجلسة بعد."}</p>
               </div>
             ) : (
               <ul className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -317,17 +317,17 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
                         <div className="flex flex-wrap gap-2 text-xs">
                           {r.audio_quality && (
                             <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-2.5 py-1 rounded-md">
-                              {((t as any).extracted_2026_v2?.["الصوت:"] || "الصوت:")}<strong className="text-zinc-900 dark:text-white ml-1">{r.audio_quality}/5</strong>
+                              {"الصوت:"}<strong className="text-zinc-900 dark:text-white ml-1">{r.audio_quality}/5</strong>
                             </span>
                           )}
                           {r.video_quality && (
                             <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-2.5 py-1 rounded-md">
-                              {((t as any).extracted_2026_v2?.["الفيديو:"] || "الفيديو:")}<strong className="text-zinc-900 dark:text-white ml-1">{r.video_quality}/5</strong>
+                              {"الفيديو:"}<strong className="text-zinc-900 dark:text-white ml-1">{r.video_quality}/5</strong>
                             </span>
                           )}
                           {r.teacher_rating && (
                             <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-2.5 py-1 rounded-md">
-                              {((t as any).extracted_2026_v2?.["المدرّس:"] || "المدرّس:")}<strong className="text-zinc-900 dark:text-white ml-1">{r.teacher_rating}/5</strong>
+                              {"المدرّس:"}<strong className="text-zinc-900 dark:text-white ml-1">{r.teacher_rating}/5</strong>
                             </span>
                           )}
                         </div>

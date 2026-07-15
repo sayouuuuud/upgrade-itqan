@@ -132,8 +132,8 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
       if (!res.ok) throw new Error(data.error || "تعذر الحفظ")
       setSuccess(
         audience === "all"
-          ? `${((t as any).extracted_2026_v2?.["تم إرسال الرابط لجميع طلاب الكورس ("] || "تم إرسال الرابط لجميع طلاب الكورس (")}${data.recipientsCount}${((t as any).extracted_2026_v2?.[" طالب)"] || " طالب)")}`
-          : `${((t as any).extracted_2026_v2?.["تم إرسال الرابط للطلاب المحددين ("] || "تم إرسال الرابط للطلاب المحددين (")}${data.recipientsCount}${((t as any).extracted_2026_v2?.[" طالب)"] || " طالب)")}`
+          ? `تم إرسال الرابط لجميع طلاب الكورس (${data.recipientsCount} طالب)`
+          : `تم إرسال الرابط للطلاب المحددين (${data.recipientsCount} طالب)`
       )
       onSent?.()
       // Close after a short delay
@@ -320,7 +320,7 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
                       id="ann-title"
                       value={announcementTitle}
                       onChange={e => setAnnouncementTitle(e.target.value)}
-                      placeholder={`${((t as any).extracted_2026_v2?.["رابط الجلسة: "] || "رابط الجلسة: ")}${sessionTitle}`}
+                      placeholder={`رابط الجلسة: ${sessionTitle}`}
                     />
                   </div>
                   <div>
@@ -373,5 +373,3 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
   )
 }
 
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });

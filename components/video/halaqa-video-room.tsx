@@ -1,7 +1,6 @@
 "use client"
 
 
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
@@ -119,44 +118,44 @@ interface T {
 
 const STR: Record<Locale, T> = {
   ar: {
-    preparing: ((t as any).extracted_2026_v2?.["جاري تجهيز غرفة البث المباشر…"] || "جاري تجهيز غرفة البث المباشر…"),
-    checking: ((t as any).extracted_2026_v2?.["يتم التحقق من الصلاحيات والاتصال بالخادم"] || "يتم التحقق من الصلاحيات والاتصال بالخادم"),
-    cantOpen: ((t as any).extracted_2026_v2?.["تعذر فتح الغرفة"] || "تعذر فتح الغرفة"),
-    unknownError: ((t as any).extracted_2026_v2?.["خطأ غير معروف"] || "خطأ غير معروف"),
-    tokenError: ((t as any).extracted_2026_v2?.["تعذر إنشاء رمز الدخول"] || "تعذر إنشاء رمز الدخول"),
-    urlError: ((t as any).extracted_2026_v2?.["عنوان خادم البث غير معرّف"] || "عنوان خادم البث غير معرّف"),
-    back: ((t as any).extracted_2026_v2?.["رجوع"] || "رجوع"),
-    roomFallback: ((t as any).extracted_2026_v2?.["غرفة الجلسة"] || "غرفة الجلسة"),
-    live: ((t as any).extracted_2026_v2?.["مباشر"] || "مباشر"),
-    host: ((t as any).extracted_2026_v2?.["المضيف"] || "المضيف"),
-    participant: ((t as any).extracted_2026_v2?.["مشارك"] || "مشارك"),
-    leave: ((t as any).extracted_2026_v2?.["خروج"] || "خروج"),
-    mic: ((t as any).extracted_2026_v2?.["الميكروفون"] || "الميكروفون"),
-    micOff: ((t as any).extracted_2026_v2?.["كتم"] || "كتم"),
-    camera: ((t as any).extracted_2026_v2?.["الكاميرا"] || "الكاميرا"),
-    cameraOff: ((t as any).extracted_2026_v2?.["إيقاف الكاميرا"] || "إيقاف الكاميرا"),
-    share: ((t as any).extracted_2026_v2?.["مشاركة الشاشة"] || "مشاركة الشاشة"),
-    stopShare: ((t as any).extracted_2026_v2?.["إيقاف المشاركة"] || "إيقاف المشاركة"),
-    chat: ((t as any).extracted_2026_v2?.["المحادثة"] || "المحادثة"),
-    participants: ((t as any).extracted_2026_v2?.["المشاركون"] || "المشاركون"),
-    leaveTitle: ((t as any).extracted_2026_v2?.["هل تريد الخروج؟"] || "هل تريد الخروج؟"),
-    leaveDesc: ((t as any).extracted_2026_v2?.["سيتم قطع الاتصال بهذه الجلسة."] || "سيتم قطع الاتصال بهذه الجلسة."),
-    stay: ((t as any).extracted_2026_v2?.["البقاء"] || "البقاء"),
-    ratingTitle: ((t as any).extracted_2026_v2?.["قيّم هذه الجلسة"] || "قيّم هذه الجلسة"),
-    ratingDesc: ((t as any).extracted_2026_v2?.["رأيك يهمنا — سيظهر للمدرّس والإدارة فقط."] || "رأيك يهمنا — سيظهر للمدرّس والإدارة فقط."),
-    overall: ((t as any).extracted_2026_v2?.["التقييم العام"] || "التقييم العام"),
-    audioQ: ((t as any).extracted_2026_v2?.["جودة الصوت"] || "جودة الصوت"),
-    videoQ: ((t as any).extracted_2026_v2?.["جودة الفيديو"] || "جودة الفيديو"),
-    teacherPerf: ((t as any).extracted_2026_v2?.["أداء المدرّس"] || "أداء المدرّس"),
-    notesPlaceholder: ((t as any).extracted_2026_v2?.["ملاحظات إضافية (اختياري)"] || "ملاحظات إضافية (اختياري)"),
-    skip: ((t as any).extracted_2026_v2?.["تخطي"] || "تخطي"),
-    submit: ((t as any).extracted_2026_v2?.["إرسال التقييم"] || "إرسال التقييم"),
-    submitting: ((t as any).extracted_2026_v2?.["جاري الإرسال…"] || "جاري الإرسال…"),
-    thanksTitle: ((t as any).extracted_2026_v2?.["شكراً على تقييمك"] || "شكراً على تقييمك"),
-    thanksDesc: ((t as any).extracted_2026_v2?.["سيساعدنا في تحسين الجلسات القادمة."] || "سيساعدنا في تحسين الجلسات القادمة."),
+    preparing: "جاري تجهيز غرفة البث المباشر…",
+    checking: "يتم التحقق من الصلاحيات والاتصال بالخادم",
+    cantOpen: "تعذر فتح الغرفة",
+    unknownError: "خطأ غير معروف",
+    tokenError: "تعذر إنشاء رمز الدخول",
+    urlError: "عنوان خادم البث غير معرّف",
+    back: "رجوع",
+    roomFallback: "غرفة الجلسة",
+    live: "مباشر",
+    host: "المضيف",
+    participant: "مشارك",
+    leave: "خروج",
+    mic: "الميكروفون",
+    micOff: "كتم",
+    camera: "الكاميرا",
+    cameraOff: "إيقاف الكاميرا",
+    share: "مشاركة الشاشة",
+    stopShare: "إيقاف المشاركة",
+    chat: "المحادثة",
+    participants: "المشاركون",
+    leaveTitle: "هل تريد الخروج؟",
+    leaveDesc: "سيتم قطع الاتصال بهذه الجلسة.",
+    stay: "البقاء",
+    ratingTitle: "قيّم هذه الجلسة",
+    ratingDesc: "رأيك يهمنا — سيظهر للمدرّس والإدارة فقط.",
+    overall: "التقييم العام",
+    audioQ: "جودة الصوت",
+    videoQ: "جودة الفيديو",
+    teacherPerf: "أداء المدرّس",
+    notesPlaceholder: "ملاحظات إضافية (اختياري)",
+    skip: "تخطي",
+    submit: "إرسال التقييم",
+    submitting: "جاري الإرسال…",
+    thanksTitle: "شكراً على تقييمك",
+    thanksDesc: "سيساعدنا في تحسين الجلسات القادمة.",
     starsLabel: (n: number) => `${n} نجوم`,
-    waitingTitle: ((t as any).extracted_2026_v2?.["بانتظار انضمام المشاركين"] || "بانتظار انضمام المشاركين"),
-    waitingDesc: ((t as any).extracted_2026_v2?.["سيظهر المشاركون هنا بمجرد دخولهم الغرفة."] || "سيظهر المشاركون هنا بمجرد دخولهم الغرفة."),
+    waitingTitle: "بانتظار انضمام المشاركين",
+    waitingDesc: "سيظهر المشاركون هنا بمجرد دخولهم الغرفة.",
   },
   en: {
     preparing: 'Preparing the live room…',
@@ -463,11 +462,11 @@ function ConferenceView({
       }
     }
     const isAr = dir === 'rtl'
-    if (role === 'teacher') return { label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["المعلم"] || "المعلم")] || ((t as any).extracted_2026_v2?.["المعلم"] || "المعلم")), color: 'text-amber-300 border-amber-500/30 bg-amber-500/10' }
-    if (role === 'reader') return { label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["المقرئ"] || "المقرئ")] || ((t as any).extracted_2026_v2?.["المقرئ"] || "المقرئ")), color: 'text-amber-300 border-amber-500/30 bg-amber-500/10' }
-    if (role === 'admin' || role === 'academy_admin') return { label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["مشرف"] || "مشرف")] || ((t as any).extracted_2026_v2?.["مشرف"] || "مشرف")), color: 'text-rose-300 border-rose-500/30 bg-rose-500/10' }
-    if (role === 'reciter_supervisor') return { label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["مشرف"] || "مشرف")] || ((t as any).extracted_2026_v2?.["مشرف"] || "مشرف")), color: 'text-indigo-300 border-indigo-500/30 bg-indigo-500/10' }
-    if (role === 'student') return { label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["طالب"] || "طالب")] || ((t as any).extracted_2026_v2?.["طالب"] || "طالب")), color: 'text-emerald-300 border-emerald-500/30 bg-emerald-500/10' }
+    if (role === 'teacher') return { label: 'المعلم', color: 'text-amber-300 border-amber-500/30 bg-amber-500/10' }
+    if (role === 'reader') return { label: 'المقرئ', color: 'text-amber-300 border-amber-500/30 bg-amber-500/10' }
+    if (role === 'admin' || role === 'academy_admin') return { label: 'مشرف', color: 'text-rose-300 border-rose-500/30 bg-rose-500/10' }
+    if (role === 'reciter_supervisor') return { label: 'مشرف', color: 'text-indigo-300 border-indigo-500/30 bg-indigo-500/10' }
+    if (role === 'student') return { label: 'طالب', color: 'text-emerald-300 border-emerald-500/30 bg-emerald-500/10' }
     return null
   }
 
@@ -596,7 +595,7 @@ function ConferenceView({
                         </span>
                         {isLocal && (
                           <span className="text-[10px] bg-zinc-800 text-zinc-400 border border-zinc-700 px-1 py-0.5 rounded">
-                            {dir === 'rtl' ? ((t as any).extracted_2026_v2?.["أنت"] || "أنت") : 'You'}
+                            {dir === 'rtl' ? "أنت" : 'You'}
                           </span>
                         )}
                       </div>

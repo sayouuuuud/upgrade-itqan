@@ -173,9 +173,9 @@ export function StudentHalaqaDetail({
     return (
       <div className="text-center py-16">
         <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto mb-3" />
-        <p className="text-muted-foreground">{((t as any).extracted_2026_v2?.["لم يتم العثور على الحلقة أو لست منضماً إليها"] || "لم يتم العثور على الحلقة أو لست منضماً إليها")}</p>
+        <p className="text-muted-foreground">{"لم يتم العثور على الحلقة أو لست منضماً إليها"}</p>
         <Link href={basePath} className="inline-block mt-4 text-indigo-600 hover:underline">
-          {((t as any).extracted_2026_v2?.["العودة للحلقات"] || "العودة للحلقات")}</Link>
+          {"العودة للحلقات"}</Link>
       </div>
     )
   }
@@ -193,7 +193,7 @@ export function StudentHalaqaDetail({
             <Link
               href={basePath}
               className="shrink-0 p-2 -m-2 hover:bg-white/15 rounded-lg transition-colors"
-              aria-label={((t as any).extracted_2026_v2?.["رجوع"] || "رجوع")}
+              aria-label={"رجوع"}
             >
               <ArrowRight className="w-5 h-5" />
             </Link>
@@ -202,7 +202,7 @@ export function StudentHalaqaDetail({
                 {halaqa.name}
                 {halaqa.is_live && (
                   <span className="inline-flex items-center gap-1 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
-                    <Radio className="w-3 h-3 animate-pulse" /> {((t as any).extracted_2026_v2?.["مباشر الآن"] || "مباشر الآن")}</span>
+                    <Radio className="w-3 h-3 animate-pulse" /> {"مباشر الآن"}</span>
                 )}
               </h1>
               <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-white/90">
@@ -215,11 +215,11 @@ export function StudentHalaqaDetail({
                   <Users className="w-3 h-3" /> {halaqa.current_students}/{halaqa.max_students}
                 </span>
                 <span className="inline-flex items-center gap-1 bg-white/15 px-2 py-0.5 rounded-full">
-                  {GENDER_LABELS[halaqa.gender] || ((t as any).extracted_2026_v2?.["مختلط"] || "مختلط")}
+                  {GENDER_LABELS[halaqa.gender] || "مختلط"}
                 </span>
                 {halaqa.duration_minutes && (
                   <span className="inline-flex items-center gap-1 bg-white/15 px-2 py-0.5 rounded-full">
-                    <Clock className="w-3 h-3" /> {halaqa.duration_minutes} {((t as any).extracted_2026_v2?.["دقيقة"] || "دقيقة")}</span>
+                    <Clock className="w-3 h-3" /> {halaqa.duration_minutes} {"دقيقة"}</span>
                 )}
               </div>
             </div>
@@ -233,7 +233,7 @@ export function StudentHalaqaDetail({
             }`}
           >
             <Video className="w-4 h-4" />
-            {halaqa.is_live ? ((t as any).extracted_2026_v2?.["انضم للبث الآن"] || "انضم للبث الآن") : ((t as any).extracted_2026_v2?.["دخول الغرفة"] || "دخول الغرفة")}
+            {halaqa.is_live ? "انضم للبث الآن" : "دخول الغرفة"}
           </Link>
         </div>
         {halaqa.description && (
@@ -245,25 +245,25 @@ export function StudentHalaqaDetail({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           icon={<TrendingUp className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["نسبة حضوري"] || "نسبة حضوري")}
+          label={"نسبة حضوري"}
           value={`${stats?.attendance_rate ?? 0}%`}
           accent="text-indigo-600 dark:text-indigo-400"
         />
         <StatCard
           icon={<CheckCircle2 className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["مرات الحضور"] || "مرات الحضور")}
+          label={"مرات الحضور"}
           value={stats?.present ?? 0}
           accent="text-emerald-600 dark:text-emerald-400"
         />
         <StatCard
           icon={<CalendarDays className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["جلسات عُقدت"] || "جلسات عُقدت")}
+          label={"جلسات عُقدت"}
           value={stats?.total_sessions_held ?? 0}
           accent="text-sky-600 dark:text-sky-400"
         />
         <StatCard
           icon={<Users className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["زملائي"] || "زملائي")}
+          label={"زملائي"}
           value={activeClassmates.length}
           accent="text-violet-600 dark:text-violet-400"
         />
@@ -272,9 +272,9 @@ export function StudentHalaqaDetail({
       {/* Tabs */}
       <div className="flex border-b border-border overflow-x-auto">
         {([
-          { key: 'overview', label: ((t as any).extracted_2026_v2?.["نظرة عامة"] || "نظرة عامة"), Icon: Sparkles },
-          { key: 'sessions', label: ((t as any).extracted_2026_v2?.["الجلسات والتسجيلات"] || "الجلسات والتسجيلات"), Icon: PlayCircle },
-          { key: 'attendance', label: ((t as any).extracted_2026_v2?.["سجل حضوري"] || "سجل حضوري"), Icon: ClipboardList },
+          { key: 'overview', label: "نظرة عامة", Icon: Sparkles },
+          { key: 'sessions', label: "الجلسات والتسجيلات", Icon: PlayCircle },
+          { key: 'attendance', label: "سجل حضوري", Icon: ClipboardList },
           { key: 'classmates', label: `الزملاء (${activeClassmates.length})`, Icon: Users },
         ] as const).map(({ key, label, Icon }) => (
           <button
@@ -295,16 +295,16 @@ export function StudentHalaqaDetail({
       {/* Overview tab */}
       {tab === 'overview' && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <InfoTile title={((t as any).extracted_2026_v2?.["حالة الحلقة"] || "حالة الحلقة")} value={halaqa.is_active ? ((t as any).extracted_2026_v2?.["نشطة"] || "نشطة") : ((t as any).extracted_2026_v2?.["متوقفة"] || "متوقفة")} accent={halaqa.is_active ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'} />
-          <InfoTile title={((t as any).extracted_2026_v2?.["المعلم"] || "المعلم")} value={halaqa.teacher_name || ((t as any).extracted_2026_v2?.["غير محدد"] || "غير محدد")} />
-          <InfoTile title={((t as any).extracted_2026_v2?.["الموعد القادم"] || "الموعد القادم")} value={halaqa.scheduled_at ? scheduled : ((t as any).extracted_2026_v2?.["سيُعلن لاحقاً"] || "سيُعلن لاحقاً")} />
-          <InfoTile title={((t as any).extracted_2026_v2?.["تاريخ انضمامي"] || "تاريخ انضمامي")} value={fmtDate(overview?.joined_at ?? null)} />
-          <InfoTile title={((t as any).extracted_2026_v2?.["مرات التأخير"] || "مرات التأخير")} value={stats?.late ?? 0} accent="text-amber-600 dark:text-amber-400" />
-          <InfoTile title={((t as any).extracted_2026_v2?.["مرات الغياب"] || "مرات الغياب")} value={stats?.absent ?? 0} accent="text-rose-600 dark:text-rose-400" />
+          <InfoTile title={"حالة الحلقة"} value={halaqa.is_active ? "نشطة" : "متوقفة"} accent={halaqa.is_active ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'} />
+          <InfoTile title={"المعلم"} value={halaqa.teacher_name || "غير محدد"} />
+          <InfoTile title={"الموعد القادم"} value={halaqa.scheduled_at ? scheduled : "سيُعلن لاحقاً"} />
+          <InfoTile title={"تاريخ انضمامي"} value={fmtDate(overview?.joined_at ?? null)} />
+          <InfoTile title={"مرات التأخير"} value={stats?.late ?? 0} accent="text-amber-600 dark:text-amber-400" />
+          <InfoTile title={"مرات الغياب"} value={stats?.absent ?? 0} accent="text-rose-600 dark:text-rose-400" />
           {halaqa.meeting_link && (
             <InfoTile
-              title={((t as any).extracted_2026_v2?.["رابط بديل للقاء"] || "رابط بديل للقاء")}
-              value={<a className="text-indigo-600 dark:text-indigo-400 underline" href={halaqa.meeting_link} target="_blank" rel="noreferrer">{((t as any).extracted_2026_v2?.["فتح الرابط"] || "فتح الرابط")}</a>}
+              title={"رابط بديل للقاء"}
+              value={<a className="text-indigo-600 dark:text-indigo-400 underline" href={halaqa.meeting_link} target="_blank" rel="noreferrer">{"فتح الرابط"}</a>}
             />
           )}
         </div>
@@ -314,7 +314,7 @@ export function StudentHalaqaDetail({
       {tab === 'sessions' && (
         <div className="space-y-3">
           {!overview || overview.sessions.length === 0 ? (
-            <EmptyState icon={<PlayCircle className="w-8 h-8" />} text={((t as any).extracted_2026_v2?.["لم تُعقد أي جلسات بعد"] || "لم تُعقد أي جلسات بعد")} />
+            <EmptyState icon={<PlayCircle className="w-8 h-8" />} text={"لم تُعقد أي جلسات بعد"} />
           ) : (
             overview.sessions.map((s) => {
               const live = !s.ended_at
@@ -327,8 +327,8 @@ export function StudentHalaqaDetail({
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm truncate">{fmtDate(s.started_at, true)}</p>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-0.5">
-                      <span>{live ? ((t as any).extracted_2026_v2?.["جارية الآن"] || "جارية الآن") : `المدة: ${fmtDuration(s.duration_seconds)}`}</span>
-                      <span className="inline-flex items-center gap-1"><Users className="w-3 h-3" /> {s.total_participants} {((t as any).extracted_2026_v2?.["مشارك"] || "مشارك")}</span>
+                      <span>{live ? "جارية الآن" : `المدة: ${fmtDuration(s.duration_seconds)}`}</span>
+                      <span className="inline-flex items-center gap-1"><Users className="w-3 h-3" /> {s.total_participants} {"مشارك"}</span>
                     </div>
                   </div>
                   {live ? (
@@ -336,7 +336,7 @@ export function StudentHalaqaDetail({
                       href={`${basePath}/${halaqaId}/live`}
                       className="inline-flex items-center gap-1.5 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-bold transition-colors"
                     >
-                      <Video className="w-4 h-4" /> {((t as any).extracted_2026_v2?.["انضم"] || "انضم")}</Link>
+                      <Video className="w-4 h-4" /> {"انضم"}</Link>
                   ) : hasRecording ? (
                     <a
                       href={s.recording_url!}
@@ -344,9 +344,9 @@ export function StudentHalaqaDetail({
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold transition-colors"
                     >
-                      <PlayCircle className="w-4 h-4" /> {((t as any).extracted_2026_v2?.["التسجيل"] || "التسجيل")}</a>
+                      <PlayCircle className="w-4 h-4" /> {"التسجيل"}</a>
                   ) : (
-                    <span className="text-xs text-muted-foreground px-2">{((t as any).extracted_2026_v2?.["لا يوجد تسجيل"] || "لا يوجد تسجيل")}</span>
+                    <span className="text-xs text-muted-foreground px-2">{"لا يوجد تسجيل"}</span>
                   )}
                 </div>
               )
@@ -359,7 +359,7 @@ export function StudentHalaqaDetail({
       {tab === 'attendance' && (
         <div className="space-y-3">
           {!overview || overview.attendance.length === 0 ? (
-            <EmptyState icon={<ClipboardList className="w-8 h-8" />} text={((t as any).extracted_2026_v2?.["لا يوجد سجل حضور بعد"] || "لا يوجد سجل حضور بعد")} />
+            <EmptyState icon={<ClipboardList className="w-8 h-8" />} text={"لا يوجد سجل حضور بعد"} />
           ) : (
             overview.attendance.map((a) => {
               const style = ATTENDANCE_STYLES[a.status] || ATTENDANCE_STYLES.present
@@ -386,7 +386,7 @@ export function StudentHalaqaDetail({
       {tab === 'classmates' && (
         <div className="space-y-3">
           {activeClassmates.length === 0 ? (
-            <EmptyState icon={<Users className="w-8 h-8" />} text={((t as any).extracted_2026_v2?.["لا يوجد زملاء في الحلقة بعد"] || "لا يوجد زملاء في الحلقة بعد")} />
+            <EmptyState icon={<Users className="w-8 h-8" />} text={"لا يوجد زملاء في الحلقة بعد"} />
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {activeClassmates.map((c) => (

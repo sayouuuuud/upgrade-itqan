@@ -126,7 +126,7 @@ export function VideoSettingsPage({ platform, sessionsBasePath }: Props) {
       setStats(st.data)
       setSessions(ss.data || [])
     } catch (e) {
-      setError(e instanceof Error ? e.message : ((t as any).extracted_2026_v2?.["تعذر تحميل البيانات"] || "تعذر تحميل البيانات"))
+      setError(e instanceof Error ? e.message : "تعذر تحميل البيانات")
     } finally {
       setLoading(false)
     }
@@ -154,10 +154,10 @@ export function VideoSettingsPage({ platform, sessionsBasePath }: Props) {
         body: JSON.stringify(settings),
       })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error || ((t as any).extracted_2026_v2?.["فشل الحفظ"] || "فشل الحفظ"))
+      if (!res.ok) throw new Error(json.error || "فشل الحفظ")
       setSettings(json.data)
     } catch (e) {
-      setError(e instanceof Error ? e.message : ((t as any).extracted_2026_v2?.["فشل الحفظ"] || "فشل الحفظ"))
+      setError(e instanceof Error ? e.message : "فشل الحفظ")
     } finally {
       setSaving(false)
     }
@@ -174,14 +174,14 @@ export function VideoSettingsPage({ platform, sessionsBasePath }: Props) {
   if (error || !settings || !stats) {
     return (
       <div className="max-w-md mx-auto bg-card border border-border rounded-2xl p-6 text-center mt-12">
-        <p className="text-sm text-rose-500 mb-3">{error || ((t as any).extracted_2026_v2?.["تعذر تحميل البيانات"] || "تعذر تحميل البيانات")}</p>
+        <p className="text-sm text-rose-500 mb-3">{error || "تعذر تحميل البيانات"}</p>
         <button onClick={load} className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold">
-          {((t as any).extracted_2026_v2?.["إعادة المحاولة"] || "إعادة المحاولة")}</button>
+          {"إعادة المحاولة"}</button>
       </div>
     )
   }
 
-  const platformLabel = platform === 'academy' ? ((t as any).extracted_2026_v2?.["الأكاديمية"] || "الأكاديمية") : ((t as any).extracted_2026_v2?.["المقرأة"] || "المقرأة")
+  const platformLabel = platform === 'academy' ? "الأكاديمية" : "المقرأة"
   const accent = platform === 'academy' ? 'indigo' : 'emerald'
   const accentBg = accent === 'indigo' ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30' : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
   const accentBtn = accent === 'indigo' ? 'bg-indigo-500 hover:bg-indigo-600' : 'bg-emerald-500 hover:bg-emerald-600'
@@ -193,20 +193,20 @@ export function VideoSettingsPage({ platform, sessionsBasePath }: Props) {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className={`inline-flex items-center gap-2 text-xs font-bold px-2.5 py-1 rounded-full border ${accentBg} mb-3`}>
-              <Radio className="w-3 h-3" /> {((t as any).extracted_2026_v2?.["منصة"] || "منصة")}{platformLabel}
+              <Radio className="w-3 h-3" /> {"منصة"}{platformLabel}
             </div>
-            <h1 className="text-2xl font-bold mb-1">{((t as any).extracted_2026_v2?.["إعدادات البث والفيديو"] || "إعدادات البث والفيديو")}</h1>
+            <h1 className="text-2xl font-bold mb-1">{"إعدادات البث والفيديو"}</h1>
             <p className="text-sm text-muted-foreground max-w-2xl">
-              {((t as any).extracted_2026_v2?.["تحكم كامل بإعدادات الفيديو، الجودة، التسجيل، وعرض إحصائيات لحظية وسجل تفصيلي لكل الجلسات."] || "تحكم كامل بإعدادات الفيديو، الجودة، التسجيل، وعرض إحصائيات لحظية وسجل تفصيلي لكل الجلسات.")}</p>
+              {"تحكم كامل بإعدادات الفيديو، الجودة، التسجيل، وعرض إحصائيات لحظية وسجل تفصيلي لكل الجلسات."}</p>
           </div>
           <CapabilitiesBadge caps={capabilities} />
         </div>
       </div>
 
       <div className="flex gap-1 border-b border-border">
-        <TabButton active={tab === 'overview'} onClick={() => setTab('overview')} icon={<Activity className="w-4 h-4" />} label={((t as any).extracted_2026_v2?.["نظرة عامة"] || "نظرة عامة")} />
-        <TabButton active={tab === 'settings'} onClick={() => setTab('settings')} icon={<SettingsIcon className="w-4 h-4" />} label={((t as any).extracted_2026_v2?.["الإعدادات"] || "الإعدادات")} />
-        <TabButton active={tab === 'log'} onClick={() => setTab('log')} icon={<Film className="w-4 h-4" />} label={((t as any).extracted_2026_v2?.["سجل الجلسات"] || "سجل الجلسات")} />
+        <TabButton active={tab === 'overview'} onClick={() => setTab('overview')} icon={<Activity className="w-4 h-4" />} label={"نظرة عامة"} />
+        <TabButton active={tab === 'settings'} onClick={() => setTab('settings')} icon={<SettingsIcon className="w-4 h-4" />} label={"الإعدادات"} />
+        <TabButton active={tab === 'log'} onClick={() => setTab('log')} icon={<Film className="w-4 h-4" />} label={"سجل الجلسات"} />
       </div>
 
       {tab === 'overview' && (
@@ -242,7 +242,7 @@ function CapabilitiesBadge({
   return (
     <div className="flex flex-col gap-1.5">
       <CapabilityRow ok={caps.livekit_configured} label="LiveKit" />
-      <CapabilityRow ok={caps.recording_configured} label={((t as any).extracted_2026_v2?.["تخزين التسجيلات (S3)"] || "تخزين التسجيلات (S3)")} />
+      <CapabilityRow ok={caps.recording_configured} label={"تخزين التسجيلات (S3)"} />
     </div>
   )
 }
@@ -322,65 +322,65 @@ function OverviewTab({ stats, onViewAll }: { stats: Stats; onViewAll: () => void
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard
           icon={<Radio className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["غرف مباشرة الآن"] || "غرف مباشرة الآن")}
+          label={"غرف مباشرة الآن"}
           value={stats.live_rooms}
           hint={`${stats.live_participants} مشارك حالياً`}
           tone={stats.live_rooms > 0 ? 'live' : 'default'}
         />
         <StatCard
           icon={<Activity className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["إجمالي الجلسات"] || "إجمالي الجلسات")}
+          label={"إجمالي الجلسات"}
           value={stats.total_sessions.toLocaleString('ar-EG')}
           hint={`${stats.sessions_last_7_days} في آخر 7 أيام`}
         />
         <StatCard
           icon={<Clock className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["إجمالي الدقائق"] || "إجمالي الدقائق")}
+          label={"إجمالي الدقائق"}
           value={stats.total_minutes.toLocaleString('ar-EG')}
           hint={`متوسط ${stats.avg_duration_minutes} د/جلسة`}
         />
         <StatCard
           icon={<Users className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["مستخدمون فريدون"] || "مستخدمون فريدون")}
+          label={"مستخدمون فريدون"}
           value={stats.total_unique_participants.toLocaleString('ar-EG')}
-          hint={((t as any).extracted_2026_v2?.["انضموا على الأقل لجلسة واحدة"] || "انضموا على الأقل لجلسة واحدة")}
+          hint={"انضموا على الأقل لجلسة واحدة"}
         />
         <StatCard
           icon={<Star className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["متوسط التقييم"] || "متوسط التقييم")}
+          label={"متوسط التقييم"}
           value={stats.avg_rating != null ? `${Number(stats.avg_rating).toFixed(2)} / 5` : '—'}
           hint={`${stats.rated_sessions} جلسة مقيّمة`}
           tone={stats.avg_rating && stats.avg_rating >= 4 ? 'success' : 'default'}
         />
         <StatCard
           icon={<MonitorPlay className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["حلقات"] || "حلقات")}
+          label={"حلقات"}
           value={stats.by_kind.find((k) => k.kind === 'halaqa')?.count || 0}
         />
         <StatCard
           icon={<Mic className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["جلسات 1:1"] || "جلسات 1:1")}
+          label={"جلسات 1:1"}
           value={stats.by_kind.find((k) => k.kind === 'booking')?.count || 0}
         />
         <StatCard
           icon={<VideoIcon className="w-4 h-4" />}
-          label={((t as any).extracted_2026_v2?.["دروس مباشرة"] || "دروس مباشرة")}
+          label={"دروس مباشرة"}
           value={stats.by_kind.find((k) => k.kind === 'course_session')?.count || 0}
         />
       </div>
 
       {!stats.livekit_configured && (
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
-          <p className="font-bold text-amber-700 dark:text-amber-300 mb-1">{((t as any).extracted_2026_v2?.["LiveKit غير مكوّن"] || "LiveKit غير مكوّن")}</p>
+          <p className="font-bold text-amber-700 dark:text-amber-300 mb-1">{"LiveKit غير مكوّن"}</p>
           <p className="text-muted-foreground">
-            {((t as any).extracted_2026_v2?.["أضف"] || "أضف")}<code className="text-xs px-1 py-0.5 bg-muted rounded">LIVEKIT_API_KEY</code> {((t as any).extracted_2026_v2?.["و"] || "و")}<code className="text-xs px-1 py-0.5 bg-muted rounded mx-1">LIVEKIT_API_SECRET</code> {((t as any).extracted_2026_v2?.["و"] || "و")}<code className="text-xs px-1 py-0.5 bg-muted rounded">LIVEKIT_URL</code> {((t as any).extracted_2026_v2?.["في متغيرات البيئة لتفعيل البث."] || "في متغيرات البيئة لتفعيل البث.")}</p>
+            {"أضف"}<code className="text-xs px-1 py-0.5 bg-muted rounded">LIVEKIT_API_KEY</code> {"و"}<code className="text-xs px-1 py-0.5 bg-muted rounded mx-1">LIVEKIT_API_SECRET</code> {"و"}<code className="text-xs px-1 py-0.5 bg-muted rounded">LIVEKIT_URL</code> {"في متغيرات البيئة لتفعيل البث."}</p>
         </div>
       )}
 
       <div className="flex items-center justify-between">
-        <h3 className="font-bold">{((t as any).extracted_2026_v2?.["آخر الجلسات"] || "آخر الجلسات")}</h3>
+        <h3 className="font-bold">{"آخر الجلسات"}</h3>
         <button type="button" onClick={onViewAll} className="text-xs text-emerald-600 hover:underline">
-          {((t as any).extracted_2026_v2?.["عرض الكل"] || "عرض الكل")}</button>
+          {"عرض الكل"}</button>
       </div>
     </div>
   )
@@ -405,9 +405,9 @@ function SettingsTab({
 
   return (
     <div className="space-y-6">
-      <SettingsCard title={((t as any).extracted_2026_v2?.["جودة الفيديو والحدود"] || "جودة الفيديو والحدود")}>
+      <SettingsCard title={"جودة الفيديو والحدود"}>
         <SelectRow
-          label={((t as any).extracted_2026_v2?.["جودة الفيديو الافتراضية"] || "جودة الفيديو الافتراضية")}
+          label={"جودة الفيديو الافتراضية"}
           value={settings.default_video_quality}
           onChange={(v) => update('default_video_quality', v as VideoSettings['default_video_quality'])}
           options={[
@@ -419,46 +419,46 @@ function SettingsTab({
           ]}
         />
         <NumberRow
-          label={((t as any).extracted_2026_v2?.["الحد الأقصى للمشاركين"] || "الحد الأقصى للمشاركين")}
+          label={"الحد الأقصى للمشاركين"}
           value={settings.max_participants}
           onChange={(v) => update('max_participants', v)}
           min={2}
           max={500}
-          hint={((t as any).extracted_2026_v2?.["عدد المشاركين الذين يمكنهم الانضمام إلى أي جلسة بآنٍ واحد"] || "عدد المشاركين الذين يمكنهم الانضمام إلى أي جلسة بآنٍ واحد")}
+          hint={"عدد المشاركين الذين يمكنهم الانضمام إلى أي جلسة بآنٍ واحد"}
         />
         <NumberRow
-          label={((t as any).extracted_2026_v2?.["الحد الأقصى لمدة الجلسة (دقائق)"] || "الحد الأقصى لمدة الجلسة (دقائق)")}
+          label={"الحد الأقصى لمدة الجلسة (دقائق)"}
           value={settings.max_duration_minutes}
           onChange={(v) => update('max_duration_minutes', v)}
           min={15}
           max={720}
         />
         <NumberRow
-          label={((t as any).extracted_2026_v2?.["مهلة عدم النشاط (دقائق)"] || "مهلة عدم النشاط (دقائق)")}
+          label={"مهلة عدم النشاط (دقائق)"}
           value={settings.inactivity_timeout_minutes}
           onChange={(v) => update('inactivity_timeout_minutes', v)}
           min={1}
           max={120}
-          hint={((t as any).extracted_2026_v2?.["إنهاء الغرفة تلقائياً بعد عدم وجود نشاط"] || "إنهاء الغرفة تلقائياً بعد عدم وجود نشاط")}
+          hint={"إنهاء الغرفة تلقائياً بعد عدم وجود نشاط"}
         />
         <ToggleRow
-          label={((t as any).extracted_2026_v2?.["جلسات صوتية فقط (افتراضياً)"] || "جلسات صوتية فقط (افتراضياً)")}
-          hint={((t as any).extracted_2026_v2?.["لتقليل استهلاك الإنترنت"] || "لتقليل استهلاك الإنترنت")}
+          label={"جلسات صوتية فقط (افتراضياً)"}
+          hint={"لتقليل استهلاك الإنترنت"}
           value={settings.default_audio_only}
           onChange={(v) => update('default_audio_only', v)}
         />
       </SettingsCard>
 
-      <SettingsCard title={((t as any).extracted_2026_v2?.["التسجيل"] || "التسجيل")}>
+      <SettingsCard title={"التسجيل"}>
         <ToggleRow
-          label={((t as any).extracted_2026_v2?.["السماح بتسجيل الجلسات"] || "السماح بتسجيل الجلسات")}
-          hint={((t as any).extracted_2026_v2?.["يفعل زر بدء التسجيل داخل غرفة البث للمضيف"] || "يفعل زر بدء التسجيل داخل غرفة البث للمضيف")}
+          label={"السماح بتسجيل الجلسات"}
+          hint={"يفعل زر بدء التسجيل داخل غرفة البث للمضيف"}
           value={settings.recording_enabled}
           onChange={(v) => update('recording_enabled', v)}
         />
         <ToggleRow
-          label={((t as any).extracted_2026_v2?.["بدء التسجيل تلقائياً عند بدء الجلسة"] || "بدء التسجيل تلقائياً عند بدء الجلسة")}
-          hint={((t as any).extracted_2026_v2?.["يبدأ تسجيل كل جلسة بمجرد فتحها"] || "يبدأ تسجيل كل جلسة بمجرد فتحها")}
+          label={"بدء التسجيل تلقائياً عند بدء الجلسة"}
+          hint={"يبدأ تسجيل كل جلسة بمجرد فتحها"}
           value={settings.recording_auto_start}
           onChange={(v) => update('recording_auto_start', v)}
           disabled={!settings.recording_enabled}
@@ -468,16 +468,16 @@ function SettingsTab({
             <div className="flex items-start gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs text-muted-foreground">
               <span className="mt-0.5 text-emerald-600">✓</span>
               <span>
-                {((t as any).extracted_2026_v2?.["التخزين السحابي مفعّل. تُحفظ التسجيلات تلقائياً على السحابة (S3)\r\n                وتظهر في صفحة «الجلسات والبث المباشر» ضمن تبويب «التسجيلات» بعد انتهاء كل جلسة."] || "التخزين السحابي مفعّل. تُحفظ التسجيلات تلقائياً على السحابة (S3)\r\n                وتظهر في صفحة «الجلسات والبث المباشر» ضمن تبويب «التسجيلات» بعد انتهاء كل جلسة.")}</span>
+                {"التخزين السحابي مفعّل. تُحفظ التسجيلات تلقائياً على السحابة (S3)\r\n                وتظهر في صفحة «الجلسات والبث المباشر» ضمن تبويب «التسجيلات» بعد انتهاء كل جلسة."}</span>
             </div>
           ) : (
             <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
               <span className="mt-0.5 text-amber-600">⚠️</span>
               <span>
-                {((t as any).extracted_2026_v2?.["التخزين السحابي (S3) غير مكوّن على الخادم، لذلك لن يبدأ التسجيل.\r\n                يحتاج مدير النظام إلى ضبط متغيّرات البيئة:"] || "التخزين السحابي (S3) غير مكوّن على الخادم، لذلك لن يبدأ التسجيل.\r\n                يحتاج مدير النظام إلى ضبط متغيّرات البيئة:")}{' '}
-                <code className="font-mono">AWS_ACCESS_KEY_ID</code>{((t as any).extracted_2026_v2?.["،"] || "،")}{' '}
-                <code className="font-mono">AWS_SECRET_ACCESS_KEY</code>{((t as any).extracted_2026_v2?.["،"] || "،")}{' '}
-                <code className="font-mono">AWS_S3_BUCKET_NAME</code>{((t as any).extracted_2026_v2?.["،"] || "،")}{' '}
+                {"التخزين السحابي (S3) غير مكوّن على الخادم، لذلك لن يبدأ التسجيل.\r\n                يحتاج مدير النظام إلى ضبط متغيّرات البيئة:"}{' '}
+                <code className="font-mono">AWS_ACCESS_KEY_ID</code>{"،"}{' '}
+                <code className="font-mono">AWS_SECRET_ACCESS_KEY</code>{"،"}{' '}
+                <code className="font-mono">AWS_S3_BUCKET_NAME</code>{"،"}{' '}
                 <code className="font-mono">AWS_REGION</code>.
               </span>
             </div>
@@ -485,23 +485,23 @@ function SettingsTab({
         )}
       </SettingsCard>
 
-      <SettingsCard title={((t as any).extracted_2026_v2?.["صلاحيات المشاركين"] || "صلاحيات المشاركين")}>
-        <ToggleRow label={((t as any).extracted_2026_v2?.["السماح بالشات داخل الغرفة"] || "السماح بالشات داخل الغرفة")} value={settings.allow_chat} onChange={(v) => update('allow_chat', v)} />
-        <ToggleRow label={((t as any).extracted_2026_v2?.["السماح بمشاركة الشاشة"] || "السماح بمشاركة الشاشة")} value={settings.allow_screen_share} onChange={(v) => update('allow_screen_share', v)} />
-        <ToggleRow label={((t as any).extracted_2026_v2?.["السماح للطالب بفتح المايك"] || "السماح للطالب بفتح المايك")} value={settings.allow_student_unmute} onChange={(v) => update('allow_student_unmute', v)} />
-        <ToggleRow label={((t as any).extracted_2026_v2?.["السماح للطالب بفتح الكاميرا"] || "السماح للطالب بفتح الكاميرا")} value={settings.allow_student_video} onChange={(v) => update('allow_student_video', v)} />
-        <ToggleRow label={((t as any).extracted_2026_v2?.["طلب موافقة المضيف قبل الانضمام"] || "طلب موافقة المضيف قبل الانضمام")} value={settings.require_approval_to_join} onChange={(v) => update('require_approval_to_join', v)} />
+      <SettingsCard title={"صلاحيات المشاركين"}>
+        <ToggleRow label={"السماح بالشات داخل الغرفة"} value={settings.allow_chat} onChange={(v) => update('allow_chat', v)} />
+        <ToggleRow label={"السماح بمشاركة الشاشة"} value={settings.allow_screen_share} onChange={(v) => update('allow_screen_share', v)} />
+        <ToggleRow label={"السماح للطالب بفتح المايك"} value={settings.allow_student_unmute} onChange={(v) => update('allow_student_unmute', v)} />
+        <ToggleRow label={"السماح للطالب بفتح الكاميرا"} value={settings.allow_student_video} onChange={(v) => update('allow_student_video', v)} />
+        <ToggleRow label={"طلب موافقة المضيف قبل الانضمام"} value={settings.require_approval_to_join} onChange={(v) => update('require_approval_to_join', v)} />
       </SettingsCard>
 
-      <SettingsCard title={((t as any).extracted_2026_v2?.["تجربة المستخدم"] || "تجربة المستخدم")}>
-        <ToggleRow label={((t as any).extracted_2026_v2?.["إظهار عدد المشاركين"] || "إظهار عدد المشاركين")} value={settings.show_participant_count} onChange={(v) => update('show_participant_count', v)} />
-        <ToggleRow label={((t as any).extracted_2026_v2?.["تفعيل تقييم الجلسة بعد انتهائها"] || "تفعيل تقييم الجلسة بعد انتهائها")} value={settings.enable_post_session_rating} onChange={(v) => update('enable_post_session_rating', v)} />
+      <SettingsCard title={"تجربة المستخدم"}>
+        <ToggleRow label={"إظهار عدد المشاركين"} value={settings.show_participant_count} onChange={(v) => update('show_participant_count', v)} />
+        <ToggleRow label={"تفعيل تقييم الجلسة بعد انتهائها"} value={settings.enable_post_session_rating} onChange={(v) => update('enable_post_session_rating', v)} />
         <TextRow
-          label={((t as any).extracted_2026_v2?.["علامة مائية (اختياري)"] || "علامة مائية (اختياري)")}
-          placeholder={((t as any).extracted_2026_v2?.["مثال: itqan academy"] || "مثال: itqan academy")}
+          label={"علامة مائية (اختياري)"}
+          placeholder={"مثال: itqan academy"}
           value={settings.watermark_text || ''}
           onChange={(v) => update('watermark_text', v || null)}
-          hint={((t as any).extracted_2026_v2?.["نص يظهر بشفافية أسفل يمين غرفة البث"] || "نص يظهر بشفافية أسفل يمين غرفة البث")}
+          hint={"نص يظهر بشفافية أسفل يمين غرفة البث"}
         />
       </SettingsCard>
 
@@ -512,7 +512,7 @@ function SettingsTab({
           className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold shadow-lg ${accentBtn} disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {saving ? ((t as any).extracted_2026_v2?.["جاري الحفظ…"] || "جاري الحفظ…") : ((t as any).extracted_2026_v2?.["حفظ الإعدادات"] || "حفظ الإعدادات")}
+          {saving ? "جاري الحفظ…" : "حفظ الإعدادات"}
         </button>
       </div>
     </div>
@@ -669,7 +669,7 @@ function SessionLogTab({
     return (
       <div className="rounded-2xl border border-border bg-card p-10 text-center">
         <Film className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-        <p className="text-sm text-muted-foreground">{((t as any).extracted_2026_v2?.["لا توجد جلسات بعد."] || "لا توجد جلسات بعد.")}</p>
+        <p className="text-sm text-muted-foreground">{"لا توجد جلسات بعد."}</p>
       </div>
     )
   }
@@ -689,11 +689,11 @@ function SessionLogTab({
                 </span>
                 {!s.ended_at && !s.recording_url && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30">
-                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" /> {((t as any).extracted_2026_v2?.["مباشر"] || "مباشر")}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" /> {"مباشر"}</span>
                 )}
                 {s.recording_url && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
-                    <Circle className="w-2 h-2 fill-current" /> {((t as any).extracted_2026_v2?.["تسجيل متاح"] || "تسجيل متاح")}</span>
+                    <Circle className="w-2 h-2 fill-current" /> {"تسجيل متاح"}</span>
                 )}
                 {s.avg_rating != null && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
@@ -708,9 +708,9 @@ function SessionLogTab({
               </p>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center shrink-0">
-              <SessionStat label={((t as any).extracted_2026_v2?.["مدة"] || "مدة")} value={s.duration_seconds ? `${Math.round(s.duration_seconds / 60)} د` : '—'} />
-              <SessionStat label={((t as any).extracted_2026_v2?.["ذروة"] || "ذروة")} value={s.peak_participants} icon={<Users className="w-3 h-3" />} />
-              <SessionStat label={((t as any).extracted_2026_v2?.["مشاركون"] || "مشاركون")} value={s.participants_count} />
+              <SessionStat label={"مدة"} value={s.duration_seconds ? `${Math.round(s.duration_seconds / 60)} د` : '—'} />
+              <SessionStat label={"ذروة"} value={s.peak_participants} icon={<Users className="w-3 h-3" />} />
+              <SessionStat label={"مشاركون"} value={s.participants_count} />
             </div>
           </div>
         </Link>
