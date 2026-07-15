@@ -78,7 +78,8 @@ export function CertificateTemplateEditor({
   apiBase,
   onSaved,
 }: TemplateEditorProps) {
-  const { locale } = useI18n()
+  const { locale, t } = useI18n()
+  const te = (t as any).templateEditor as Record<string, string> | undefined
   const base = apiBase || `/api/${scopePath}/admin/certificates`
   const isAr = locale === "ar"
   const lbl = (f: FieldDef) => (isAr ? f.label_ar : f.label_en)
@@ -204,7 +205,7 @@ export function CertificateTemplateEditor({
         },
       )
       if (res.ok) {
-        toast({ title: "تم حفظ القالب" })
+        toast({ title: te?.savedTitle ?? 'Template saved' })
         onSaved?.()
         onOpenChange(false)
       } else {
@@ -236,7 +237,7 @@ export function CertificateTemplateEditor({
         const e = await r1.json().catch(() => ({}))
         toast({
           variant: "destructive",
-          title: "تعذر حفظ المواضع",
+          title: te?.savePositionsFail ?? 'Failed to save positions',
           description: e.error || r1.statusText,
         })
         return
@@ -252,7 +253,7 @@ export function CertificateTemplateEditor({
           : await r2.text().catch(() => "")
         toast({
           variant: "destructive",
-          title: "تعذر إنشاء المعاينة",
+          title: te?.previewFail ?? 'Failed to generate preview',
           description: detail || r2.statusText,
         })
         return
@@ -262,7 +263,7 @@ export function CertificateTemplateEditor({
     } catch (err) {
       toast({
         variant: "destructive",
-        title: "خطأ في المعاينة",
+          title: te?.previewError ?? 'Preview error',
         description: err instanceof Error ? err.message : String(err),
       })
     } finally {
@@ -284,7 +285,7 @@ export function CertificateTemplateEditor({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <GripVertical className="w-5 h-5 text-primary" />
-            {"محرر مواضع الحقول"}
+            {te?.editorTitle ?? 'Field Position Editor'}
             <Badge variant="secondary">{template.name}</Badge>
           </DialogTitle>
           <DialogDescription>
@@ -432,7 +433,7 @@ export function CertificateTemplateEditor({
 
                     <div className="space-y-1">
                       <Label className="text-xs">
-                        {"أقصى عرض (٪)"} —{" "}
+                        {"أقصى ��رض (٪)"} —{" "}
                         {Math.round((activePos.max_width ?? 0.7) * 100)}%
                       </Label>
                       <Slider
