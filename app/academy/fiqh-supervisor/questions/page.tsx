@@ -42,6 +42,7 @@ interface Question {
 type Tab = 'open' | 'awaiting' | 'published' | 'closed';
 
 export default function FiqhSupervisorInboxPage() {
+  const { t } = useI18n()
   const { t, locale, dir } = useI18n()
   const [tab, setTab] = useState<Tab>('open')
   const [questions, setQuestions] = useState<Question[]>([])

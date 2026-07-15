@@ -91,6 +91,7 @@ function SessionCardSkeleton() {
 }
 
 export default function StudentSessionsPage() {
+  const { t } = useI18n()
   const { t, locale } = useI18n()
   const isAr = locale === 'ar'
   const [sessions, setSessions] = useState<Session[]>([])

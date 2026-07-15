@@ -31,6 +31,7 @@ function toLocalInput(iso?: string) {
 
 export default function EditTaskPage() {
     
+  const { t } = useI18n()
   const params = useParams()
   const router = useRouter()
   const taskId = params.id as string

@@ -25,6 +25,7 @@ interface QuizQuestion {
 
 export default function GradeTaskPage() {
     
+  const { t } = useI18n()
   const params = useParams()
   const taskId = params.id as string
 

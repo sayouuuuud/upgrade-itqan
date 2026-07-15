@@ -55,6 +55,7 @@ const SUBJECT_MAP: Record<string, { ar: string; en: string }> = {
 export default function TeacherProfilePage() {
   
 
+  const { t } = useI18n()
   const { locale } = useI18n()
   const isAr = locale === 'ar'
 

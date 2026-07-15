@@ -25,6 +25,7 @@ const SPEC_LABELS_EN: Record<string, string> = {
 
 export default function NewCoursePage() {
     
+  const { t } = useI18n()
   const { locale } = useI18n()
   const isAr = locale === 'ar'
   const specLabels = isAr ? SPEC_LABELS_AR : SPEC_LABELS_EN

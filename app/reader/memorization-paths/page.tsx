@@ -64,6 +64,7 @@ const PRESETS: Preset[] = [
 ]
 
 export default function ReaderMemorizationPathsPage() {
+  const { t } = useI18n()
   const { t, locale } = useI18n()
   const isAr = locale === "ar"
 

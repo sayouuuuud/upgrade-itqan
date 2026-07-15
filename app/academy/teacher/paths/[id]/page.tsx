@@ -69,6 +69,7 @@ interface RosterStudent {
 
 export default function TeacherPathStatsPage() {
     
+  const { t } = useI18n()
   const params = useParams()
   const pathId = params.id as string
   const [data, setData] = useState<StatsApiResponse['data'] | null>(null)

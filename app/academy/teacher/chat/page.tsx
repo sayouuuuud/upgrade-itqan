@@ -525,6 +525,7 @@ function ChatContent() {
 
 export default function TeacherChatPage() {
     
+  const { t } = useI18n()
   return (
     <Suspense fallback={<PageLoadingSkeleton />}>
       <ChatContent />

@@ -80,6 +80,7 @@ interface Submission {
 
 export default function SubmitTaskPage() {
     
+  const { t } = useI18n()
   const params = useParams()
   const router = useRouter()
   const taskId = params.id as string

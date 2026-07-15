@@ -37,6 +37,7 @@ type RescheduleRequest = {
 }
 
 export default function ReaderSessionsPage() {
+  const { t } = useI18n()
   const { t, locale } = useI18n()
   const isAr = locale === "ar"
   const [sessions, setSessions] = useState<Booking[]>([])

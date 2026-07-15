@@ -102,6 +102,7 @@ const initialStageForm = {
 }
 
 export default function ReaderTajweedPathDetailPage() {
+  const { t } = useI18n()
   const params = useParams<{ id: string }>()
   const pathId = params.id
   
