@@ -60,14 +60,16 @@ interface SessionInfo {
   }>
 }
 
-const KIND_LABEL: Record<string, string> = {
-  halaqa: 'حلقة',
-  booking: 'جلسة 1:1',
-  course_session: 'درس مباشر',
-}
-
 export function VideoSessionDetail({ sessionId, backHref }: Props) {
   const { t } = useI18n();
+  const vsd = (t as any).videoSessionDetail as Record<string, string> | undefined
+
+  function getKindLabel(kind: string) {
+    if (kind === 'halaqa') return vsd?.kindHalaqa ?? 'Halaqa'
+    if (kind === 'booking') return vsd?.kindBooking ?? 'Private Session'
+    if (kind === 'course_session') return vsd?.kindCourse ?? 'Live Lesson'
+    return kind
+  }
 
   const [info, setInfo] = useState<SessionInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -79,10 +81,10 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
       try {
         const res = await fetch(`/api/video/sessions/${sessionId}`)
         const json = await res.json()
-        if (!res.ok) throw new Error(json.error || "تعذر تحميل الجلسة")
+        if (!res.ok) throw new Error(json.error || vsd?.loadFailed ?? 'Failed to load session')
         if (!cancelled) setInfo(json)
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "حدث خطأ")
+        if (!cancelled) setError(e instanceof Error ? e.message : vsd?.genericError ?? 'An error occurred')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -107,10 +109,10 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
         <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
           <VideoIcon className="w-8 h-8" />
         </div>
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2">{"عذراً، حدث خطأ"}</h2>
-        <p className="text-sm text-rose-500 mb-6">{error || "تعذر تحميل بيانات الجلسة"}</p>
+        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2">{vsd?.errorTitle ?? 'An error occurred'}</h2>
+        <p className="text-sm text-rose-500 mb-6">{error || (vsd?.errorDesc ?? 'Failed to load session data')}</p>
         <Link href={backHref} className="inline-flex items-center justify-center h-10 px-6 rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 transition-colors font-medium text-sm">
-          {"العودة للسجل"}</Link>
+          {vsd?.backToLog ?? 'Back to Log'}</Link>
       </div>
     )
   }
@@ -127,7 +129,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
       <div className="flex items-center gap-2 text-sm text-zinc-500">
         <Link href={backHref} className="inline-flex items-center gap-1.5 hover:text-emerald-600 transition-colors">
           <ArrowRight className="w-4 h-4" /> 
-          <span>{"العودة لسجل الجلسات"}</span>
+          <span>{vsd?.backToSessionLog ?? 'Back to Session Log'}</span>
         </Link>
       </div>
 
@@ -140,23 +142,23 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
           <div className="space-y-3">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 text-xs font-bold tracking-wide">
-                {KIND_LABEL[s.kind] || s.kind}
+                {getKindLabel(s.kind)}
               </span>
               {!s.ended_at && !s.recording_url && (
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300">
                   <span className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-400 animate-pulse" /> 
-                  {"مباشر الآن"}</span>
+                  {vsd?.liveNow ?? 'Live Now'}</span>
               )}
             </div>
             
             <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-              {s.title || KIND_LABEL[s.kind]}
+              {s.title || getKindLabel(s.kind)}
             </h1>
             
             <div className="flex items-center gap-4 text-sm text-zinc-500">
               <span className="inline-flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
-                {new Date(s.started_at).toLocaleString('ar-EG', { 
+                {new Date(s.started_at).toLocaleString(undefined, { 
                   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' 
                 })}
               </span>
@@ -172,14 +174,14 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
                 target="_blank"
               >
                 <VideoIcon className="w-4 h-4" /> 
-                {"مراقبة خفية"}</Link>
+                {vsd?.silentMonitor ?? 'Silent Monitor'}</Link>
             )}
             
             {s.recording_url && (
-              <VideoPlayerModal url={s.recording_url} title={s.title || KIND_LABEL[s.kind]}>
+              <VideoPlayerModal url={s.recording_url} title={s.title || getKindLabel(s.kind)}>
                 <button className="inline-flex flex-1 md:flex-none justify-center items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors text-sm font-bold shadow-sm">
                   <PlayCircle className="w-4 h-4" /> 
-                  {"تشغيل التسجيل"}</button>
+                  {vsd?.playRecording ?? 'Play Recording'}</button>
               </VideoPlayerModal>
             )}
           </div>
@@ -190,23 +192,23 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard 
           icon={<Clock className="w-5 h-5 text-blue-500" />} 
-          label={"مدة الجلسة"} 
-          value={s.duration_seconds ? `${Math.round(s.duration_seconds / 60)} دقيقة` : '—'} 
+          label={vsd?.sessionDuration ?? 'Session Duration'} 
+          value={s.duration_seconds ? `${Math.round(s.duration_seconds / 60)}m` : '—'} 
         />
         <MetricCard 
           icon={<Users className="w-5 h-5 text-emerald-500" />} 
-          label={"ذروة المشاركين"} 
+          label={vsd?.peakParticipants ?? 'Peak Participants'} 
           value={s.peak_participants} 
         />
         <MetricCard 
           icon={<VideoIcon className="w-5 h-5 text-indigo-500" />} 
-          label={"إجمالي الحضور"} 
+          label={vsd?.totalAttendance ?? 'Total Attendance'} 
           value={info.participants.length} 
         />
         <MetricCard 
           icon={<Star className="w-5 h-5 text-amber-500" />} 
-          label={"متوسط التقييم"} 
-          value={avgRating != null ? `${avgRating.toFixed(1)} من 5` : "لم يتم التقييم"} 
+          label={vsd?.avgRating ?? 'Avg. Rating'} 
+          value={avgRating != null ? `${avgRating.toFixed(1)} / 5` : (vsd?.notRated ?? 'Not rated')} 
         />
       </div>
 
@@ -216,7 +218,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
           <div className="p-6 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/20 flex items-center justify-between">
             <h3 className="font-bold text-lg inline-flex items-center gap-2">
               <Users className="w-5 h-5 text-zinc-400" /> 
-              {"سجل المشاركين"}<span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded-full ml-1">
+              {vsd?.participantsLog ?? 'Participants Log'}<span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded-full ml-1">
                 {info.participants.length}
               </span>
             </h3>
@@ -226,7 +228,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
             {info.participants.length === 0 ? (
               <div className="p-12 text-center text-zinc-500">
                 <Users className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p>{"لم يسجل أي مشارك الدخول لهذه الجلسة."}</p>
+                <p>{vsd?.noParticipants ?? 'No participants joined this session.'}</p>
               </div>
             ) : (
               <ul className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -244,7 +246,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
                             {p.name}
                             {p.role === 'host' && (
                               <span className="text-[10px] bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 px-1.5 py-0.5 rounded-md uppercase tracking-wider">
-                                {"مضيف"}</span>
+                                {vsd?.hostLabel ?? 'Host'}</span>
                             )}
                           </p>
                           <p className="text-xs text-zinc-500">{p.email}</p>
@@ -253,16 +255,16 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
                       
                       <div className="flex items-center gap-4 text-xs bg-zinc-50 dark:bg-zinc-900/50 px-3 py-2 rounded-lg w-fit">
                         <div className="flex flex-col">
-                          <span className="text-zinc-400 mb-0.5 text-[10px] uppercase">{"دخول - خروج"}</span>
+                          <span className="text-zinc-400 mb-0.5 text-[10px] uppercase">{vsd?.joinLeave ?? 'Join - Leave'}</span>
                           <span className="text-zinc-700 dark:text-zinc-300 font-medium">
-                            {new Date(p.joined_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
-                            {p.left_at ? ` ← ${new Date(p.left_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}` : " ← مستمر"}
+                            {new Date(p.joined_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                            {p.left_at ? ` ← ${new Date(p.left_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}` : ` ← ${vsd?.ongoing ?? 'ongoing'}`}
                           </span>
                         </div>
                         {p.duration_seconds != null && (
                           <div className="flex flex-col pl-4 border-l border-zinc-200 dark:border-zinc-700">
-                            <span className="text-zinc-400 mb-0.5 text-[10px] uppercase">{"البقاء"}</span>
-                            <span className="text-zinc-700 dark:text-zinc-300 font-bold">{Math.round(p.duration_seconds / 60)} {"د"}</span>
+                            <span className="text-zinc-400 mb-0.5 text-[10px] uppercase">{vsd?.stay ?? 'Stay'}</span>
+                            <span className="text-zinc-700 dark:text-zinc-300 font-bold">{Math.round(p.duration_seconds / 60)}m</span>
                           </div>
                         )}
                       </div>
@@ -279,7 +281,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
           <div className="p-6 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/20 flex items-center justify-between">
             <h3 className="font-bold text-lg inline-flex items-center gap-2">
               <Star className="w-5 h-5 text-amber-500" /> 
-              {"التقييمات"}<span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded-full ml-1">
+              {vsd?.ratings ?? 'Ratings'}<span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded-full ml-1">
                 {info.ratings.length}
               </span>
             </h3>
@@ -289,7 +291,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
             {info.ratings.length === 0 ? (
               <div className="p-12 text-center text-zinc-500">
                 <Star className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p>{"لم يقم أي طالب بتقييم هذه الجلسة بعد."}</p>
+                <p>{vsd?.noRatings ?? 'No students have rated this session yet.'}</p>
               </div>
             ) : (
               <ul className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -304,7 +306,7 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
                            <div>
                              <p className="font-bold text-sm text-zinc-900 dark:text-white">{r.name}</p>
                              <p className="text-[11px] text-zinc-500">
-                               {new Date(r.created_at).toLocaleString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                               {new Date(r.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                              </p>
                            </div>
                         </div>
@@ -317,17 +319,17 @@ export function VideoSessionDetail({ sessionId, backHref }: Props) {
                         <div className="flex flex-wrap gap-2 text-xs">
                           {r.audio_quality && (
                             <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-2.5 py-1 rounded-md">
-                              {"الصوت:"}<strong className="text-zinc-900 dark:text-white ml-1">{r.audio_quality}/5</strong>
+                              {vsd?.audio ?? 'Audio:'}<strong className="text-zinc-900 dark:text-white ml-1">{r.audio_quality}/5</strong>
                             </span>
                           )}
                           {r.video_quality && (
                             <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-2.5 py-1 rounded-md">
-                              {"الفيديو:"}<strong className="text-zinc-900 dark:text-white ml-1">{r.video_quality}/5</strong>
+                              {vsd?.video ?? 'Video:'}<strong className="text-zinc-900 dark:text-white ml-1">{r.video_quality}/5</strong>
                             </span>
                           )}
                           {r.teacher_rating && (
                             <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-2.5 py-1 rounded-md">
-                              {"المدرّس:"}<strong className="text-zinc-900 dark:text-white ml-1">{r.teacher_rating}/5</strong>
+                              {vsd?.teacher ?? 'Teacher:'}<strong className="text-zinc-900 dark:text-white ml-1">{r.teacher_rating}/5</strong>
                             </span>
                           )}
                         </div>
