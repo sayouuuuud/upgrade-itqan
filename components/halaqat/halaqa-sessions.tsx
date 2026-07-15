@@ -1,7 +1,5 @@
 "use client"
 
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useCallback, useEffect, useState } from 'react'
 import {
   Plus,
@@ -17,6 +15,7 @@ import {
   Users,
 } from 'lucide-react'
 import { SURAHS } from '@/lib/quran-data'
+import { useI18n } from '@/lib/i18n/context'
 
 interface SessionRow {
   id: string
@@ -56,22 +55,22 @@ interface RosterRow {
   next_wird_note: string | null
 }
 
-const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
-  scheduled: { label: ((t as any).extracted_2026_v2?.["مجدولة"] || "مجدولة"), cls: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400' },
-  live: { label: ((t as any).extracted_2026_v2?.["مباشرة"] || "مباشرة"), cls: 'bg-red-500 text-white' },
-  ended: { label: ((t as any).extracted_2026_v2?.["منتهية"] || "منتهية"), cls: 'bg-secondary text-muted-foreground' },
-  cancelled: { label: ((t as any).extracted_2026_v2?.["ملغاة"] || "ملغاة"), cls: 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400' },
+const STATUS_LABELS_STATIC: Record<string, { ar: string; en: string; cls: string }> = {
+  scheduled: { ar: 'مجدولة', en: 'Scheduled', cls: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400' },
+  live: { ar: 'مباشرة', en: 'Live', cls: 'bg-red-500 text-white' },
+  ended: { ar: 'منتهية', en: 'Ended', cls: 'bg-secondary text-muted-foreground' },
+  cancelled: { ar: 'ملغاة', en: 'Cancelled', cls: 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400' },
 }
 
-const VERDICT_LABELS: Record<string, string> = {
-  excellent: ((t as any).extracted_2026_v2?.["ممتاز"] || "ممتاز"),
-  passed: ((t as any).extracted_2026_v2?.["اجتاز"] || "اجتاز"),
-  needs_work: ((t as any).extracted_2026_v2?.["يحتاج مراجعة"] || "يحتاج مراجعة"),
-  repeat: ((t as any).extracted_2026_v2?.["إعادة"] || "إعادة"),
+const VERDICT_LABELS_STATIC: Record<string, { ar: string; en: string }> = {
+  excellent: { ar: 'ممتاز', en: 'Excellent' },
+  passed: { ar: 'اجتاز', en: 'Passed' },
+  needs_work: { ar: 'يحتاج مراجعة', en: 'Needs work' },
+  repeat: { ar: 'إعادة', en: 'Repeat' },
 }
 
 function fmtDate(iso: string | null) {
-  if (!iso) return ((t as any).extracted_2026_v2?.["غير محدد"] || "غير محدد")
+  if (!iso) return 'غير محدد'
   return new Intl.DateTimeFormat('ar', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso))
 }
 
