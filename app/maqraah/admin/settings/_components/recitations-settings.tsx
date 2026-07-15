@@ -34,12 +34,12 @@ export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
   ]
 
   const toggleFormat = (f: string) => {
-    const next = formats.includes(f) ? formats.filter((x) => x !== f) : [...formats, f]
+    const next = formats.includes(f) ? formats.filter((x: string) => x !== f) : [...formats, f]
     onUpdate({ maqraah_recitations_allowed_audio_formats: next })
   }
 
   const toggleRiwayah = (r: string) => {
-    const next = riwayat.includes(r) ? riwayat.filter((x) => x !== r) : [...riwayat, r]
+    const next = riwayat.includes(r) ? riwayat.filter((x: string) => x !== r) : [...riwayat, r]
     onUpdate({ maqraah_recitations_available_riwayat: next })
   }
 

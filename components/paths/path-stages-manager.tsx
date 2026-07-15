@@ -56,7 +56,8 @@ const emptyStage: StageForm = {
 
 export default function PathStagesManager({ pathId }: { pathId: string }) {
   const { t } = useI18n()
-  const sm = (key: string) => t(`tajweedPaths.stageManager.${key}` as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sm = (key: string): string => (t?.tajweedPaths as any)?.stageManager?.[key] ?? key
 
   const [stages, setStages] = useState<Stage[]>([])
   const [loading, setLoading] = useState(true)

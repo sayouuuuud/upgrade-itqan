@@ -322,7 +322,7 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <FileUploader
-                    label={'' || 'ملف المشاركة (صوت، فيديو، أو صورة) *'}
+                    label={'ملف المشاركة (صوت، فيديو، أو صورة) *'}
                     value={form.submission_url}
                     onChange={url => setForm(prev => ({ ...prev, submission_url: url || '' }))}
                   />
@@ -348,7 +348,7 @@ export default function StudentCompetitionDetailPage({ params }: { params: Promi
                     value={form.notes}
                     onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))}
                     className="w-full px-4 py-2.5 rounded-xl border border-border bg-background min-h-[80px] resize-y"
-                    placeholder={'' || 'أي ملاحظات تود إضافتها...'}
+                    placeholder={'أي ملاحظات تود إضافتها...'}
                   />
                 </div>
 

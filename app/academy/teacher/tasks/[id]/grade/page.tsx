@@ -335,7 +335,7 @@ function GradeCard({
                 value={feedback}
                 onChange={e => setFeedback(e.target.value)}
                 className="w-full p-2 border border-border rounded-lg bg-card text-sm"
-                placeholder={'' || ''}
+                placeholder={''}
               />
             </div>
           </div>

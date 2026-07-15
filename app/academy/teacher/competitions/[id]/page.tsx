@@ -299,7 +299,7 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
                       value={evalForm.feedback}
                       onChange={e => setEvalForm(prev => ({ ...prev, feedback: e.target.value }))}
                       className="w-full px-4 py-2.5 rounded-xl border border-border bg-background min-h-[80px] resize-y"
-                      placeholder={'' || ''}
+                      placeholder={''}
                     />
                   </div>
 

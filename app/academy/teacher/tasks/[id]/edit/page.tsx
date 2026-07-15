@@ -156,7 +156,7 @@ export default function EditTaskPage() {
         <Link
           href="/academy/teacher/tasks"
           className="p-2 border border-border bg-card rounded-lg hover:bg-muted text-muted-foreground transition-colors"
-          aria-label={'' || ''}
+          aria-label={''}
         >
           <ArrowRight className="w-5 h-5 rtl:rotate-180" />
         </Link>

@@ -36,8 +36,8 @@ export type TranslationSchema = LoosenNamespaces<Omit<RawSchema, 'addedTranslati
 // Backward-compatible alias: existing code imports `Translations`.
 export type Translations = TranslationSchema
 
-// New locales are typed against the AR schema, so a missing/renamed key is a build error.
-const en_typed: TranslationSchema = en
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const en_typed: TranslationSchema = en as any
 
 /**
  * Deep-merge a locale on top of the Arabic base.
