@@ -15,13 +15,16 @@ export type Locale = 'ar' | 'en'
 // map instead of forcing key-for-key parity — everything else stays strictly typed.
 type RawSchema = typeof ar
 
-// Build a version of every namespace that also accepts unknown string keys.
-// This lets components use keys that have not yet been added to ar.ts without
-// triggering TS2339 errors while still providing autocomplete on known keys.
+// Build a version of every namespace that also accepts unknown string keys,
+// recursively. This lets components index into nested objects with dynamic
+// string keys (e.g. statuses[status], types[type]) without TS7053 errors
+// while still keeping autocomplete on known keys.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LooseRecord<T> = T extends Record<string, any> ? T & { [key: string]: any } : T
+type DeepLoose<T> = T extends Record<string, any>
+  ? { [K in keyof T]: DeepLoose<T[K]> } & { [key: string]: any }
+  : T
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LoosenNamespaces<T> = { [K in keyof T]: LooseRecord<T[K]> }
+type LoosenNamespaces<T> = { [K in keyof T]: DeepLoose<T[K]> }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TranslationSchema = LoosenNamespaces<Omit<RawSchema, 'addedTranslations_2026' | 'extracted_2026_v2'>> & {

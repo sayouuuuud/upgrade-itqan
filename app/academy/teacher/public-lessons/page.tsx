@@ -112,6 +112,8 @@ function LessonRow({ lesson, origin, onDelete }: {
   origin: string
   onDelete: (id: string) => void
 }) {
+  const { t } = useI18n()
+  const a = t.admin
   const url = `${origin}/lessons/${lesson.public_slug}`
 
   const copyUrl = async () => {

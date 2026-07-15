@@ -49,15 +49,15 @@ function recitationLabel(f: {
   const surah = SURAHS.find(s => s.number === f.surah_number)
   switch (f.recitation_mode) {
     case "surah":
-      return `تلاوة ${surah?.name ? (t.addedTranslations_2026?.['سورة '] || 'سورة ') + surah.name : ""}`.trim()
+      return `تلاوة ${surah?.name ? '' + surah.name : ""}`.trim()
     case "ayah":
-      return `تلاوة ${surah?.name ? (t.addedTranslations_2026?.['سورة '] || 'سورة ') + surah.name : ""} (${f.ayah_from}-${f.ayah_to})`.trim()
+      return `تلاوة ${surah?.name ? '' + surah.name : ""} (${f.ayah_from}-${f.ayah_to})`.trim()
     case "juz":
       return `تلاوة ${juzName(f.juz_number)}`
     case "page":
       return f.page_from === f.page_to ? `تلاوة صفحة ${f.page_from}` : `تلاوة الصفحات ${f.page_from}-${f.page_to}`
     default:
-      return (t.addedTranslations_2026?.['تلاوة'] || 'تلاوة')
+      return ''
   }
 }
 
@@ -191,7 +191,7 @@ export default function ReaderTajweedPathDetailPage() {
           is_published: edit.is_published,
         }),
       })
-      toast.success((t.addedTranslations_2026?.['تم حفظ إعدادات المسار'] || 'تم حفظ إعدادات المسار'))
+      toast.success('')
       await load()
     } finally {
       setSaving(false)
@@ -237,7 +237,7 @@ export default function ReaderTajweedPathDetailPage() {
         ? stageForm.title.trim() || halaqaName
         : stageForm.title
     if (isHalaqa && !stageForm.halaqa_id) {
-      toast.error((t.addedTranslations_2026?.['اختر الحلقة المرتبطة بالمرحلة'] || 'اختر الحلقة المرتبطة بالمرحلة'))
+      toast.error('')
       return
     }
     if (!autoTitle.trim()) return
@@ -285,7 +285,7 @@ export default function ReaderTajweedPathDetailPage() {
         })
       }
       setStageDialog({ open: false })
-      toast.success(stageDialog.stage ? (t.addedTranslations_2026?.['تم حفظ تعديلات المرحلة'] || 'تم حفظ تعديلات المرحلة') : "تمت إضافة المرحلة")
+      toast.success(stageDialog.stage ? '' : "تمت إضافة المرحلة")
       await load()
     } finally {
       setSavingStage(false)
@@ -295,7 +295,7 @@ export default function ReaderTajweedPathDetailPage() {
   async function deleteStage(stage: Stage) {
     if (!confirm(tp.confirm.deleteStage.replace("{title}", stage.title))) return
     await fetch(`/api/admin/tajweed-paths/${pathId}/stages/${stage.id}`, { method: "DELETE" })
-    toast.success((t.addedTranslations_2026?.['تم حذف المرحلة'] || 'تم حذف المرحلة'))
+    toast.success('')
     await load()
   }
 
@@ -309,7 +309,7 @@ export default function ReaderTajweedPathDetailPage() {
         <div className="space-y-3">
           <Button asChild variant="ghost" size="sm" className="gap-2 -ms-2 text-muted-foreground hover:text-foreground">
             <Link href="/reader/learning-paths">
-              <ArrowRight className="h-4 w-4 rtl:rotate-180" /> {(t.addedTranslations_2026?.['رجوع للقائمة'] || 'رجوع للقائمة')}
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" /> {''}
                                       </Link>
           </Button>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
@@ -320,7 +320,7 @@ export default function ReaderTajweedPathDetailPage() {
           </h1>
           <div className="flex flex-wrap items-center gap-2 mt-2">
             <Badge variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted/80 font-semibold">
-              {stages.length} {(t.addedTranslations_2026?.['مرحلة'] || 'مرحلة')}
+              {stages.length} {''}
                                       </Badge>
             <Badge variant="secondary" className="bg-primary/5 text-primary hover:bg-primary/10 border-primary/10 font-semibold">
               {tp.levels[path.level] || path.level}
@@ -361,7 +361,7 @@ export default function ReaderTajweedPathDetailPage() {
       <Tabs defaultValue="stages" className="space-y-6">
         <TabsList className="bg-muted/50 p-1 rounded-xl">
               <TabsTrigger value="stages" className="rounded-lg">{tp.tabs.stages} ({stages.length})</TabsTrigger>
-              <TabsTrigger value="submissions" className="rounded-lg">{(t.addedTranslations_2026?.['مراجعة التسليمات'] || 'مراجعة التسليمات')}</TabsTrigger>
+              <TabsTrigger value="submissions" className="rounded-lg">{''}</TabsTrigger>
               <TabsTrigger value="funnel" className="rounded-lg">{tp.tabs.funnel}</TabsTrigger>
           <TabsTrigger value="settings" className="rounded-lg">{tp.tabs.settings}</TabsTrigger>
         </TabsList>
@@ -369,10 +369,10 @@ export default function ReaderTajweedPathDetailPage() {
         <TabsContent value="stages" className="space-y-6 mt-0">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-muted/20 border border-border/50 p-4 rounded-xl">
             <div className="text-sm text-muted-foreground">
-              {(t.addedTranslations_2026?.['كل مرحلة هي درس مستقل (شرح/فيديو/ملف/نص) — تُفتح للطالب بعد اجتياز المرحلة السابقة.'] || 'كل مرحلة هي درس مستقل (شرح/فيديو/ملف/نص) — تُفتح للطالب بعد اجتياز المرحلة السابقة.')}
+              {''}
                                       </div>
             <Button onClick={openAddStage} className="gap-2 shadow-sm rounded-lg whitespace-nowrap">
-              <Plus className="h-4 w-4" /> {(t.addedTranslations_2026?.['إضافة مرحلة جديدة'] || 'إضافة مرحلة جديدة')}
+              <Plus className="h-4 w-4" /> {''}
                                       </Button>
           </div>
 
@@ -388,10 +388,10 @@ export default function ReaderTajweedPathDetailPage() {
                     <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground bg-muted/50 border-border/50">
                       {s.estimated_minutes} {tp.metadata.minutesShort}
                     </Badge>
-                    {s.stage_type === "halaqa" && <Badge variant="secondary" className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 inline-flex items-center gap-1"><Users className="h-3 w-3" /> {(t.addedTranslations_2026?.['حلقة مجدولة'] || 'حلقة مجدولة')}</Badge>}
+                    {s.stage_type === "halaqa" && <Badge variant="secondary" className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 inline-flex items-center gap-1"><Users className="h-3 w-3" /> {''}</Badge>}
                     {s.video_url && <Badge variant="secondary" className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">{tp.metadata.videoBadge}</Badge>}
                     {s.pdf_url && <Badge variant="secondary" className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">{tp.metadata.pdfBadge}</Badge>}
-                    {s.passage_text && <Badge variant="secondary" className="text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">{(t.addedTranslations_2026?.['نص للقراءة'] || 'نص للقراءة')}</Badge>}
+                    {s.passage_text && <Badge variant="secondary" className="text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">{''}</Badge>}
                   </div>
                   {s.description && (<p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{s.description}</p>)}
                 </div>
@@ -421,10 +421,10 @@ export default function ReaderTajweedPathDetailPage() {
                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4 text-muted-foreground">
                   <BookOpen className="h-8 w-8" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">{(t.addedTranslations_2026?.['لا توجد مراحل بعد'] || 'لا توجد مراحل بعد')}</h3>
-                <p className="text-muted-foreground text-center mb-6">{(t.addedTranslations_2026?.['أضف أول مرحلة (درس) لهذا المسار ليبدأ الطلاب التعلم.'] || 'أضف أول مرحلة (درس) لهذا المسار ليبدأ الطلاب التعلم.')}</p>
+                <h3 className="text-xl font-bold mb-2">{''}</h3>
+                <p className="text-muted-foreground text-center mb-6">{''}</p>
                 <Button onClick={openAddStage} className="gap-2 rounded-lg">
-                  <Plus className="h-4 w-4" /> {(t.addedTranslations_2026?.['إضافة مرحلة'] || 'إضافة مرحلة')}
+                  <Plus className="h-4 w-4" /> {''}
                                                   </Button>
               </div>
             )}
@@ -535,9 +535,9 @@ export default function ReaderTajweedPathDetailPage() {
                             <span className="text-muted-foreground me-1">{row.position}.</span> {row.title}
                           </div>
                           <div className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded flex gap-2">
-                            <span>{(t.addedTranslations_2026?.['بدأ:'] || 'بدأ:')} {started} ({pctStarted}%)</span>
+                            <span>{''} {started} ({pctStarted}%)</span>
                             <span className="text-border/50">|</span>
-                            <span className="text-emerald-600 dark:text-emerald-400">{(t.addedTranslations_2026?.['أتمّ:'] || 'أتمّ:')} {completed} ({pctCompleted}%)</span>
+                            <span className="text-emerald-600 dark:text-emerald-400">{''} {completed} ({pctCompleted}%)</span>
                           </div>
                         </div>
                         <div className="h-3 w-full bg-muted rounded-full overflow-hidden flex relative border border-border/50">
@@ -561,7 +561,7 @@ export default function ReaderTajweedPathDetailPage() {
         <TabsContent value="settings" className="mt-0">
           <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm max-w-2xl space-y-6">
             <h3 className="font-bold text-lg border-b border-border/50 pb-3 flex items-center gap-2">
-              {(t.addedTranslations_2026?.['إعدادات المسار'] || 'إعدادات المسار')}
+              {''}
                                       </h3>
             <div className="space-y-5">
               <div className="space-y-1.5">
@@ -595,14 +595,14 @@ export default function ReaderTajweedPathDetailPage() {
                   <input id="rt_req_aud_e" type="checkbox" className="mt-1 h-4 w-4 accent-primary rounded" checked={edit.require_audio} onChange={e => setEdit({ ...edit, require_audio: e.target.checked })} />
                   <div>
                     <Label htmlFor="rt_req_aud_e" className="cursor-pointer font-semibold text-base block">{tp.form.requireAudioShort}</Label>
-                    <p className="text-xs text-muted-foreground mt-0.5">{(t.addedTranslations_2026?.['يتطلب من الطالب رفع تسجيل صوتي لاجتياز كل مرحلة.'] || 'يتطلب من الطالب رفع تسجيل صوتي لاجتياز كل مرحلة.')}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{''}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 rounded-xl border border-border/50 bg-emerald-500/5 p-4">
                   <input id="rt_pub_e" type="checkbox" className="mt-1 h-4 w-4 accent-emerald-600 rounded" checked={edit.is_published} onChange={e => setEdit({ ...edit, is_published: e.target.checked })} />
                   <div>
                     <Label htmlFor="rt_pub_e" className="cursor-pointer font-semibold text-base text-emerald-800 dark:text-emerald-400 block">{tp.form.publishedToggle}</Label>
-                    <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-0.5">{(t.addedTranslations_2026?.['سيتمكن الطلاب من رؤية المسار والاشتراك فيه.'] || 'سيتمكن الطلاب من رؤية المسار والاشتراك فيه.')}</p>
+                    <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-0.5">{''}</p>
                   </div>
                 </div>
               </div>
@@ -622,34 +622,34 @@ export default function ReaderTajweedPathDetailPage() {
       <Dialog open={stageDialog.open} onOpenChange={o => setStageDialog({ open: o })}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl">
           <DialogHeader className="border-b border-border/50 pb-4 mb-2">
-            <DialogTitle className="text-xl">{stageDialog.stage ? (t.addedTranslations_2026?.['تعديل المرحلة'] || 'تعديل المرحلة') : "إضافة مرحلة جديدة"}</DialogTitle>
-            <DialogDescription>{(t.addedTranslations_2026?.['المرحلة عبارة عن درس مستقل — أضف الشرح والمحتوى والمرفقات.'] || 'المرحلة عبارة عن درس مستقل — أضف الشرح والمحتوى والمرفقات.')}</DialogDescription>
+            <DialogTitle className="text-xl">{stageDialog.stage ? '' : "إضافة مرحلة جديدة"}</DialogTitle>
+            <DialogDescription>{''}</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 py-2">
             {/* Stage type */}
             <div className="md:col-span-2 space-y-2">
-              <Label className="font-semibold text-base">{(t.addedTranslations_2026?.['نوع المرحلة'] || 'نوع المرحلة')}</Label>
+              <Label className="font-semibold text-base">{''}</Label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <button
                   type="button"
                   onClick={() => setStageForm({ ...stageForm, stage_type: "custom" })}
                   className={`flex items-center justify-center gap-2 rounded-xl border-2 p-4 text-sm font-bold transition-all ${stageForm.stage_type === "custom" ? "border-primary bg-primary/5 text-primary shadow-sm" : "border-border/50 bg-muted/10 text-muted-foreground hover:bg-muted/30"}`}
                 >
-                  <BookOpen className="h-5 w-5" /> {(t.addedTranslations_2026?.['درس (شرح/فيديو/ملف)'] || 'درس (شرح/فيديو/ملف)')}
+                  <BookOpen className="h-5 w-5" /> {''}
                                                   </button>
                 <button
                   type="button"
                   onClick={() => setStageForm({ ...stageForm, stage_type: "recitation" })}
                   className={`flex items-center justify-center gap-2 rounded-xl border-2 p-4 text-sm font-bold transition-all ${stageForm.stage_type === "recitation" ? "border-emerald-500 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400 shadow-sm" : "border-border/50 bg-muted/10 text-muted-foreground hover:bg-muted/30"}`}
                 >
-                  <Mic className="h-5 w-5" /> {(t.addedTranslations_2026?.['تلاوة / تسميع'] || 'تلاوة / تسميع')}
+                  <Mic className="h-5 w-5" /> {''}
                                                   </button>
                 <button
                   type="button"
                   onClick={() => setStageForm({ ...stageForm, stage_type: "halaqa" })}
                   className={`flex items-center justify-center gap-2 rounded-xl border-2 p-4 text-sm font-bold transition-all ${stageForm.stage_type === "halaqa" ? "border-blue-500 bg-blue-500/5 text-blue-700 dark:text-blue-400 shadow-sm" : "border-border/50 bg-muted/10 text-muted-foreground hover:bg-muted/30"}`}
                 >
-                  <Users className="h-5 w-5" /> {(t.addedTranslations_2026?.['حلقة مجدولة'] || 'حلقة مجدولة')}
+                  <Users className="h-5 w-5" /> {''}
                                                   </button>
               </div>
             </div>
@@ -658,15 +658,15 @@ export default function ReaderTajweedPathDetailPage() {
               <>
                 <div className="md:col-span-2 space-y-4 rounded-xl border border-blue-500/20 bg-blue-500/5 p-5">
                   <Label className="flex items-center gap-2 font-bold text-blue-800 dark:text-blue-400">
-                    <Users className="h-5 w-5" /> {(t.addedTranslations_2026?.['الحلقة المرتبطة بهذه المرحلة'] || 'الحلقة المرتبطة بهذه المرحلة')}
+                    <Users className="h-5 w-5" /> {''}
                                                         </Label>
                   <Select value={stageForm.halaqa_id} onValueChange={v => setStageForm({ ...stageForm, halaqa_id: v })}>
                     <SelectTrigger className="h-11 rounded-lg bg-background border-blue-500/20 focus:ring-blue-500/20">
-                      <SelectValue placeholder={(t.addedTranslations_2026?.['— اختر الحلقة —'] || '— اختر الحلقة —')} />
+                      <SelectValue placeholder={''} />
                     </SelectTrigger>
                     <SelectContent className="max-h-72">
                       {halaqat.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">{(t.addedTranslations_2026?.['لا توجد حلقات بعد'] || 'لا توجد حلقات بعد')}</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">{''}</div>
                       ) : (
                         halaqat.map(h => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)
                       )}
@@ -674,35 +674,35 @@ export default function ReaderTajweedPathDetailPage() {
                   </Select>
                   <div className="text-left">
                     <Link href="/reader/halaqat" target="_blank" className="text-xs font-bold text-blue-600 hover:text-blue-700 underline underline-offset-2">
-                      {(t.addedTranslations_2026?.['أو أنشئ حلقة جديدة مرتبطة بهذا المسار'] || 'أو أنشئ حلقة جديدة مرتبطة بهذا المسار')}
+                      {''}
                                                               </Link>
                   </div>
                   <p className="text-xs text-blue-700/80 dark:text-blue-400/80">
-                    {(t.addedTranslations_2026?.['ستظهر هذه الحلقة كمرحلة داخل المسار، ويدخلها الطالب من خلاله ويحضر جلساتها المجدولة.'] || 'ستظهر هذه الحلقة كمرحلة داخل المسار، ويدخلها الطالب من خلاله ويحضر جلساتها المجدولة.')}
+                    {''}
                                                         </p>
                 </div>
                 <div className="md:col-span-2 space-y-1.5">
-                  <Label className="font-semibold">{(t.addedTranslations_2026?.['عنوان المرحلة (اختياري)'] || 'عنوان المرحلة (اختياري)')}</Label>
-                  <Input value={stageForm.title} onChange={e => setStageForm({ ...stageForm, title: e.target.value })} placeholder={(t.addedTranslations_2026?.['يُستخدم اسم الحلقة تلقائياً إن تُرك فارغاً'] || 'يُستخدم اسم الحلقة تلقائياً إن تُرك فارغاً')} className="h-11 rounded-lg focus-visible:ring-primary/20" />
+                  <Label className="font-semibold">{''}</Label>
+                  <Input value={stageForm.title} onChange={e => setStageForm({ ...stageForm, title: e.target.value })} placeholder={''} className="h-11 rounded-lg focus-visible:ring-primary/20" />
                 </div>
                 <div className="md:col-span-2 space-y-1.5">
-                  <Label className="font-semibold">{(t.addedTranslations_2026?.['تعليمات للطالب'] || 'تعليمات للطالب')}</Label>
-                  <Textarea rows={3} value={stageForm.description} onChange={e => setStageForm({ ...stageForm, description: e.target.value })} placeholder={(t.addedTranslations_2026?.['مثال: احضر الجلسة المجدولة وجهّز ورد الحفظ'] || 'مثال: احضر الجلسة المجدولة وجهّز ورد الحفظ')} className="resize-none rounded-lg focus-visible:ring-primary/20" />
+                  <Label className="font-semibold">{''}</Label>
+                  <Textarea rows={3} value={stageForm.description} onChange={e => setStageForm({ ...stageForm, description: e.target.value })} placeholder={''} className="resize-none rounded-lg focus-visible:ring-primary/20" />
                 </div>
               </>
             ) : stageForm.stage_type === "recitation" ? (
               <>
                 <div className="md:col-span-2 space-y-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5">
                   <Label className="flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-400">
-                    <Mic className="h-5 w-5" /> {(t.addedTranslations_2026?.['المطلوب تلاوته'] || 'المطلوب تلاوته')}
+                    <Mic className="h-5 w-5" /> {''}
                                                             </Label>
                   <Select value={stageForm.recitation_mode} onValueChange={v => setStageForm({ ...stageForm, recitation_mode: v })}>
                     <SelectTrigger className="h-11 rounded-lg bg-background border-emerald-500/20 focus:ring-emerald-500/20"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="surah">{(t.addedTranslations_2026?.['سورة كاملة'] || 'سورة كاملة')}</SelectItem>
-                      <SelectItem value="ayah">{(t.addedTranslations_2026?.['آيات محددة (من - إلى)'] || 'آيات محددة (من - إلى)')}</SelectItem>
-                      <SelectItem value="juz">{(t.addedTranslations_2026?.['جزء كامل'] || 'جزء كامل')}</SelectItem>
-                      <SelectItem value="page">{(t.addedTranslations_2026?.['نطاق صفحات'] || 'نطاق صفحات')}</SelectItem>
+                      <SelectItem value="surah">{''}</SelectItem>
+                      <SelectItem value="ayah">{''}</SelectItem>
+                      <SelectItem value="juz">{''}</SelectItem>
+                      <SelectItem value="page">{''}</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -710,7 +710,7 @@ export default function ReaderTajweedPathDetailPage() {
                   <div className="space-y-4 pt-2 border-t border-emerald-500/10">
                     {(stageForm.recitation_mode === "surah" || stageForm.recitation_mode === "ayah") && (
                       <div className="space-y-1.5">
-                        <Label className="text-sm font-semibold">{(t.addedTranslations_2026?.['السورة'] || 'السورة')}</Label>
+                        <Label className="text-sm font-semibold">{''}</Label>
                         <Select
                           value={String(stageForm.surah_number)}
                           onValueChange={v => {
@@ -723,7 +723,7 @@ export default function ReaderTajweedPathDetailPage() {
                           <SelectContent className="max-h-72">
                             {SURAHS.map(s => (
                               <SelectItem key={s.number} value={String(s.number)}>
-                                {s.number}. {s.name} ({s.verses} {(t.addedTranslations_2026?.['آية)'] || 'آية)')}
+                                {s.number}. {s.name} ({s.verses} {''}
                                                                   </SelectItem>
                             ))}
                           </SelectContent>
@@ -734,11 +734,11 @@ export default function ReaderTajweedPathDetailPage() {
                     {stageForm.recitation_mode === "ayah" && (
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <Label className="text-sm font-semibold">{(t.addedTranslations_2026?.['من الآية'] || 'من الآية')}</Label>
+                          <Label className="text-sm font-semibold">{''}</Label>
                           <Input type="number" min="1" max={SURAHS.find(s => s.number === stageForm.surah_number)?.verses || 1} value={stageForm.ayah_from} onChange={e => setStageForm({ ...stageForm, ayah_from: parseInt(e.target.value, 10) || 1 })} className="h-11 rounded-lg bg-background" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-sm font-semibold">{(t.addedTranslations_2026?.['إلى الآية'] || 'إلى الآية')}</Label>
+                          <Label className="text-sm font-semibold">{''}</Label>
                           <Input type="number" min="1" max={SURAHS.find(s => s.number === stageForm.surah_number)?.verses || 1} value={stageForm.ayah_to} onChange={e => setStageForm({ ...stageForm, ayah_to: parseInt(e.target.value, 10) || 1 })} className="h-11 rounded-lg bg-background" />
                         </div>
                       </div>
@@ -746,7 +746,7 @@ export default function ReaderTajweedPathDetailPage() {
 
                     {stageForm.recitation_mode === "juz" && (
                       <div className="space-y-1.5">
-                        <Label className="text-sm font-semibold">{(t.addedTranslations_2026?.['الجزء'] || 'الجزء')}</Label>
+                        <Label className="text-sm font-semibold">{''}</Label>
                         <Select value={String(stageForm.juz_number)} onValueChange={v => setStageForm({ ...stageForm, juz_number: parseInt(v, 10) })}>
                           <SelectTrigger className="h-11 rounded-lg bg-background"><SelectValue /></SelectTrigger>
                           <SelectContent className="max-h-72">
@@ -761,25 +761,25 @@ export default function ReaderTajweedPathDetailPage() {
                     {stageForm.recitation_mode === "page" && (
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <Label className="text-sm font-semibold">{(t.addedTranslations_2026?.['من صفحة'] || 'من صفحة')}</Label>
+                          <Label className="text-sm font-semibold">{''}</Label>
                           <Input type="number" min="1" max="604" value={stageForm.page_from} onChange={e => setStageForm({ ...stageForm, page_from: parseInt(e.target.value, 10) || 1 })} className="h-11 rounded-lg bg-background" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-sm font-semibold">{(t.addedTranslations_2026?.['إلى صفحة'] || 'إلى صفحة')}</Label>
+                          <Label className="text-sm font-semibold">{''}</Label>
                           <Input type="number" min="1" max="604" value={stageForm.page_to} onChange={e => setStageForm({ ...stageForm, page_to: parseInt(e.target.value, 10) || 1 })} className="h-11 rounded-lg bg-background" />
                         </div>
                       </div>
                     )}
 
                     <div className="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-sm">
-                      {(t.addedTranslations_2026?.['عنوان المرحلة سيُولّد تلقائياً:'] || 'عنوان المرحلة سيُولّد تلقائياً:')} <strong className="text-emerald-800 dark:text-emerald-400 ms-1">{recitationLabel(stageForm)}</strong>
+                      {''} <strong className="text-emerald-800 dark:text-emerald-400 ms-1">{recitationLabel(stageForm)}</strong>
                     </div>
                   </div>
                 </div>
 
                 <div className="md:col-span-2 space-y-1.5">
-                  <Label className="font-semibold">{tp.stageForm.description} {(t.addedTranslations_2026?.['(تعليمات للطالب)'] || '(تعليمات للطالب)')}</Label>
-                  <Textarea rows={3} value={stageForm.description} onChange={e => setStageForm({ ...stageForm, description: e.target.value })} placeholder={(t.addedTranslations_2026?.['مثال: راعِ أحكام التجويد وأرسل تلاوتك'] || 'مثال: راعِ أحكام التجويد وأرسل تلاوتك')} className="resize-none rounded-lg focus-visible:ring-primary/20" />
+                  <Label className="font-semibold">{tp.stageForm.description} {''}</Label>
+                  <Textarea rows={3} value={stageForm.description} onChange={e => setStageForm({ ...stageForm, description: e.target.value })} placeholder={''} className="resize-none rounded-lg focus-visible:ring-primary/20" />
                 </div>
               </>
             ) : (
@@ -801,7 +801,7 @@ export default function ReaderTajweedPathDetailPage() {
                   <Label className="flex items-center gap-2 font-semibold">
                     <Video className="h-5 w-5 text-blue-500" /> {tp.stageForm.videoUrl}
                   </Label>
-                  <Input dir="ltr" value={stageForm.video_url} onChange={e => setStageForm({ ...stageForm, video_url: e.target.value })} placeholder={(t.addedTranslations_2026?.['https://youtube.com/... أو ارفع ملف بالأسفل'] || 'https://youtube.com/... أو ارفع ملف بالأسفل')} className="h-11 rounded-lg bg-background" />
+                  <Input dir="ltr" value={stageForm.video_url} onChange={e => setStageForm({ ...stageForm, video_url: e.target.value })} placeholder={''} className="h-11 rounded-lg bg-background" />
                   <div className="bg-background rounded-lg p-1 border border-border/50">
                     <FileUploader accept="video/*" value={null} onChange={(url) => url && setStageForm({ ...stageForm, video_url: url })} />
                   </div>
@@ -820,7 +820,7 @@ export default function ReaderTajweedPathDetailPage() {
                   <Label className="flex items-center gap-2 font-semibold">
                     <FileText className="h-5 w-5 text-amber-500" /> {tp.stageForm.pdfUrl}
                   </Label>
-                  <Input dir="ltr" value={stageForm.pdf_url} onChange={e => setStageForm({ ...stageForm, pdf_url: e.target.value })} placeholder={(t.addedTranslations_2026?.['https://... أو ارفع ملف بالأسفل'] || 'https://... أو ارفع ملف بالأسفل')} className="h-11 rounded-lg bg-background" />
+                  <Input dir="ltr" value={stageForm.pdf_url} onChange={e => setStageForm({ ...stageForm, pdf_url: e.target.value })} placeholder={''} className="h-11 rounded-lg bg-background" />
                   <div className="bg-background rounded-lg p-1 border border-border/50">
                     <FileUploader accept=".pdf,.doc,.docx,.ppt,.pptx" value={stageForm.pdf_url || null} onChange={(url) => setStageForm({ ...stageForm, pdf_url: url || "" })} />
                   </div>
@@ -834,26 +834,26 @@ export default function ReaderTajweedPathDetailPage() {
             )}
             <div className="md:col-span-2 space-y-3 rounded-xl border border-border/50 bg-muted/10 p-5">
               <Label className="flex items-center gap-2 font-semibold">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" /> {(t.addedTranslations_2026?.['متطلبات الاجتياز والمراجعة'] || 'متطلبات الاجتياز والمراجعة')}
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" /> {''}
                                             </Label>
               <label className="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" className="mt-1 h-4 w-4 accent-primary rounded" checked={stageForm.require_audio} onChange={e => setStageForm({ ...stageForm, require_audio: e.target.checked })} />
                 <span className="text-sm">
-                  <span className="font-bold block">{(t.addedTranslations_2026?.['يتطلب تسجيلاً صوتياً'] || 'يتطلب تسجيلاً صوتياً')}</span>
-                  <span className="text-xs text-muted-foreground">{(t.addedTranslations_2026?.['يرسل الطالب تلاوة صوتية وتراجعها أنت قبل اعتماد الاجتياز.'] || 'يرسل الطالب تلاوة صوتية وتراجعها أنت قبل اعتماد الاجتياز.')}</span>
+                  <span className="font-bold block">{''}</span>
+                  <span className="text-xs text-muted-foreground">{''}</span>
                 </span>
               </label>
               <label className="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" className="mt-1 h-4 w-4 accent-primary rounded" checked={stageForm.require_file} onChange={e => setStageForm({ ...stageForm, require_file: e.target.checked })} />
                 <span className="text-sm">
-                  <span className="font-bold block">{(t.addedTranslations_2026?.['يتطلب رفع ملف (مهمة تسليم)'] || 'يتطلب رفع ملف (مهمة تسليم)')}</span>
-                  <span className="text-xs text-muted-foreground">{(t.addedTranslations_2026?.['يرفع الطالب ملفاً مطلوباً وتراجعه أنت قبل اعتماد الاجتياز.'] || 'يرفع الطالب ملفاً مطلوباً وتراجعه أنت قبل اعتماد الاجتياز.')}</span>
+                  <span className="font-bold block">{''}</span>
+                  <span className="text-xs text-muted-foreground">{''}</span>
                 </span>
               </label>
               {(stageForm.require_audio || stageForm.require_file) && (
                 <div className="space-y-1.5">
-                  <Label className="font-semibold text-sm">{(t.addedTranslations_2026?.['تعليمات التسليم للطالب (اختياري)'] || 'تعليمات التسليم للطالب (اختياري)')}</Label>
-                  <Textarea rows={2} value={stageForm.task_instructions} onChange={e => setStageForm({ ...stageForm, task_instructions: e.target.value })} placeholder={(t.addedTranslations_2026?.['اشرح للطالب ما المطلوب تسليمه بالتحديد...'] || 'اشرح للطالب ما المطلوب تسليمه بالتحديد...')} className="resize-none rounded-lg bg-background" />
+                  <Label className="font-semibold text-sm">{''}</Label>
+                  <Textarea rows={2} value={stageForm.task_instructions} onChange={e => setStageForm({ ...stageForm, task_instructions: e.target.value })} placeholder={''} className="resize-none rounded-lg bg-background" />
                 </div>
               )}
             </div>

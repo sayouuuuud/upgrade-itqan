@@ -42,7 +42,6 @@ interface Question {
 type Tab = 'open' | 'awaiting' | 'published' | 'closed';
 
 export default function FiqhSupervisorInboxPage() {
-  const { t } = useI18n()
   const { t, locale, dir } = useI18n()
   const [tab, setTab] = useState<Tab>('open')
   const [questions, setQuestions] = useState<Question[]>([])
@@ -282,7 +281,6 @@ export default function FiqhSupervisorInboxPage() {
 }
 
 function StatusPill({ status }: { status: string }) {
-  
   const { t } = useI18n()
   const labels: Record<string, { tone: string }> = {
     pending: { tone: 'bg-amber-100 text-amber-900 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30' },

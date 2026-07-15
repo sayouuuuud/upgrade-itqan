@@ -37,7 +37,6 @@ type RescheduleRequest = {
 }
 
 export default function ReaderSessionsPage() {
-  const { t } = useI18n()
   const { t, locale } = useI18n()
   const isAr = locale === "ar"
   const [sessions, setSessions] = useState<Booking[]>([])
@@ -155,13 +154,13 @@ export default function ReaderSessionsPage() {
         body: JSON.stringify({ proposedSlotStart, proposedSlotEnd }),
       })
       if (res.ok) {
-        alert((t.addedTranslations_2026?.['تم إرسال طلب تعديل الموعد. سيتم إشعارك بعد رد الطالب.'] || (t.addedTranslations_2026?.['تم إرسال طلب تعديل الموعد. سيتم إشعارك بعد رد الطالب.'] || 'تم إرسال طلب تعديل الموعد. سيتم إشعارك بعد رد الطالب.')))
+        alert('')
         setRescheduleSession(null)
         setProposedDate("")
         setProposedTime("")
       } else {
         const d = await res.json()
-        alert(d.error || ((t.addedTranslations_2026?.['حدث خطأ'] || (t.addedTranslations_2026?.['حدث خطأ'] || 'حدث خطأ'))))
+        alert(d.error || (''))
       }
     } finally {
       setSubmittingReschedule(false)
@@ -190,11 +189,11 @@ export default function ReaderSessionsPage() {
           return next
         })
         alert(action === "accept" 
-          ? ((t.addedTranslations_2026?.['تم قبول طلب التعديل وتحديث الموعد.'] || (t.addedTranslations_2026?.['تم قبول طلب التعديل وتحديث الموعد.'] || 'تم قبول طلب التعديل وتحديث الموعد.'))) 
-          : ((t.addedTranslations_2026?.['تم رفض طلب التعديل.'] || (t.addedTranslations_2026?.['تم رفض طلب التعديل.'] || 'تم رفض طلب التعديل.'))))
+          ? ('') 
+          : (''))
       }
     } catch {
-      alert((t.addedTranslations_2026?.['حدث خطأ'] || (t.addedTranslations_2026?.['حدث خطأ'] || 'حدث خطأ')))
+      alert('')
     }
   }
 
@@ -206,18 +205,18 @@ export default function ReaderSessionsPage() {
   ]
 
   const filterButtons = [
-    { key: "all" as const, label: (t.addedTranslations_2026?.['كل الجلسات'] || (t.addedTranslations_2026?.['كل الجلسات'] || 'كل الجلسات')) },
-    { key: "upcoming" as const, label: (t.addedTranslations_2026?.['القادمة'] || (t.addedTranslations_2026?.['القادمة'] || 'القادمة')) },
-    { key: "completed" as const, label: (t.addedTranslations_2026?.['المكتملة'] || (t.addedTranslations_2026?.['المكتملة'] || 'المكتملة')) },
-    { key: "pending" as const, label: (t.addedTranslations_2026?.['بدون رابط'] || (t.addedTranslations_2026?.['بدون رابط'] || 'بدون رابط')) },
+    { key: "all" as const, label: '' },
+    { key: "upcoming" as const, label: '' },
+    { key: "completed" as const, label: '' },
+    { key: "pending" as const, label: '' },
   ]
 
   const STATUS = {
-    confirmed: { label: (t.addedTranslations_2026?.['مؤكد'] || (t.addedTranslations_2026?.['مؤكد'] || 'مؤكد')), color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 ring-emerald-500/10", dot: "bg-emerald-500" },
-    completed: { label: (t.addedTranslations_2026?.['مكتمل'] || (t.addedTranslations_2026?.['مكتمل'] || 'مكتمل')), color: "bg-muted text-muted-foreground border-border ring-muted/50", dot: "bg-muted-foreground" },
-    cancelled: { label: (t.addedTranslations_2026?.['ملغي'] || (t.addedTranslations_2026?.['ملغي'] || 'ملغي')), color: "bg-destructive/10 text-destructive border-destructive/20 ring-destructive/10", dot: "bg-destructive" },
-    pending: { label: (t.addedTranslations_2026?.['قيد الانتظار'] || (t.addedTranslations_2026?.['قيد الانتظار'] || 'قيد الانتظار')), color: "bg-[#D4A843]/10 text-[#D4A843] border-[#D4A843]/30 ring-[#D4A843]/10", dot: "bg-[#D4A843]" },
-    rescheduled: { label: (t.addedTranslations_2026?.['مُعاد جدولته'] || (t.addedTranslations_2026?.['مُعاد جدولته'] || 'مُعاد جدولته')), color: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20 ring-sky-500/10", dot: "bg-sky-500" },
+    confirmed: { label: '', color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 ring-emerald-500/10", dot: "bg-emerald-500" },
+    completed: { label: '', color: "bg-muted text-muted-foreground border-border ring-muted/50", dot: "bg-muted-foreground" },
+    cancelled: { label: '', color: "bg-destructive/10 text-destructive border-destructive/20 ring-destructive/10", dot: "bg-destructive" },
+    pending: { label: '', color: "bg-[#D4A843]/10 text-[#D4A843] border-[#D4A843]/30 ring-[#D4A843]/10", dot: "bg-[#D4A843]" },
+    rescheduled: { label: '', color: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20 ring-sky-500/10", dot: "bg-sky-500" },
   }
 
   return (
@@ -234,7 +233,7 @@ export default function ReaderSessionsPage() {
           <div className="space-y-4 max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-4 py-1.5 text-sm font-medium backdrop-blur-md">
               <Sparkles className="w-4 h-4 text-[#D4A843]" />
-              <span className="text-white/90">{(t.addedTranslations_2026?.['إدارة الجلسات الذكية'] || (t.addedTranslations_2026?.['إدارة الجلسات الذكية'] || 'إدارة الجلسات الذكية'))}</span>
+              <span className="text-white/90">{''}</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white drop-shadow-sm">
               {t.reader.sessionManagementTitle}
@@ -246,7 +245,7 @@ export default function ReaderSessionsPage() {
           <div className="flex gap-4 shrink-0">
             <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 text-center min-w-[120px]">
               <div className="text-3xl font-black text-white">{filtered.length}</div>
-              <div className="text-xs font-medium text-white/70 mt-1 uppercase tracking-wider">{(t.addedTranslations_2026?.['جلسة'] || (t.addedTranslations_2026?.['جلسة'] || 'جلسة'))}</div>
+              <div className="text-xs font-medium text-white/70 mt-1 uppercase tracking-wider">{''}</div>
             </div>
           </div>
         </div>
@@ -262,7 +261,7 @@ export default function ReaderSessionsPage() {
             }`}
         >
           <Calendar className="w-4 h-4" />
-          {(t.addedTranslations_2026?.['الجلسات'] || (t.addedTranslations_2026?.['الجلسات'] || 'الجلسات'))}
+          {''}
         </button>
         <button
           onClick={() => setView("recordings")}
@@ -272,7 +271,7 @@ export default function ReaderSessionsPage() {
             }`}
         >
           <PlayCircle className="w-4 h-4" />
-          {(t.addedTranslations_2026?.['التسجيلات'] || (t.addedTranslations_2026?.['التسجيلات'] || 'التسجيلات'))}
+          {''}
         </button>
       </div>
 
@@ -305,7 +304,7 @@ export default function ReaderSessionsPage() {
             <Calendar className="w-12 h-12 text-muted-foreground/50" />
           </div>
           <h3 className="text-2xl font-bold text-foreground mb-3">{t.reader.noSessionsFound}</h3>
-          <p className="text-muted-foreground max-w-md mx-auto">{(t.addedTranslations_2026?.['لا توجد جلسات تطابق التصنيف المختار حالياً. جرب تغيير التصنيف.'] || (t.addedTranslations_2026?.['لا توجد جلسات تطابق التصنيف المختار حالياً. جرب تغيير التصنيف.'] || 'لا توجد جلسات تطابق التصنيف المختار حالياً. جرب تغيير التصنيف.'))}</p>
+          <p className="text-muted-foreground max-w-md mx-auto">{''}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
@@ -333,7 +332,7 @@ export default function ReaderSessionsPage() {
                   <div className="flex items-center gap-6 ml-2">
                     <div className={`w-16 h-16 rounded-[1.25rem] flex items-center justify-center shrink-0 border-2 font-black text-2xl shadow-sm transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3
                       ${isActive ? avatarColors[idx % avatarColors.length] : 'bg-muted border-border text-muted-foreground'}`}>
-                      {(session.student_name || ((t.addedTranslations_2026?.['ط'] || (t.addedTranslations_2026?.['ط'] || 'ط')))).charAt(0)}
+                      {(session.student_name || ('')).charAt(0)}
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-2">
@@ -362,13 +361,13 @@ export default function ReaderSessionsPage() {
                      {!hasLink && isActive && session.status !== "pending" && (
                        <div className="px-4 py-2 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-xl text-xs font-bold flex items-center gap-2 animate-pulse">
                          <AlertCircle className="w-4 h-4" />
-                         {(t.addedTranslations_2026?.['بانتظار الرابط'] || (t.addedTranslations_2026?.['بانتظار الرابط'] || 'بانتظار الرابط'))}
+                         {''}
                        </div>
                      )}
                     <a
                       href={`/reader/sessions/${session.id}`}
                       onClick={(e) => e.stopPropagation()}
-                      title={(t.addedTranslations_2026?.['فتح صفحة الجلسة'] || (t.addedTranslations_2026?.['فتح صفحة الجلسة'] || 'فتح صفحة الجلسة'))}
+                      title={''}
                       className="w-10 h-10 rounded-full flex items-center justify-center bg-muted/50 text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors"
                     >
                       <ArrowUpRight className="w-5 h-5" />
@@ -388,7 +387,7 @@ export default function ReaderSessionsPage() {
                         <div className="p-2 bg-amber-500/20 rounded-xl">
                            <Calendar className="w-5 h-5 text-amber-600 dark:text-amber-500" />
                         </div>
-                        <p className="text-base font-bold text-amber-900 dark:text-amber-100">{(t.addedTranslations_2026?.['طلب تعديل موعد من الطالب:'] || (t.addedTranslations_2026?.['طلب تعديل موعد من الطالب:'] || 'طلب تعديل موعد من الطالب:'))}</p>
+                        <p className="text-base font-bold text-amber-900 dark:text-amber-100">{''}</p>
                       </div>
                       {pendingReqs.map(req => (
                         <div key={req.id} className="flex flex-col md:flex-row md:items-center justify-between gap-5 bg-white/60 dark:bg-black/20 backdrop-blur-md p-5 rounded-2xl border border-amber-500/20 shadow-sm">
@@ -397,7 +396,7 @@ export default function ReaderSessionsPage() {
                               <Clock className="w-5 h-5 text-amber-600" />
                             </div>
                             <div>
-                              <p className="text-xs text-muted-foreground font-medium mb-1">{(t.addedTranslations_2026?.['الموعد المقترح الجديد'] || (t.addedTranslations_2026?.['الموعد المقترح الجديد'] || 'الموعد المقترح الجديد'))}</p>
+                              <p className="text-xs text-muted-foreground font-medium mb-1">{''}</p>
                               <p className="text-sm font-bold text-foreground flex items-center gap-2">
                                 {new Date(req.proposed_slot_start).toLocaleDateString(isAr ? "ar-SA" : "en-US", { weekday: "long", month: "long", day: "numeric" })}
                                 <span className="text-amber-500">•</span>
@@ -410,13 +409,13 @@ export default function ReaderSessionsPage() {
                               onClick={(e) => { e.stopPropagation(); handleRespondToStudentRequest(session.id, req.id, "accept"); }}
                               className="flex-1 md:flex-none px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-amber-500/25 transition-all hover:-translate-y-0.5"
                             >
-                              {(t.addedTranslations_2026?.['قبول وتأكيد'] || (t.addedTranslations_2026?.['قبول وتأكيد'] || 'قبول وتأكيد'))}
+                              {''}
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleRespondToStudentRequest(session.id, req.id, "reject"); }}
                               className="flex-1 md:flex-none px-6 py-3 bg-white dark:bg-card text-muted-foreground border border-border rounded-xl text-sm font-bold hover:bg-muted hover:text-foreground transition-all"
                             >
-                              {(t.addedTranslations_2026?.['رفض الطلب'] || (t.addedTranslations_2026?.['رفض الطلب'] || 'رفض الطلب'))}
+                              {''}
                             </button>
                           </div>
                         </div>
@@ -447,11 +446,11 @@ export default function ReaderSessionsPage() {
                             >
                               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000" />
                               <Video className="w-5 h-5" />
-                              {(t.addedTranslations_2026?.['ابدأ البث المباشر (داخل المنصة)'] || (t.addedTranslations_2026?.['ابدأ البث المباشر (داخل المنصة)'] || 'ابدأ البث المباشر (داخل المنصة)'))}
+                              {''}
                             </a>
                           )}
                           
-                          {isActive && <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground uppercase tracking-widest"><div className="h-px bg-border flex-1" />{(t.addedTranslations_2026?.['أو'] || (t.addedTranslations_2026?.['أو'] || 'أو'))}<div className="h-px bg-border flex-1" /></div>}
+                          {isActive && <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground uppercase tracking-widest"><div className="h-px bg-border flex-1" />{''}<div className="h-px bg-border flex-1" /></div>}
 
                           {isCompleted ? (
                             <div className="flex items-center gap-4 bg-muted/50 rounded-2xl p-5 border border-border/50">
@@ -484,7 +483,7 @@ export default function ReaderSessionsPage() {
                                 rel="noopener noreferrer"
                                 className="w-full flex items-center justify-center gap-2 bg-white dark:bg-card border-2 border-emerald-500/20 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-6 py-4 rounded-2xl text-sm font-bold transition-all shadow-sm"
                               >
-                                {(t.addedTranslations_2026?.['فتح الرابط الخارجي'] || (t.addedTranslations_2026?.['فتح الرابط الخارجي'] || 'فتح الرابط الخارجي'))}
+                                {''}
                               </a>
                             </div>
                           ) : (
@@ -505,7 +504,7 @@ export default function ReaderSessionsPage() {
                                 className="w-full h-12 rounded-2xl bg-[#0B3D2E] text-white font-bold hover:bg-[#082e23] disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5"
                               >
                                 {savingLink === session.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
-                                {(t.addedTranslations_2026?.['حفظ الرابط'] || (t.addedTranslations_2026?.['حفظ الرابط'] || 'حفظ الرابط'))}
+                                {''}
                               </button>
                             </div>
                           )}
@@ -516,7 +515,7 @@ export default function ReaderSessionsPage() {
                       <div className="bg-card/50 backdrop-blur-md p-6 rounded-[1.5rem] border border-border shadow-sm flex flex-col group/controls hover:border-primary/20 transition-colors">
                         <h4 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
                           <Sparkles className="w-4 h-4 text-primary" />
-                          {(t.addedTranslations_2026?.['إدارة الجلسة'] || (t.addedTranslations_2026?.['إدارة الجلسة'] || 'إدارة الجلسة'))}
+                          {''}
                         </h4>
                         <div className="flex-1 flex flex-col justify-center gap-4">
                           <a
@@ -537,7 +536,7 @@ export default function ReaderSessionsPage() {
                                 className="flex-1 flex items-center justify-center gap-2 rounded-2xl border-2 border-border bg-card text-muted-foreground px-4 py-4 text-sm font-bold hover:bg-muted hover:text-foreground transition-all"
                               >
                                 <Calendar className="w-4 h-4" />
-                                {(t.addedTranslations_2026?.['تعديل الميعاد'] || (t.addedTranslations_2026?.['تعديل الميعاد'] || 'تعديل الميعاد'))}
+                                {''}
                               </button>
                             )}
                           </div>
@@ -549,8 +548,8 @@ export default function ReaderSessionsPage() {
                                   <Check className="w-4 h-4" />
                                 </div>
                                 <div>
-                                  <span className="block text-sm font-bold text-foreground">{(t.addedTranslations_2026?.['اكتمال الجلسة'] || (t.addedTranslations_2026?.['اكتمال الجلسة'] || 'اكتمال الجلسة'))}</span>
-                                  <span className="block text-xs font-medium text-muted-foreground mt-0.5">{(t.addedTranslations_2026?.['تأكيد انتهاء هذه الجلسة بنجاح'] || (t.addedTranslations_2026?.['تأكيد انتهاء هذه الجلسة بنجاح'] || 'تأكيد انتهاء هذه الجلسة بنجاح'))}</span>
+                                  <span className="block text-sm font-bold text-foreground">{''}</span>
+                                  <span className="block text-xs font-medium text-muted-foreground mt-0.5">{''}</span>
                                 </div>
                               </div>
                               <Switch
@@ -571,8 +570,8 @@ export default function ReaderSessionsPage() {
                           <MessageSquare className="w-5 h-5 text-primary" />
                         </div>
                         <div>
-                          <h4 className="text-base font-bold text-foreground">{(t.addedTranslations_2026?.['التعليقات والملاحظات'] || (t.addedTranslations_2026?.['التعليقات والملاحظات'] || 'التعليقات والملاحظات'))}</h4>
-                          <p className="text-xs font-medium text-muted-foreground mt-1">{(t.addedTranslations_2026?.['ملاحظات خاصة بينك وبين الطالب حول هذه الجلسة'] || (t.addedTranslations_2026?.['ملاحظات خاصة بينك وبين الطالب حول هذه الجلسة'] || 'ملاحظات خاصة بينك وبين الطالب حول هذه الجلسة'))}</p>
+                          <h4 className="text-base font-bold text-foreground">{''}</h4>
+                          <p className="text-xs font-medium text-muted-foreground mt-1">{''}</p>
                         </div>
                       </div>
                       <CommentBox bookingId={session.id} locale={locale} />
@@ -596,16 +595,16 @@ export default function ReaderSessionsPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 border border-primary/20">
                 <Calendar className="w-6 h-6 text-primary" />
               </div>
-              <DialogTitle className="text-xl font-bold">{(t.addedTranslations_2026?.['اقتراح تعديل الموعد'] || (t.addedTranslations_2026?.['اقتراح تعديل الموعد'] || 'اقتراح تعديل الموعد'))}</DialogTitle>
+              <DialogTitle className="text-xl font-bold">{''}</DialogTitle>
             </DialogHeader>
             {rescheduleSession && (
               <div className="space-y-5">
                 <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground">
-                    {(rescheduleSession.student_name || ((t.addedTranslations_2026?.['ط'] || (t.addedTranslations_2026?.['ط'] || 'ط')))).charAt(0)}
+                    {(rescheduleSession.student_name || ('')).charAt(0)}
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">{(t.addedTranslations_2026?.['الطالب'] || (t.addedTranslations_2026?.['الطالب'] || 'الطالب'))}</p>
+                    <p className="text-xs font-medium text-muted-foreground">{''}</p>
                     <p className="text-sm font-bold text-foreground">{rescheduleSession.student_name}</p>
                   </div>
                 </div>
@@ -613,7 +612,7 @@ export default function ReaderSessionsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5" /> {(t.addedTranslations_2026?.['التاريخ'] || (t.addedTranslations_2026?.['التاريخ'] || 'التاريخ'))}
+                      <Calendar className="w-3.5 h-3.5" /> {''}
                     </label>
                     <input
                       type="date"
@@ -625,7 +624,7 @@ export default function ReaderSessionsPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5" /> {(t.addedTranslations_2026?.['الوقت'] || (t.addedTranslations_2026?.['الوقت'] || 'الوقت'))}
+                      <Clock className="w-3.5 h-3.5" /> {''}
                     </label>
                     <input
                       type="time"
@@ -639,20 +638,20 @@ export default function ReaderSessionsPage() {
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex gap-3">
                   <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
                   <p className="text-xs font-medium text-amber-900 dark:text-amber-200 leading-relaxed">
-                    {(t.addedTranslations_2026?.['سيتلقى الطالب إشعاراً بالموعد المقترح ويحتاج موافقته قبل تعديل الحجز.'] || (t.addedTranslations_2026?.['سيتلقى الطالب إشعاراً بالموعد المقترح ويحتاج موافقته قبل تعديل الحجز.'] || 'سيتلقى الطالب إشعاراً بالموعد المقترح ويحتاج موافقته قبل تعديل الحجز.'))}
+                    {''}
                   </p>
                 </div>
               </div>
             )}
             <DialogFooter className="mt-8 gap-3 sm:gap-0">
-              <Button variant="ghost" className="rounded-xl font-bold hover:bg-muted" onClick={() => setRescheduleSession(null)}>{(t.addedTranslations_2026?.['إلغاء'] || (t.addedTranslations_2026?.['إلغاء'] || 'إلغاء'))}</Button>
+              <Button variant="ghost" className="rounded-xl font-bold hover:bg-muted" onClick={() => setRescheduleSession(null)}>{''}</Button>
               <Button
                 onClick={handleRescheduleSubmit}
                 disabled={!proposedDate || !proposedTime || submittingReschedule}
                 className="rounded-xl bg-[#0B3D2E] text-white font-bold hover:bg-[#082e23] px-8 h-11"
               >
                 {submittingReschedule ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                {(t.addedTranslations_2026?.['إرسال الطلب'] || (t.addedTranslations_2026?.['إرسال الطلب'] || 'إرسال الطلب'))}
+                {''}
               </Button>
             </DialogFooter>
           </div>
@@ -725,7 +724,7 @@ function CommentBox({ bookingId, locale }: { bookingId: string, locale: string }
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => e.key === "Enter" && send()}
-          placeholder={(t.addedTranslations_2026?.['اكتب تعليقاً أو ملاحظة...'] || (t.addedTranslations_2026?.['اكتب تعليقاً أو ملاحظة...'] || 'اكتب تعليقاً أو ملاحظة...'))}
+          placeholder={''}
           className="relative w-full border-2 border-border bg-card rounded-2xl pl-16 pr-6 rtl:pr-16 rtl:pl-6 py-4 text-sm font-medium text-foreground focus:border-primary focus:ring-4 focus:ring-primary/10 placeholder:text-muted-foreground transition-all shadow-sm outline-none"
         />
         <button
@@ -735,7 +734,7 @@ function CommentBox({ bookingId, locale }: { bookingId: string, locale: string }
         >
           {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : (
             <>
-              <span className="hidden sm:inline">{(t.addedTranslations_2026?.['إرسال'] || (t.addedTranslations_2026?.['إرسال'] || 'إرسال'))}</span>
+              <span className="hidden sm:inline">{''}</span>
               <Send className="w-4 h-4 rtl:rotate-180" />
             </>
           )}

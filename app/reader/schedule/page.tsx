@@ -206,7 +206,7 @@ export default function ScheduleManagementPage() {
   }
 
   const handleDeleteAll = async () => {
-    if (!confirm((t.addedTranslations_2026?.['هل أنت متأكد من حذف جميع المواعيد المتاحة لهذا اليوم؟'] || (t.addedTranslations_2026?.['هل أنت متأكد من حذف جميع المواعيد المتاحة لهذا اليوم؟'] || 'هل أنت متأكد من حذف جميع المواعيد المتاحة لهذا اليوم؟')))) return
+    if (!confirm('')) return
 
     try {
       const dayOfWeek = selectedDate.getDay()
@@ -335,7 +335,7 @@ export default function ScheduleManagementPage() {
                 <div className="flex flex-col">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Clock className="w-5 h-5 text-primary" />
-                    {format(selectedDate, (t.addedTranslations_2026?.['EEEE، d MMMM'] || 'EEEE، d MMMM'), { locale: dateLocale })}
+                    {format(selectedDate, '', { locale: dateLocale })}
                   </CardTitle>
                   <p className="text-xs text-muted-foreground mt-1">
                     {t.reader.availableSlots} ({currentDaySlots.length})
@@ -348,7 +348,7 @@ export default function ScheduleManagementPage() {
                       size="icon"
                       className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                       onClick={handleDeleteAll}
-                      title={t.reader.deleteAll || (t.addedTranslations_2026?.['حذف الكل'] || 'حذف الكل')}
+                      title={t.reader.deleteAll || ''}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -363,7 +363,7 @@ export default function ScheduleManagementPage() {
                       setNewSlotPeriods([{ id: Date.now(), start: "09:00", end: "09:30" }])
                       setDialogOpen(true)
                     }}
-                    title={t.reader.addSlot || (t.addedTranslations_2026?.['إضافة موعد'] || 'إضافة موعد')}
+                    title={t.reader.addSlot || ''}
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
@@ -416,7 +416,7 @@ export default function ScheduleManagementPage() {
                             size="icon"
                             className={`h-8 w-8 rounded-lg group-hover:opacity-100 opacity-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ${slot.is_available ? 'text-emerald-600 hover:bg-emerald-50' : 'text-gray-400 hover:bg-gray-50'}`}
                             onClick={() => handleToggleAvailability(slot.id, slot.is_available)}
-                            title={slot.is_available ? ((t.addedTranslations_2026?.['غير متاح'] || (t.addedTranslations_2026?.['غير متاح'] || 'غير متاح'))) : ((t.addedTranslations_2026?.['متاح'] || (t.addedTranslations_2026?.['متاح'] || 'متاح')))}
+                            title={slot.is_available ? ('') : ('')}
                           >
                             {slot.is_available ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
                           </Button>
@@ -466,7 +466,7 @@ export default function ScheduleManagementPage() {
           <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border-b border-blue-100 dark:border-blue-900/30 flex gap-2 items-start">
             <Info className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
             <p className="text-[11px] text-blue-700 dark:text-blue-300 leading-snug">
-              {(t.addedTranslations_2026?.['سيتم تقسيم أي فترة زمنية تختارها إلى مواعيد مدة كل منها 30 دقيقة، بما يتوافق مع مدة الجلسة.'] || (t.addedTranslations_2026?.['سيتم تقسيم أي فترة زمنية تختارها إلى مواعيد مدة كل منها 30 دقيقة، بما يتوافق مع مدة الجلسة.'] || 'سيتم تقسيم أي فترة زمنية تختارها إلى مواعيد مدة كل منها 30 دقيقة، بما يتوافق مع مدة الجلسة.'))}
+              {''}
             </p>
           </div>
 
@@ -512,7 +512,7 @@ export default function ScheduleManagementPage() {
                   className="h-7 text-[10px] font-black uppercase text-primary hover:bg-primary/5"
                 >
                   <Plus className="w-3 h-3 ml-1 rtl:mr-1" />
-                  {t.reader.addPeriod || ((t.addedTranslations_2026?.['إضافة فترة'] || (t.addedTranslations_2026?.['إضافة فترة'] || 'إضافة فترة')))}
+                  {t.reader.addPeriod || ('')}
                 </Button>
               </div>
 
@@ -602,10 +602,10 @@ export default function ScheduleManagementPage() {
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {((t.addedTranslations_2026?.['جاري الإضافة'] || (t.addedTranslations_2026?.['جاري الإضافة'] || 'جاري الإضافة'))) + "..."}
+                  {('') + "..."}
                 </>
               ) : (
-                t.reader.addSlotBtn || ((t.addedTranslations_2026?.['إضافة موعد'] || (t.addedTranslations_2026?.['إضافة موعد'] || 'إضافة موعد')))
+                t.reader.addSlotBtn || ('')
               )}
             </Button>
           </DialogFooter>
@@ -738,7 +738,7 @@ export default function ScheduleManagementPage() {
                     onClick={() => setBulkTimes([...bulkTimes, { id: Date.now(), start: "09:00", end: "09:30" }])}
                   >
                     <Plus className="w-4 h-4 ml-2" />
-                    {t.reader.addPeriod || ((t.addedTranslations_2026?.['إضافة فترة'] || (t.addedTranslations_2026?.['إضافة فترة'] || 'إضافة فترة')))}
+                    {t.reader.addPeriod || ('')}
                   </Button>
                 </div>
               </TabsContent>

@@ -5,6 +5,7 @@
 // Mirrors the pattern used by the sibling student competition pages.
 
 import { useState, useEffect, use } from 'react'
+import { useI18n } from '@/lib/i18n/context'
 import Link from 'next/link'
 import { PageLoadingSkeleton } from '@/components/ui/page-loading-skeleton'
 import { ArrowRight, Loader2, Play, CheckCircle, Clock, Star, Send, Trophy, Award, Medal, X } from 'lucide-react'
