@@ -262,8 +262,8 @@ function StudentChatInner() {
                 const errorData = await postRes.json().catch(() => ({}))
                 toast({
                     variant: "destructive",
-                    title: isAr ? (t.addedTranslations_2026?.['تنبيه'] || 'تنبيه') : "Alert",
-                    description: errorData.error || (isAr ? (t.addedTranslations_2026?.['فشل إرسال الرسالة'] || 'فشل إرسال الرسالة') : "Failed to send message")
+                    title: isAr ? '' : "Alert",
+                    description: errorData.error || (isAr ? '' : "Failed to send message")
                 })
                 
                 // Revert optimistic update
@@ -296,8 +296,8 @@ function StudentChatInner() {
         } catch (err) {
             toast({
                 variant: "destructive",
-                title: isAr ? (t.addedTranslations_2026?.['خطأ'] || 'خطأ') : "Error",
-                description: isAr ? (t.addedTranslations_2026?.['حدث خطأ في الإتصال'] || 'حدث خطأ في الإتصال') : "Connection error occurred"
+                title: isAr ? '' : "Error",
+                description: isAr ? '' : "Connection error occurred"
             })
         } finally { setSending(false) }
     }
@@ -369,7 +369,7 @@ function StudentChatInner() {
                             openConversation(target);
                             // Show success message
                             toast({
-                                title: isAr ? (t.addedTranslations_2026?.['نجاح'] || 'نجاح') : "Success",
+                                title: isAr ? '' : "Success",
                                 description: t.sessionsPage.ticketSuccessToast
                             });
                         }
@@ -378,24 +378,24 @@ function StudentChatInner() {
                     const errorData = await msgRes.json();
                     toast({
                         variant: "destructive",
-                        title: isAr ? (t.addedTranslations_2026?.['خطأ'] || 'خطأ') : "Error",
-                        description: errorData.error || (isAr ? (t.addedTranslations_2026?.['حدث خطأ أثناء إرسال الرسالة'] || 'حدث خطأ أثناء إرسال الرسالة') : "Error sending message")
+                        title: isAr ? '' : "Error",
+                        description: errorData.error || (isAr ? '' : "Error sending message")
                     });
                 }
             } else {
                 const errorData = await res.json();
                 toast({
                     variant: "destructive",
-                    title: isAr ? (t.addedTranslations_2026?.['خطأ'] || 'خطأ') : "Error",
-                    description: errorData.error || (isAr ? (t.addedTranslations_2026?.['حدث خطأ أثناء إنشاء التذكرة'] || 'حدث خطأ أثناء إنشاء التذكرة') : "Error creating ticket")
+                    title: isAr ? '' : "Error",
+                    description: errorData.error || (isAr ? '' : "Error creating ticket")
                 });
             }
         } catch (e) {
             console.error(e);
             toast({
                 variant: "destructive",
-                title: isAr ? (t.addedTranslations_2026?.['خطأ'] || 'خطأ') : "Error",
-                description: isAr ? (t.addedTranslations_2026?.['حدث خطأ'] || 'حدث خطأ') : "An error occurred"
+                title: isAr ? '' : "Error",
+                description: isAr ? '' : "An error occurred"
             });
         } finally {
             setCreatingTicket(false);
@@ -412,7 +412,7 @@ function StudentChatInner() {
                         {t.student.messagesTitle}
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        {t.student.chatDescription || (isAr ? (t.addedTranslations_2026?.['يمكنك هنا قراءة الرسائل والملاحظات التي يرسلها لك المقرئ بخصوص تلاوتك.'] || 'يمكنك هنا قراءة الرسائل والملاحظات التي يرسلها لك المقرئ بخصوص تلاوتك.') : "Here you can read messages and notes sent by the reciter regarding your recitation.")}
+                        {t.student.chatDescription || (isAr ? '' : "Here you can read messages and notes sent by the reciter regarding your recitation.")}
                     </p>
                 </div>
                 <Button
@@ -440,7 +440,7 @@ function StudentChatInner() {
                             className="rounded-full font-bold gap-2 px-6 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all text-sm h-full flex items-center"
                         >
                             <MessageSquare className="w-4 h-4" />
-                            {t.student.messagesTitle || (isAr ? (t.addedTranslations_2026?.['الرسائل'] || 'الرسائل') : "Messages")}
+                            {t.student.messagesTitle || (isAr ? '' : "Messages")}
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -470,10 +470,10 @@ function StudentChatInner() {
                                 <div className="p-8 text-center text-muted-foreground flex flex-col items-center">
                                     <MessageSquare className="w-10 h-10 text-muted-foreground/30 mb-2" />
                                     <p className="font-medium text-muted-foreground">
-                                        {activeTab === "messages" ? (t.student.noConversationsYet || (isAr ? (t.addedTranslations_2026?.['لا توجد رسائل حالياً.'] || 'لا توجد رسائل حالياً.') : "No messages currently.")) : t.sessionsPage.noTicketsYet}
+                                        {activeTab === "messages" ? (t.student.noConversationsYet || (isAr ? '' : "No messages currently.")) : t.sessionsPage.noTicketsYet}
                                     </p>
                                     <p className="text-xs text-muted-foreground/60 mt-1 text-center">
-                                        {activeTab === "messages" ? (t.student.noMessagesDesc || (isAr ? (t.addedTranslations_2026?.['ستظهر هنا ملاحظات المقرئ أو أي رسائل متعلقة بتلاوتك.'] || 'ستظهر هنا ملاحظات المقرئ أو أي رسائل متعلقة بتلاوتك.') : "The reciter's notes or any messages related to your recitation will appear here.")) : ""}
+                                        {activeTab === "messages" ? (t.student.noMessagesDesc || (isAr ? '' : "The reciter's notes or any messages related to your recitation will appear here.")) : ""}
                                     </p>
                                 </div>
                             ) : (
@@ -482,7 +482,7 @@ function StudentChatInner() {
                                         const colorClass = avatarColors[idx % avatarColors.length]
                                         const isSelected = activeConv?.id === c.id
                                         const hasUnread = c.unread_count_student > 0
-                                        const name = c.is_ticket ? t.sessionsPage.supportTeamName : (c.admin_id ? t.admin?.administration || (t.addedTranslations_2026?.['الإدارة'] || 'الإدارة') : (c.reader_name || t.student.certifiedReaderFallback))
+                                        const name = c.is_ticket ? t.sessionsPage.supportTeamName : (c.admin_id ? t.admin?.administration || '' : (c.reader_name || t.student.certifiedReaderFallback))
 
                                         return (
                                             <button
@@ -541,12 +541,12 @@ function StudentChatInner() {
                                     <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center font-bold text-sm ${currentConv.admin_id || currentConv.is_ticket ? 'bg-amber-500/10 text-amber-700 dark:text-amber-500' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
                                         {(currentConv.admin_avatar || currentConv.reader_avatar) ? (
                                             <img src={(currentConv.admin_avatar || currentConv.reader_avatar)!} alt="avatar" className="w-full h-full rounded-full object-cover" />
-                                        ) : (currentConv.is_ticket ? (isAr ? (t.addedTranslations_2026?.['ف'] || 'ف') : 'S') : currentConv.admin_id ? (t.admin?.administration?.[0] || (t.addedTranslations_2026?.['إ'] || 'إ')) : (currentConv.reader_name?.[0] || t.userFallbackLetter))}
+                                        ) : (currentConv.is_ticket ? (isAr ? '' : 'S') : currentConv.admin_id ? (t.admin?.administration?.[0] || '') : (currentConv.reader_name?.[0] || t.userFallbackLetter))}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <CardTitle className="text-base text-foreground truncate max-w-full">
-                                                {currentConv.is_ticket ? t.sessionsPage.supportTeamName : (currentConv.admin_id ? (t.admin?.administration || (t.addedTranslations_2026?.['الإدارة'] || 'الإدارة')) : (currentConv.reader_name || t.student.certifiedReaderFallback))}
+                                                {currentConv.is_ticket ? t.sessionsPage.supportTeamName : (currentConv.admin_id ? (t.admin?.administration || '') : (currentConv.reader_name || t.student.certifiedReaderFallback))}
                                             </CardTitle>
                                             {currentConv.is_ticket && (
                                                 <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-400">
@@ -555,7 +555,7 @@ function StudentChatInner() {
                                             )}
                                         </div>
                                         <p className="text-xs text-muted-foreground">
-                                            {currentConv.is_ticket ? t.sessionsPage.supportTeamDesc : (currentConv.admin_id ? (isAr ? (t.addedTranslations_2026?.['إدارة المنصة'] || 'إدارة المنصة') : "Platform Admin") : t.student.certifiedReaderFallback)}
+                                            {currentConv.is_ticket ? t.sessionsPage.supportTeamDesc : (currentConv.admin_id ? (isAr ? '' : "Platform Admin") : t.student.certifiedReaderFallback)}
                                         </p>
                                     </div>
                                     {!currentConv.is_ticket && (
@@ -565,7 +565,7 @@ function StudentChatInner() {
                                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                             onClick={handleDeleteConversation}
                                             disabled={deletingConvId === currentConv.id}
-                                            title={isAr ? (t.addedTranslations_2026?.['حذف المحادثة'] || 'حذف المحادثة') : "Delete Conversation"}
+                                            title={isAr ? '' : "Delete Conversation"}
                                         >
                                             {deletingConvId === currentConv.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
                                         </Button>
@@ -586,10 +586,10 @@ function StudentChatInner() {
                                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
                                             <MessageSquare className="w-12 h-12 text-muted-foreground/20 mb-3 opacity-50" />
                                             <p className="font-medium text-muted-foreground">
-                                                {isAr ? (t.addedTranslations_2026?.['لا توجد رسائل حاليًا.'] || 'لا توجد رسائل حاليًا.') : "No messages currently."}
+                                                {isAr ? '' : "No messages currently."}
                                             </p>
                                             <p className="text-xs text-muted-foreground/60 mt-1 text-center">
-                                                {isAr ? (t.addedTranslations_2026?.['ستظهر هنا ملاحظات المقرئ أو أي رسائل متعلقة بتلاوتك.'] || 'ستظهر هنا ملاحظات المقرئ أو أي رسائل متعلقة بتلاوتك.') : "The reciter's notes or any messages related to your recitation will appear here."}
+                                                {isAr ? '' : "The reciter's notes or any messages related to your recitation will appear here."}
                                             </p>
                                         </div>
                                     ) : (
@@ -609,14 +609,14 @@ function StudentChatInner() {
                                                                         setMessageText(msg.message_text)
                                                                     }}
                                                                     className="p-1.5 text-muted-foreground hover:text-primary hover:bg-muted rounded transition-colors"
-                                                                    title={isAr ? (t.addedTranslations_2026?.['تعديل'] || 'تعديل') : "Edit"}
+                                                                    title={isAr ? '' : "Edit"}
                                                                 >
                                                                     <Edit2 className="w-3.5 h-3.5" />
                                                                 </button>
                                                                 <button
                                                                     onClick={() => handleDeleteMessage(msg.id)}
                                                                     className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded transition-colors"
-                                                                    title={isAr ? (t.addedTranslations_2026?.['حذف'] || 'حذف') : "Delete"}
+                                                                    title={isAr ? '' : "Delete"}
                                                                 >
                                                                     <Trash2 className="w-3.5 h-3.5" />
                                                                 </button>
@@ -631,7 +631,7 @@ function StudentChatInner() {
                                                             {!isMe && (
                                                                 <div className="flex items-center justify-between mb-1.5">
                                                                     <p className="text-[11px] font-bold text-accent">
-                                                                        {msg.sender_role === 'admin' ? t.admin?.administration || (t.addedTranslations_2026?.['الإدارة'] || 'الإدارة') : msg.sender_name}
+                                                                        {msg.sender_role === 'admin' ? t.admin?.administration || '' : msg.sender_name}
                                                                     </p>
                                                                     <span className="text-[9px] text-muted-foreground font-medium whitespace-nowrap">
                                                                         {new Date(msg.created_at).toLocaleDateString(isAr ? "ar-SA" : "en-US", { day: 'numeric', month: 'short' })}
@@ -651,11 +651,11 @@ function StudentChatInner() {
                                                                                 <path d="M4 12.89L9.11 18L20 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                                                 <path d="M4 7.89L9.11 13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-40" />
                                                                             </svg>
-                                                                            <span className="sr-only">{isAr ? (t.addedTranslations_2026?.['مقروءة'] || 'مقروءة') : "Read"}</span>
+                                                                            <span className="sr-only">{isAr ? '' : "Read"}</span>
                                                                         </span>
                                                                     )}
                                                                 </div>
-                                                                {msg.updated_at && <span className="opacity-70 italic font-medium">{isAr ? (t.addedTranslations_2026?.['(مُعدلة)'] || '(مُعدلة)') : "(edited)"}</span>}
+                                                                {msg.updated_at && <span className="opacity-70 italic font-medium">{isAr ? '' : "(edited)"}</span>}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -687,7 +687,7 @@ function StudentChatInner() {
                                             )}
                                             <div className="flex items-end gap-3">
                                                 <Textarea
-                                                    placeholder={t.student.writeMessagePlaceholder || (isAr ? (t.addedTranslations_2026?.['اكتب رسالتك...'] || 'اكتب رسالتك...') : "Type your message...")}
+                                                    placeholder={t.student.writeMessagePlaceholder || (isAr ? '' : "Type your message...")}
                                                     value={messageText}
                                                     onChange={(e) => setMessageText(e.target.value)}
                                                     rows={1}
@@ -705,7 +705,7 @@ function StudentChatInner() {
                                                     className="h-11 w-11 shrink-0 bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl shadow-sm"
                                                     onClick={handleSend}
                                                     disabled={!messageText.trim() || sending}
-                                                    aria-label={isAr ? (t.addedTranslations_2026?.['إرسال'] || 'إرسال') : "Send"}
+                                                    aria-label={isAr ? '' : "Send"}
                                                 >
                                                     {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 rtl:-scale-x-100" />}
                                                 </Button>
@@ -718,7 +718,7 @@ function StudentChatInner() {
                             <div className="h-full flex flex-col items-center justify-center text-muted-foreground bg-muted/10">
                                 <MessageSquare className="w-16 h-16 text-muted-foreground/20 mb-4" />
                                 <p className="font-medium text-muted-foreground">
-                                    {isAr ? (t.addedTranslations_2026?.['اختر محادثة للبدء في التواصل'] || 'اختر محادثة للبدء في التواصل') : "Select a conversation to start chatting"}
+                                    {isAr ? '' : "Select a conversation to start chatting"}
                                 </p>
                             </div>
                         )}
@@ -734,15 +734,15 @@ function StudentChatInner() {
                             {t.sessionsPage.ticketCreateBtn}
                         </DialogTitle>
                         <DialogDescription className="text-muted-foreground text-sm mt-1.5">
-                            {isAr ? (t.addedTranslations_2026?.['يرجى كتابة تفاصيل مشكلتك او استفسارك وسيتم الرد عليك في أقرب وقت متاح.'] || 'يرجى كتابة تفاصيل مشكلتك او استفسارك وسيتم الرد عليك في أقرب وقت متاح.') : "Please describe your issue or inquiry, and we will get back to you as soon as possible."}
+                            {isAr ? '' : "Please describe your issue or inquiry, and we will get back to you as soon as possible."}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="p-6">
                         <div className="space-y-4">
                             <div className="space-y-2 text-right">
-                                <label className="text-sm font-bold text-foreground/80">{isAr ? (t.addedTranslations_2026?.['نص الرسالة'] || 'نص الرسالة') : "Message text"}</label>
+                                <label className="text-sm font-bold text-foreground/80">{isAr ? '' : "Message text"}</label>
                                 <Textarea
-                                    placeholder={t.student.writeMessagePlaceholder || (isAr ? (t.addedTranslations_2026?.['اكتب تفاصيل مشكلتك هنا...'] || 'اكتب تفاصيل مشكلتك هنا...') : "Write details here...")}
+                                    placeholder={t.student.writeMessagePlaceholder || (isAr ? '' : "Write details here...")}
                                     value={newTicketMessage}
                                     onChange={(e) => setNewTicketMessage(e.target.value)}
                                     rows={5}
@@ -759,7 +759,7 @@ function StudentChatInner() {
                             className="bg-primary hover:bg-primary/90 text-primary-foreground sm:ml-auto"
                         >
                             {creatingTicket && <Loader2 className="w-4 h-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />}
-                            {isAr ? (t.addedTranslations_2026?.['إرسال التذكرة'] || 'إرسال التذكرة') : "Submit Ticket"}
+                            {isAr ? '' : "Submit Ticket"}
                         </Button>
                         <Button
                             type="button"

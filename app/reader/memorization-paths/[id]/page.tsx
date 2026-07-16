@@ -22,6 +22,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
+import { useI18n } from "@/lib/i18n/context"
 
 type Unit = {
   id: string
@@ -33,6 +34,9 @@ type Unit = {
 }
 
 export default function ReaderMemorizationPathDetailPage() {
+  const { t } = useI18n()
+  const at = (t as any).addedTranslations_2026 as Record<string, string> | undefined
+  const tr = (ar: string) => at?.[ar] ?? ar
   const params = useParams<{ id: string }>()
   const pathId = params.id
 
@@ -96,7 +100,7 @@ export default function ReaderMemorizationPathDetailPage() {
   }
 
   if (loading) return <PathDetailSkeleton />
-  if (!path) return <div className="p-6 text-center text-muted-foreground">المسار غير موجود.</div>
+  if (!path) return <div className="p-6 text-center text-muted-foreground">{tr('المسار غير موجود.')}</div>
 
   const overall = stats?.overall || {}
   const perUnit: any[] = stats?.per_unit || []
@@ -106,7 +110,7 @@ export default function ReaderMemorizationPathDetailPage() {
     <div className="space-y-6 p-4 sm:p-6">
       <Button asChild variant="ghost" size="sm" className="gap-2">
         <Link href="/reader/memorization-paths">
-          <ArrowRight className="h-4 w-4 rtl:rotate-180" /> رجوع للقائمة
+          <ArrowRight className="h-4 w-4 rtl:rotate-180" /> {tr('رجوع للقائمة')}
         </Link>
       </Button>
 
@@ -115,43 +119,43 @@ export default function ReaderMemorizationPathDetailPage() {
           <BookOpen className="h-6 w-6 text-emerald-600" /> {path.title}
         </h1>
         <div className="flex flex-wrap gap-2 mt-2">
-          <Badge variant="secondary">{path.total_units} وحدة</Badge>
+          <Badge variant="secondary">{path.total_units} {tr('وحدة')}</Badge>
           <Badge variant="outline">{path.unit_type}</Badge>
           {path.is_published ? (
             <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
-              <Eye className="h-3 w-3 me-1" /> منشور
+              <Eye className="h-3 w-3 me-1" /> {tr('منشور')}
             </Badge>
           ) : (
-            <Badge variant="outline"><EyeOff className="h-3 w-3 me-1" /> مسودة</Badge>
+            <Badge variant="outline"><EyeOff className="h-3 w-3 me-1" /> {tr('مسودة')}</Badge>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="p-4">
-          <div className="text-xs text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" /> مشتركين</div>
+          <div className="text-xs text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" /> {tr('مشتركين')}</div>
           <div className="text-2xl font-bold mt-1">{overall.enrolled || "0"}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-xs text-muted-foreground flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> أتموا</div>
+          <div className="text-xs text-muted-foreground flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> {tr('أتموا')}</div>
           <div className="text-2xl font-bold mt-1 text-emerald-700">{overall.completed || "0"}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> نشطون</div>
+          <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {tr('نشطون')}</div>
           <div className="text-2xl font-bold mt-1">{overall.active || "0"}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-xs text-muted-foreground flex items-center gap-1"><TrendingUp className="h-3 w-3" /> متوسط التقدم</div>
+          <div className="text-xs text-muted-foreground flex items-center gap-1"><TrendingUp className="h-3 w-3" /> {tr('متوسط التقدم')}</div>
           <div className="text-2xl font-bold mt-1">{overall.avg_progress_percent || "0"}%</div>
         </Card>
       </div>
 
       <Tabs defaultValue="units" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="units">الوحدات ({units.length})</TabsTrigger>
-          <TabsTrigger value="funnel">معدلات الإكمال</TabsTrigger>
-          <TabsTrigger value="students">الطلاب</TabsTrigger>
-          <TabsTrigger value="settings">الإعدادات</TabsTrigger>
+          <TabsTrigger value="units">{tr('الوحدات')} ({units.length})</TabsTrigger>
+          <TabsTrigger value="funnel">{tr('معدلات الإكمال')}</TabsTrigger>
+          <TabsTrigger value="students">{tr('الطلاب')}</TabsTrigger>
+          <TabsTrigger value="settings">{tr('الإعدادات')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="units">
@@ -160,9 +164,9 @@ export default function ReaderMemorizationPathDetailPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12 text-center">#</TableHead>
-                  <TableHead>العنوان</TableHead>
-                  <TableHead>النوع</TableHead>
-                  <TableHead className="hidden sm:table-cell">المدة المتوقعة</TableHead>
+                  <TableHead>{tr('العنوان')}</TableHead>
+                  <TableHead>{tr('النوع')}</TableHead>
+                  <TableHead className="hidden sm:table-cell">{tr('المدة المتوقعة')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -178,7 +182,7 @@ export default function ReaderMemorizationPathDetailPage() {
                   </TableRow>
                 ))}
                 {units.length === 0 && (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-6">لا توجد وحدات</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-6">{tr('لا توجد وحدات')}</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
@@ -200,8 +204,8 @@ export default function ReaderMemorizationPathDetailPage() {
                         <span className="font-medium">{u.title}</span>
                       </div>
                       <div className="text-xs text-muted-foreground flex gap-3 items-center">
-                        <span>بدأ: {u.started || "0"}</span>
-                        <span>أتم: <strong>{completed}</strong></span>
+                        <span>{tr('بدأ:')} {u.started || "0"}</span>
+                        <span>{tr('أتم:')} <strong>{completed}</strong></span>
                         <span>{pct}%</span>
                       </div>
                     </div>
@@ -209,7 +213,7 @@ export default function ReaderMemorizationPathDetailPage() {
                   </div>
                 )
               })}
-              {perUnit.length === 0 && <div className="text-center text-muted-foreground py-8">لا توجد بيانات بعد</div>}
+              {perUnit.length === 0 && <div className="text-center text-muted-foreground py-8">{tr('لا توجد بيانات بعد')}</div>}
             </div>
           </Card>
         </TabsContent>
@@ -219,11 +223,11 @@ export default function ReaderMemorizationPathDetailPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>الاسم</TableHead>
-                  <TableHead>البريد</TableHead>
-                  <TableHead className="text-center">وحدات منجزة</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="hidden sm:table-cell">آخر نشاط</TableHead>
+                  <TableHead>{tr('الاسم')}</TableHead>
+                  <TableHead>{tr('البريد')}</TableHead>
+                  <TableHead className="text-center">{tr('وحدات منجزة')}</TableHead>
+                  <TableHead>{tr('الحالة')}</TableHead>
+                  <TableHead className="hidden sm:table-cell">{tr('آخر نشاط')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -233,8 +237,8 @@ export default function ReaderMemorizationPathDetailPage() {
                     <TableCell className="text-sm text-muted-foreground">{s.email || "—"}</TableCell>
                     <TableCell className="text-center">{s.units_completed}/{path.total_units}</TableCell>
                     <TableCell>
-                      {s.status === "completed" ? <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">أتم</Badge>
-                        : s.status === "active" ? <Badge variant="secondary">نشط</Badge>
+                      {s.status === "completed" ? <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">{tr('أتم')}</Badge>
+                        : s.status === "active" ? <Badge variant="secondary">{tr('نشط')}</Badge>
                         : <Badge variant="outline">{s.status}</Badge>}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell text-xs text-muted-foreground">
@@ -243,7 +247,7 @@ export default function ReaderMemorizationPathDetailPage() {
                   </TableRow>
                 ))}
                 {topStudents.length === 0 && (
-                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-6">لا يوجد طلاب مشتركين بعد</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-6">{tr('لا يوجد طلاب مشتركين بعد')}</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
@@ -252,33 +256,33 @@ export default function ReaderMemorizationPathDetailPage() {
 
         <TabsContent value="settings">
           <Card className="p-6 max-w-xl space-y-4">
-            <div className="space-y-1"><Label>العنوان</Label><Input value={edit.title} onChange={e => setEdit({ ...edit, title: e.target.value })} /></div>
-            <div className="space-y-1"><Label>الوصف</Label><Textarea rows={3} value={edit.description} onChange={e => setEdit({ ...edit, description: e.target.value })} /></div>
+            <div className="space-y-1"><Label>{tr('العنوان')}</Label><Input value={edit.title} onChange={e => setEdit({ ...edit, title: e.target.value })} /></div>
+            <div className="space-y-1"><Label>{tr('الوصف')}</Label><Textarea rows={3} value={edit.description} onChange={e => setEdit({ ...edit, description: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>المستوى</Label>
+                <Label>{tr('المستوى')}</Label>
                 <Select value={edit.level} onValueChange={v => setEdit({ ...edit, level: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="beginner">مبتدئ</SelectItem>
-                    <SelectItem value="intermediate">متوسط</SelectItem>
-                    <SelectItem value="advanced">متقدم</SelectItem>
+                    <SelectItem value="beginner">{tr('مبتدئ')}</SelectItem>
+                    <SelectItem value="intermediate">{tr('متوسط')}</SelectItem>
+                    <SelectItem value="advanced">{tr('متقدم')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1"><Label>المدة المتوقعة (أيام)</Label><Input type="number" value={edit.estimated_days} onChange={e => setEdit({ ...edit, estimated_days: e.target.value })} /></div>
+              <div className="space-y-1"><Label>{tr('المدة المتوقعة (أيام)')}</Label><Input type="number" value={edit.estimated_days} onChange={e => setEdit({ ...edit, estimated_days: e.target.value })} /></div>
             </div>
             <div className="flex items-center gap-2">
               <input id="r_req_aud" type="checkbox" className="h-4 w-4" checked={edit.require_audio} onChange={e => setEdit({ ...edit, require_audio: e.target.checked })} />
-              <Label htmlFor="r_req_aud" className="cursor-pointer">يتطلب تسجيل صوتي قبل إتمام الوحدة</Label>
+              <Label htmlFor="r_req_aud" className="cursor-pointer">{tr('يتطلب تسجيل صوتي قبل إتمام الوحدة')}</Label>
             </div>
             <div className="flex items-center gap-2">
               <input id="r_pub" type="checkbox" className="h-4 w-4" checked={edit.is_published} onChange={e => setEdit({ ...edit, is_published: e.target.checked })} />
-              <Label htmlFor="r_pub" className="cursor-pointer">منشور للطلاب</Label>
+              <Label htmlFor="r_pub" className="cursor-pointer">{tr('منشور للطلاب')}</Label>
             </div>
             <Button onClick={save} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              حفظ التعديلات
+              {tr('حفظ التعديلات') || 'حفظ التعديلات'}
             </Button>
           </Card>
         </TabsContent>

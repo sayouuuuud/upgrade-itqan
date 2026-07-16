@@ -25,6 +25,8 @@ function AyahReferencePanel({
   pageFrom: number
   pageTo: number
 }) {
+  const { t: _t } = useI18n()
+  const rr = (_t as any).recitationRecorder as Record<string, string> | undefined
   const [ayahs, setAyahs] = useState<AyahData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
@@ -90,8 +92,8 @@ function AyahReferencePanel({
   }, [rangeMode, surahNumber, ayahFrom, ayahTo, pageFrom, pageTo])
 
   const badge = rangeMode === "page"
-    ? (pageFrom === pageTo ? `صفحة ${toAr(pageFrom)}` : `صفحة ${toAr(pageFrom)} – ${toAr(pageTo)}`)
-    : (ayahFrom === ayahTo ? `آية ${toAr(ayahFrom)}` : `الآيات ${toAr(ayahFrom)} – ${toAr(ayahTo)}`)
+    ? (pageFrom === pageTo ? `${rr?.page ?? 'Page'} ${toAr(pageFrom)}` : `${rr?.page ?? 'Page'} ${toAr(pageFrom)} – ${toAr(pageTo)}`)
+    : (ayahFrom === ayahTo ? `${rr?.ayah ?? 'Ayah'} ${toAr(ayahFrom)}` : `${rr?.ayahs ?? 'Ayahs'} ${toAr(ayahFrom)} – ${toAr(ayahTo)}`)
 
   return (
     <div className="bg-[#fbf6e6] dark:bg-card border border-amber-700/25 dark:border-border rounded-2xl overflow-hidden">
@@ -103,7 +105,7 @@ function AyahReferencePanel({
       >
         <div className="flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-amber-700 dark:text-amber-500 flex-shrink-0" />
-          <span className="text-sm font-bold text-amber-900 dark:text-amber-200">نص الآيات كمرجع</span>
+          <span className="text-sm font-bold text-amber-900 dark:text-amber-200">{rr?.verseText ?? 'Verse Text Reference'}</span>
           {!loading && ayahs.length > 0 && (
             <span className="text-[10px] font-bold bg-amber-700/10 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
               {badge}
@@ -122,12 +124,12 @@ function AyahReferencePanel({
           {loading && (
             <div className="flex items-center justify-center py-6 gap-2 text-amber-700/70 dark:text-amber-500/70">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-xs font-bold">جاري تحميل النص...</span>
+              <span className="text-xs font-bold">{rr?.loadingText ?? 'Loading text...'}</span>
             </div>
           )}
           {error && !loading && (
             <p className="text-xs text-center text-muted-foreground py-4">
-              تعذّر تحميل نص الآيات. تحقق من اتصالك بالإنترنت.
+              {rr?.textLoadError ?? 'Failed to load verse text. Check your internet connection.'}
             </p>
           )}
           {!loading && !error && ayahs.length > 0 && (
@@ -174,6 +176,7 @@ interface RecitationRecorderProps {
 export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
   const router = useRouter()
   const { t } = useI18n()
+  const rr = (t as any).recitationRecorder as Record<string, string> | undefined
   const [recordingState, setRecordingState] = useState<RecordingState>("idle")
   const [timer, setTimer] = useState(0)
   const [submitting, setSubmitting] = useState(false)
@@ -415,13 +418,13 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
 
   const validateBeforeSubmit = (): string | null => {
     if (ayahFrom < 1 || ayahFrom > selectedSurah.verses) {
-      return `«من الآية» يجب أن يكون بين 1 و ${selectedSurah.verses}`
+      return (rr?.validationAyahFrom ?? '"From ayah" must be between 1 and {max}').replace('{max}', String(selectedSurah.verses))
     }
     if (ayahTo < 1 || ayahTo > selectedSurah.verses) {
-      return `«إلى الآية» يجب أن يكون بين 1 و ${selectedSurah.verses}`
+      return (rr?.validationAyahTo ?? '"To ayah" must be between 1 and {max}').replace('{max}', String(selectedSurah.verses))
     }
     if (ayahFrom > ayahTo) {
-      return "«من الآية» لا يمكن أن تكون أكبر من «إلى الآية»"
+      return rr?.validationAyahOrder ?? '"From ayah" cannot be greater than "To ayah"'
     }
     return null
   }
@@ -530,14 +533,14 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
       <div className="bg-card rounded-2xl shadow-sm border border-border p-4 md:p-6">
         <div className="flex items-center gap-2 mb-4">
           <BookOpen className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-          <h3 className="text-sm md:text-base font-bold text-foreground">معلومات التسميع</h3>
+          <h3 className="text-sm md:text-base font-bold text-foreground">{rr?.recitationInfo ?? 'Recitation Information'}</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           {/* Surah selector */}
           <div className="md:col-span-2">
             <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
-              السورة
+                {rr?.surah ?? 'Surah'}
             </label>
             <select
               value={surahNumber}
@@ -548,7 +551,7 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
             >
               {SURAHS.map((s) => (
                 <option key={s.number} value={s.number}>
-                  {s.number}. {s.name} ({s.verses} آية)
+                  {s.number}. {s.name} ({s.verses} {rr?.verses ?? 'verses'})
                 </option>
               ))}
             </select>
@@ -567,7 +570,7 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
                     : "bg-muted/50 text-muted-foreground hover:text-foreground"
                 }`}
               >
-                من آية لآية
+                  {rr?.ayahToAyah ?? 'Ayah to Ayah'}
               </button>
               <button
                 type="button"
@@ -579,7 +582,7 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
                     : "bg-muted/50 text-muted-foreground hover:text-foreground"
                 }`}
               >
-                من صفحة لصفحة
+                  {rr?.pageToPage ?? 'Page to Page'}
               </button>
             </div>
           </div>
@@ -589,7 +592,7 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
             <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
               <span className="inline-flex items-center gap-1">
                 <Hash className="w-3 h-3" />
-                {rangeMode === "page" ? "من الصفحة" : "من الآية"}
+                  {rangeMode === "page" ? (rr?.fromPage ?? 'From page') : (rr?.fromAyah ?? 'From ayah')}
               </span>
             </label>
             {rangeMode === "page" ? (
@@ -624,7 +627,7 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
             <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
               <span className="inline-flex items-center gap-1">
                 <Hash className="w-3 h-3" />
-                {rangeMode === "page" ? "إلى الصفحة" : "إلى الآية"}
+                  {rangeMode === "page" ? (rr?.toPage ?? 'To page') : (rr?.toAyah ?? 'To ayah')}
               </span>
             </label>
             {rangeMode === "page" ? (
@@ -656,13 +659,13 @@ export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
           {/* Recitation type */}
           <div className="md:col-span-2">
             <label className="block text-[11px] md:text-xs font-bold text-muted-foreground mb-1.5">
-              نوع التسميع
+              {rr?.recitationType ?? 'Recitation Type'}
             </label>
             <div className="grid grid-cols-3 gap-2">
               {([
-                { value: "hifd", label: "حفظ" },
-                { value: "muraja3a", label: "مراجعة" },
-                { value: "tilawa", label: "تلاوة" },
+              { value: "hifd", label: rr?.typeHifd ?? 'Memorization' },
+              { value: "muraja3a", label: rr?.typeMuraja3a ?? 'Review' },
+              { value: "tilawa", label: rr?.typeTilawa ?? 'Recitation' },
               ] as { value: RecitationType; label: string }[]).map((opt) => (
                 <button
                   key={opt.value}

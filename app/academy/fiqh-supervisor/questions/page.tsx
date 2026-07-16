@@ -1,7 +1,4 @@
 'use client'
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
-const a: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
@@ -284,7 +281,7 @@ export default function FiqhSupervisorInboxPage() {
 }
 
 function StatusPill({ status }: { status: string }) {
-  
+  const { t } = useI18n()
   const labels: Record<string, { tone: string }> = {
     pending: { tone: 'bg-amber-100 text-amber-900 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30' },
     assigned: { tone: 'bg-sky-100 text-sky-900 border-sky-200 dark:bg-sky-500/20 dark:text-sky-300 dark:border-sky-500/30' },

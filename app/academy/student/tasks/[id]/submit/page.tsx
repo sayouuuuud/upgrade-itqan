@@ -1,7 +1,4 @@
 "use client"
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
-const a: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
@@ -83,6 +80,7 @@ interface Submission {
 
 export default function SubmitTaskPage() {
     
+  const { t } = useI18n()
   const params = useParams()
   const router = useRouter()
   const taskId = params.id as string
@@ -840,6 +838,7 @@ export default function SubmitTaskPage() {
 }
 
 function TaskTypeBadge({ type }: { type: TaskType }) {
+  const { t } = useI18n()
   const map: Record<string, { label: string; cls: string; icon: any }> = {
     written: { label: (t.addedTranslations_2026?.['مهمة كتابية'] || 'مهمة كتابية'), cls: "bg-primary text-primary-foreground", icon: PenTool },
     quiz: { label: (t.addedTranslations_2026?.['اختبار'] || 'اختبار'), cls: "bg-primary text-primary-foreground", icon: FileText },

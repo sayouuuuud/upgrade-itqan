@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Calendar, Clock, User as UserIcon, Video, ExternalLink, Sparkles, Share2, Copy, Check, BookOpen, Mail, Loader2 } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/context'
 
 interface PublicLesson {
   id: string
@@ -29,6 +30,8 @@ interface PublicLesson {
 type State = 'pre' | 'live' | 'post'
 
 export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; initialState: State }) {
+  const { t } = useI18n()
+  const lv = (t as any).lessonViewer as Record<string, string> | undefined
   const [state, setState] = useState<State>(initialState)
   const [now, setNow] = useState(() => new Date())
   const [meeting, setMeeting] = useState(lesson.meeting)
@@ -90,7 +93,7 @@ export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; i
   }
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
-  const shareText = `${lesson.title} — درس عام مع ${lesson.teacher.name || 'منصة إتقان'}`
+  const shareText = `${lesson.title} — ${lv?.shareWith ?? 'Public lesson with'} ${lesson.teacher.name || (lv?.platformName ?? 'Itqan')}`
 
   return (
     <main dir="rtl" className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
@@ -116,7 +119,7 @@ export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; i
           <div className="p-6 sm:p-8 space-y-4">
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{lesson.title}</h1>
-              <StateBadge state={state} status={lesson.status} />
+              <StateBadge state={state} status={lesson.status} lv={lv} />
             </div>
 
             {lesson.description && (
@@ -128,7 +131,7 @@ export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; i
             <div className="flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
               <span className="flex items-center gap-1.5">
                 <UserIcon className="w-4 h-4" />
-                {lesson.teacher.name || 'منصة إتقان'}
+                {lesson.teacher.name || (lv?.platformName ?? 'Itqan')}
               </span>
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
@@ -137,7 +140,7 @@ export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; i
               <span className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
                 {scheduledAt.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
-                {' '}({lesson.duration_minutes} دقيقة)
+                {' '}({lesson.duration_minutes} {lv?.minutes ?? 'min'})
               </span>
             </div>
           </div>
@@ -145,12 +148,13 @@ export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; i
 
         {/* Action panel — switches by state */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 sm:p-8">
-          {state === 'pre' && <PreState scheduledAt={scheduledAt} now={now} />}
+          {state === 'pre' && <PreState scheduledAt={scheduledAt} now={now} lv={lv} />}
           {state === 'live' && (
             <LiveState
               meeting={meeting}
               joining={joining}
               onJoin={handleJoin}
+              lv={lv}
             />
           )}
           {state === 'post' && (
@@ -158,6 +162,7 @@ export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; i
               onSignup={handleSignupCta}
               signingUp={signingUp}
               teacherName={lesson.teacher.name}
+              lv={lv}
             />
           )}
         </div>
@@ -174,7 +179,7 @@ export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; i
         {/* Share */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 space-y-3">
           <h3 className="font-semibold flex items-center gap-2">
-            <Share2 className="w-4 h-4" /> شارك الدرس
+            <Share2 className="w-4 h-4" /> {lv?.shareLesson ?? 'Share Lesson'}
           </h3>
           <div className="flex flex-wrap gap-2">
             <button
@@ -182,7 +187,7 @@ export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; i
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border hover:bg-muted text-sm"
             >
               {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-              {copied ? 'تم النسخ' : 'نسخ الرابط'}
+              {copied ? (lv?.copied ?? 'Copied') : (lv?.copyLink ?? 'Copy link')}
             </button>
             <a
               href={`https://wa.me/?text=${encodeURIComponent(`${shareText}\n${shareUrl}`)}`}
@@ -210,29 +215,29 @@ export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; i
 
         {/* Footer */}
         <div className="text-center text-sm text-slate-500 py-6">
-          <Link href="/" className="hover:underline">منصة إتقان</Link>
+          <Link href="/" className="hover:underline">{lv?.platformName ?? 'Itqan'}</Link>
           {' · '}
-          درس عام مفتوح للجميع
+          {lv?.publicLesson ?? 'Public lesson open to all'}
         </div>
       </div>
     </main>
   )
 }
 
-function StateBadge({ state, status }: { state: State; status: PublicLesson['status'] }) {
+function StateBadge({ state, status, lv }: { state: State; status: PublicLesson['status']; lv?: Record<string, string> }) {
   if (status === 'cancelled') {
-    return <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">ملغي</span>
+    return <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">{lv?.cancelled ?? 'Cancelled'}</span>
   }
   if (state === 'live') {
-    return <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700 animate-pulse">مباشر الآن</span>
+    return <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700 animate-pulse">{lv?.liveNow ?? 'Live Now'}</span>
   }
   if (state === 'pre') {
-    return <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">قريباً</span>
+    return <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">{lv?.comingSoon ?? 'Coming Soon'}</span>
   }
-  return <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">انتهى</span>
+  return <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">{lv?.ended ?? 'Ended'}</span>
 }
 
-function PreState({ scheduledAt, now }: { scheduledAt: Date; now: Date }) {
+function PreState({ scheduledAt, now, lv }: { scheduledAt: Date; now: Date; lv?: Record<string, string> }) {
   const ms = Math.max(0, scheduledAt.getTime() - now.getTime())
   const days = Math.floor(ms / (1000 * 60 * 60 * 24))
   const hours = Math.floor((ms / (1000 * 60 * 60)) % 24)
@@ -241,13 +246,13 @@ function PreState({ scheduledAt, now }: { scheduledAt: Date; now: Date }) {
 
   return (
     <div className="text-center space-y-4">
-      <div className="text-sm text-slate-600 dark:text-slate-400">يبدأ الدرس بعد</div>
+      <div className="text-sm text-slate-600 dark:text-slate-400">{lv?.startsIn ?? 'Lesson starts in'}</div>
       <div className="grid grid-cols-4 gap-2 max-w-md mx-auto">
         {[
-          { v: days, l: 'يوم' },
-          { v: hours, l: 'ساعة' },
-          { v: minutes, l: 'دقيقة' },
-          { v: seconds, l: 'ثانية' },
+          { v: days, l: lv?.days ?? 'days' },
+          { v: hours, l: lv?.hours ?? 'hours' },
+          { v: minutes, l: lv?.minutesUnit ?? 'min' },
+          { v: seconds, l: lv?.seconds ?? 'sec' },
         ].map(({ v, l }) => (
           <div key={l} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
             <div className="text-2xl sm:text-3xl font-bold tabular-nums">{String(v).padStart(2, '0')}</div>
@@ -256,7 +261,7 @@ function PreState({ scheduledAt, now }: { scheduledAt: Date; now: Date }) {
         ))}
       </div>
       <p className="text-sm text-slate-500 pt-2">
-        احفظ الصفحة في المفضلة وارجع عند بدء الدرس لتنضم مباشرة.
+        {lv?.bookmarkHint ?? 'Bookmark this page and return when the lesson starts to join directly.'}
       </p>
     </div>
   )
@@ -266,16 +271,18 @@ function LiveState({
   meeting,
   joining,
   onJoin,
+  lv,
 }: {
   meeting: PublicLesson['meeting']
   joining: boolean
   onJoin: () => void
+  lv?: Record<string, string>
 }) {
   if (!meeting?.link) {
     return (
       <div className="text-center py-6">
-        <div className="text-lg font-semibold mb-1">الدرس بدأ، لكن لم يضع المدرس الرابط بعد.</div>
-        <div className="text-sm text-slate-500">حدّث الصفحة بعد قليل.</div>
+        <div className="text-lg font-semibold mb-1">{lv?.noLinkYet ?? 'The lesson has started but the teacher has not added the link yet.'}</div>
+        <div className="text-sm text-slate-500">{lv?.refreshSoon ?? 'Refresh in a moment.'}</div>
       </div>
     )
   }
@@ -283,7 +290,7 @@ function LiveState({
     <div className="text-center space-y-4">
       <div className="text-2xl font-bold flex items-center justify-center gap-2 text-red-600">
         <span className="inline-block w-3 h-3 rounded-full bg-red-600 animate-pulse" />
-        الدرس مباشر الآن
+        {lv?.liveNow ?? 'Live Now'}
       </div>
       <button
         onClick={onJoin}
@@ -291,35 +298,38 @@ function LiveState({
         className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-red-600 hover:bg-red-700 text-white text-lg font-semibold transition-colors disabled:opacity-50 w-full sm:w-auto"
       >
         <Video className="w-5 h-5" />
-        {joining ? 'جاري فتح الدرس...' : 'انضم إلى الدرس الآن'}
+        {joining ? (lv?.openingLesson ?? 'Opening lesson...') : (lv?.joinNow ?? 'Join Lesson Now')}
         <ExternalLink className="w-4 h-4" />
       </button>
       {meeting.password && (
         <div className="text-sm text-slate-600 dark:text-slate-400" dir="ltr">
-          كلمة المرور: <code className="font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{meeting.password}</code>
+          {lv?.password ?? 'Password:'} <code className="font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{meeting.password}</code>
         </div>
       )}
       {meeting.provider && (
         <div className="text-xs text-slate-500">
-          {meeting.provider === 'zoom' ? 'عبر Zoom' : meeting.provider === 'google_meet' ? 'عبر Google Meet' : ''}
+          {meeting.provider === 'zoom' ? `${lv?.via ?? 'via'} Zoom` : meeting.provider === 'google_meet' ? `${lv?.via ?? 'via'} Google Meet` : ''}
         </div>
       )}
     </div>
   )
 }
 
-function PostState({ onSignup, signingUp, teacherName }: {
+function PostState({ onSignup, signingUp, teacherName, lv }: {
   onSignup: () => void
   signingUp: boolean
   teacherName: string | null
+  lv?: Record<string, string>
 }) {
   return (
     <div className="text-center space-y-5">
       <Sparkles className="w-14 h-14 mx-auto text-amber-500" />
       <div>
-        <h2 className="text-2xl font-bold mb-2">شكراً لحضورك الدرس 🌟</h2>
+        <h2 className="text-2xl font-bold mb-2">{lv?.thankYou ?? 'Thank you for attending!'}</h2>
         <p className="text-slate-600 dark:text-slate-300 max-w-md mx-auto">
-          أعجبك الدرس مع {teacherName || 'مدرسنا'}؟ سجّل في منصة إتقان وانضم إلى دورات كاملة، جلسات حية، وقراءات مع شيوخ متخصصين.
+          {lv?.ctaPrompt
+            ? lv.ctaPrompt.replace('{teacher}', teacherName || (lv?.ourTeacher ?? 'our teacher'))
+            : `Enjoyed the lesson with ${teacherName || 'our teacher'}? Register on Itqan and join full courses, live sessions, and recitations with specialized scholars.`}
         </p>
       </div>
       <button
@@ -327,10 +337,10 @@ function PostState({ onSignup, signingUp, teacherName }: {
         disabled={signingUp}
         className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-semibold transition-colors disabled:opacity-50 w-full sm:w-auto"
       >
-        {signingUp ? 'جاري التحويل...' : 'سجّل الآن مجاناً'}
+        {signingUp ? (lv?.redirecting ?? 'Redirecting...') : (lv?.registerFree ?? 'Register Now for Free')}
       </button>
       <p className="text-xs text-slate-500 pt-2">
-        التسجيل سريع ومجاني، وستحصل على إشعارات بالدروس القادمة.
+        {lv?.registerNote ?? 'Registration is quick and free. You will receive notifications about upcoming lessons.'}
       </p>
     </div>
   )

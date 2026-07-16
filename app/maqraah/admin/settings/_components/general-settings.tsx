@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { useI18n } from "@/lib/i18n/context"
 
 interface GeneralSettingsProps {
   settings: Record<string, any>
@@ -15,29 +16,28 @@ interface GeneralSettingsProps {
   onUpdate: (key: string, value: any) => void
 }
 
-/**
- * إعدادات المقرأة العامة — تخصصية للمقرأة فقط.
- * تكتب لمفاتيح maqraah_general_* حصراً (الإعدادات العامة للموقع تخص المدير العام).
- */
 export function GeneralSettings({ settings, onUpdate }: GeneralSettingsProps) {
+  const { t } = useI18n()
+  const gs = (t as any).generalSettings as Record<string, string> | undefined
+
   return (
     <div className="space-y-6">
-      {/* هوية المقرأة */}
+      {/* identity */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">هوية المقرأة</h3>
+        <h3 className="text-lg font-semibold mb-4">{gs?.identityTitle ?? 'Maqraah Identity'}</h3>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="maqraah_name">اسم المقرأة</Label>
+            <Label htmlFor="maqraah_name">{gs?.name ?? 'Maqraah Name'}</Label>
             <Input
               id="maqraah_name"
               value={settings.maqraah_general_name || ""}
               onChange={(e) => onUpdate("maqraah_general_name", e.target.value)}
-              placeholder="مثال: مقرأة إتقان"
+              placeholder={gs?.namePlaceholder ?? 'e.g. Itqan Maqraah'}
             />
           </div>
 
           <div>
-            <Label htmlFor="maqraah_description">وصف المقرأة</Label>
+            <Label htmlFor="maqraah_description">{gs?.description ?? 'Maqraah Description'}</Label>
             <Textarea
               id="maqraah_description"
               rows={3}
@@ -45,18 +45,18 @@ export function GeneralSettings({ settings, onUpdate }: GeneralSettingsProps) {
               onChange={(e) =>
                 onUpdate("maqraah_general_description", e.target.value)
               }
-              placeholder="نبذة تعريفية عن المقرأة تظهر للزوار"
+              placeholder={gs?.descriptionPlaceholder ?? 'A brief introduction shown to visitors'}
             />
           </div>
         </div>
       </div>
 
-      {/* بيانات التواصل */}
+      {/* contact */}
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold mb-4">بيانات التواصل</h3>
+        <h3 className="text-lg font-semibold mb-4">{gs?.contactTitle ?? 'Contact Information'}</h3>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="maqraah_contact_email">البريد الإلكتروني</Label>
+            <Label htmlFor="maqraah_contact_email">{gs?.email ?? 'Email'}</Label>
             <Input
               id="maqraah_contact_email"
               type="email"
@@ -69,7 +69,7 @@ export function GeneralSettings({ settings, onUpdate }: GeneralSettingsProps) {
           </div>
 
           <div>
-            <Label htmlFor="maqraah_whatsapp">رقم الواتساب</Label>
+            <Label htmlFor="maqraah_whatsapp">{gs?.whatsapp ?? 'WhatsApp Number'}</Label>
             <Input
               id="maqraah_whatsapp"
               value={settings.maqraah_general_whatsapp || ""}
@@ -82,12 +82,12 @@ export function GeneralSettings({ settings, onUpdate }: GeneralSettingsProps) {
         </div>
       </div>
 
-      {/* الإعدادات الإقليمية */}
+      {/* regional */}
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold mb-4">الإعدادات الإقليمية</h3>
+        <h3 className="text-lg font-semibold mb-4">{gs?.regionalTitle ?? 'Regional Settings'}</h3>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="maqraah_timezone">المنطقة الزمنية</Label>
+            <Label htmlFor="maqraah_timezone">{gs?.timezone ?? 'Timezone'}</Label>
             <Select
               value={settings.maqraah_general_timezone || "Asia/Riyadh"}
               onValueChange={(value) =>
@@ -98,18 +98,16 @@ export function GeneralSettings({ settings, onUpdate }: GeneralSettingsProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Asia/Riyadh">
-                  الرياض (UTC+3)
-                </SelectItem>
-                <SelectItem value="Asia/Dubai">دبي (UTC+4)</SelectItem>
-                <SelectItem value="Africa/Cairo">القاهرة (UTC+2)</SelectItem>
-                <SelectItem value="UTC">التوقيت العالمي (UTC)</SelectItem>
+                <SelectItem value="Asia/Riyadh">{gs?.tzRiyadh ?? 'Riyadh (UTC+3)'}</SelectItem>
+                <SelectItem value="Asia/Dubai">{gs?.tzDubai ?? 'Dubai (UTC+4)'}</SelectItem>
+                <SelectItem value="Africa/Cairo">{gs?.tzCairo ?? 'Cairo (UTC+2)'}</SelectItem>
+                <SelectItem value="UTC">{gs?.tzUTC ?? 'Universal Time (UTC)'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label htmlFor="maqraah_language">اللغة الافتراضية</Label>
+            <Label htmlFor="maqraah_language">{gs?.language ?? 'Default Language'}</Label>
             <Select
               value={settings.maqraah_general_language || "ar"}
               onValueChange={(value) =>
@@ -120,14 +118,14 @@ export function GeneralSettings({ settings, onUpdate }: GeneralSettingsProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ar">العربية</SelectItem>
+                <SelectItem value="ar">{gs?.arabic ?? 'Arabic'}</SelectItem>
                 <SelectItem value="en">English</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label htmlFor="maqraah_direction">اتجاه الواجهة</Label>
+            <Label htmlFor="maqraah_direction">{gs?.direction ?? 'Interface Direction'}</Label>
             <Select
               value={settings.maqraah_general_direction || "rtl"}
               onValueChange={(value) =>
@@ -138,8 +136,8 @@ export function GeneralSettings({ settings, onUpdate }: GeneralSettingsProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="rtl">من اليمين لليسار (RTL)</SelectItem>
-                <SelectItem value="ltr">من اليسار لليمين (LTR)</SelectItem>
+                <SelectItem value="rtl">{gs?.rtl ?? 'Right to Left (RTL)'}</SelectItem>
+                <SelectItem value="ltr">{gs?.ltr ?? 'Left to Right (LTR)'}</SelectItem>
               </SelectContent>
             </Select>
           </div>

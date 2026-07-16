@@ -18,6 +18,7 @@ interface PlatformOverview {
 export function DashboardSuper() {
   const { t } = useI18n()
   const isAr = t.locale === "ar"
+  const ds = (t as any).dashboardSuper as Record<string, string> | undefined
 
   const [data, setData] = useState<PlatformOverview | null>(null)
   const [analytics, setAnalytics] = useState<any>(null)
@@ -99,9 +100,9 @@ export function DashboardSuper() {
       href: "/admin/users",
     },
     {
-      label: "مستخدمون جدد (30 يوم)",
+      label: ds?.newUsers30 ?? 'New Users (30 days)',
       value: users.new_30,
-      sub: "عبر المنصتين",
+      sub: ds?.bothPlatforms ?? 'Across both platforms',
       icon: TrendingUp,
       color: "bg-accent/10 text-accent border-accent/20",
       href: "/admin/users",
@@ -110,21 +111,21 @@ export function DashboardSuper() {
 
   const maqraaCards = [
     {
-      label: "إجمالي التلاوات",
+      label: ds?.totalRecitations ?? 'Total Recitations',
       value: maqraa.recitations,
       icon: ClipboardList,
       color: "bg-primary/10 text-primary border-primary/20",
       href: "/admin/recitations",
     },
     {
-      label: "تلاوات معلّقة",
+      label: ds?.pendingRecitations ?? 'Pending Recitations',
       value: maqraa.pending,
       icon: ClipboardList,
       color: "bg-amber-500/10 text-amber-600 border-amber-200",
       href: "/admin/recitations",
     },
     {
-      label: "مراجعات (7 أيام)",
+      label: ds?.reviews7Days ?? 'Reviews (7 days)',
       value: maqraa.reviewed_7,
       icon: BookOpen,
       color: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
@@ -134,21 +135,21 @@ export function DashboardSuper() {
 
   const academyCards = [
     {
-      label: "الدورات",
+      label: ds?.courses ?? 'Courses',
       value: academy.courses,
       icon: LayoutDashboard,
       color: "bg-primary/10 text-primary border-primary/20",
       href: "/admin/academy/courses",
     },
     {
-      label: "الدروس",
+      label: ds?.lessons ?? 'Lessons',
       value: academy.lessons,
       icon: BookOpen,
       color: "bg-accent/10 text-accent border-accent/20",
       href: "/admin/academy/courses",
     },
     {
-      label: "التسجيلات",
+      label: ds?.enrollments ?? 'Enrollments',
       value: academy.enrollments,
       icon: GraduationCap,
       color: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
@@ -160,13 +161,13 @@ export function DashboardSuper() {
     <div className="space-y-8 pb-20 lg:pb-0 font-sans" dir={isAr ? "rtl" : "ltr"}>
       {/* Page header */}
       <div>
-        <h2 className="text-xl font-bold text-foreground">النظرة الشاملة</h2>
-        <p className="text-sm text-muted-foreground mt-1">إحصائيات موحدة عبر المنصتين</p>
+        <h2 className="text-xl font-bold text-foreground">{ds?.overviewTitle ?? 'Platform Overview'}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{ds?.overviewDesc ?? 'Unified statistics across both platforms'}</p>
       </div>
 
       {/* Global / cross-platform */}
       <section>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">المستخدمون — عموم المنصة</h3>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">{ds?.usersSection ?? 'Users — Platform-wide'}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {globalCards.map((card) => {
             const Icon = card.icon
@@ -191,7 +192,7 @@ export function DashboardSuper() {
         <section className="space-y-6">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">إحصائيات الزيارات</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{ds?.visitsSection ?? 'Visit Analytics'}</h3>
           </div>
           <ViewsChart data={chartData} />
           <VisitorStats countryData={topCountriesMapped} deviceData={deviceTypesMapped} />
@@ -205,9 +206,9 @@ export function DashboardSuper() {
           <div className="px-5 py-4 border-b border-border bg-muted/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-primary" />
-              <h3 className="font-bold text-foreground">المقرأة</h3>
+              <h3 className="font-bold text-foreground">{ds?.maqraahTitle ?? 'Maqraah'}</h3>
             </div>
-            <Link href="/admin/recitations" className="text-xs text-primary hover:underline">إدارة المقرأة</Link>
+            <Link href="/admin/recitations" className="text-xs text-primary hover:underline">{ds?.manageMaqraah ?? 'Manage Maqraah'}</Link>
           </div>
           <div className="grid grid-cols-3 divide-x divide-x-reverse divide-border">
             {maqraaCards.map((card) => {
@@ -232,9 +233,9 @@ export function DashboardSuper() {
           <div className="px-5 py-4 border-b border-border bg-muted/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <GraduationCap className="h-4 w-4 text-accent" />
-              <h3 className="font-bold text-foreground">الأكاديمية</h3>
+              <h3 className="font-bold text-foreground">{ds?.academyTitle ?? 'Academy'}</h3>
             </div>
-            <Link href="/admin/academy/courses" className="text-xs text-primary hover:underline">إدارة الأكاديمية</Link>
+            <Link href="/admin/academy/courses" className="text-xs text-primary hover:underline">{ds?.manageAcademy ?? 'Manage Academy'}</Link>
           </div>
           <div className="grid grid-cols-3 divide-x divide-x-reverse divide-border">
             {academyCards.map((card) => {

@@ -1,7 +1,4 @@
 "use client"
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
-const a: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -72,6 +69,7 @@ interface RosterStudent {
 
 export default function TeacherPathStatsPage() {
     
+  const { t } = useI18n()
   const params = useParams()
   const pathId = params.id as string
   const [data, setData] = useState<StatsApiResponse['data'] | null>(null)
@@ -449,10 +447,10 @@ export default function TeacherPathStatsPage() {
 
 function StatusPill({ status }: { status: 'active' | 'completed' | 'dropped' }) {
   if (status === 'completed') {
-    return <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">{(t.addedTranslations_2026?.['خريج'] || (t.addedTranslations_2026?.['خريج'] || 'خريج'))}</span>
+    return <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">خريج</span>
   }
   if (status === 'dropped') {
-    return <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400">{(t.addedTranslations_2026?.['منسحب'] || (t.addedTranslations_2026?.['منسحب'] || 'منسحب'))}</span>
+    return <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400">منسحب</span>
   }
-  return <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">{(t.addedTranslations_2026?.['نشط'] || (t.addedTranslations_2026?.['نشط'] || 'نشط'))}</span>
+  return <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">نشط</span>
 }

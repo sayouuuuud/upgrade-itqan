@@ -86,7 +86,7 @@ export function NotificationsEmailSettings({
   const handleTestSmtp = async () => {
     setTesting(true)
     setSmtpStatus("idle")
-    const success = await onTestSmtp(smtp)
+    const success = await onTestSmtp?.(smtp)
     setSmtpStatus(success ? "success" : "error")
     setTesting(false)
   }

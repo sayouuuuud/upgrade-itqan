@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useI18n } from "@/lib/i18n/context"
 
 type Provider = "zoom" | "google_meet" | "other"
 type Audience = "all" | "specific"
@@ -49,6 +50,8 @@ const PROVIDERS: { value: Provider; label: string }[] = [
 ]
 
 export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, onSent }: Props) {
+  const { t } = useI18n()
+  const sml = (t as any).sendMeetingLink as Record<string, string> | undefined
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -76,7 +79,7 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
     setLoading(true)
     fetch(`/api/academy/teacher/sessions/${sessionId}/meeting-link`)
       .then(async r => {
-        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "تعذر تحميل البيانات")
+        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || (sml?.loadFail ?? 'Failed to load data'))
         return r.json()
       })
       .then(d => {
@@ -87,7 +90,7 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
         if (d.session?.meeting_provider) setProvider(d.session.meeting_provider as Provider)
         if (d.session?.meeting_password) setPassword(d.session.meeting_password)
       })
-      .catch(e => setError(e instanceof Error ? e.message : "خطأ"))
+      .catch(e => setError(e instanceof Error ? e.message : (sml?.genericError ?? 'Error')))
       .finally(() => setLoading(false))
   }, [open, sessionId])
 
@@ -105,11 +108,11 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
     setError(null)
     setSuccess(null)
     if (!link.trim() || !/^https?:\/\//i.test(link.trim())) {
-      setError("الرجاء إدخال رابط صحيح يبدأ بـ http(s)")
+      setError(sml?.invalidLink ?? 'Please enter a valid link starting with http(s)')
       return
     }
     if (audience === "specific" && selectedIds.size === 0) {
-      setError("اختر طالباً واحداً على الأقل")
+      setError(sml?.selectAtLeastOne ?? 'Select at least one student')
       return
     }
     setSubmitting(true)
@@ -129,11 +132,11 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
         }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "تعذر الحفظ")
+      if (!res.ok) throw new Error(data.error || (sml?.saveFail ?? 'Failed to save'))
       setSuccess(
         audience === "all"
-          ? `${((t as any).extracted_2026_v2?.["تم إرسال الرابط لجميع طلاب الكورس ("] || "تم إرسال الرابط لجميع طلاب الكورس (")}${data.recipientsCount}${((t as any).extracted_2026_v2?.[" طالب)"] || " طالب)")}`
-          : `${((t as any).extracted_2026_v2?.["تم إرسال الرابط للطلاب المحددين ("] || "تم إرسال الرابط للطلاب المحددين (")}${data.recipientsCount}${((t as any).extracted_2026_v2?.[" طالب)"] || " طالب)")}`
+          ? (sml?.sentAll ?? `Link sent to all course students (${data.recipientsCount})`).replace('{n}', data.recipientsCount)
+          : (sml?.sentSpecific ?? `Link sent to selected students (${data.recipientsCount})`).replace('{n}', data.recipientsCount)
       )
       onSent?.()
       // Close after a short delay
@@ -151,10 +154,10 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Video className="w-5 h-5 text-blue-600" />
-            إرسال رابط الجلسة
+            {sml?.title ?? 'Send Session Link'}
           </DialogTitle>
           <DialogDescription>
-            {sessionTitle} — أرسل رابط Zoom أو Google Meet لطلاب الكورس
+            {sessionTitle} — {sml?.desc ?? 'Send a Zoom or Google Meet link to course students'}
           </DialogDescription>
         </DialogHeader>
 
@@ -167,14 +170,14 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
             {/* Current state */}
             {current?.meeting_link && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-sm">
-                <div className="font-medium text-blue-700 dark:text-blue-300 mb-1">الرابط الحالي للجلسة:</div>
+                <div className="font-medium text-blue-700 dark:text-blue-300 mb-1">{sml?.currentLink ?? 'Current session link:'}</div>
                 <div className="break-all text-blue-900 dark:text-blue-200">{current.meeting_link}</div>
               </div>
             )}
 
             {/* Provider */}
             <div className="space-y-2">
-              <Label>مقدم الخدمة</Label>
+              <Label>{sml?.labelProvider ?? 'Provider'}</Label>
               <div className="flex gap-2 flex-wrap">
                 {PROVIDERS.map(p => (
                   <button
@@ -197,7 +200,7 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
             {/* Link */}
             <div className="space-y-2">
               <Label htmlFor="meeting-link" className="flex items-center gap-1.5">
-                <Link2 className="w-4 h-4" /> رابط الانضمام
+                <Link2 className="w-4 h-4" /> {sml?.labelJoinLink ?? 'Join Link'}
               </Label>
               <Input
                 id="meeting-link"
@@ -213,21 +216,21 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
             {/* Password (optional) */}
             <div className="space-y-2">
               <Label htmlFor="meeting-password" className="flex items-center gap-1.5">
-                <Lock className="w-4 h-4" /> كلمة المرور (اختياري)
+                <Lock className="w-4 h-4" /> {sml?.labelPassword ?? 'Password (optional)'}
               </Label>
               <Input
                 id="meeting-password"
                 type="text"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="ز.ب. 12345"
+                placeholder={sml?.passwordPlaceholder ?? 'e.g. 12345'}
                 dir="ltr"
               />
             </div>
 
             {/* Audience */}
             <div className="space-y-3">
-              <Label>الجمهور المستهدف</Label>
+              <Label>{sml?.labelAudience ?? 'Target Audience'}</Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -241,9 +244,9 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
                 >
                   <Users className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                   <div>
-                    <div className="font-medium">كل طلاب الكورس</div>
+                    <div className="font-medium">{sml?.audienceAll ?? 'All course students'}</div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      يعدّل رابط الجلسة الافتراضي ({students.length} طالب)
+                      {sml?.audienceAllDesc ?? `Updates the default session link`} ({students.length})
                     </div>
                   </div>
                 </button>
@@ -259,9 +262,9 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
                 >
                   <UserIcon className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                   <div>
-                    <div className="font-medium">طلاب محددون</div>
+                    <div className="font-medium">{sml?.audienceSpecific ?? 'Selected students'}</div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      رابط خاص لكل طالب يختاره
+                      {sml?.audienceSpecificDesc ?? 'Unique link per selected student'}
                     </div>
                   </div>
                 </button>
@@ -271,7 +274,7 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
                 <div className="border border-border rounded-lg p-3 max-h-56 overflow-y-auto space-y-1.5">
                   {students.length === 0 ? (
                     <div className="text-sm text-muted-foreground text-center py-4">
-                      لا يوجد طلاب مسجلون في هذا الكورس بعد
+                      {sml?.noStudentsEnrolled ?? 'No students enrolled in this course yet'}
                     </div>
                   ) : (
                     students.map(s => {
@@ -292,7 +295,7 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
                           </div>
                           {existingInvite && (
                             <span className="text-xs text-green-600 dark:text-green-400 shrink-0">
-                              له رابط مرسل
+                              {sml?.hasLinkSent ?? 'Link sent'}
                             </span>
                           )}
                         </label>
@@ -310,27 +313,27 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
                   checked={publishAnnouncement}
                   onCheckedChange={v => setPublishAnnouncement(!!v)}
                 />
-                <span className="text-sm font-medium">نشر الرابط أيضاً كإعلان لطلاب الكورس</span>
+                <span className="text-sm font-medium">{sml?.publishAnnouncement ?? 'Also publish link as course announcement'}</span>
               </label>
               {publishAnnouncement && (
                 <div className="space-y-3 pe-6">
                   <div>
-                    <Label htmlFor="ann-title" className="text-xs">عنوان الإعلان (اختياري)</Label>
+                    <Label htmlFor="ann-title" className="text-xs">{sml?.annTitle ?? 'Announcement title (optional)'}</Label>
                     <Input
                       id="ann-title"
                       value={announcementTitle}
                       onChange={e => setAnnouncementTitle(e.target.value)}
-                      placeholder={`${((t as any).extracted_2026_v2?.["رابط الجلسة: "] || "رابط الجلسة: ")}${sessionTitle}`}
+                      placeholder={sml?.annTitlePlaceholder?.replace('{title}', sessionTitle) ?? `Session link: ${sessionTitle}`}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="ann-content" className="text-xs">محتوى الإعلان (اختياري)</Label>
+                    <Label htmlFor="ann-content" className="text-xs">{sml?.annContent ?? 'Announcement content (optional)'}</Label>
                     <Textarea
                       id="ann-content"
                       rows={3}
                       value={announcementContent}
                       onChange={e => setAnnouncementContent(e.target.value)}
-                      placeholder="اتركه فارغاً لاستخدام نص افتراضي يحتوي على الرابط."
+                      placeholder={sml?.annContentPlaceholder ?? 'Leave empty to use default text containing the link.'}
                     />
                   </div>
                 </div>
@@ -350,18 +353,18 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
 
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>
-                إلغاء
+                {sml?.cancel ?? 'Cancel'}
               </Button>
               <Button type="submit" disabled={submitting}>
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin me-2" />
-                    جاري الإرسال...
+                    {sml?.sending ?? 'Sending...'}
                   </>
                 ) : (
                   <>
                     <Video className="w-4 h-4 me-2" />
-                    إرسال الرابط
+                    {sml?.sendBtn ?? 'Send Link'}
                   </>
                 )}
               </Button>
@@ -373,5 +376,3 @@ export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, o
   )
 }
 
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });

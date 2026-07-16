@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { Sunrise, Moon, RotateCcw, Check, ChevronLeft, ChevronRight } from "lucide-react"
+import { useI18n } from "@/lib/i18n/context"
 
 type Dhikr = {
   id: string
@@ -117,6 +118,8 @@ function defaultPeriod(): Period {
 }
 
 export function AdhkarWidget({ className = "" }: { className?: string }) {
+  const { t } = useI18n()
+  const aw = (t as any).adhkarWidget as Record<string, string> | undefined
   const [period, setPeriod] = useState<Period>("morning")
   const [progress, setProgress] = useState<Record<string, number>>({})
 
@@ -172,9 +175,9 @@ export function AdhkarWidget({ className = "" }: { className?: string }) {
           </div>
           <div>
             <h3 className="text-base md:text-lg font-bold text-foreground">
-              {period === "morning" ? "أذكار الصباح" : "أذكار المساء"}
+              {period === "morning" ? (aw?.morningAdhkar ?? 'Morning Adhkar') : (aw?.eveningAdhkar ?? 'Evening Adhkar')}
             </h3>
-            <p className="text-xs text-muted-foreground">{done}/{total} مكتمل</p>
+            <p className="text-xs text-muted-foreground">{done}/{total} {aw?.completed ?? 'completed'}</p>
           </div>
         </div>
 
@@ -189,7 +192,7 @@ export function AdhkarWidget({ className = "" }: { className?: string }) {
             }`}
             aria-pressed={period === "morning"}
           >
-            <Sunrise className="w-3.5 h-3.5" /> الصباح
+            <Sunrise className="w-3.5 h-3.5" /> {aw?.morning ?? 'Morning'}
           </button>
           <button
             onClick={() => setPeriod("evening")}
@@ -200,7 +203,7 @@ export function AdhkarWidget({ className = "" }: { className?: string }) {
             }`}
             aria-pressed={period === "evening"}
           >
-            <Moon className="w-3.5 h-3.5" /> المساء
+            <Moon className="w-3.5 h-3.5" /> {aw?.evening ?? 'Evening'}
           </button>
         </div>
       </div>
@@ -219,13 +222,13 @@ export function AdhkarWidget({ className = "" }: { className?: string }) {
             <Check className="w-6 h-6 text-emerald-600 dark:text-emerald-400" strokeWidth={3} />
           </div>
           <p className="text-sm font-bold text-foreground">
-            أتممت {period === "morning" ? "أذكار الصباح" : "أذكار المساء"}، تقبّل الله
+            {period === "morning" ? (aw?.doneAllMorning ?? 'You completed Morning Adhkar, may Allah accept') : (aw?.doneAllEvening ?? 'You completed Evening Adhkar, may Allah accept')}
           </p>
           <button
             onClick={resetAll}
             className="inline-flex items-center gap-1.5 mt-3 text-xs font-bold text-muted-foreground hover:text-foreground"
           >
-            <RotateCcw className="w-3.5 h-3.5" /> إعادة
+            <RotateCcw className="w-3.5 h-3.5" /> {aw?.reset ?? 'Reset'}
           </button>
         </div>
       ) : (
@@ -276,7 +279,7 @@ export function AdhkarWidget({ className = "" }: { className?: string }) {
       )}
 
       <p className="text-[11px] text-muted-foreground mt-4 text-center">
-        انقر على الذِّكر لاحتساب التكرار — يُعاد التعيين كل يوم
+        {aw?.hint ?? 'Tap a dhikr to count it — resets daily'}
       </p>
     </div>
   )

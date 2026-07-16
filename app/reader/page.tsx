@@ -1,7 +1,5 @@
 "use client"
 
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ClipboardList, Calendar, CalendarCheck, CheckCircle, ArrowLeft, Loader2, ArrowRight, Power, Star, Users, BarChart3, Clock, Target, Flame, BookOpen, Video, MessageSquare, Bell, Trophy, ChevronLeft, Mic, CalendarDays, MessagesSquare } from "lucide-react"
@@ -188,7 +186,7 @@ export default function ReaderDashboard() {
     try {
       const res = await fetch(`/api/recitations/new-slot-requests/${requestId}/accept`, { method: 'POST' });
       if (res.ok) {
-        toast.success(((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["تم قبول الطلب بنجاح"] || "تم قبول الطلب بنجاح")] || ((t as any).extracted_2026_v2?.["تم قبول الطلب بنجاح"] || "تم قبول الطلب بنجاح")));
+        toast.success("تم قبول الطلب بنجاح");
         setSlotRequests(prev => prev.filter(r => r.id !== requestId));
         // Refresh stats
         fetch('/api/reader/stats').then(r => r.json()).then(data => setStats(data));
@@ -214,13 +212,14 @@ export default function ReaderDashboard() {
     return diffMin <= 15
   }
 
+  const rd = (t as any).readerDashboard as Record<string, string> | undefined
   const quickLinks = [
-    { href: '/reader/recitations', label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["التلاوات"] || "التلاوات")] || ((t as any).extracted_2026_v2?.["التلاوات"] || "التلاوات")), icon: Mic, color: 'text-primary', bg: 'bg-primary/10' },
-    { href: '/reader/sessions', label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["الجلسات"] || "الجلسات")] || ((t as any).extracted_2026_v2?.["الجلسات"] || "الجلسات")), icon: Video, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { href: '/reader/halaqat', label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["الحلقات"] || "الحلقات")] || ((t as any).extracted_2026_v2?.["الحلقات"] || "الحلقات")), icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { href: '/reader/schedule', label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["المواعيد"] || "المواعيد")] || ((t as any).extracted_2026_v2?.["المواعيد"] || "المواعيد")), icon: CalendarDays, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-    { href: '/reader/chat', label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["الرسائل"] || "الرسائل")] || ((t as any).extracted_2026_v2?.["الرسائل"] || "الرسائل")), icon: MessagesSquare, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-    { href: '/reader/competitions', label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["المسابقات"] || "المسابقات")] || ((t as any).extracted_2026_v2?.["المسابقات"] || "المسابقات")), icon: Trophy, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+    { href: '/reader/recitations', label: rd?.recitations ?? 'Recitations', icon: Mic, color: 'text-primary', bg: 'bg-primary/10' },
+    { href: '/reader/sessions', label: rd?.sessions ?? 'Sessions', icon: Video, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { href: '/reader/halaqat', label: rd?.halaqat ?? 'Halaqat', icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { href: '/reader/schedule', label: rd?.schedule ?? 'Schedule', icon: CalendarDays, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+    { href: '/reader/chat', label: rd?.messages ?? 'Messages', icon: MessagesSquare, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { href: '/reader/competitions', label: rd?.competitions ?? 'Competitions', icon: Trophy, color: 'text-rose-500', bg: 'bg-rose-500/10' },
   ]
 
   return (
@@ -286,7 +285,7 @@ export default function ReaderDashboard() {
             {updatingActivity && (
               <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse">
                 <Loader2 className="w-3 h-3 animate-spin" />
-                <span>{((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["جاري التحديث..."] || "جاري التحديث...")] || ((t as any).extracted_2026_v2?.["جاري التحديث..."] || "جاري التحديث..."))}</span>
+                <span>{rd?.updating ?? 'Updating...'}</span>
               </div>
             )}
           </div>
@@ -348,7 +347,7 @@ export default function ReaderDashboard() {
               href: '/reader/chat',
               icon: MessageSquare,
               count: summary.unreadMessages,
-              label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["رسائل غير مقروءة"] || "رسائل غير مقروءة")] || ((t as any).extracted_2026_v2?.["رسائل غير مقروءة"] || "رسائل غير مقروءة")),
+              label: rd?.unreadMessages ?? 'Unread messages',
               color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20',
             },
             {
@@ -356,7 +355,7 @@ export default function ReaderDashboard() {
               href: '/reader/competitions',
               icon: Trophy,
               count: summary.pendingCompetitionEvals,
-              label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["مشاركات تنتظر تقييمك"] || "مشاركات تنتظر تقييمك")] || ((t as any).extracted_2026_v2?.["مشاركات تنتظر تقييمك"] || "مشاركات تنتظر تقييمك")),
+              label: rd?.pendingEvals ?? 'Submissions awaiting your review',
               color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20',
             },
             {
@@ -364,7 +363,7 @@ export default function ReaderDashboard() {
               href: '/reader/notifications',
               icon: Bell,
               count: summary.unreadNotifications,
-              label: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["إشعارات جديدة"] || "إشعارات جديدة")] || ((t as any).extracted_2026_v2?.["إشعارات جديدة"] || "إشعارات جديدة")),
+              label: rd?.newNotifications ?? 'New notifications',
               color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20',
             },
           ].filter(a => a.show).map((a) => (
@@ -402,12 +401,12 @@ export default function ReaderDashboard() {
                     <Video className="w-5 h-5" />
                   </div>
                   <span className="text-[11px] font-black uppercase tracking-widest text-primary">
-                    {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["جلستك القادمة"] || "جلستك القادمة")] || ((t as any).extracted_2026_v2?.["جلستك القادمة"] || "جلستك القادمة"))}
+                    {rd?.upcomingSession ?? 'Your Next Session'}
                   </span>
                 </div>
-                <p className="text-lg font-black text-foreground">{nextSession.student_name || (((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["طالب"] || "طالب")] || ((t as any).extracted_2026_v2?.["طالب"] || "طالب")))}</p>
+                <p className="text-lg font-black text-foreground">{nextSession.student_name || (rd?.student ?? 'Student')}</p>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-muted-foreground font-medium">
-                  <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" />{nextSession.is_today ? (((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["اليوم"] || "اليوم")] || ((t as any).extracted_2026_v2?.["اليوم"] || "اليوم"))) : fmtDay(nextSession.slot_start)}</span>
+                  <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" />{nextSession.is_today ? (rd?.today ?? 'Today') : fmtDay(nextSession.slot_start)}</span>
                   <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" />{fmtTime(nextSession.slot_start)}</span>
                 </div>
                 <div className="mt-auto pt-6">
@@ -419,14 +418,14 @@ export default function ReaderDashboard() {
                       className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-primary text-primary-foreground font-black text-sm hover:opacity-90 transition-opacity"
                     >
                       <Video className="w-4 h-4" />
-                      {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["دخول الجلسة المباشرة"] || "دخول الجلسة المباشرة")] || ((t as any).extracted_2026_v2?.["دخول الجلسة المباشرة"] || "دخول الجلسة المباشرة"))}
+                      {rd?.joinLiveSession ?? 'Join Live Session'}
                     </a>
                   ) : (
                     <Link
                       href="/reader/sessions"
                       className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-muted text-foreground font-black text-sm hover:bg-muted/70 transition-colors"
                     >
-                      {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["تفاصيل الجلسة"] || "تفاصيل الجلسة")] || ((t as any).extracted_2026_v2?.["تفاصيل الجلسة"] || "تفاصيل الجلسة"))}
+                      {rd?.sessionDetails ?? 'Session Details'}
                     </Link>
                   )}
                 </div>
@@ -439,10 +438,10 @@ export default function ReaderDashboard() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
               <h3 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
                 <CalendarCheck className="w-4 h-4 text-primary" />
-                {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["الجلسات القادمة"] || "الجلسات القادمة")] || ((t as any).extracted_2026_v2?.["الجلسات القادمة"] || "الجلسات القادمة"))}
+                {rd?.upcomingSessions ?? 'Upcoming Sessions'}
               </h3>
               <Link href="/reader/sessions" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
-                {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["الكل"] || "الكل")] || ((t as any).extracted_2026_v2?.["الكل"] || "الكل"))}
+                {rd?.viewAll ?? 'All'}
                 <ChevronLeft className={cn("w-3.5 h-3.5", !isAr && "rotate-180")} />
               </Link>
             </div>
@@ -456,9 +455,9 @@ export default function ReaderDashboard() {
                     <Video className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-foreground truncate">{s.student_name || (((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["طالب"] || "طالب")] || ((t as any).extracted_2026_v2?.["طالب"] || "طالب")))}</p>
+                    <p className="font-bold text-foreground truncate">{s.student_name || (rd?.student ?? 'Student')}</p>
                     <p className="text-xs text-muted-foreground font-medium">
-                      {s.is_today ? (((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["اليوم"] || "اليوم")] || ((t as any).extracted_2026_v2?.["اليوم"] || "اليوم"))) : fmtDay(s.slot_start)} · {fmtTime(s.slot_start)}
+                      {s.is_today ? (rd?.today ?? 'Today') : fmtDay(s.slot_start)} · {fmtTime(s.slot_start)}
                     </p>
                   </div>
                   {s.meeting_link && isJoinable(s.slot_start) ? (
@@ -468,14 +467,14 @@ export default function ReaderDashboard() {
                       rel="noopener noreferrer"
                       className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-black hover:opacity-90 transition-opacity shrink-0"
                     >
-                      {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["دخول"] || "دخول")] || ((t as any).extracted_2026_v2?.["دخول"] || "دخول"))}
+                      {rd?.join ?? 'Join'}
                     </a>
                   ) : (
                     <span className={cn(
                       "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0",
                       s.is_today ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
                     )}>
-                      {s.is_today ? (((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["اليوم"] || "اليوم")] || ((t as any).extracted_2026_v2?.["اليوم"] || "اليوم"))) : (((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["قادمة"] || "قادمة")] || ((t as any).extracted_2026_v2?.["قادمة"] || "قادمة")))}
+                      {s.is_today ? (rd?.today ?? 'Today') : (rd?.upcoming ?? 'Upcoming')}
                     </span>
                   )}
                 </div>
@@ -489,7 +488,7 @@ export default function ReaderDashboard() {
       <div className="space-y-4">
         <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
           <Target className="w-4 h-4 text-primary" />
-          {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["وصول سريع"] || "وصول سريع")] || ((t as any).extracted_2026_v2?.["وصول سريع"] || "وصول سريع"))}
+          {rd?.quickAccess ?? 'Quick Access'}
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {quickLinks.map((link) => (
@@ -548,10 +547,10 @@ export default function ReaderDashboard() {
             </div>
             <div>
               <h3 className="text-xl font-black text-foreground tracking-tight">
-                {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["تقرير تقدم الطلاب"] || "تقرير تقدم الطلاب")] || ((t as any).extracted_2026_v2?.["تقرير تقدم الطلاب"] || "تقرير تقدم الطلاب"))}
+                {rd?.studentProgress ?? 'Student Progress Report'}
               </h3>
               <p className="text-sm text-muted-foreground font-medium">
-                {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["أيام الانتظام، آيات الأسبوع، والمقارنة مع هدف الحفظ."] || "أيام الانتظام، آيات الأسبوع، والمقارنة مع هدف الحفظ.")] || ((t as any).extracted_2026_v2?.["أيام الانتظام، آيات الأسبوع، والمقارنة مع هدف الحفظ."] || "أيام الانتظام، آيات الأسبوع، والمقارنة مع هدف الحفظ."))}
+                {rd?.studentProgressDesc ?? 'Attendance days, weekly verses, and comparison with memorization goal.'}
               </p>
             </div>
           </div>
@@ -584,7 +583,7 @@ export default function ReaderDashboard() {
             </div>
           ) : studentProgress.length === 0 ? (
             <div className="p-10 text-center text-muted-foreground font-medium">
-              {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["لا توجد بيانات تقدم للطلاب بعد"] || "لا توجد بيانات تقدم للطلاب بعد")] || ((t as any).extracted_2026_v2?.["لا توجد بيانات تقدم للطلاب بعد"] || "لا توجد بيانات تقدم للطلاب بعد"))}
+              {rd?.noStudentProgress ?? 'No student progress data yet'}
             </div>
           ) : (
             <div className="divide-y divide-border/60">
@@ -596,8 +595,8 @@ export default function ReaderDashboard() {
                   ? Math.min(100, Math.round((completedVerses / targetVerses) * 100))
                   : 0
                 const goalLabel = targetVerses > 0
-                  ? `${formatArabicNumber(completedVerses)} / ${formatArabicNumber(targetVerses)} ${((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["آية"] || "آية")] || ((t as any).extracted_2026_v2?.["آية"] || "آية"))}`
-                  : (((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["لا يوجد هدف محدد"] || "لا يوجد هدف محدد")] || ((t as any).extracted_2026_v2?.["لا يوجد هدف محدد"] || "لا يوجد هدف محدد")))
+                  ? `${formatArabicNumber(completedVerses)} / ${formatArabicNumber(targetVerses)} ${rd?.verses ?? 'verses'}`
+                    : (rd?.noGoal ?? 'No goal set')
 
                 return (
                   <div key={student.student_id} className="p-5 md:p-6 space-y-4 hover:bg-muted/20 transition-colors">
@@ -619,13 +618,13 @@ export default function ReaderDashboard() {
                           <div className="flex items-center gap-2 text-orange-600 mb-1">
                             <Flame className="w-4 h-4" />
                             <span className="text-[10px] font-black uppercase tracking-wider">
-                              {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["الانتظام"] || "الانتظام")] || ((t as any).extracted_2026_v2?.["الانتظام"] || "الانتظام"))}
+                              {"الانتظام"}
                             </span>
                           </div>
                           <p className="text-lg font-black text-foreground">
                             {formatArabicNumber(student.active_days_30)}
                             <span className="text-xs text-muted-foreground font-bold mx-1">
-                              {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["يوم/٣٠"] || "يوم/٣٠")] || ((t as any).extracted_2026_v2?.["يوم/٣٠"] || "يوم/٣٠"))}
+                              {"يوم/٣٠"}
                             </span>
                           </p>
                         </div>
@@ -634,13 +633,13 @@ export default function ReaderDashboard() {
                           <div className="flex items-center gap-2 text-emerald-600 mb-1">
                             <BookOpen className="w-4 h-4" />
                             <span className="text-[10px] font-black uppercase tracking-wider">
-                              {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["حفظ الأسبوع"] || "حفظ الأسبوع")] || ((t as any).extracted_2026_v2?.["حفظ الأسبوع"] || "حفظ الأسبوع"))}
+                              {"حفظ الأسبوع"}
                             </span>
                           </div>
                           <p className="text-lg font-black text-foreground">
                             {formatArabicNumber(student.week_new_verses)}
                             <span className="text-xs text-muted-foreground font-bold mx-1">
-                              {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["آية"] || "آية")] || ((t as any).extracted_2026_v2?.["آية"] || "آية"))}
+                              {"آية"}
                             </span>
                           </p>
                         </div>
@@ -649,13 +648,13 @@ export default function ReaderDashboard() {
                           <div className="flex items-center gap-2 text-amber-600 mb-1">
                             <Clock className="w-4 h-4" />
                             <span className="text-[10px] font-black uppercase tracking-wider">
-                              {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["إجمالي الأسبوع"] || "إجمالي الأسبوع")] || ((t as any).extracted_2026_v2?.["إجمالي الأسبوع"] || "إجمالي الأسبوع"))}
+                              {"إجمالي الأسبوع"}
                             </span>
                           </div>
                           <p className="text-lg font-black text-foreground">
                             {formatArabicNumber(totalWeeklyVerses)}
                             <span className="text-xs text-muted-foreground font-bold mx-1">
-                              {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["حفظ + مراجعة"] || "حفظ + مراجعة")] || ((t as any).extracted_2026_v2?.["حفظ + مراجعة"] || "حفظ + مراجعة"))}
+                              {"حفظ + مراجعة"}
                             </span>
                           </p>
                         </div>
@@ -664,7 +663,7 @@ export default function ReaderDashboard() {
                           <div className="flex items-center gap-2 text-blue-600 mb-1">
                             <Target className="w-4 h-4" />
                             <span className="text-[10px] font-black uppercase tracking-wider">
-                              {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["مقارنة الهدف"] || "مقارنة الهدف")] || ((t as any).extracted_2026_v2?.["مقارنة الهدف"] || "مقارنة الهدف"))}
+                              {"مقارنة الهدف"}
                             </span>
                           </div>
                           <p className="text-sm font-black text-foreground">{goalLabel}</p>
@@ -674,7 +673,7 @@ export default function ReaderDashboard() {
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
-                        <span>{((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["نسبة تحقيق هدف الأسبوع"] || "نسبة تحقيق هدف الأسبوع")] || ((t as any).extracted_2026_v2?.["نسبة تحقيق هدف الأسبوع"] || "نسبة تحقيق هدف الأسبوع"))}</span>
+                        <span>{"نسبة تحقيق هدف الأسبوع"}</span>
                         <span>{targetVerses > 0 ? `${formatArabicNumber(goalPercent)}%` : "—"}</span>
                       </div>
                       <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden" dir="ltr">
@@ -703,8 +702,8 @@ export default function ReaderDashboard() {
                 <CalendarCheck className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-2xl font-black text-foreground tracking-tight">{t.reader.newSlotRequests || (((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["طلبات مواعد جديدة"] || "طلبات مواعد جديدة")] || ((t as any).extracted_2026_v2?.["طلبات مواعد جديدة"] || "طلبات مواعد جديدة")))}</h3>
-                <p className="text-muted-foreground text-sm font-medium">{t.reader.requestsFromSuspendedDesc || (((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["طلاب انتهت مهلتهم ويطلبون فرصة جديدة لحجز موعد."] || "طلاب انتهت مهلتهم ويطلبون فرصة جديدة لحجز موعد.")] || ((t as any).extracted_2026_v2?.["طلاب انتهت مهلتهم ويطلبون فرصة جديدة لحجز موعد."] || "طلاب انتهت مهلتهم ويطلبون فرصة جديدة لحجز موعد.")))}</p>
+                <h3 className="text-2xl font-black text-foreground tracking-tight">{t.reader.newSlotRequests || ("طلبات مواعد جديدة")}</h3>
+                <p className="text-muted-foreground text-sm font-medium">{t.reader.requestsFromSuspendedDesc || ("طلاب انتهت مهلتهم ويطلبون فرصة جديدة لحجز موعد.")}</p>
               </div>
             </div>
 
@@ -728,7 +727,7 @@ export default function ReaderDashboard() {
                     className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white h-14 px-8 rounded-2xl text-sm font-black transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 active:scale-95 group-hover/item:translate-x-[-4px] rtl:group-hover/item:translate-x-[4px]"
                   >
                     <CheckCircle className="w-5 h-5" />
-                    <span>{t.reader.acceptRequest || (((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["قبول الطلب وتجديد الفرصة"] || "قبول الطلب وتجديد الفرصة")] || ((t as any).extracted_2026_v2?.["قبول الطلب وتجديد الفرصة"] || "قبول الطلب وتجديد الفرصة")))}</span>
+                    <span>{t.reader.acceptRequest || ("قبول الطلب وتجديد الفرصة")}</span>
                   </button>
                 </div>
               ))}

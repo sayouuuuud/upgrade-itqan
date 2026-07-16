@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Gavel, Loader2, Plus, Search, Trash2, X, Mic, GraduationCap } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/context'
 
 interface Judge {
   id: string
@@ -27,17 +28,16 @@ interface Props {
   onClose: () => void
 }
 
-const ROLE_LABEL: Record<string, string> = {
-  teacher: 'مدرّس',
-  reader: 'مقرئ',
-  student_supervisor: 'مشرف طلاب',
-  reciter_supervisor: 'مشرف مقرئين',
-  admin: 'مدير',
-  academy_admin: 'مشرف أكاديمية',
-}
-
-function RoleBadge({ role }: { role: string }) {
+function RoleBadge({ role, jm }: { role: string; jm?: Record<string, string> }) {
   const isTeacher = role === 'teacher'
+  const roleLabel: Record<string, string> = {
+    teacher: jm?.roleTeacher ?? 'Teacher',
+    reader: jm?.roleReader ?? 'Reader',
+    student_supervisor: jm?.roleStudentSupervisor ?? 'Student Supervisor',
+    reciter_supervisor: jm?.roleReciterSupervisor ?? 'Reciter Supervisor',
+    admin: jm?.roleAdmin ?? 'Admin',
+    academy_admin: jm?.roleAcademyAdmin ?? 'Academy Admin',
+  }
   return (
     <span
       className={cn(
@@ -48,12 +48,15 @@ function RoleBadge({ role }: { role: string }) {
       )}
     >
       {isTeacher ? <GraduationCap className="h-3 w-3" /> : <Mic className="h-3 w-3" />}
-      {ROLE_LABEL[role] || role}
+      {roleLabel[role] || role}
     </span>
   )
 }
 
 export function JudgesManager({ apiBase, competition, accent = 'primary', onClose }: Props) {
+  const { t } = useI18n()
+  const jm = (t as any).judgesManager as Record<string, string> | undefined
+
   const [judges, setJudges] = useState<Judge[]>([])
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [search, setSearch] = useState('')
@@ -76,10 +79,10 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
         setCandidates(data.candidates || [])
       } else {
         const d = await res.json().catch(() => null)
-        setError(d?.error || 'تعذّر تحميل المحكّمين')
+        setError(d?.error || (jm?.loadFail ?? 'Failed to load judges'))
       }
     } catch {
-      setError('تعذّر تحميل المحكّمين')
+      setError(jm?.loadFail ?? 'Failed to load judges')
     } finally {
       setLoading(false)
     }
@@ -92,13 +95,13 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
 
   // Debounced candidate search.
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       fetch(`${apiBase}/${competition.id}/judges?search=${encodeURIComponent(search)}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => d && setCandidates(d.candidates || []))
         .catch(() => {})
     }, 300)
-    return () => clearTimeout(t)
+    return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search])
 
@@ -116,7 +119,7 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
       })
       const data = await res.json().catch(() => null)
       if (res.ok) setJudges(data.judges || [])
-      else setError(data?.error || 'تعذّر إضافة المحكّم')
+      else setError(data?.error || (jm?.addFail ?? 'Failed to add judge'))
     } finally {
       setBusyId(null)
     }
@@ -131,7 +134,7 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
       })
       const data = await res.json().catch(() => null)
       if (res.ok) setJudges(data.judges || [])
-      else setError(data?.error || 'تعذّر حذف المحكّم')
+      else setError(data?.error || (jm?.removeFail ?? 'Failed to remove judge'))
     } finally {
       setBusyId(null)
     }
@@ -149,7 +152,7 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
               <Gavel className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-lg font-black">محكّمو المسابقة</h3>
+              <h3 className="text-lg font-black">{jm?.title ?? 'Competition Judges'}</h3>
               <p className="truncate text-sm text-muted-foreground">{competition.title}</p>
             </div>
           </div>
@@ -174,11 +177,11 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
               {/* Assigned judges */}
               <div className="space-y-3">
                 <h4 className="text-sm font-bold text-muted-foreground">
-                  المحكّمون المعيّنون ({judges.length})
+                  {jm?.assignedJudges ?? 'Assigned Judges'} ({judges.length})
                 </h4>
                 {judges.length === 0 ? (
                   <p className="rounded-xl border-2 border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-                    لم يتم تعيين أي محكّم بعد
+                    {jm?.noJudges ?? 'No judges assigned yet'}
                   </p>
                 ) : (
                   <ul className="space-y-2">
@@ -189,8 +192,8 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
                       >
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="truncate font-bold">{j.name || 'بدون اسم'}</span>
-                            <RoleBadge role={j.role} />
+                            <span className="truncate font-bold">{j.name || (jm?.noName ?? 'No name')}</span>
+                            <RoleBadge role={j.role} jm={jm} />
                           </div>
                           {j.email && (
                             <p className="truncate text-xs text-muted-foreground">{j.email}</p>
@@ -200,7 +203,7 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
                           onClick={() => removeJudge(j.judge_id)}
                           disabled={busyId === j.judge_id}
                           className="shrink-0 rounded-lg p-2 text-red-500 transition hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-900/20"
-                          aria-label="إزالة المحكّم"
+                          aria-label={jm?.removeJudge ?? 'Remove judge'}
                         >
                           {busyId === j.judge_id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -217,21 +220,21 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
               {/* Add judges */}
               <div className="space-y-3">
                 <h4 className="text-sm font-bold text-muted-foreground">
-                  إضافة محكّم (مدرّس، مقرئ، أو مشرف)
+                  {jm?.addJudgeHeading ?? 'Add Judge (teacher, reader, or supervisor)'}
                 </h4>
                 <div className="relative">
                   <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="ابحث بالاسم أو البريد..."
+                    placeholder={jm?.searchPlaceholder ?? 'Search by name or email...'}
                     className="w-full rounded-xl border border-border bg-background py-2.5 pr-10 pl-3 text-sm outline-none focus:ring-2 focus:ring-amber-500"
                   />
                 </div>
 
                 {available.length === 0 ? (
                   <p className="rounded-xl border-2 border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-                    {search ? 'لا نتائج مطابقة' : 'لا يوجد مرشحين متاحين للإضافة'}
+                    {search ? (jm?.noResults ?? 'No matching results') : (jm?.noCandidates ?? 'No available candidates to add')}
                   </p>
                 ) : (
                   <ul className="max-h-64 space-y-2 overflow-y-auto">
@@ -242,8 +245,8 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
                       >
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="truncate font-bold">{c.name || 'بدون اسم'}</span>
-                            <RoleBadge role={c.role} />
+                            <span className="truncate font-bold">{c.name || (jm?.noName ?? 'No name')}</span>
+                            <RoleBadge role={c.role} jm={jm} />
                           </div>
                           {c.email && (
                             <p className="truncate text-xs text-muted-foreground">{c.email}</p>
@@ -262,7 +265,7 @@ export function JudgesManager({ apiBase, competition, accent = 'primary', onClos
                           ) : (
                             <Plus className="h-4 w-4" />
                           )}
-                          تعيين
+                          {jm?.assign ?? 'Assign'}
                         </button>
                       </li>
                     ))}

@@ -54,6 +54,7 @@ export default function AdminTajweedPathDetailPage() {
   const pathId = params.id
   const { t } = useI18n()
   const tp = (t as any).tajweedPaths
+  const atp = (t as any).adminTajweedPaths as Record<string, string> | undefined
 
   const [path, setPath] = useState<any>(null)
   const [stages, setStages] = useState<Stage[]>([])
@@ -303,7 +304,7 @@ export default function AdminTajweedPathDetailPage() {
       <Tabs defaultValue="stages" className="space-y-4">
         <TabsList>
           <TabsTrigger value="stages">{tp.tabs.stages} ({stages.length})</TabsTrigger>
-          <TabsTrigger value="landing">صفحة الهبوط (Landing)</TabsTrigger>
+              <TabsTrigger value="landing">{atp?.landingPage ?? 'Landing Page'}</TabsTrigger>
           <TabsTrigger value="funnel">{tp.tabs.funnel}</TabsTrigger>
           <TabsTrigger value="settings">{tp.tabs.settings}</TabsTrigger>
         </TabsList>
@@ -525,54 +526,56 @@ export default function AdminTajweedPathDetailPage() {
 
         <TabsContent value="landing">
           <Card className="p-6 max-w-2xl space-y-4">
-            <h3 className="font-semibold text-lg border-b pb-2">إعدادات صفحة الهبوط</h3>
-            <div className="space-y-1">
-              <Label>الفيديو التعريفي (Promo Video URL)</Label>
-              <Input value={edit.promo_video_url} onChange={e => setEdit({ ...edit, promo_video_url: e.target.value })} placeholder="رابط يوتيوب أو فيديو تعريفي..." />
-            </div>
-            <div className="space-y-1">
-              <Label>الفئة المستهدفة (Target Audience)</Label>
-              <Textarea rows={2} value={edit.target_audience} onChange={e => setEdit({ ...edit, target_audience: e.target.value })} placeholder="لمن هذا المسار؟" />
-            </div>
-            <div className="space-y-1">
-              <Label>ماذا ستتعلم؟ (What you will learn) - افصل بينها بفاصلة</Label>
-              <Textarea rows={3} value={edit.what_you_will_learn.join(', ')} onChange={e => setEdit({ ...edit, what_you_will_learn: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })} placeholder="إتقان مخارج الحروف، التلاوة الصحيحة..." />
-            </div>
-            <div className="space-y-1">
-              <Label>المتطلبات السابقة (Prerequisites) - افصل بينها بفاصلة</Label>
-              <Textarea rows={2} value={edit.prerequisites.join(', ')} onChange={e => setEdit({ ...edit, prerequisites: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })} placeholder="القدرة على قراءة الحروف العربية..." />
+            <h3 className="font-semibold text-lg border-b pb-2">{atp?.landingSettings ?? 'Landing Page Settings'}</h3>
+            <div className="space-y-4">
+              <div>
+                <Label>{atp?.promoVideo ?? 'Promo Video URL'}</Label>
+                <Input value={edit.promo_video_url} onChange={e => setEdit({ ...edit, promo_video_url: e.target.value })} placeholder="YouTube or promo video link..." />
+              </div>
+              <div className="space-y-1">
+                <Label>{atp?.targetAudience ?? 'Target Audience'}</Label>
+                <Textarea rows={2} value={edit.target_audience} onChange={e => setEdit({ ...edit, target_audience: e.target.value })} placeholder={atp?.audiencePlaceholder ?? 'Who is this path for?'} />
+              </div>
+              <div className="space-y-1">
+                <Label>{atp?.whatYouLearn ?? 'What you will learn'} ({atp?.separateByComma ?? 'separate by comma'})</Label>
+                <Textarea rows={3} value={edit.what_you_will_learn.join(', ')} onChange={e => setEdit({ ...edit, what_you_will_learn: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })} placeholder="Mastery of proper pronunciation, correct recitation..." />
+              </div>
+              <div className="space-y-1">
+                <Label>{atp?.prerequisites ?? 'Prerequisites'} ({atp?.separateByComma ?? 'separate by comma'})</Label>
+                <Textarea rows={2} value={edit.prerequisites.join(', ')} onChange={e => setEdit({ ...edit, prerequisites: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })} placeholder="Ability to read Arabic letters..." />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>نوع التسجيل</Label>
+                <Label>{atp?.enrollmentType ?? 'Enrollment Type'}</Label>
                 <Select value={edit.enrollment_type} onValueChange={v => setEdit({ ...edit, enrollment_type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="open">مفتوح للجميع</SelectItem>
-                    <SelectItem value="cohort">نظام دفعات (Cohorts)</SelectItem>
-                    <SelectItem value="invite_only">بدعوة فقط</SelectItem>
+                    <SelectItem value="open">{atp?.enrollOpen ?? 'Open to all'}</SelectItem>
+                    <SelectItem value="cohort">{atp?.enrollCohorts ?? 'Cohorts'}</SelectItem>
+                    <SelectItem value="invite_only">{atp?.enrollInviteOnly ?? 'Invite only'}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>نوع الشهادة</Label>
+                <Label>{atp?.certificateType ?? 'Certificate Type'}</Label>
                 <Select value={edit.certification_type} onValueChange={v => setEdit({ ...edit, certification_type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="certificate_of_completion">شهادة إتمام</SelectItem>
-                    <SelectItem value="ijazah">إجازة</SelectItem>
-                    <SelectItem value="none">بدون شهادة</SelectItem>
+                    <SelectItem value="certificate_of_completion">{atp?.certificateCompletion ?? 'Certificate of Completion'}</SelectItem>
+                    <SelectItem value="ijazah">{atp?.ijazah ?? 'Ijazah'}</SelectItem>
+                    <SelectItem value="none">{atp?.certificateNone ?? 'No certificate'}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="space-y-1">
-              <Label>سعر المسار (إذا كان مدفوعاً، 0 للمجاني)</Label>
+              <Label>{atp?.pathPrice ?? 'Path Price'} ({atp?.pricingNote ?? 'free = 0'})</Label>
               <Input type="number" min="0" value={edit.price} onChange={e => setEdit({ ...edit, price: parseFloat(e.target.value) || 0 })} />
             </div>
             <Button onClick={savePath} disabled={saving} className="gap-2 mt-4">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              حفظ بيانات صفحة الهبوط
+              {atp?.saveLanding ?? 'Save Landing Page Data'}
             </Button>
           </Card>
         </TabsContent>
@@ -608,13 +611,13 @@ export default function AdminTajweedPathDetailPage() {
             </div>
             <div className="md:col-span-2 space-y-1">
               <div className="flex items-center justify-between">
-                <Label>الحلقة المرتبطة (اختياري)</Label>
-                <Link href="/admin/halaqat" target="_blank" className="text-[11px] text-emerald-600 hover:text-emerald-700 underline font-medium">إنشاء حلقة جديدة</Link>
+                <Label>{atp?.linkedHalaqa ?? 'Linked Halaqa (optional)'}</Label>
+                <Link href="/admin/halaqat" target="_blank" className="text-[11px] text-emerald-600 hover:text-emerald-700 underline font-medium">{atp?.createNewHalaqa ?? 'Create new halaqa'}</Link>
               </div>
               <Select value={stageForm.halaqa_id || "none"} onValueChange={v => setStageForm({ ...stageForm, halaqa_id: v === "none" ? "" : v })}>
-                <SelectTrigger><SelectValue placeholder="اختر حلقة لربطها بهذه المرحلة" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={atp?.selectHalaqa ?? 'Select a halaqa to link'} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">بدون حلقة</SelectItem>
+                  <SelectItem value="none">{atp?.noHalaqa ?? 'No halaqa'}</SelectItem>
                   {halaqat.map(h => (
                     <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                   ))}

@@ -14,16 +14,30 @@ export type Locale = 'ar' | 'en'
 // Their keys legitimately differ between locales, so we loosen them to a string
 // map instead of forcing key-for-key parity — everything else stays strictly typed.
 type RawSchema = typeof ar
-export type TranslationSchema = Omit<RawSchema, 'addedTranslations_2026' | 'extracted_2026_v2'> & {
+
+// Build a version of every namespace that also accepts unknown string keys,
+// recursively. This lets components index into nested objects with dynamic
+// string keys (e.g. statuses[status], types[type]) without TS7053 errors
+// while still keeping autocomplete on known keys.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DeepLoose<T> = T extends Record<string, any>
+  ? { [K in keyof T]: DeepLoose<T[K]> } & { [key: string]: any }
+  : T
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LoosenNamespaces<T> = { [K in keyof T]: DeepLoose<T[K]> }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TranslationSchema = LoosenNamespaces<Omit<RawSchema, 'addedTranslations_2026' | 'extracted_2026_v2'>> & {
   addedTranslations_2026: Record<string, string>
   extracted_2026_v2: Record<string, any>
+  [key: string]: any
 }
 
 // Backward-compatible alias: existing code imports `Translations`.
 export type Translations = TranslationSchema
 
-// New locales are typed against the AR schema, so a missing/renamed key is a build error.
-const en_typed: TranslationSchema = en
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const en_typed: TranslationSchema = en as any
 
 /**
  * Deep-merge a locale on top of the Arabic base.

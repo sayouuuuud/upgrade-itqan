@@ -1,7 +1,5 @@
 "use client"
 
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -23,6 +21,7 @@ import {
   ChevronLeft,
 } from 'lucide-react'
 import { GENDER_LABELS, type HalaqaPlatform } from '@/lib/halaqat'
+import { useI18n } from '@/lib/i18n/context'
 
 export interface HalaqaItem {
   id: string
@@ -64,29 +63,20 @@ interface Props {
   scope?: 'mine' | 'enrolled' | 'all'
 }
 
-const PLATFORM_THEME: Record<HalaqaPlatform, {
+const PLATFORM_THEME_STATIC: Record<HalaqaPlatform, {
   accent: string
   badge: string
   icon: React.ReactNode
-  label: string
-  sublabel: string
-  empty: string
 }> = {
   academy: {
     accent: 'from-indigo-500/15 to-violet-500/5 border-indigo-500/20',
     badge: 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30',
     icon: <GraduationCap className="w-7 h-7 text-indigo-600" />,
-    label: ((t as any).extracted_2026_v2?.["حلقات الأكاديمية"] || "حلقات الأكاديمية"),
-    sublabel: ((t as any).extracted_2026_v2?.["بيئة تعليمية متكاملة للمدرسين والطلاب"] || "بيئة تعليمية متكاملة للمدرسين والطلاب"),
-    empty: ((t as any).extracted_2026_v2?.["لا توجد حلقات بعد — أنشئ أول حلقة وابدأ رحلتك التعليمية"] || "لا توجد حلقات بعد — أنشئ أول حلقة وابدأ رحلتك التعليمية"),
   },
   maqraa: {
     accent: 'from-emerald-500/15 to-teal-500/5 border-emerald-500/20',
     badge: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
     icon: <BookOpen className="w-7 h-7 text-emerald-600" />,
-    label: ((t as any).extracted_2026_v2?.["حلقات المقرأة"] || "حلقات المقرأة"),
-    sublabel: ((t as any).extracted_2026_v2?.["حلقات تحفيظ وتجويد القرآن الكريم بإشراف مباشر"] || "حلقات تحفيظ وتجويد القرآن الكريم بإشراف مباشر"),
-    empty: ((t as any).extracted_2026_v2?.["لا توجد حلقات بعد — أنشئ حلقة وابدأ التلقي مع الطلاب"] || "لا توجد حلقات بعد — أنشئ حلقة وابدأ التلقي مع الطلاب"),
   },
 }
 
@@ -125,7 +115,15 @@ export function HalaqatList({
   teachersEndpoint,
   scope,
 }: Props) {
-  const theme = PLATFORM_THEME[platform]
+  const { t } = useI18n()
+  const th = (t as any).halaqat
+  const staticTheme = PLATFORM_THEME_STATIC[platform]
+  const theme = {
+    ...staticTheme,
+    label: platform === 'academy' ? (th?.academyLabel ?? 'حلقات الأكاديمية') : (th?.maqraaLabel ?? 'حلقات المقرأة'),
+    sublabel: platform === 'academy' ? (th?.academySub ?? 'بيئة تعليمية متكاملة للمدرسين والطلاب') : (th?.maqraaSub ?? 'حلقات تحفيظ وتجويد القرآن الكريم بإشراف مباشر'),
+    empty: platform === 'academy' ? (th?.academyEmpty ?? 'لا توجد حلقات بعد — أنشئ أول حلقة وابدأ رحلتك التعليمية') : (th?.maqraaEmpty ?? 'لا توجد حلقات بعد — أنشئ حلقة وابدأ التلقي مع الطلاب'),
+  }
   const isAdminViewer = role === 'admin'
   const canEdit = role === 'admin' || role === 'host'
 
@@ -281,9 +279,9 @@ export function HalaqatList({
       if (res.ok) {
         setShowModal(false)
         fetchData()
-      } else {
+      }       else {
         const err = await res.json().catch(() => ({}))
-        alert(err.error || ((t as any).extracted_2026_v2?.["تعذر الحفظ"] || "تعذر الحفظ"))
+        alert(err.error || (th?.saveFail ?? 'تعذر الحفظ'))
       }
     } finally {
       setSaving(false)
@@ -291,12 +289,12 @@ export function HalaqatList({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm(((t as any).extracted_2026_v2?.["حذف الحلقة وجميع بياناتها؟ لا يمكن التراجع."] || "حذف الحلقة وجميع بياناتها؟ لا يمكن التراجع."))) return
+    if (!confirm(th?.deleteConfirm ?? 'حذف الحلقة وجميع بياناتها؟ لا يمكن التراجع.')) return
     setDeletingId(id)
     try {
       const res = await fetch(`/api/halaqat/${id}`, { method: 'DELETE' })
       if (res.ok) fetchData()
-      else alert(((t as any).extracted_2026_v2?.["تعذر الحذف"] || "تعذر الحذف"))
+      else alert(th?.deleteFail ?? 'تعذر الحذف')
     } finally {
       setDeletingId(null)
     }
@@ -331,7 +329,8 @@ export function HalaqatList({
               {theme.label}
               {liveCount > 0 && (
                 <span className="inline-flex items-center gap-1 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
-                  <Radio className="w-3 h-3 animate-pulse" /> {liveCount} {((t as any).extracted_2026_v2?.["مباشر"] || "مباشر")}</span>
+                  <Radio className="w-3 h-3 animate-pulse" /> {liveCount} {th?.liveCount ?? 'مباشر'}
+                </span>
               )}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{theme.sublabel}</p>
@@ -342,15 +341,16 @@ export function HalaqatList({
             onClick={openAdd}
             className="self-start sm:self-auto inline-flex items-center gap-2 px-5 py-3 bg-foreground text-background rounded-xl font-bold transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 z-10"
           >
-            <Plus className="w-5 h-5" /> {((t as any).extracted_2026_v2?.["حلقة جديدة"] || "حلقة جديدة")}</button>
+            <Plus className="w-5 h-5" /> {th?.newHalaqa ?? 'حلقة جديدة'}
+          </button>
         )}
       </motion.div>
 
       <motion.div variants={FADE_UP_ANIMATION_VARIANTS} className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard label={((t as any).extracted_2026_v2?.["إجمالي الحلقات"] || "إجمالي الحلقات")} value={halaqat.length} icon={<Users className="w-4 h-4" />} />
-        <StatCard label={((t as any).extracted_2026_v2?.["حلقات مباشرة الآن"] || "حلقات مباشرة الآن")} value={liveCount} icon={<Radio className="w-4 h-4" />} accent="text-red-600 dark:text-red-400" />
-        <StatCard label={((t as any).extracted_2026_v2?.["إجمالي الطلاب"] || "إجمالي الطلاب")} value={totalStudents} icon={<GraduationCap className="w-4 h-4" />} />
-        <StatCard label={((t as any).extracted_2026_v2?.["نشطة"] || "نشطة")} value={halaqat.filter(h => h.is_active !== false).length} icon={<Sparkles className="w-4 h-4" />} accent="text-emerald-600 dark:text-emerald-400" />
+        <StatCard label={th?.totalHalaqat ?? 'إجمالي الحلقات'} value={halaqat.length} icon={<Users className="w-4 h-4" />} />
+        <StatCard label={th?.liveNow ?? 'حلقات مباشرة الآن'} value={liveCount} icon={<Radio className="w-4 h-4" />} accent="text-red-600 dark:text-red-400" />
+        <StatCard label={th?.totalStudents ?? 'إجمالي الطلاب'} value={totalStudents} icon={<GraduationCap className="w-4 h-4" />} />
+        <StatCard label={th?.active ?? 'نشطة'} value={halaqat.filter(h => h.is_active !== false).length} icon={<Sparkles className="w-4 h-4" />} accent="text-emerald-600 dark:text-emerald-400" />
       </motion.div>
 
       <motion.div variants={FADE_UP_ANIMATION_VARIANTS} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center bg-card/50 backdrop-blur-sm p-2 rounded-2xl border border-border/50">
@@ -360,7 +360,7 @@ export function HalaqatList({
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={((t as any).extracted_2026_v2?.["ابحث باسم الحلقة أو المدرس…"] || "ابحث باسم الحلقة أو المدرس…")}
+            placeholder={th?.searchPlaceholder ?? 'ابحث باسم الحلقة أو المدرس…'}
             className="w-full pr-10 pl-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
           />
         </div>
@@ -373,7 +373,7 @@ export function HalaqatList({
                 filter === k ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {k === 'all' ? ((t as any).extracted_2026_v2?.["الكل"] || "الكل") : k === 'live' ? ((t as any).extracted_2026_v2?.["مباشر"] || "مباشر") : ((t as any).extracted_2026_v2?.["متوقف"] || "متوقف")}
+              {k === 'all' ? (th?.filterAll ?? 'الكل') : k === 'live' ? (th?.filterLive ?? 'مباشر') : (th?.filterInactive ?? 'متوقف')}
             </button>
           ))}
         </div>
@@ -384,14 +384,15 @@ export function HalaqatList({
           <div className="mx-auto w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mb-4">
             <Users className="w-8 h-8 text-muted-foreground opacity-60" />
           </div>
-          <h3 className="font-bold text-lg mb-2">{((t as any).extracted_2026_v2?.["لا توجد حلقات لعرضها"] || "لا توجد حلقات لعرضها")}</h3>
+          <h3 className="font-bold text-lg mb-2">{th?.noHalaqat ?? 'لا توجد حلقات لعرضها'}</h3>
           <p className="text-muted-foreground max-w-sm mx-auto mb-5">{theme.empty}</p>
           {canEdit && (
             <button
               onClick={openAdd}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors"
             >
-              <Plus className="w-4 h-4" /> {((t as any).extracted_2026_v2?.["إضافة حلقة"] || "إضافة حلقة")}</button>
+              <Plus className="w-4 h-4" /> {th?.addHalaqa ?? 'إضافة حلقة'}
+            </button>
           )}
         </motion.div>
       ) : (
@@ -477,12 +478,15 @@ function HalaqaCard({
   onDelete?: (id: string) => void
   deleting?: boolean
 }) {
+  const { t: i18nT } = useI18n()
+  const th = (i18nT as any).halaqat
   const scheduled = formatRelativeFromNow(h.scheduled_at)
   return (
     <div className="group relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-border/50 rounded-3xl p-6 hover:shadow-xl hover:shadow-indigo-500/5 hover:border-indigo-500/30 transition-all duration-300 overflow-hidden flex flex-col h-full">
       {h.is_live && (
         <span className="absolute top-4 right-4 inline-flex items-center gap-1.5 text-[11px] font-black bg-red-500 text-white px-2.5 py-1 rounded-full shadow-lg shadow-red-500/20">
-          <Radio className="w-3.5 h-3.5 animate-pulse" /> {((t as any).extracted_2026_v2?.["مباشر الآن"] || "مباشر الآن")}</span>
+          <Radio className="w-3.5 h-3.5 animate-pulse" /> {th?.liveNowBadge ?? 'مباشر الآن'}
+        </span>
       )}
       
       <div className="flex-1">
@@ -503,11 +507,12 @@ function HalaqaCard({
                 : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200/50'
             }`}
           >
-            {h.is_active !== false ? ((t as any).extracted_2026_v2?.["نشطة"] || "نشطة") : ((t as any).extracted_2026_v2?.["متوقفة"] || "متوقفة")}
+            {h.is_active !== false ? (th?.activeBadge ?? 'نشطة') : (th?.inactiveBadge ?? 'متوقفة')}
           </span>
           {(h as any).scope === 'path_only' && (
             <span className="shrink-0 text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-black border bg-indigo-50 text-indigo-700 border-indigo-200/50 dark:bg-indigo-900/30 dark:text-indigo-400">
-              {((t as any).extracted_2026_v2?.["مسار فقط"] || "مسار فقط")}</span>
+              {th?.pathOnly ?? 'Path Only'}
+            </span>
           )}
         </div>
 
@@ -517,7 +522,7 @@ function HalaqaCard({
 
         <div className="flex flex-wrap items-center gap-2 mb-6">
           <span className={`px-2.5 py-1 rounded-md font-bold text-[11px] border ${themeBadge}`}>
-            {GENDER_LABELS[h.gender] || ((t as any).extracted_2026_v2?.["مختلط"] || "مختلط")}
+            {GENDER_LABELS[h.gender] || (th?.genderMixed ?? 'Mixed')}
           </span>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-bold text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
             <Users className="w-3.5 h-3.5" /> {h.current_students}/{h.max_students}
@@ -536,7 +541,7 @@ function HalaqaCard({
           className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow-md"
         >
           <ChevronLeft className="w-4 h-4 rotate-180" />
-          {role === 'student' ? ((t as any).extracted_2026_v2?.["فتح الحلقة"] || "فتح الحلقة") : ((t as any).extracted_2026_v2?.["إدارة الحلقة"] || "إدارة الحلقة")}
+          {role === 'student' ? (th?.openHalaqa ?? 'Open Halaqa') : (th?.manageHalaqa ?? 'Manage Halaqa')}
         </Link>
         <Link
           href={`${basePath}/${h.id}/live`}
@@ -545,7 +550,7 @@ function HalaqaCard({
               ? 'bg-red-500 hover:bg-red-600 text-white hover:shadow-red-500/20'
               : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-emerald-500/20'
           }`}
-          title={h.is_live ? ((t as any).extracted_2026_v2?.["انضم للبث المباشر"] || "انضم للبث المباشر") : ((t as any).extracted_2026_v2?.["دخول الغرفة"] || "دخول الغرفة")}
+          title={h.is_live ? (th?.joinLiveTitle ?? 'Join Live Broadcast') : (th?.enterRoomTitle ?? 'Enter Room')}
         >
           <Video className="w-4 h-4" />
         </Link>
@@ -553,7 +558,7 @@ function HalaqaCard({
           <button
             onClick={() => onEdit(h)}
             className="inline-flex items-center justify-center py-2.5 px-3 rounded-xl text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
-            title={((t as any).extracted_2026_v2?.["تعديل"] || "تعديل")}
+            title={th?.edit ?? 'Edit'}
           >
             <Edit2 className="w-4 h-4" />
           </button>
@@ -563,7 +568,7 @@ function HalaqaCard({
             onClick={() => onDelete(h.id)}
             disabled={deleting}
             className="inline-flex items-center justify-center py-2.5 px-3 rounded-xl text-sm bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 transition-colors disabled:opacity-50"
-            title={((t as any).extracted_2026_v2?.["حذف"] || "حذف")}
+            title={th?.delete ?? 'Delete'}
           >
             {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
           </button>
@@ -596,6 +601,8 @@ function HalaqaFormModal({
   onClose: () => void
   onSubmit: (e: React.FormEvent) => void
 }) {
+  const { t } = useI18n()
+  const th = (t as any).halaqat as Record<string, string> | undefined
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
@@ -610,41 +617,43 @@ function HalaqaFormModal({
             <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-xl">
               <Shield className="w-5 h-5" />
             </div>
-            {editItem ? ((t as any).extracted_2026_v2?.["تعديل الحلقة"] || "تعديل الحلقة") : ((t as any).extracted_2026_v2?.["إضافة حلقة جديدة"] || "إضافة حلقة جديدة")}
+            {editItem ? (th?.editHalaqa ?? 'Edit Halaqa') : (th?.addNewHalaqa ?? 'Add New Halaqa')}
           </h3>
           <button onClick={onClose} className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full transition-colors shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
         <form onSubmit={onSubmit} className="p-6 sm:p-8 space-y-5 overflow-y-auto scrollbar-thin scrollbar-thumb-border">
-          <Field label={((t as any).extracted_2026_v2?.["اسم الحلقة"] || "اسم الحلقة")} required>
+          <Field label={th?.formFieldName ?? 'Halaqa Name'} required>
             <input
               required
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder={platform === 'maqraa' ? ((t as any).extracted_2026_v2?.["حلقة تجويد الجزء الأول"] || "حلقة تجويد الجزء الأول") : ((t as any).extracted_2026_v2?.["حلقة الصحابة لتحفيظ القرآن"] || "حلقة الصحابة لتحفيظ القرآن")}
+              placeholder={platform === 'maqraa'
+                ? (th?.formNamePlaceholderMaqraa ?? 'e.g. Tajweed Part 1')
+                : (th?.formNamePlaceholderAcademy ?? 'e.g. Al-Sahaba Memorization Circle')}
               className="input"
             />
           </Field>
-          <Field label={((t as any).extracted_2026_v2?.["الوصف"] || "الوصف")}>
+          <Field label={th?.formFieldDesc ?? 'Description'}>
             <textarea
               rows={2}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder={((t as any).extracted_2026_v2?.["تفاصيل عن أهداف الحلقة، الجمهور المستهدف، طبيعة المحتوى…"] || "تفاصيل عن أهداف الحلقة، الجمهور المستهدف، طبيعة المحتوى…")}
+              placeholder={th?.formDescPlaceholder ?? 'Details about goals, target audience, content…'}
               className="input resize-none"
             />
           </Field>
 
           {isAdmin && teachers.length > 0 && (
-            <Field label={((t as any).extracted_2026_v2?.["المدرس"] || "المدرس")}>
+            <Field label={th?.formFieldTeacher ?? 'Teacher'}>
               <select
                 value={form.teacher_id}
                 onChange={(e) => setForm({ ...form, teacher_id: e.target.value })}
                 className="input"
               >
-                <option value="">{((t as any).extracted_2026_v2?.["اختر مدرساً"] || "اختر مدرساً")}</option>
+                <option value="">{th?.formSelectTeacher ?? 'Select a teacher'}</option>
                 {teachers.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name}
@@ -655,18 +664,18 @@ function HalaqaFormModal({
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label={((t as any).extracted_2026_v2?.["الجنس"] || "الجنس")}>
+            <Field label={th?.formFieldGender ?? 'Gender'}>
               <select
                 value={form.gender}
                 onChange={(e) => setForm({ ...form, gender: e.target.value })}
                 className="input"
               >
-                <option value="both">{((t as any).extracted_2026_v2?.["مختلط"] || "مختلط")}</option>
-                <option value="male">{((t as any).extracted_2026_v2?.["ذكور فقط"] || "ذكور فقط")}</option>
-                <option value="female">{((t as any).extracted_2026_v2?.["إناث فقط"] || "إناث فقط")}</option>
+                <option value="both">{th?.genderBoth ?? 'Mixed'}</option>
+                <option value="male">{th?.genderMale ?? 'Male only'}</option>
+                <option value="female">{th?.genderFemale ?? 'Female only'}</option>
               </select>
             </Field>
-            <Field label={((t as any).extracted_2026_v2?.["الحد الأقصى للطلاب"] || "الحد الأقصى للطلاب")}>
+            <Field label={th?.formFieldMaxStudents ?? 'Max Students'}>
               <input
                 type="number"
                 min={1}
@@ -679,7 +688,7 @@ function HalaqaFormModal({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-foreground block mb-2">{((t as any).extracted_2026_v2?.["رؤية الحلقة"] || "رؤية الحلقة")}</label>
+            <label className="text-sm font-bold text-foreground block mb-2">{th?.formFieldScope ?? 'Visibility'}</label>
             <div className="flex flex-col sm:flex-row gap-3">
               <label className="flex items-center gap-2 p-3 border border-border rounded-lg bg-background cursor-pointer hover:border-blue-500/50 flex-1 transition-colors">
                 <input 
@@ -691,8 +700,8 @@ function HalaqaFormModal({
                   className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                 />
                 <div>
-                  <p className="font-bold text-sm">{((t as any).extracted_2026_v2?.["حلقة عامة"] || "حلقة عامة")}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{((t as any).extracted_2026_v2?.["متاحة لجميع الطلاب"] || "متاحة لجميع الطلاب")}</p>
+                  <p className="font-bold text-sm">{th?.scopePublic ?? 'Public Halaqa'}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{th?.scopePublicDesc ?? 'Available to all students'}</p>
                 </div>
               </label>
               <label className="flex items-center gap-2 p-3 border border-border rounded-lg bg-background cursor-pointer hover:border-emerald-500/50 flex-1 transition-colors">
@@ -705,8 +714,8 @@ function HalaqaFormModal({
                   className="w-4 h-4 text-emerald-600 focus:ring-emerald-500"
                 />
                 <div>
-                  <p className="font-bold text-sm text-emerald-700 dark:text-emerald-400">{((t as any).extracted_2026_v2?.["مخصصة لمسار"] || "مخصصة لمسار")}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{((t as any).extracted_2026_v2?.["لطلاب المسارات فقط"] || "لطلاب المسارات فقط")}</p>
+                  <p className="font-bold text-sm text-emerald-700 dark:text-emerald-400">{th?.scopePathOnly ?? 'Path Specific'}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{th?.scopePathOnlyDesc ?? 'For path students only'}</p>
                 </div>
               </label>
             </div>
@@ -714,7 +723,7 @@ function HalaqaFormModal({
 
           {form.scope === 'path_only' && platform === 'maqraa' && (
             <div className="space-y-3 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
-              <Field label={((t as any).extracted_2026_v2?.["اربط الحلقة بمسار"] || "اربط الحلقة بمسار")}>
+              <Field label={th?.formLinkPath ?? 'Link Halaqa to a Path'}>
                 <select
                   value={form.path_type && form.path_id ? `${form.path_type}:${form.path_id}` : ''}
                   onChange={(e) => {
@@ -728,8 +737,8 @@ function HalaqaFormModal({
                   }}
                   className="input"
                 >
-                  <option value="">{((t as any).extracted_2026_v2?.["— اختر مساراً —"] || "— اختر مساراً —")}</option>
-                  <optgroup label={((t as any).extracted_2026_v2?.["مسارات التجويد"] || "مسارات التجويد")}>
+                  <option value="">{th?.formSelectPath ?? '— Select a path —'}</option>
+                  <optgroup label={th?.pathsTajweed ?? 'Tajweed Paths'}>
                     {paths
                       .filter((p) => p.type === 'tajweed')
                       .map((p) => (
@@ -738,7 +747,7 @@ function HalaqaFormModal({
                         </option>
                       ))}
                   </optgroup>
-                  <optgroup label={((t as any).extracted_2026_v2?.["مسارات التحفيظ"] || "مسارات التحفيظ")}>
+                  <optgroup label={th?.pathsMemorization ?? 'Memorization Paths'}>
                     {paths
                       .filter((p) => p.type === 'memorization')
                       .map((p) => (
@@ -758,9 +767,9 @@ function HalaqaFormModal({
                     className="w-4 h-4 mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded"
                   />
                   <span>
-                    <span className="font-bold text-sm block">{((t as any).extracted_2026_v2?.["تسجيل طلاب المسار تلقائياً"] || "تسجيل طلاب المسار تلقائياً")}</span>
+                    <span className="font-bold text-sm block">{th?.autoEnroll ?? 'Auto-enroll path students'}</span>
                     <span className="text-xs text-muted-foreground">
-                      {((t as any).extracted_2026_v2?.["سيتم إضافة جميع طلاب المسار النشطين إلى الحلقة عند الإنشاء"] || "سيتم إضافة جميع طلاب المسار النشطين إلى الحلقة عند الإنشاء")}</span>
+                      {th?.autoEnrollDesc ?? 'All active path students will be added to the halaqa on creation'}</span>
                   </span>
                 </label>
               )}
@@ -768,7 +777,7 @@ function HalaqaFormModal({
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label={((t as any).extracted_2026_v2?.["موعد البدء (اختياري)"] || "موعد البدء (اختياري)")}>
+            <Field label={th?.formFieldSchedule ?? 'Start Date (optional)'}>
               <input
                 type="datetime-local"
                 value={form.scheduled_at}
@@ -776,7 +785,7 @@ function HalaqaFormModal({
                 className="input"
               />
             </Field>
-            <Field label={((t as any).extracted_2026_v2?.["مدة الجلسة بالدقائق"] || "مدة الجلسة بالدقائق")}>
+            <Field label={th?.formFieldDuration ?? 'Session Duration (minutes)'}>
               <input
                 type="number"
                 min={5}
@@ -788,7 +797,7 @@ function HalaqaFormModal({
             </Field>
           </div>
 
-          <Field label={((t as any).extracted_2026_v2?.["رابط بديل خارجي (اختياري)"] || "رابط بديل خارجي (اختياري)")}>
+          <Field label={th?.formFieldMeetingLink ?? 'External Meeting Link (optional)'}>
             <input
               type="url"
               value={form.meeting_link}
@@ -797,7 +806,7 @@ function HalaqaFormModal({
               className="input"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
-              {((t as any).extracted_2026_v2?.["يستخدم البث الافتراضي LiveKit المدمج — اترك الحقل فارغاً في الغالب."] || "يستخدم البث الافتراضي LiveKit المدمج — اترك الحقل فارغاً في الغالب.")}</p>
+              {th?.meetingLinkHint ?? 'Default streaming uses built-in LiveKit — leave empty in most cases.'}</p>
           </Field>
 
           <div className="flex gap-4 pt-4 border-t border-border/50 mt-4">
@@ -806,14 +815,14 @@ function HalaqaFormModal({
               onClick={onClose}
               className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold transition-colors"
             >
-              {((t as any).extracted_2026_v2?.["إلغاء"] || "إلغاء")}</button>
+              {th?.cancel ?? 'Cancel'}</button>
             <button
               type="submit"
               disabled={saving}
               className="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-60 disabled:shadow-none"
             >
               {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
-              {editItem ? ((t as any).extracted_2026_v2?.["حفظ التعديلات"] || "حفظ التعديلات") : ((t as any).extracted_2026_v2?.["إنشاء الحلقة"] || "إنشاء الحلقة")}
+              {editItem ? (th?.saveEdits ?? 'Save Changes') : (th?.createHalaqa ?? 'Create Halaqa')}
             </button>
           </div>
         </form>

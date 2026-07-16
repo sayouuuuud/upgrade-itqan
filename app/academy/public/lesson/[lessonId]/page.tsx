@@ -1,7 +1,5 @@
 'use client'
 
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -48,11 +46,11 @@ export default function PublicLessonPage({ params }: { params: { lessonId: strin
   }
 
   if (loading) {
-    return <div className="text-center py-12">{((t as any).extracted_2026_v2?.["جاري التحميل..."] || ((t as any).extracted_2026_v2?.["جاري التحميل..."] || "جاري التحميل..."))}</div>
+    return <div className="text-center py-12">{"جاري التحميل..."}</div>
   }
 
   if (!lesson) {
-    return <div className="text-center py-12">{((t as any).extracted_2026_v2?.["الدرس غير موجود"] || ((t as any).extracted_2026_v2?.["الدرس غير موجود"] || "الدرس غير موجود"))}</div>
+    return <div className="text-center py-12">{"الدرس غير موجود"}</div>
   }
 
   return (
@@ -68,7 +66,7 @@ export default function PublicLessonPage({ params }: { params: { lessonId: strin
             <div className="bg-gray-100 aspect-video rounded-lg flex items-center justify-center">
               <div className="text-center">
                 <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">{((t as any).extracted_2026_v2?.["معاينة الدرس"] || ((t as any).extracted_2026_v2?.["معاينة الدرس"] || "معاينة الدرس"))}</p>
+                <p className="text-gray-600">{"معاينة الدرس"}</p>
               </div>
             </div>
 
@@ -76,17 +74,17 @@ export default function PublicLessonPage({ params }: { params: { lessonId: strin
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
                 <Clock className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-                <p className="text-sm text-gray-600">{((t as any).extracted_2026_v2?.["المدة"] || ((t as any).extracted_2026_v2?.["المدة"] || "المدة"))}</p>
-                <p className="font-semibold">{lesson.duration_minutes || 30} {((t as any).extracted_2026_v2?.["دقيقة"] || ((t as any).extracted_2026_v2?.["دقيقة"] || "دقيقة"))}</p>
+                <p className="text-sm text-gray-600">{"المدة"}</p>
+                <p className="font-semibold">{lesson.duration_minutes || 30} {"دقيقة"}</p>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
                 <Users className="w-6 h-6 mx-auto mb-2 text-green-600" />
-                <p className="text-sm text-gray-600">{((t as any).extracted_2026_v2?.["المسجلين"] || ((t as any).extracted_2026_v2?.["المسجلين"] || "المسجلين"))}</p>
+                <p className="text-sm text-gray-600">{"المسجلين"}</p>
                 <p className="font-semibold">{lesson.subscribers_count || 0}</p>
               </div>
               <div className="text-center p-4 bg-purple-50 rounded-lg">
                 <BookOpen className="w-6 h-6 mx-auto mb-2 text-purple-600" />
-                <p className="text-sm text-gray-600">{((t as any).extracted_2026_v2?.["المستوى"] || ((t as any).extracted_2026_v2?.["المستوى"] || "المستوى"))}</p>
+                <p className="text-sm text-gray-600">{"المستوى"}</p>
                 <p className="font-semibold">{lesson.level || 'beginner'}</p>
               </div>
             </div>
@@ -103,10 +101,10 @@ export default function PublicLessonPage({ params }: { params: { lessonId: strin
                 disabled={subscribing}
                 className="w-full h-12 text-lg"
               >
-                {subscribing ? ((t as any).extracted_2026_v2?.["جاري التسجيل..."] || ((t as any).extracted_2026_v2?.["جاري التسجيل..."] || "جاري التسجيل...")) : ((t as any).extracted_2026_v2?.["اشترك الآن"] || ((t as any).extracted_2026_v2?.["اشترك الآن"] || "اشترك الآن"))}
+                {subscribing ? "جاري التسجيل..." : "اشترك الآن"}
               </Button>
               <p className="text-xs text-gray-600 text-center mt-3">
-                {((t as any).extracted_2026_v2?.["يمكنك اختيار الاشتراك بعد تسجيل الدخول أو إنشاء حساب جديد"] || ((t as any).extracted_2026_v2?.["يمكنك اختيار الاشتراك بعد تسجيل الدخول أو إنشاء حساب جديد"] || "يمكنك اختيار الاشتراك بعد تسجيل الدخول أو إنشاء حساب جديد"))}</p>
+                {"يمكنك اختيار الاشتراك بعد تسجيل الدخول أو إنشاء حساب جديد"}</p>
             </div>
           </CardContent>
         </Card>
@@ -114,7 +112,7 @@ export default function PublicLessonPage({ params }: { params: { lessonId: strin
         {/* Teacher info */}
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="text-lg">{((t as any).extracted_2026_v2?.["مدرس الدرس"] || ((t as any).extracted_2026_v2?.["مدرس الدرس"] || "مدرس الدرس"))}</CardTitle>
+            <CardTitle className="text-lg">{"مدرس الدرس"}</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600" />

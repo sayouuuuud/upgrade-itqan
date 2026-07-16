@@ -1,7 +1,5 @@
 "use client"
 
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useState, useRef, useEffect, useCallback } from "react"
 import {
   Mic,
@@ -122,11 +120,11 @@ export default function AudioRecorder({
       formData.append("audio", file)
       const res = await fetch("/api/upload", { method: "POST", body: formData })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error || ((t as any).extracted_2026_v2?.["فشل رفع التسجيل"] || ((t as any).extracted_2026_v2?.["فشل رفع التسجيل"] || "فشل رفع التسجيل")))
+      if (!res.ok) throw new Error(json.error || "فشل رفع التسجيل")
       onChange(json.url || json.audioUrl)
       setState("saved")
     } catch (err: any) {
-      setError(err?.message || ((t as any).extracted_2026_v2?.["فشل رفع التسجيل"] || ((t as any).extracted_2026_v2?.["فشل رفع التسجيل"] || "فشل رفع التسجيل")))
+      setError(err?.message || "فشل رفع التسجيل")
       setState("idle")
     }
   }
@@ -164,7 +162,7 @@ export default function AudioRecorder({
     } catch (err) {
       console.error("[AudioRecorder] Failed to start:", err)
       setError(
-        ((t as any).extracted_2026_v2?.["لا يمكن الوصول إلى الميكروفون. يرجى السماح به في إعدادات المتصفح."] || ((t as any).extracted_2026_v2?.["لا يمكن الوصول إلى الميكروفون. يرجى السماح به في إعدادات المتصفح."] || "لا يمكن الوصول إلى الميكروفون. يرجى السماح به في إعدادات المتصفح.")),
+        "لا يمكن الوصول إلى الميكروفون. يرجى السماح به في إعدادات المتصفح.",
       )
     }
   }, [disabled])
@@ -214,10 +212,10 @@ export default function AudioRecorder({
             {formatTime(timer)}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {state === "idle" && !value && ((t as any).extracted_2026_v2?.["اضغط على زر التسجيل للبدء"] || ((t as any).extracted_2026_v2?.["اضغط على زر التسجيل للبدء"] || "اضغط على زر التسجيل للبدء"))}
-            {state === "recording" && ((t as any).extracted_2026_v2?.["جاري التسجيل... اضغط للإيقاف"] || ((t as any).extracted_2026_v2?.["جاري التسجيل... اضغط للإيقاف"] || "جاري التسجيل... اضغط للإيقاف"))}
-            {isUploading && ((t as any).extracted_2026_v2?.["جاري حفظ التسجيل..."] || ((t as any).extracted_2026_v2?.["جاري حفظ التسجيل..."] || "جاري حفظ التسجيل..."))}
-            {isSaved && ((t as any).extracted_2026_v2?.["تم تسجيل المقطع - يمكنك المعاينة أو إعادة التسجيل"] || ((t as any).extracted_2026_v2?.["تم تسجيل المقطع - يمكنك المعاينة أو إعادة التسجيل"] || "تم تسجيل المقطع - يمكنك المعاينة أو إعادة التسجيل"))}
+            {state === "idle" && !value && "اضغط على زر التسجيل للبدء"}
+            {state === "recording" && "جاري التسجيل... اضغط للإيقاف"}
+            {isUploading && "جاري حفظ التسجيل..."}
+            {isSaved && "تم تسجيل المقطع - يمكنك المعاينة أو إعادة التسجيل"}
           </p>
         </div>
 
@@ -247,8 +245,8 @@ export default function AudioRecorder({
             disabled={(state === "idle" && !value) || isUploading || disabled}
             onClick={reset}
             className="w-11 h-11 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-background flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            title={((t as any).extracted_2026_v2?.["إعادة التسجيل"] || ((t as any).extracted_2026_v2?.["إعادة التسجيل"] || "إعادة التسجيل"))}
-            aria-label={((t as any).extracted_2026_v2?.["إعادة التسجيل"] || ((t as any).extracted_2026_v2?.["إعادة التسجيل"] || "إعادة التسجيل"))}
+            title={"إعادة التسجيل"}
+            aria-label={"إعادة التسجيل"}
           >
             <RotateCcw className="w-5 h-5" />
           </button>
@@ -259,7 +257,7 @@ export default function AudioRecorder({
               onClick={startRecording}
               disabled={disabled}
               className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg flex items-center justify-center transition-all hover:scale-105 ring-4 ring-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label={((t as any).extracted_2026_v2?.["بدء التسجيل"] || ((t as any).extracted_2026_v2?.["بدء التسجيل"] || "بدء التسجيل"))}
+              aria-label={"بدء التسجيل"}
             >
               <Mic className="w-7 h-7" />
             </button>
@@ -269,7 +267,7 @@ export default function AudioRecorder({
               type="button"
               onClick={stopRecording}
               className="w-16 h-16 rounded-full bg-red-600 text-white shadow-lg flex items-center justify-center animate-pulse ring-4 ring-red-500/30"
-              aria-label={((t as any).extracted_2026_v2?.["إيقاف التسجيل"] || ((t as any).extracted_2026_v2?.["إيقاف التسجيل"] || "إيقاف التسجيل"))}
+              aria-label={"إيقاف التسجيل"}
             >
               <Square className="w-6 h-6 fill-current" />
             </button>
@@ -277,7 +275,7 @@ export default function AudioRecorder({
           {isUploading && (
             <div
               className="w-16 h-16 rounded-full bg-blue-500 text-white shadow-lg flex items-center justify-center"
-              aria-label={((t as any).extracted_2026_v2?.["جاري الرفع"] || ((t as any).extracted_2026_v2?.["جاري الرفع"] || "جاري الرفع"))}
+              aria-label={"جاري الرفع"}
             >
               <Loader2 className="w-7 h-7 animate-spin" />
             </div>
@@ -288,8 +286,8 @@ export default function AudioRecorder({
               onClick={startRecording}
               disabled={disabled}
               className="w-16 h-16 rounded-full bg-card border-2 border-border text-foreground shadow flex items-center justify-center hover:bg-muted transition disabled:opacity-50"
-              aria-label={((t as any).extracted_2026_v2?.["تسجيل جديد"] || ((t as any).extracted_2026_v2?.["تسجيل جديد"] || "تسجيل جديد"))}
-              title={((t as any).extracted_2026_v2?.["تسجيل جديد"] || ((t as any).extracted_2026_v2?.["تسجيل جديد"] || "تسجيل جديد"))}
+              aria-label={"تسجيل جديد"}
+              title={"تسجيل جديد"}
             >
               <Mic className="w-7 h-7" />
             </button>
@@ -300,8 +298,8 @@ export default function AudioRecorder({
             disabled={!previewUrl || isUploading || disabled}
             onClick={togglePlayback}
             className="w-11 h-11 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-background flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            title={isPlaying ? ((t as any).extracted_2026_v2?.["إيقاف المعاينة"] || ((t as any).extracted_2026_v2?.["إيقاف المعاينة"] || "إيقاف المعاينة")) : ((t as any).extracted_2026_v2?.["تشغيل المعاينة"] || ((t as any).extracted_2026_v2?.["تشغيل المعاينة"] || "تشغيل المعاينة"))}
-            aria-label={isPlaying ? ((t as any).extracted_2026_v2?.["إيقاف المعاينة"] || ((t as any).extracted_2026_v2?.["إيقاف المعاينة"] || "إيقاف المعاينة")) : ((t as any).extracted_2026_v2?.["تشغيل المعاينة"] || ((t as any).extracted_2026_v2?.["تشغيل المعاينة"] || "تشغيل المعاينة"))}
+            title={isPlaying ? "إيقاف المعاينة" : "تشغيل المعاينة"}
+            aria-label={isPlaying ? "إيقاف المعاينة" : "تشغيل المعاينة"}
           >
             {isPlaying ? (
               <Pause className="w-5 h-5" />
@@ -314,7 +312,7 @@ export default function AudioRecorder({
         {isSaved && (
           <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
             <CheckCircle2 className="w-4 h-4" />
-            <span>{((t as any).extracted_2026_v2?.["تم حفظ التسجيل"] || ((t as any).extracted_2026_v2?.["تم حفظ التسجيل"] || "تم حفظ التسجيل"))}</span>
+            <span>{"تم حفظ التسجيل"}</span>
           </div>
         )}
       </div>

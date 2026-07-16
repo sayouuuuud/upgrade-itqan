@@ -67,12 +67,12 @@ export function ReaderRecordingsPanel() {
       const res = await fetch(`/api/video/recordings?${params.toString()}`)
       if (!res.ok) {
         const j = await res.json().catch(() => ({}))
-        throw new Error(j.error || ((t as any).extracted_2026_v2?.["فشل تحميل التسجيلات"] || "فشل تحميل التسجيلات"))
+        throw new Error(j.error || "فشل تحميل التسجيلات")
       }
       const json = await res.json()
       setData(json.data || [])
     } catch (e) {
-      setError(e instanceof Error ? e.message : ((t as any).extracted_2026_v2?.["حدث خطأ غير متوقع"] || "حدث خطأ غير متوقع"))
+      setError(e instanceof Error ? e.message : "حدث خطأ غير متوقع")
     } finally {
       setLoading(false)
     }
@@ -93,15 +93,15 @@ export function ReaderRecordingsPanel() {
               <Input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder={((t as any).extracted_2026_v2?.["بحث بعنوان الجلسة أو اسم الطالب..."] || "بحث بعنوان الجلسة أو اسم الطالب...")}
+                placeholder={"بحث بعنوان الجلسة أو اسم الطالب..."}
                 className="pr-9"
               />
             </div>
             <div className="flex gap-2 flex-wrap">
               {([
-                { v: 'all', label: ((t as any).extracted_2026_v2?.["الكل"] || "الكل") },
-                { v: 'booking', label: ((t as any).extracted_2026_v2?.["الجلسات الفردية"] || "الجلسات الفردية") },
-                { v: 'halaqa', label: ((t as any).extracted_2026_v2?.["الحلقات"] || "الحلقات") },
+                { v: 'all', label: "الكل" },
+                { v: 'booking', label: "الجلسات الفردية" },
+                { v: 'halaqa', label: "الحلقات" },
               ] as const).map((opt) => (
                 <button
                   key={opt.v}
@@ -128,7 +128,7 @@ export function ReaderRecordingsPanel() {
         <Card className="border-border rounded-2xl">
           <CardContent className="py-10 text-center space-y-3">
             <p className="text-destructive font-medium">{error}</p>
-            <Button onClick={load} className="bg-emerald-600 hover:bg-emerald-700 text-white">{((t as any).extracted_2026_v2?.["إعادة المحاولة"] || "إعادة المحاولة")}</Button>
+            <Button onClick={load} className="bg-emerald-600 hover:bg-emerald-700 text-white">{"إعادة المحاولة"}</Button>
           </CardContent>
         </Card>
       ) : filtered.length === 0 ? (
@@ -137,8 +137,8 @@ export function ReaderRecordingsPanel() {
             <div className="w-16 h-16 mx-auto rounded-2xl bg-muted grid place-items-center">
               <Filter className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="font-bold text-foreground">{((t as any).extracted_2026_v2?.["لا توجد تسجيلات"] || "لا توجد تسجيلات")}</h3>
-            <p className="text-sm text-muted-foreground">{((t as any).extracted_2026_v2?.["لم يتم العثور على تسجيلات مطابقة. ستظهر التسجيلات هنا بعد انتهاء الجلسات."] || "لم يتم العثور على تسجيلات مطابقة. ستظهر التسجيلات هنا بعد انتهاء الجلسات.")}</p>
+            <h3 className="font-bold text-foreground">{"لا توجد تسجيلات"}</h3>
+            <p className="text-sm text-muted-foreground">{"لم يتم العثور على تسجيلات مطابقة. ستظهر التسجيلات هنا بعد انتهاء الجلسات."}</p>
           </CardContent>
         </Card>
       ) : (
@@ -166,13 +166,13 @@ export function ReaderRecordingsPanel() {
                 <div className="space-y-1 text-xs text-muted-foreground">
                   <p className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />{fmtDate(r.started_at)}</p>
                   <p className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{fmtDuration(r.duration_seconds)}</p>
-                  <p className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{r.participants_count} {((t as any).extracted_2026_v2?.["حاضر"] || "حاضر")}</p>
+                  <p className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{r.participants_count} {"حاضر"}</p>
                 </div>
                 <div className="pt-1">
                   {r.recording_url ? (
                     <VideoPlayerModal url={r.recording_url} title={r.title || KIND_LABEL[r.kind]} />
                   ) : (
-                    <Button size="sm" disabled className="w-full">{((t as any).extracted_2026_v2?.["لا يوجد رابط"] || "لا يوجد رابط")}</Button>
+                    <Button size="sm" disabled className="w-full">{"لا يوجد رابط"}</Button>
                   )}
                 </div>
               </CardContent>

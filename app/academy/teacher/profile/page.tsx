@@ -1,7 +1,4 @@
 'use client'
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
-const a: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -34,7 +31,7 @@ interface TeacherProfile {
 }
 
 const SUBJECT_OPTIONS = [
-  (t.addedTranslations_2026?.['تلاوة'] || 'تلاوة'),
+  '',
   'تجويد',
   'حفظ',
   'فقه',
@@ -58,6 +55,7 @@ const SUBJECT_MAP: Record<string, { ar: string; en: string }> = {
 export default function TeacherProfilePage() {
   
 
+  const { t } = useI18n()
   const { locale } = useI18n()
   const isAr = locale === 'ar'
 
@@ -170,8 +168,8 @@ export default function TeacherProfilePage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setPwError('')
-    if (newPw !== confirmPw) { setPwError((t.addedTranslations_2026?.['كلمتا المرور غير متطابقتين'] || 'كلمتا المرور غير متطابقتين')); return }
-    if (newPw.length < 6) { setPwError((t.addedTranslations_2026?.['كلمة المرور قصيرة'] || 'كلمة المرور قصيرة')); return }
+    if (newPw !== confirmPw) { setPwError(''); return }
+    if (newPw.length < 6) { setPwError(''); return }
 
     setPwSaving(true)
     try {
@@ -186,7 +184,7 @@ export default function TeacherProfilePage() {
         setTimeout(() => setPwSaved(false), 3000)
       } else {
         const d = await res.json()
-        setPwError(d.error || ((t.addedTranslations_2026?.['فشل تغيير كلمة المرور'] || 'فشل تغيير كلمة المرور')))
+        setPwError(d.error || (''))
       }
     } finally {
       setPwSaving(false)
@@ -212,19 +210,19 @@ export default function TeacherProfilePage() {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-2">
             <GraduationCap className="w-4 h-4" />
-            {(t.addedTranslations_2026?.['الملف الشخصي'] || 'الملف الشخصي')}
+            {''}
           </div>
           <h1 className="text-3xl lg:text-4xl font-black tracking-tight text-foreground">
-            {(t.addedTranslations_2026?.['ملف المدرس'] || 'ملف المدرس')}
+            {''}
           </h1>
           <p className="text-muted-foreground font-medium mt-1">
-            {(t.addedTranslations_2026?.['قم بتحديث بياناتك ومجالات تخصصك ليتعرف عليك الطلاب بسهولة.'] || 'قم بتحديث بياناتك ومجالات تخصصك ليتعرف عليك الطلاب بسهولة.')}
+            {''}
           </p>
         </div>
         {profile?.is_verified && (
           <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400">
             <BadgeCheck className="w-5 h-5" />
-            <span className="text-sm font-bold">{(t.addedTranslations_2026?.['مدرس معتمد'] || 'مدرس معتمد')}</span>
+            <span className="text-sm font-bold">{''}</span>
           </div>
         )}
       </div>
@@ -236,7 +234,7 @@ export default function TeacherProfilePage() {
               <Users className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{(t.addedTranslations_2026?.['الطلاب'] || 'الطلاب')}</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{''}</p>
               <p className="text-2xl font-black">{profile?.total_students || 0}</p>
             </div>
           </CardContent>
@@ -247,7 +245,7 @@ export default function TeacherProfilePage() {
               <BookOpen className="w-5 h-5 text-emerald-500" />
             </div>
             <div>
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{(t.addedTranslations_2026?.['الدورات'] || 'الدورات')}</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{''}</p>
               <p className="text-2xl font-black">{profile?.total_courses || 0}</p>
             </div>
           </CardContent>
@@ -257,8 +255,8 @@ export default function TeacherProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="rounded-3xl lg:col-span-1">
           <CardHeader>
-            <CardTitle className="text-lg font-bold">{(t.addedTranslations_2026?.['الصورة الشخصية'] || 'الصورة الشخصية')}</CardTitle>
-            <CardDescription>{(t.addedTranslations_2026?.['حدّث صورتك الشخصية'] || 'حدّث صورتك الشخصية')}</CardDescription>
+            <CardTitle className="text-lg font-bold">{''}</CardTitle>
+            <CardDescription>{''}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
             <AvatarUpload
@@ -277,49 +275,49 @@ export default function TeacherProfilePage() {
           <CardHeader>
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <Briefcase className="w-5 h-5" />
-              {(t.addedTranslations_2026?.['البيانات المهنية'] || 'البيانات المهنية')}
+              {''}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSave} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>{(t.addedTranslations_2026?.['الاسم'] || 'الاسم')}</Label>
+                  <Label>{''}</Label>
                   <Input value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>{(t.addedTranslations_2026?.['الهاتف'] || 'الهاتف')}</Label>
+                  <Label>{''}</Label>
                   <Input value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>{(t.addedTranslations_2026?.['التخصص'] || 'التخصص')}</Label>
+                  <Label>{''}</Label>
                   <Input
                     value={specialization}
                     onChange={(e) => setSpecialization(e.target.value)}
-                    placeholder={(t.addedTranslations_2026?.['مثلاً: تلاوة وتجويد'] || 'مثلاً: تلاوة وتجويد')}
+                    placeholder={''}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>{(t.addedTranslations_2026?.['سنوات الخبرة'] || 'سنوات الخبرة')}</Label>
+                  <Label>{''}</Label>
                   <Input type="number" min={0} max={70} value={yearsExp} onChange={(e) => setYearsExp(e.target.value)} />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label>{(t.addedTranslations_2026?.['نبذة عن المدرس'] || 'نبذة عن المدرس')}</Label>
+                <Label>{''}</Label>
                 <Textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   rows={4}
-                  placeholder={(t.addedTranslations_2026?.['اكتب نبذة قصيرة تعرف بنفسك للطلاب...'] || 'اكتب نبذة قصيرة تعرف بنفسك للطلاب...')}
+                  placeholder={''}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>{(t.addedTranslations_2026?.['المواد التي تدرّسها'] || 'المواد التي تدرّسها')}</Label>
+                <Label>{''}</Label>
                 <div className="flex flex-wrap gap-2">
                   {SUBJECT_OPTIONS.map((s) => {
                     const active = subjects.includes(s)
@@ -343,7 +341,7 @@ export default function TeacherProfilePage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Award className="w-4 h-4" /> {(t.addedTranslations_2026?.['الشهادات والإجازات'] || 'الشهادات والإجازات')}</Label>
+                <Label className="flex items-center gap-2"><Award className="w-4 h-4" /> {''}</Label>
                 <div className="flex flex-wrap gap-2">
                   {certifications.map((c) => (
                     <span key={c} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-foreground text-sm font-medium border border-border">
@@ -354,14 +352,14 @@ export default function TeacherProfilePage() {
                     </span>
                   ))}
                   {certifications.length === 0 && (
-                    <span className="text-sm text-muted-foreground">{(t.addedTranslations_2026?.['لا توجد شهادات بعد'] || 'لا توجد شهادات بعد')}</span>
+                    <span className="text-sm text-muted-foreground">{''}</span>
                   )}
                 </div>
                 <div className="flex gap-2">
                   <Input
                     value={newCert}
                     onChange={(e) => setNewCert(e.target.value)}
-                    placeholder={(t.addedTranslations_2026?.['أضف شهادة (مثلاً: إجازة في حفص)'] || 'أضف شهادة (مثلاً: إجازة في حفص)')}
+                    placeholder={''}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
@@ -377,9 +375,9 @@ export default function TeacherProfilePage() {
 
               <label className="flex items-center justify-between gap-3 p-4 rounded-2xl border border-border bg-muted/20">
                 <div>
-                  <p className="font-bold text-sm">{(t.addedTranslations_2026?.['فتح التسجيل للطلاب الجدد'] || 'فتح التسجيل للطلاب الجدد')}</p>
+                  <p className="font-bold text-sm">{''}</p>
                   <p className="text-xs text-muted-foreground">
-                    {(t.addedTranslations_2026?.['إذا تم الإيقاف لن يظهر اسمك للطلاب الجدد'] || 'إذا تم الإيقاف لن يظهر اسمك للطلاب الجدد')}
+                    {''}
                   </p>
                 </div>
                 <input
@@ -393,12 +391,12 @@ export default function TeacherProfilePage() {
               <div className="flex items-center gap-3 pt-2">
                 <Button type="submit" disabled={saving} className="font-bold h-11 px-6">
                   {saving ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <Save className="w-4 h-4 ml-2" />}
-                  {(t.addedTranslations_2026?.['حفظ التغييرات'] || 'حفظ التغييرات')}
+                  {''}
                 </Button>
                 {saved && (
                   <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-sm font-bold">
                     <CheckCircle className="w-4 h-4" />
-                    {(t.addedTranslations_2026?.['تم الحفظ'] || 'تم الحفظ')}
+                    {''}
                   </span>
                 )}
               </div>
@@ -411,21 +409,21 @@ export default function TeacherProfilePage() {
         <CardHeader>
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <Lock className="w-5 h-5" />
-            {(t.addedTranslations_2026?.['تغيير كلمة المرور'] || 'تغيير كلمة المرور')}
+            {''}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleChangePassword} className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <Label>{(t.addedTranslations_2026?.['كلمة المرور الحالية'] || 'كلمة المرور الحالية')}</Label>
+              <Label>{''}</Label>
               <Input type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} required />
             </div>
             <div className="space-y-1.5">
-              <Label>{(t.addedTranslations_2026?.['كلمة المرور الجديدة'] || 'كلمة المرور الجديدة')}</Label>
+              <Label>{''}</Label>
               <Input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} required />
             </div>
             <div className="space-y-1.5">
-              <Label>{(t.addedTranslations_2026?.['تأكيد كلمة المرور'] || 'تأكيد كلمة المرور')}</Label>
+              <Label>{''}</Label>
               <Input type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} required />
             </div>
             {pwError && (
@@ -434,12 +432,12 @@ export default function TeacherProfilePage() {
             <div className="md:col-span-3 flex items-center gap-3">
               <Button type="submit" disabled={pwSaving} className="h-11 font-bold">
                 {pwSaving ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
-                {(t.addedTranslations_2026?.['تغيير كلمة المرور'] || 'تغيير كلمة المرور')}
+                {''}
               </Button>
               {pwSaved && (
                 <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-sm font-bold">
                   <CheckCircle className="w-4 h-4" />
-                  {(t.addedTranslations_2026?.['تم التغيير'] || 'تم التغيير')}
+                  {''}
                 </span>
               )}
             </div>

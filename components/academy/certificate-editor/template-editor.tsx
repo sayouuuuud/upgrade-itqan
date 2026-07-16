@@ -1,7 +1,5 @@
 "use client"
 
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 // Visual field-placement editor for certificate templates.
 //
 // Opens the template image in a draggable, ruler-aware canvas.  The admin
@@ -80,7 +78,8 @@ export function CertificateTemplateEditor({
   apiBase,
   onSaved,
 }: TemplateEditorProps) {
-  const { locale } = useI18n()
+  const { locale, t } = useI18n()
+  const te = (t as any).templateEditor as Record<string, string> | undefined
   const base = apiBase || `/api/${scopePath}/admin/certificates`
   const isAr = locale === "ar"
   const lbl = (f: FieldDef) => (isAr ? f.label_ar : f.label_en)
@@ -206,7 +205,7 @@ export function CertificateTemplateEditor({
         },
       )
       if (res.ok) {
-        toast({ title: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["تم حفظ القالب"] || "تم حفظ القالب")] || ((t as any).extracted_2026_v2?.["تم حفظ القالب"] || "تم حفظ القالب")) })
+        toast({ title: te?.savedTitle ?? 'Template saved' })
         onSaved?.()
         onOpenChange(false)
       } else {
@@ -238,7 +237,7 @@ export function CertificateTemplateEditor({
         const e = await r1.json().catch(() => ({}))
         toast({
           variant: "destructive",
-          title: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["تعذر حفظ المواضع"] || "تعذر حفظ المواضع")] || ((t as any).extracted_2026_v2?.["تعذر حفظ المواضع"] || "تعذر حفظ المواضع")),
+          title: te?.savePositionsFail ?? 'Failed to save positions',
           description: e.error || r1.statusText,
         })
         return
@@ -254,7 +253,7 @@ export function CertificateTemplateEditor({
           : await r2.text().catch(() => "")
         toast({
           variant: "destructive",
-          title: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["تعذر إنشاء المعاينة"] || "تعذر إنشاء المعاينة")] || ((t as any).extracted_2026_v2?.["تعذر إنشاء المعاينة"] || "تعذر إنشاء المعاينة")),
+          title: te?.previewFail ?? 'Failed to generate preview',
           description: detail || r2.statusText,
         })
         return
@@ -264,7 +263,7 @@ export function CertificateTemplateEditor({
     } catch (err) {
       toast({
         variant: "destructive",
-        title: ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["خطأ في المعاينة"] || "خطأ في المعاينة")] || ((t as any).extracted_2026_v2?.["خطأ في المعاينة"] || "خطأ في المعاينة")),
+          title: te?.previewError ?? 'Preview error',
         description: err instanceof Error ? err.message : String(err),
       })
     } finally {
@@ -286,11 +285,11 @@ export function CertificateTemplateEditor({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <GripVertical className="w-5 h-5 text-primary" />
-            {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["محرر مواضع الحقول"] || "محرر مواضع الحقول")] || ((t as any).extracted_2026_v2?.["محرر مواضع الحقول"] || "محرر مواضع الحقول"))}
+            {te?.editorTitle ?? 'Field Position Editor'}
             <Badge variant="secondary">{template.name}</Badge>
           </DialogTitle>
           <DialogDescription>
-            {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["اختر الحقل من القائمة ثم اسحبه إلى مكانه المناسب على التيمبلت. اضغط معاينة لرؤية النتيجة."] || "اختر الحقل من القائمة ثم اسحبه إلى مكانه المناسب على التيمبلت. اضغط معاينة لرؤية النتيجة.")] || ((t as any).extracted_2026_v2?.["اختر الحقل من القائمة ثم اسحبه إلى مكانه المناسب على التيمبلت. اضغط معاينة لرؤية النتيجة."] || "اختر الحقل من القائمة ثم اسحبه إلى مكانه المناسب على التيمبلت. اضغط معاينة لرؤية النتيجة."))}
+            {te?.editorDesc ?? 'Select a field from the list then drag it to its position on the template. Press preview to see the result.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -299,11 +298,11 @@ export function CertificateTemplateEditor({
           <aside className="md:w-72 flex-shrink-0 flex flex-col gap-3 overflow-hidden">
             <div className="rounded-lg border bg-card p-3 space-y-2">
               <Label className="text-xs uppercase tracking-wide opacity-70">
-                {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["أضف حقل"] || "أضف حقل")] || ((t as any).extracted_2026_v2?.["أضف حقل"] || "أضف حقل"))}
+                {te?.addField ?? 'Add Field'}
               </Label>
               <Select onValueChange={(v) => addField(v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder={((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["اختر حقل…"] || "اختر حقل…")] || ((t as any).extracted_2026_v2?.["اختر حقل…"] || "اختر حقل…"))} />
+                  <SelectValue placeholder={te?.selectField ?? 'Select field…'} />
                 </SelectTrigger>
                 <SelectContent>
                   {unplaced.map((f) => (
@@ -313,7 +312,7 @@ export function CertificateTemplateEditor({
                   ))}
                   {unplaced.length === 0 && (
                     <div className="px-3 py-2 text-xs text-muted-foreground">
-                      {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["كل الحقول مضافة"] || "كل الحقول مضافة")] || ((t as any).extracted_2026_v2?.["كل الحقول مضافة"] || "كل الحقول مضافة"))}
+                      {te?.allFieldsAdded ?? 'All fields added'}
                     </div>
                   )}
                 </SelectContent>
@@ -322,12 +321,12 @@ export function CertificateTemplateEditor({
 
             <ScrollArea className="flex-1 rounded-lg border bg-card p-3">
               <Label className="text-xs uppercase tracking-wide opacity-70">
-                {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["الحقول الموضوعة"] || "الحقول الموضوعة")] || ((t as any).extracted_2026_v2?.["الحقول الموضوعة"] || "الحقول الموضوعة"))}
+                {te?.placedFields ?? 'Placed Fields'}
               </Label>
               <div className="mt-2 space-y-1">
                 {placedKeys.length === 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["لا توجد حقول بعد"] || "لا توجد حقول بعد")] || ((t as any).extracted_2026_v2?.["لا توجد حقول بعد"] || "لا توجد حقول بعد"))}
+                    {te?.noFieldsYet ?? 'No fields yet'}
                   </p>
                 )}
                 {placedKeys.map((k) => {
@@ -359,15 +358,15 @@ export function CertificateTemplateEditor({
             {activeDef && activePos && (
               <div className="rounded-lg border bg-card p-3 space-y-3 text-sm">
                 <p className="font-bold">
-                  {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["خصائص: "] || "خصائص: ")] || ((t as any).extracted_2026_v2?.["خصائص: "] || "خصائص: "))}
+                  {te?.properties ?? 'Properties:'}{' '}
                   <span className="text-primary">{lbl(activeDef)}</span>
                 </p>
 
                 <div className="space-y-1">
                   <Label className="text-xs">
                     {IMAGE_FIELDS.has(activeDef.key)
-                      ? ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["حجم الصورة (% من العرض)"] || "حجم الصورة (% من العرض)")] || ((t as any).extracted_2026_v2?.["حجم الصورة (% من العرض)"] || "حجم الصورة (% من العرض)"))
-                      : ((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["حجم الخط (% من أقصر ضلع)"] || "حجم الخط (% من أقصر ضلع)")] || ((t as any).extracted_2026_v2?.["حجم الخط (% من أقصر ضلع)"] || "حجم الخط (% من أقصر ضلع)"))}{" "}
+                      ? (te?.imageSize ?? 'Image size (% of width)')
+                      : (te?.fontSize ?? 'Font size (% of shorter side)')}{" "}
                     — {activePos.font_size?.toFixed(1) ?? "—"}
                   </Label>
                   <Slider
@@ -385,7 +384,7 @@ export function CertificateTemplateEditor({
                   <>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <Label className="text-xs">{((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["محاذاة"] || "محاذاة")] || ((t as any).extracted_2026_v2?.["محاذاة"] || "محاذاة"))}</Label>
+                        <Label className="text-xs">{te?.align ?? 'Align'}</Label>
                         <Select
                           value={activePos.align || activeDef.default_align || "center"}
                           onValueChange={(v) =>
@@ -396,14 +395,14 @@ export function CertificateTemplateEditor({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="left">{((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["يسار"] || "يسار")] || ((t as any).extracted_2026_v2?.["يسار"] || "يسار"))}</SelectItem>
-                            <SelectItem value="center">{((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["وسط"] || "وسط")] || ((t as any).extracted_2026_v2?.["وسط"] || "وسط"))}</SelectItem>
-                            <SelectItem value="right">{((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["يمين"] || "يمين")] || ((t as any).extracted_2026_v2?.["يمين"] || "يمين"))}</SelectItem>
+                            <SelectItem value="left">{te?.alignLeft ?? 'Left'}</SelectItem>
+                            <SelectItem value="center">{te?.alignCenter ?? 'Center'}</SelectItem>
+                            <SelectItem value="right">{te?.alignRight ?? 'Right'}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">{((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["السمك"] || "السمك")] || ((t as any).extracted_2026_v2?.["السمك"] || "السمك"))}</Label>
+                        <Label className="text-xs">{te?.weight ?? 'Weight'}</Label>
                         <Select
                           value={activePos.weight || activeDef.default_weight || "normal"}
                           onValueChange={(v) =>
@@ -414,15 +413,15 @@ export function CertificateTemplateEditor({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="normal">{((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["عادي"] || "عادي")] || ((t as any).extracted_2026_v2?.["عادي"] || "عادي"))}</SelectItem>
-                            <SelectItem value="bold">{((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["عريض"] || "عريض")] || ((t as any).extracted_2026_v2?.["عريض"] || "عريض"))}</SelectItem>
+                            <SelectItem value="normal">{te?.weightNormal ?? 'Normal'}</SelectItem>
+                            <SelectItem value="bold">{te?.weightBold ?? 'Bold'}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-xs">{((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["اللون"] || "اللون")] || ((t as any).extracted_2026_v2?.["اللون"] || "اللون"))}</Label>
+                      <Label className="text-xs">{te?.color ?? 'Color'}</Label>
                       <Input
                         type="color"
                         value={activePos.color || activeDef.default_color || "#000000"}
@@ -434,7 +433,7 @@ export function CertificateTemplateEditor({
 
                     <div className="space-y-1">
                       <Label className="text-xs">
-                        {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["أقصى عرض (٪)"] || "أقصى عرض (٪)")] || ((t as any).extracted_2026_v2?.["أقصى عرض (٪)"] || "أقصى عرض (٪)"))} —{" "}
+                        {te?.maxWidth ?? 'Max width (%)'} —{" "}
                         {Math.round((activePos.max_width ?? 0.7) * 100)}%
                       </Label>
                       <Slider
@@ -452,7 +451,7 @@ export function CertificateTemplateEditor({
 
                 <div className="space-y-1">
                   <Label className="text-xs">
-                    {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["دوران (درجة)"] || "دوران (درجة)")] || ((t as any).extracted_2026_v2?.["دوران (درجة)"] || "دوران (درجة)"))} —{" "}
+                    {te?.rotation ?? 'Rotation (deg)'} —{" "}
                     {activePos.rotate || 0}°
                   </Label>
                   <Slider
@@ -483,7 +482,7 @@ export function CertificateTemplateEditor({
             <div className="flex items-center justify-between px-3 py-2 border-b bg-background/60">
               <div className="text-xs text-muted-foreground">
                 {isAr
-                  ? `${placedKeys.length} حقل موضوع · اسحب أي علامة لتحريكها`
+                  ? (te?.fieldsPlacedAr ?? `${placedKeys.length} fields placed · drag any pin to move`).replace('{n}', String(placedKeys.length))
                   : `${placedKeys.length} fields placed · drag any pin to move`}
               </div>
               <div className="flex gap-2">
@@ -498,7 +497,7 @@ export function CertificateTemplateEditor({
                   ) : (
                     <Eye className="w-4 h-4" />
                   )}
-                  {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["معاينة"] || "معاينة")] || ((t as any).extracted_2026_v2?.["معاينة"] || "معاينة"))}
+                  {te?.preview ?? 'Preview'}
                 </Button>
                 <Button size="sm" onClick={save} disabled={saving}>
                   {saving ? (
@@ -506,7 +505,7 @@ export function CertificateTemplateEditor({
                   ) : (
                     <Save className="w-4 h-4" />
                   )}
-                  {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["حفظ"] || "حفظ")] || ((t as any).extracted_2026_v2?.["حفظ"] || "حفظ"))}
+                  {te?.save ?? 'Save'}
                 </Button>
               </div>
             </div>
@@ -637,13 +636,13 @@ export function CertificateTemplateEditor({
             {previewSrc && (
               <div className="border-t bg-background/60 px-3 py-2 flex items-center justify-between">
                 <span className="text-xs font-medium">
-                  {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["آخر معاينة"] || "آخر معاينة")] || ((t as any).extracted_2026_v2?.["آخر معاينة"] || "آخر معاينة"))}
+                  {"آخر معاينة"}
                 </span>
                 <div className="flex gap-2">
                   <Button size="sm" variant="ghost" asChild>
                     <a href={previewSrc} target="_blank" rel="noreferrer">
                       <Eye className="w-3 h-3" />
-                      {((t as any).extracted_2026_v2?.[((t as any).extracted_2026_v2?.["افتح في تبويب"] || "افتح في تبويب")] || ((t as any).extracted_2026_v2?.["افتح في تبويب"] || "افتح في تبويب"))}
+                      {"افتح في تبويب"}
                     </a>
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setPreviewSrc(null)}>

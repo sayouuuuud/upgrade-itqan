@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { MisbahaLoader } from './misbaha-loader'
+import { useI18n } from '@/lib/i18n/context'
 
 interface SplashScreenProps {
   isLoading: boolean
@@ -64,6 +65,8 @@ function CornerOrnament({ className = "" }: { className?: string }) {
 }
 
 export function SplashScreen({ isLoading, onLoadingComplete }: SplashScreenProps) {
+  const { t } = useI18n()
+  const sp = (t as any).splashScreen as Record<string, string> | undefined
   const [show, setShow] = useState(true)
 
   useEffect(() => {
@@ -115,13 +118,13 @@ export function SplashScreen({ isLoading, onLoadingComplete }: SplashScreenProps
             className="text-7xl font-bold text-[#1B5E3B] leading-tight"
             style={{ fontFamily: 'var(--font-amiri)', letterSpacing: '1px' }}
           >
-            مُتقِن
+            {sp?.brandName ?? 'Itqan'}
           </h1>
           <p
             className="text-xl text-[#1B5E3B]/60 font-medium tracking-widest"
             style={{ fontFamily: 'var(--font-cairo)' }}
           >
-            منصة التعلم القرآني
+            {sp?.tagline ?? 'Quran Learning Platform'}
           </p>
 
           {/* سطر تزييني تحت الاسم */}
@@ -144,7 +147,7 @@ export function SplashScreen({ isLoading, onLoadingComplete }: SplashScreenProps
             className="text-sm text-[#1B5E3B]/50"
             style={{ fontFamily: 'var(--font-cairo)' }}
           >
-            جاري تحميل المنصة
+            {sp?.loading ?? 'Loading platform...'}
           </p>
           <div className="w-1.5 h-1.5 rounded-full bg-[#1B5E3B]/40 animate-bounce" style={{ animationDelay: '0.3s' }} />
         </div>
