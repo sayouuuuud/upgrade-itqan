@@ -17,6 +17,7 @@ interface Props {
 
 export function MaintenanceSettings({ settings, onUpdate }: Props) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const a = t.admin
 
   const enabled = settings.maintenance_enabled === true || settings.maintenance_enabled === "true"

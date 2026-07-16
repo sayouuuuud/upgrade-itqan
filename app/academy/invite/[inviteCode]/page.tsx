@@ -27,6 +27,7 @@ export default function InvitationPage({
   const router = useRouter()
   const { inviteCode } = use(params)
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const inv = (t as any).invite as Record<string, string> | undefined
 
   function getRoleLabel(role: string) {

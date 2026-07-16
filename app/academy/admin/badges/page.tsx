@@ -24,6 +24,7 @@ const CRITERIA_TYPES = ['points', 'streak', 'courses', 'tasks', 'memorization', 
 
 export default function AdminBadgesPage() {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const CATEGORIES = [a.badgeCategories.general, a.badgeCategories.quran, a.badgeCategories.tasks, a.badgeCategories.consistency, a.badgeCategories.other]

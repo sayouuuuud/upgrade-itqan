@@ -53,6 +53,7 @@ export default function AdminTajweedPathDetailPage() {
   const params = useParams<{ id: string }>()
   const pathId = params.id
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const tp = (t as any).tajweedPaths
   const atp = (t as any).adminTajweedPaths as Record<string, string> | undefined
 

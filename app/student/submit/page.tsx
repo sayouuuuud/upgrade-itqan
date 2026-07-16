@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n/context"
 
 export default function SubmitRecitationPage() {
   const { t } = useI18n()
+  const student = (t as any).student as Record<string, string> | undefined
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar h-full min-h-[85vh]">

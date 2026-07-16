@@ -33,6 +33,7 @@ const timezones = [
 
 export function GeneralSettings({ settings, metadata, onUpdate, onReset }: GeneralSettingsProps) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const [uploadingLogo, setUploadingLogo] = useState(false)

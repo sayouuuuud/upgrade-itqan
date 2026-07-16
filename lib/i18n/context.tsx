@@ -64,7 +64,7 @@ function deepMerge(base: any, override: any): any {
 
 // Precompute merged tables once (module scope) so every locale is fully populated.
 const translations: Record<Locale, TranslationSchema> = {
-  ar,
+  ar: ar as TranslationSchema,
   en: deepMerge(ar, en_typed) as TranslationSchema,
 }
 

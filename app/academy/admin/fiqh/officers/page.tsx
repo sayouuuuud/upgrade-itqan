@@ -21,6 +21,7 @@ interface Category { id: string; slug: string; name_ar: string }
 
 export default function AdminFiqhOfficersPage() {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const [officers, setOfficers] = useState<Officer[]>([])

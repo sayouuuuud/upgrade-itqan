@@ -347,6 +347,7 @@ function RequestCard({ req, isProcessing, rejectingId, setRejectingId, rejectRea
 
 function StatusBadge({ status }: { status: string }) {
   const { t } = useI18n();
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
   if (status === "submitted") {
     return <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-2 py-0.5 rounded-md"><Clock className="w-3 h-3"/> {t?.teacherCertificates?.statusPending}</span>;
   }

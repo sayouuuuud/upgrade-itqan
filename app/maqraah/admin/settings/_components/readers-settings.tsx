@@ -15,6 +15,7 @@ interface Props {
 
 export function ReadersSettings({ settings, onUpdate, onReset }: Props) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const a = t.admin
   return (
     <div className="space-y-6">

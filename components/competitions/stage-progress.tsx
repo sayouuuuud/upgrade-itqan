@@ -58,6 +58,7 @@ export function StageProgress({
   entries: StudentStageEntry[]
 }) {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   // Bilingual fallback: look up the Arabic literal in the 2026 dictionary
   // (English in en.ts), else render the Arabic literal as-is.
   const tr = (s: string) => (t as any).addedTranslations_2026?.[s] || s

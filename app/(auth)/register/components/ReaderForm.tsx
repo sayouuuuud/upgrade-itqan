@@ -19,6 +19,7 @@ export function ReaderForm({ onBack }: ReaderFormProps) {
   const [success, setSuccess] = useState(false)
   const [nationalityOpen, setNationalityOpen] = useState(false)
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
 
   const getNationalities = () => {
     return t.locale === 'ar' ? NATIONALITIES : NATIONALITIES_EN

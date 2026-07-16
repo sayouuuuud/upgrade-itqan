@@ -81,6 +81,7 @@ interface Submission {
 export default function SubmitTaskPage() {
     
   const { t } = useI18n()
+  const academyStudent = (t as any).academyStudent as Record<string, string> | undefined
   const params = useParams()
   const router = useRouter()
   const taskId = params.id as string

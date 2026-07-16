@@ -17,6 +17,7 @@ interface PlatformOverview {
 
 export function DashboardSuper() {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar"
   const ds = (t as any).dashboardSuper as Record<string, string> | undefined
 

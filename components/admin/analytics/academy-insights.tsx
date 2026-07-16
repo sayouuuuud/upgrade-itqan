@@ -32,6 +32,7 @@ export function AcademyInsights({
   activeEnrollments,
 }: AcademyInsightsProps) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const isAr = t.locale === "ar"
   const nf = (n: number) => n.toLocaleString(isAr ? "ar-EG" : "en-US")
 

@@ -23,6 +23,7 @@ interface PublicLesson {
 export default function TeacherPublicLessonsPage() {
   
   const { t } = useI18n()
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
   const a = t.admin
   const [lessons, setLessons] = useState<PublicLesson[]>([])
   const [loading, setLoading] = useState(true)

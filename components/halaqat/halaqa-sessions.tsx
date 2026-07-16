@@ -76,6 +76,7 @@ function fmtDate(iso: string | null, unspecifiedLabel = 'N/A') {
 
 export function HalaqaSessions({ halaqaId, canManage }: { halaqaId: string; canManage: boolean }) {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const th = (t as any).halaqat as Record<string, string> | undefined
 
   const STATUS_LABELS: Record<string, { label: string; cls: string }> = {

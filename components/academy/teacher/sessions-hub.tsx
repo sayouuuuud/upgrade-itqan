@@ -128,6 +128,7 @@ function fmtDateTime(s: string) {
 
 function Stars({ value }: { value: number | null }) {
   const { t } = useI18n()
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
   const ts = (t as any).teacherSessions
 
   if (value === null || value === undefined) {

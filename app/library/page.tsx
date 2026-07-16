@@ -39,6 +39,7 @@ interface CategoryOption {
 
 export default function PublicLibraryPage() {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const lib = t.library
   const isAr = t.locale === "ar"
   const [books, setBooks] = useState<BookListItem[]>([])

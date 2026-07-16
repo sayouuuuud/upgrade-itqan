@@ -34,6 +34,7 @@ type Message = {
 
 function ReaderChatContent() {
   const { t } = useI18n()
+  const reader = (t as any).reader as Record<string, string> | undefined
   const isAr = t.locale === "ar"
   const searchParams = useSearchParams()
   const router = useRouter()

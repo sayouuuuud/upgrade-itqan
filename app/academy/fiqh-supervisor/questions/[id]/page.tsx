@@ -58,6 +58,7 @@ export default function FiqhSupervisorQuestionDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
 
   const { id } = use(params)
 

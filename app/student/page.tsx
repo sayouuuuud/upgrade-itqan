@@ -1101,6 +1101,7 @@ function StatCard({
   gradient?: boolean
 }) {
   const { t } = useI18n();
+  const student = (t as any).student as Record<string, string> | undefined
 
   return (
     <div className="bg-card border border-border rounded-2xl p-4 md:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">

@@ -32,6 +32,7 @@ type TabId = "identity" | "email" | "security" | "notifications" | "maintenance"
 
 export default function SystemSettingsPage() {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
 
   const TABS = [
     { id: "identity"      as TabId, label: t.admin.settingsTabIdentityLabel,      icon: Globe,   description: t.admin.settingsTabIdentityDesc },

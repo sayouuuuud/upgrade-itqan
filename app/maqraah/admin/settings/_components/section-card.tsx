@@ -20,6 +20,7 @@ interface SectionCardProps {
 
 export function SectionCard({ icon: Icon, title, description, onReset, resetLabel, children }: SectionCardProps) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const a = t.admin
   return (
     <Card className="border-border">

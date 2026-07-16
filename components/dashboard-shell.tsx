@@ -599,6 +599,7 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed()
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const [user, setUser] = useState<{
     name: string;
     email: string;

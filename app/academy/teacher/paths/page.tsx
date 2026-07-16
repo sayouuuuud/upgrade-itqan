@@ -48,6 +48,7 @@ const emptyForm = {
 
 export default function TeacherPathsPage() {
   const { t } = useI18n();
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
 
   const router = useRouter()
   const { locale } = useI18n()

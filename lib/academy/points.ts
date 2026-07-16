@@ -39,11 +39,11 @@ const pointsConfig: PointsConfig = {
 export const POINTS = pointsConfig
 
 export const LEVELS = [
-  { key: 'beginner', label: ((en.extracted_2026_v2 as any)?.["مبتدئ"] || "مبتدئ"), min: 0 },
-  { key: 'intermediate', label: ((en.extracted_2026_v2 as any)?.["متوسط"] || "متوسط"), min: 500 },
-  { key: 'advanced', label: ((en.extracted_2026_v2 as any)?.["متقدم"] || "متقدم"), min: 2000 },
-  { key: 'hafiz', label: ((en.extracted_2026_v2 as any)?.["حافظ"] || "حافظ"), min: 5000 },
-  { key: 'master', label: ((en.extracted_2026_v2 as any)?.["خاتم"] || "خاتم"), min: 10000 },
+  { key: 'beginner', label: ("مبتدئ"), min: 0 },
+  { key: 'intermediate', label: ("متوسط"), min: 500 },
+  { key: 'advanced', label: ("متقدم"), min: 2000 },
+  { key: 'hafiz', label: ("حافظ"), min: 5000 },
+  { key: 'master', label: ("خاتم"), min: 10000 },
 ]
 
 export function levelForPoints(points: number): string {
@@ -106,7 +106,7 @@ export async function adminAdjustPoints(userId: string, points: number, descript
   // made every admin adjustment fail with a 500. We also disable the streak
   // multiplier so admin-entered amounts are applied exactly as typed.
   const result = await engineAwardPoints(userId, Number(points), 'admin_adjust', {
-    description: description || ((en.extracted_2026_v2 as any)?.["تعديل يدوي من الأدمن"] || "تعديل يدوي من الأدمن"),
+    description: description || ("تعديل يدوي من الأدمن"),
     relatedEntityType: 'admin',
     relatedEntityId: adminId,
     applyStreakMultiplier: false,
@@ -137,7 +137,7 @@ export async function awardTaskCompletePoints(
     userId,
     pointsConfig.task_complete,
     'task_complete',
-    { description: `${((en.extracted_2026_v2 as any)?.["إكمال مهمة: "] || "إكمال مهمة: ")}${taskId}` }
+    { description: `${("إكمال مهمة: ")}${taskId}` }
   )
 }
 
@@ -149,7 +149,7 @@ export async function awardAttendancePoints(
     userId,
     pointsConfig.attendance,
     'attendance',
-    { description: `${((en.extracted_2026_v2 as any)?.["حضور جلسة: "] || "حضور جلسة: ")}${sessionId}` }
+    { description: `${("حضور جلسة: ")}${sessionId}` }
   )
 }
 
@@ -168,6 +168,6 @@ export async function awardCompetitionPoints(
     userId,
     pointsMap[position],
     'competition_win',
-    { description: `${((en.extracted_2026_v2 as any)?.["فوز في مسابقة: "] || "فوز في مسابقة: ")}${competitionId}${((en.extracted_2026_v2 as any)?.[" المركز "] || " المركز ")}${position}` }
+    { description: `${("فوز في مسابقة: ")}${competitionId}${(" المركز ")}${position}` }
   )
 }

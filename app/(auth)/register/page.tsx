@@ -16,6 +16,7 @@ function RegisterContent() {
   const initialRoleParam = searchParams.get('role') as Role
   const [selectedRole, setSelectedRole] = useState<Role>(initialRoleParam)
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
 
   useEffect(() => {
     if (initialRoleParam) {

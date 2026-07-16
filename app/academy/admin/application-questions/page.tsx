@@ -21,6 +21,7 @@ type Question = {
 
 export default function ApplicationQuestionsPage() {
     const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
     const a = t.academyAdmin
 
     const TYPE_LABELS: Record<Question["type"], { label: string; icon: any }> = {

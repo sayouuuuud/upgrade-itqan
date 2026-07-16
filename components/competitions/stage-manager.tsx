@@ -57,6 +57,7 @@ export function StageManager({
   onChanged?: () => void
 }) {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const sm = (t as any).stageManager as Record<string, string> | undefined
   const [stages, setStages] = useState<Stage[]>([])
   const [activeStage, setActiveStage] = useState<Stage | null>(null)
