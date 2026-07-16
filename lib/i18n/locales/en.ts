@@ -1168,5 +1168,33 @@ export const en = {
         makharij: 'Articulation Points'
       },
     }
+  },
+  app: {
+    recHalaqa: 'Halaqa',
+    recBooking: 'Private Session',
+    recCourseSession: 'Course Lesson',
+    recHour: 'h',
+    recMinute: 'm',
+    recTitle: 'Recordings',
+    recDesc: 'View and retrieve all your recordings',
+    recSearchPlaceholder: 'Search recordings...',
+    recMyRecordings: 'My Recordings',
+    recAllRecordingsAdmin: 'All Recordings',
+    recAllTypes: 'All Types',
+    recHalaqat: 'Halaqat',
+    recCourseLessons: 'Course Lessons',
+    recPrivateSessions: 'Private Sessions',
+    recAllPlatforms: 'All Platforms',
+    recAcademyPlatform: 'Academy',
+    recMaqraaPlatform: 'Maqraa',
+    recRetry: 'Try Again',
+    recNoRecordings: 'No Recordings',
+    recNoRecordingsDesc: 'We didn\'t find any recordings matching your criteria',
+    recLoadFailed: 'Failed to load recordings',
+    recUnexpectedError: 'An unexpected error occurred',
+    recAttendees: 'attendees',
+    recHost: 'Hosted by',
+    recNoLink: 'No Link',
+    recDetails: 'Details'
   }
 }

@@ -48,7 +48,7 @@ function fmtDate(s: string, locale: string) {
 
 export default function RecordingsIndexPage() {
   const { t, locale } = useI18n()
-  const a = t.admin
+  const a = (t as any).app || {}
   const [data, setData] = useState<Recording[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
