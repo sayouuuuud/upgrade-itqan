@@ -38,7 +38,22 @@ export function DashboardPageWrapper({ children, className }: { children: React.
   return <div className={cn('p-6 lg:p-8', className)}>{children}</div>
 }
 
-const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student_supervisor' | 'reciter_supervisor', { sections: NavSection[], label: string, name: string, sublabel: string }> => ({
+const getSafeT = (t: any) => ({
+  ...t,
+  admin: t.admin || {},
+  student: t.student || {},
+  reader: t.reader || {},
+  shell: t.shell || {},
+  academy: t.academy || {},
+  academyAdmin: t.academyAdmin || {},
+  tajweedPaths: t.tajweedPaths || {},
+  auth: t.auth || {},
+  notifications: t.notifications || {},
+})
+
+const getRoleConfig = (rawT: any): Record<'student' | 'reader' | 'admin' | 'student_supervisor' | 'reciter_supervisor', { sections: NavSection[], label: string, name: string, sublabel: string }> => {
+  const t = getSafeT(rawT)
+  return {
   student: {
     sections: [
       {
@@ -276,14 +291,17 @@ const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student
     ],
     label: t.auth.reciterSupervisor, name: t.auth.reciterSupervisor, sublabel: t.auth.reciterSupervisor
   }
-})
+  }
+}
 
 type ShellConfig = { sections: NavSection[]; label: string; name: string; sublabel: string }
 
 // ── Super Admin (governance) ────────────────────────────────────────────────
 // Platform-wide governance only. No operational maqraa/academy items — the
 // Super Admin switches the mode from the segmented control to manage those.
-const getSuperConfig = (t: any): ShellConfig => ({
+const getSuperConfig = (rawT: any): ShellConfig => {
+  const t = getSafeT(rawT)
+  return {
   sections: [
     {
       title: t.main,
@@ -340,7 +358,8 @@ const getSuperConfig = (t: any): ShellConfig => ({
     },
   ],
   label: 'المدير العام', name: 'المدير العام', sublabel: 'المدير العام',
-})
+  }
+}
 
 // ── Maqraa mode ────────────────────────���─────────────────────────────���─���──��─
 // The classic admin sidebar, minus every platform-wide / general item that now
@@ -381,7 +400,9 @@ const getMaqraaConfig = (t: any): ShellConfig => {
 // ── Academy mode ────────────────────────────────────────────────────────────
 // Mirrors the classic academy_admin sidebar (links stay under /academy/admin/…
 // where the working pages live).
-const getAcademyConfig = (t: any): ShellConfig => ({
+const getAcademyConfig = (rawT: any): ShellConfig => {
+  const t = getSafeT(rawT)
+  return {
   sections: [
     {
       title: t.main || 'الر��يسية',
@@ -449,7 +470,8 @@ const getAcademyConfig = (t: any): ShellConfig => ({
   label: t.academy?.adminPortal || 'إدارة الأكاديمية',
   name: t.academy?.admin || 'مدير الأكاديمية',
   sublabel: t.academy?.academyAdmin || 'مدير الأكاديمية',
-})
+  }
+}
 
 // Pick the sidebar config for an admin tier based on the active mode. Each mode
 // is fully scoped: no item from one mode ever leaks into another.
