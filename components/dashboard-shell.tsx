@@ -40,7 +40,10 @@ export function DashboardPageWrapper({ children, className }: { children: React.
 
 const getSafeT = (t: any) => ({
   ...t,
-  admin: t.admin || {},
+  admin: {
+    ...(t.admin || {}),
+    certificates: (t.admin && t.admin.certificates) || {}
+  },
   student: t.student || {},
   reader: t.reader || {},
   shell: t.shell || {},
