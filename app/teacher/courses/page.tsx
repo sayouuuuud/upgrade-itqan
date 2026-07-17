@@ -17,7 +17,27 @@ interface Course {
 export default function TeacherCoursesPage() {
   const { t } = useI18n()
   const app = (t as any).app as Record<string, string> | undefined
-  const a = t.admin
+  const a = {
+    tchCoursesManage: 'إدارة الدورات',
+    tchCoursesManageDesc: 'إدارة الدورات التعليمية الخاصة بك',
+    tchCoursesNew: 'دورة جديدة',
+    tchCoursesTitle: 'عنوان الدورة',
+    tchCoursesTitlePlaceholder: 'أدخل عنوان الدورة',
+    tchCoursesDescription: 'الوصف',
+    tchCoursesDescPlaceholder: 'أدخل وصف الدورة',
+    tchCoursesCategory: 'التصنيف',
+    tchCoursesCreating: 'جاري الإنشاء...',
+    tchCoursesCreate: 'إنشاء الدورة',
+    tchCoursesList: 'دوراتك',
+    tchCoursesEmpty: 'لا يوجد دورات مضافة بعد',
+    tchCoursesPublic: 'عام',
+    tchCoursesPrivate: 'خاص',
+    tchCoursesLoading: 'جاري التحميل...',
+    tchCoursesCreated: 'تم إنشاء الدورة بنجاح',
+    tchCoursesError: 'حدث خطأ أثناء إنشاء الدورة',
+    ...((t as any).admin || {}),
+    ...((t as any).addedTranslations_2026 || {})
+  }
   const router = useRouter()
   const [session, setSession] = useState<any>(null)
   const [courses, setCourses] = useState<Course[]>([])
