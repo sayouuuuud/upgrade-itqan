@@ -10,11 +10,12 @@ import { useI18n } from "@/lib/i18n/context"
 interface Props {
   settings: MaqraahSettings
   onUpdate: (updates: Partial<MaqraahSettings>) => void
-  onReset: () => void
+  onReset?: () => void
 }
 
 export function GamificationSettings({ settings, onUpdate, onReset }: Props) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const a = t.admin
   const pointValues = settings.maqraah_points_values || {}
   const levels = settings.maqraah_points_levels || {}

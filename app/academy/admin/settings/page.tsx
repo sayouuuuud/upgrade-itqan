@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import {
   Settings,
   Globe,
@@ -10,24 +10,14 @@ import {
   Trophy,
   Bell,
   MessageSquare,
-  Shield,
-  Wrench,
   Save,
   X,
   Loader2,
-  Search,
-  ChevronDown,
+  AlertCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 import { useI18n } from "@/lib/i18n/context"
 import { useAcademySettings } from "./hooks/use-academy-settings"
@@ -39,46 +29,72 @@ import {
   GamificationSettings,
   NotificationsEmailSettings,
   ForumFiqhSettings,
-  SecurityPrivacySettings,
-  MaintenanceSettings,
 } from "./_components"
 
+const getTabs = (a: any) => [
+  {
+    id: "general",
+    label: a.settingsGeneral || "General",
+    icon: Globe,
+    prefix: "academy_general_",
+  },
+  {
+    id: "registration",
+    label: a.settingsRegistration || "Registration",
+    icon: UserPlus,
+    prefix: "academy_registration_",
+  },
+  {
+    id: "courses",
+    label: a.settingsCourses || "Courses & Content",
+    icon: Video,
+    prefix: "academy_courses_",
+  },
+  {
+    id: "sessions",
+    label: a.settingsLiveSessions || "Live Sessions",
+    icon: VideoIcon,
+    prefix: "academy_sessions_",
+  },
+  {
+    id: "gamification",
+    label: a.settingsGamification || "Gamification",
+    icon: Trophy,
+    prefix: "academy_gamification_",
+  },
+  {
+    id: "notifications",
+    label: a.settingsNotifications || "Notifications & Email",
+    icon: Bell,
+    prefix: "academy_notifications_",
+  },
+  {
+    id: "forum",
+    label: a.settingsForum || "Forum & Fiqh",
+    icon: MessageSquare,
+    prefix: "academy_forum_",
+  },
+]
+
 export default function AcademyAdminSettingsPage() {
+  const { t, locale } = useI18n()
+  const a = t.academyAdmin || {}
+  const tabs = getTabs(a)
+
   const {
     settings,
     metadata,
     isLoading,
     saving,
     hasUnsavedChanges,
-    unsavedCount,
-    updateSetting,
     updateSettings,
     saveChanges,
     discardChanges,
-    resetSection,
-    testSmtp,
   } = useAcademySettings()
 
-  const { t } = useI18n()
-  const a = t.academyAdmin
-
-  const tabs = [
-    { id: "general", label: a.settingsGeneral, icon: Globe, keywords: a.settingsKeywordsGeneral },
-    { id: "registration", label: a.settingsRegistration, icon: UserPlus, keywords: a.settingsKeywordsRegistration },
-    { id: "courses", label: a.settingsCourses, icon: Video, keywords: a.settingsKeywordsCourses },
-    { id: "sessions", label: a.settingsLiveSessions, icon: VideoIcon, keywords: a.settingsKeywordsSessions },
-    { id: "gamification", label: a.settingsGamification, icon: Trophy, keywords: a.settingsKeywordsGamification },
-    { id: "notifications", label: a.settingsNotifications, icon: Bell, keywords: a.settingsKeywordsNotifications },
-    { id: "forum", label: a.settingsForum, icon: MessageSquare, keywords: a.settingsKeywordsForum },
-    { id: "security", label: a.settingsSecurity, icon: Shield, keywords: a.settingsKeywordsSecurity },
-    { id: "maintenance", label: a.settingsMaintenance, icon: Wrench, keywords: a.settingsKeywordsMaintenance },
-  ]
-
   const [activeTab, setActiveTab] = useState("general")
-  const [searchQuery, setSearchQuery] = useState("")
   const [isMobile, setIsMobile] = useState(false)
 
-  // Check for mobile viewport
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
@@ -86,7 +102,6 @@ export default function AcademyAdminSettingsPage() {
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  // Keyboard shortcut for save
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
@@ -101,22 +116,6 @@ export default function AcademyAdminSettingsPage() {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [hasUnsavedChanges, saveChanges, discardChanges])
 
-  // Filter tabs by search
-  const filteredTabs = tabs.filter(
-    (tab) =>
-      tab.label.includes(searchQuery) ||
-      (Array.isArray(tab.keywords) && tab.keywords.some((kw: string) => kw.includes(searchQuery)))
-  )
-
-  // Reset section handler
-  const handleResetSection = useCallback(
-    (prefix: string) => {
-      resetSection(prefix)
-    },
-    [resetSection]
-  )
-
-  // Render active tab content
   const renderTabContent = () => {
     switch (activeTab) {
       case "general":
@@ -125,7 +124,6 @@ export default function AcademyAdminSettingsPage() {
             settings={settings}
             metadata={metadata}
             onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_general_")}
           />
         )
       case "registration":
@@ -133,7 +131,6 @@ export default function AcademyAdminSettingsPage() {
           <RegistrationSettings
             settings={settings}
             onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_registration_")}
           />
         )
       case "courses":
@@ -141,7 +138,6 @@ export default function AcademyAdminSettingsPage() {
           <CoursesContentSettings
             settings={settings}
             onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_courses_")}
           />
         )
       case "sessions":
@@ -149,7 +145,6 @@ export default function AcademyAdminSettingsPage() {
           <LiveSessionsSettings
             settings={settings}
             onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_sessions_")}
           />
         )
       case "gamification":
@@ -157,7 +152,6 @@ export default function AcademyAdminSettingsPage() {
           <GamificationSettings
             settings={settings}
             onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_gamification_")}
           />
         )
       case "notifications":
@@ -165,8 +159,6 @@ export default function AcademyAdminSettingsPage() {
           <NotificationsEmailSettings
             settings={settings}
             onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_notifications_")}
-            onTestSmtp={testSmtp}
           />
         )
       case "forum":
@@ -174,19 +166,8 @@ export default function AcademyAdminSettingsPage() {
           <ForumFiqhSettings
             settings={settings}
             onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_forum_")}
           />
         )
-      case "security":
-        return (
-          <SecurityPrivacySettings
-            settings={settings}
-            onUpdate={updateSettings}
-            onReset={() => handleResetSection("academy_security_")}
-          />
-        )
-      case "maintenance":
-        return <MaintenanceSettings settings={settings} onUpdate={updateSettings} />
       default:
         return null
     }
@@ -194,149 +175,109 @@ export default function AcademyAdminSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="flex gap-6">
-          <div className="w-64 space-y-2">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-          <div className="flex-1 space-y-4">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-48 w-full" />
-          </div>
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-48" />
+        <div className="space-y-2">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-background -mx-6 lg:-mx-8 -mt-6 lg:-mt-8">
-      {/* Sticky Header */}
-      <div className="sticky -top-6 lg:-top-8 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-xl">
-              <Settings className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">{a.settingsTitle}</h1>
-              <p className="text-xs text-muted-foreground">
-                {tabs.find((t) => t.id === activeTab)?.label}
-              </p>
-            </div>
+    <div className="flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <Settings className="h-5 w-5 text-primary" />
           </div>
-
-          <div className="flex items-center gap-3">
-            {hasUnsavedChanges && (
-              <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
-                {unsavedCount} {a.settingsUnsavedChanges}
-              </span>
-            )}
-            <Button
-              variant="outline"
-              onClick={discardChanges}
-              disabled={!hasUnsavedChanges || saving}
-              className="gap-2"
-            >
-              <X className="w-4 h-4" />
-              {a.settingsCancel}
-            </Button>
-            <Button
-              onClick={saveChanges}
-              disabled={!hasUnsavedChanges || saving}
-              className="gap-2"
-            >
-              {saving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              {a.settingsSaveChanges}
-            </Button>
+          <div>
+            <h1 className="text-lg font-bold leading-none">
+              {a.settingsTitle || "إعدادات الأكاديمية"}
+            </h1>
           </div>
         </div>
+        {hasUnsavedChanges && (
+          <div className="flex items-center gap-2">
+            <span className="hidden text-sm text-amber-600 sm:block">
+              {a.unsavedChanges || "تعديلات غير محفوظة"}
+            </span>
+            <Button size="sm" variant="ghost" onClick={discardChanges} disabled={saving}>
+              <X className="h-3.5 w-3.5 me-1" />
+              {a.discard || "تجاهل"}
+            </Button>
+            <Button size="sm" onClick={saveChanges} disabled={saving}>
+              {saving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin me-1" />
+              ) : (
+                <Save className="h-3.5 w-3.5 me-1" />
+              )}
+              {a.save || "حفظ"}
+            </Button>
+          </div>
+        )}
       </div>
 
-      <div className="flex">
-        {/* Sidebar - Desktop */}
+      {/* Info Alert */}
+      <Alert className="border-blue-200 bg-blue-50">
+        <AlertCircle className="h-4 w-4 text-blue-600" />
+        <AlertDescription className="text-blue-700">
+          {a.settingsHint || "إعدادات خاصة بالأكاديمية فقط. الإعدادات العامة للموقع يديرها المدير العام."}
+        </AlertDescription>
+      </Alert>
+
+      {/* Grid: sidebar أولاً في JSX = يمين في RTL */}
+      <div className="grid gap-6 lg:grid-cols-[200px_minmax(0,1fr)]">
+
+        {/* Desktop Sidebar */}
         {!isMobile && (
-          <aside className="w-64 border-l border-border min-h-[calc(100vh-73px)] bg-muted/30">
-            <div className="p-4 sticky top-[73px]">
-              {/* Search */}
-              <div className="relative mb-4">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={a.settingsSearchPlaceholder}
-                  className="pr-10 h-10"
-                />
-              </div>
-
-              {/* Tabs */}
-              <ScrollArea className="h-[calc(100vh-180px)]">
-                <nav className="space-y-1">
-                  {filteredTabs.map((tab) => {
-                    const Icon = tab.icon
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={cn(
-                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                          activeTab === tab.id
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                        )}
-                      >
-                        <Icon className="w-4 h-4" />
-                        {tab.label}
-                      </button>
-                    )
-                  })}
-                </nav>
-              </ScrollArea>
-            </div>
-          </aside>
-        )}
-
-        {/* Main Content */}
-        <main className="flex-1 p-6">
-          {/* Mobile Accordion */}
-          {isMobile ? (
-            <Accordion
-              type="single"
-              collapsible
-              value={activeTab}
-              onValueChange={(v) => v && setActiveTab(v)}
-              className="space-y-4"
-            >
+          <aside className="lg:sticky lg:top-6 lg:self-start">
+            <nav className="space-y-1 rounded-xl border bg-card p-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon
                 return (
-                  <AccordionItem key={tab.id} value={tab.id} className="border rounded-xl overflow-hidden">
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                      <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5 text-primary" />
-                        <span className="font-medium">{tab.label}</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4">
-                      {activeTab === tab.id && renderTabContent()}
-                    </AccordionContent>
-                  </AccordionItem>
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      activeTab === tab.id
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{tab.label}</span>
+                  </button>
                 )
               })}
-            </Accordion>
-          ) : (
-            <div className="max-w-4xl">{renderTabContent()}</div>
-          )}
-        </main>
+            </nav>
+          </aside>
+        )}
+
+        {/* Mobile Selector */}
+        {isMobile && (
+          <div className="w-full">
+            <select
+              value={activeTab}
+              onChange={(e) => setActiveTab(e.target.value)}
+              className="w-full rounded-lg border bg-card px-3 py-2.5 text-sm font-medium"
+            >
+              {tabs.map((tab) => (
+                <option key={tab.id} value={tab.id}>{tab.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="min-w-0">
+          {renderTabContent()}
+        </div>
       </div>
     </div>
   )

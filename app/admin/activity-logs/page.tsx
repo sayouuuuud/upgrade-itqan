@@ -17,6 +17,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default function AdminActivityLogsPage() {
     const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
     const isAr = t.locale === 'ar'
 
     const [logs, setLogs] = useState<any[]>([])

@@ -119,31 +119,31 @@ export async function buildParentWeeklyReport(
 function renderWeeklyReportHtml(report: WeeklyReportSummary): string {
   const recitationItems = report.recitations.length
     ? report.recitations.map((item) => `<li>${item.surahName} — ${item.status}</li>`).join("")
-    : (en.extracted_2026_v2 as any)?.["<li>لا توجد تلاوات هذا الأسبوع.</li>"] || "<li>لا توجد تلاوات هذا الأسبوع.</li>"
+    : "<li>لا توجد تلاوات هذا الأسبوع.</li>"
 
   const sessionItems = report.sessions.length
     ? report.sessions.map((item) => `<li>${item.title} — ${item.courseTitle}</li>`).join("")
-    : (en.extracted_2026_v2 as any)?.["<li>لا توجد جلسات حضور مسجلة هذا الأسبوع.</li>"] || "<li>لا توجد جلسات حضور مسجلة هذا الأسبوع.</li>"
+    : "<li>لا توجد جلسات حضور مسجلة هذا الأسبوع.</li>"
 
   const badgeItems = report.newBadges.length
     ? report.newBadges.map((item) => `<li>${item.name}</li>`).join("")
-    : (en.extracted_2026_v2 as any)?.["<li>لا توجد شارات جديدة هذا الأسبوع.</li>"] || "<li>لا توجد شارات جديدة هذا الأسبوع.</li>"
+    : "<li>لا توجد شارات جديدة هذا الأسبوع.</li>"
 
   return `
     <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 640px; margin: auto; color: #1f2937;">
-      <h2 style="color:#0B3D2E;">${(en.extracted_2026_v2 as any)?.["تقرير "] || "تقرير "}${report.childName}${(en.extracted_2026_v2 as any)?.[" الأسبوعي"] || " الأسبوعي"}</h2>
-      <p>${(en.extracted_2026_v2 as any)?.["السلام عليكم "] || "السلام عليكم "}${report.parentName}${(en.extracted_2026_v2 as any)?.["، هذا ملخص أداء "] || "، هذا ملخص أداء "}${report.childName}${(en.extracted_2026_v2 as any)?.[" من "] || " من "}${report.weekStart}${(en.extracted_2026_v2 as any)?.[" إلى "] || " إلى "}${report.weekEnd}.</p>
+      <h2 style="color:#0B3D2E;">${"تقرير "}${report.childName}${" الأسبوعي"}</h2>
+      <p>${"السلام عليكم "}${report.parentName}${"، هذا ملخص أداء "}${report.childName}${" من "}${report.weekStart}${" إلى "}${report.weekEnd}.</p>
       <div style="display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin: 20px 0;">
-        <div style="padding:12px; border:1px solid #e5e7eb; border-radius:12px;"><strong>${(en.extracted_2026_v2 as any)?.["تلاوات الأسبوع"] || "تلاوات الأسبوع"}</strong><br />${report.recitationsCount}</div>
-        <div style="padding:12px; border:1px solid #e5e7eb; border-radius:12px;"><strong>${(en.extracted_2026_v2 as any)?.["جلسات حُضرت"] || "جلسات حُضرت"}</strong><br />${report.sessionsAttended}</div>
-        <div style="padding:12px; border:1px solid #e5e7eb; border-radius:12px;"><strong>${(en.extracted_2026_v2 as any)?.["المستوى الحالي"] || "المستوى الحالي"}</strong><br />${report.currentLevel}</div>
-        <div style="padding:12px; border:1px solid #e5e7eb; border-radius:12px;"><strong>${(en.extracted_2026_v2 as any)?.["الشارات الجديدة"] || "الشارات الجديدة"}</strong><br />${report.badgesEarned}</div>
+        <div style="padding:12px; border:1px solid #e5e7eb; border-radius:12px;"><strong>${"تلاوات الأسبوع"}</strong><br />${report.recitationsCount}</div>
+        <div style="padding:12px; border:1px solid #e5e7eb; border-radius:12px;"><strong>${"جلسات حُضرت"}</strong><br />${report.sessionsAttended}</div>
+        <div style="padding:12px; border:1px solid #e5e7eb; border-radius:12px;"><strong>${"المستوى الحالي"}</strong><br />${report.currentLevel}</div>
+        <div style="padding:12px; border:1px solid #e5e7eb; border-radius:12px;"><strong>${"الشارات الجديدة"}</strong><br />${report.badgesEarned}</div>
       </div>
-      <h3>${(en.extracted_2026_v2 as any)?.["التلاوات"] || "التلاوات"}</h3>
+      <h3>${"التلاوات"}</h3>
       <ul>${recitationItems}</ul>
-      <h3>${(en.extracted_2026_v2 as any)?.["الجلسات"] || "الجلسات"}</h3>
+      <h3>${"الجلسات"}</h3>
       <ul>${sessionItems}</ul>
-      <h3>${(en.extracted_2026_v2 as any)?.["الشارات"] || "الشارات"}</h3>
+      <h3>${"الشارات"}</h3>
       <ul>${badgeItems}</ul>
     </div>
   `
@@ -151,12 +151,12 @@ function renderWeeklyReportHtml(report: WeeklyReportSummary): string {
 
 function renderWeeklyReportText(report: WeeklyReportSummary): string {
   return [
-    `${(en.extracted_2026_v2 as any)?.["تقرير "] || "تقرير "}${report.childName}${(en.extracted_2026_v2 as any)?.[" الأسبوعي"] || " الأسبوعي"}`,
-    `${(en.extracted_2026_v2 as any)?.["الفترة: "] || "الفترة: "}${report.weekStart}${(en.extracted_2026_v2 as any)?.[" إلى "] || " إلى "}${report.weekEnd}`,
-    `${(en.extracted_2026_v2 as any)?.["تلاوات الأسبوع: "] || "تلاوات الأسبوع: "}${report.recitationsCount}`,
-    `${(en.extracted_2026_v2 as any)?.["جلسات حُضرت: "] || "جلسات حُضرت: "}${report.sessionsAttended}`,
-    `${(en.extracted_2026_v2 as any)?.["المستوى الحالي: "] || "المستوى الحالي: "}${report.currentLevel}`,
-    `${(en.extracted_2026_v2 as any)?.["الشارات الجديدة: "] || "الشارات الجديدة: "}${report.badgesEarned}`,
+    `${"تقرير "}${report.childName}${" الأسبوعي"}`,
+    `${"الفترة: "}${report.weekStart}${" إلى "}${report.weekEnd}`,
+    `${"تلاوات الأسبوع: "}${report.recitationsCount}`,
+    `${"جلسات حُضرت: "}${report.sessionsAttended}`,
+    `${"المستوى الحالي: "}${report.currentLevel}`,
+    `${"الشارات الجديدة: "}${report.badgesEarned}`,
   ].join("\n")
 }
 
@@ -219,7 +219,7 @@ export async function generateAndSendParentWeeklyReports(
 
     const sentOk = await sendEmail({
       to: report.parentEmail,
-      subject: `${(en.extracted_2026_v2 as any)?.["تقرير "] || "تقرير "}${report.childName} ${(en.extracted_2026_v2 as any)?.["الأسبوعي - منصة إتقان"] || "الأسبوعي - منصة إتقان"}`,
+      subject: `${"تقرير "}${report.childName} ${"الأسبوعي - منصة إتقان"}`,
       body: renderWeeklyReportText(report),
       html: renderWeeklyReportHtml(report),
     })

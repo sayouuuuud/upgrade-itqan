@@ -17,6 +17,7 @@ interface Announcement {
 
 export default function AdminAnnouncementsPage() {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const AUDIENCES = [

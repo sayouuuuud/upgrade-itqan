@@ -1,7 +1,6 @@
 'use client'
 
 
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -62,11 +61,11 @@ export default function PublicSessionLivePage() {
         body: JSON.stringify({ token, name: name.trim() || undefined }),
       })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error || ((t as any).extracted_2026_v2?.["تعذر الانضمام للبث"] || "تعذر الانضمام للبث"))
+      if (!res.ok) throw new Error(json.error || "تعذر الانضمام للبث")
       setData(json as PublicTokenResponse)
       startedAtRef.current = Date.now()
     } catch (e) {
-      setError(e instanceof Error ? e.message : ((t as any).extracted_2026_v2?.["حدث خطأ غير متوقع"] || "حدث خطأ غير متوقع"))
+      setError(e instanceof Error ? e.message : "حدث خطأ غير متوقع")
     } finally {
       setLoading(false)
     }
@@ -101,18 +100,18 @@ export default function PublicSessionLivePage() {
             <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 grid place-items-center">
               <Video className="w-7 h-7" />
             </div>
-            <h1 className="text-xl font-bold">{((t as any).extracted_2026_v2?.["انضم إلى البث المباشر"] || "انضم إلى البث المباشر")}</h1>
+            <h1 className="text-xl font-bold">{"انضم إلى البث المباشر"}</h1>
             <p className="text-sm text-muted-foreground">
-              {((t as any).extracted_2026_v2?.["لا تحتاج إلى تسجيل دخول. أدخل اسمك للظهور في قائمة الحضور."] || "لا تحتاج إلى تسجيل دخول. أدخل اسمك للظهور في قائمة الحضور.")}</p>
+              {"لا تحتاج إلى تسجيل دخول. أدخل اسمك للظهور في قائمة الحضور."}</p>
           </div>
 
           <label className="block space-y-2">
-            <span className="text-sm font-medium">{((t as any).extracted_2026_v2?.["الاسم (اختياري)"] || "الاسم (اختياري)")}</span>
+            <span className="text-sm font-medium">{"الاسم (اختياري)"}</span>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={((t as any).extracted_2026_v2?.["ضيف"] || "ضيف")}
+              placeholder={"ضيف"}
               className="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
               maxLength={60}
             />
@@ -131,12 +130,12 @@ export default function PublicSessionLivePage() {
               className="flex-1 inline-flex items-center justify-center gap-2 h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold disabled:opacity-60"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Radio className="w-5 h-5" />}
-              {((t as any).extracted_2026_v2?.["ادخل البث الآن"] || "ادخل البث الآن")}</button>
+              {"ادخل البث الآن"}</button>
             <Link
               href={exitHref}
               className="inline-flex items-center justify-center h-11 px-4 rounded-lg border border-input hover:bg-muted text-sm font-medium"
             >
-              {((t as any).extracted_2026_v2?.["العودة"] || "العودة")}</Link>
+              {"العودة"}</Link>
           </div>
         </div>
       </main>
@@ -153,20 +152,20 @@ export default function PublicSessionLivePage() {
             </div>
             <div className="min-w-0">
               <h2 className="font-bold truncate text-sm sm:text-base">{data.sessionTitle}</h2>
-              <p className="text-[11px] sm:text-xs opacity-70 truncate">{((t as any).extracted_2026_v2?.["بث مباشر عام · مشاهدة فقط"] || "بث مباشر عام · مشاهدة فقط")}</p>
+              <p className="text-[11px] sm:text-xs opacity-70 truncate">{"بث مباشر عام · مشاهدة فقط"}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-              {((t as any).extracted_2026_v2?.["مباشر ·"] || "مباشر ·")}{timeStr}
+              {"مباشر ·"}{timeStr}
             </span>
             <button
               onClick={() => router.push(exitHref)}
               className="inline-flex items-center gap-1.5 text-[11px] sm:text-sm font-bold px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200"
             >
               <LogOut className="w-3.5 h-3.5" />
-              {((t as any).extracted_2026_v2?.["خروج"] || "خروج")}</button>
+              {"خروج"}</button>
           </div>
         </div>
       </div>

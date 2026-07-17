@@ -20,6 +20,7 @@ interface SectionCardProps {
 
 export function SectionCard({ icon: Icon, title, description, onReset, resetLabel, children }: SectionCardProps) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const a = t.admin
   return (
     <Card className="border-border">
@@ -36,7 +37,7 @@ export function SectionCard({ icon: Icon, title, description, onReset, resetLabe
           </div>
           {onReset && (
             <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground">
-              <RotateCcw className="w-4 h-4 ml-1" />
+              <RotateCcw className="w-4 h-4 me-1" />
               {resetLabel || a.scRestore}
             </Button>
           )}

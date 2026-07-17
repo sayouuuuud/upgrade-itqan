@@ -10,6 +10,7 @@ import { useI18n } from "@/lib/i18n/context";
 // in their default super-admin context, so changes go to that area.
 export function AdminModeBanner({ mode }: { mode: "maqraa" | "academy" }) {
   const { t } = useI18n();
+  const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar";
   const router = useRouter()
   const [exiting, setExiting] = useState(false)

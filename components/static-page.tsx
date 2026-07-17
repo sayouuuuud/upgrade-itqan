@@ -64,7 +64,7 @@ export function StaticPage({ slug }: StaticPageProps) {
   return (
     <div dir={isAr ? "rtl" : "ltr"}>
       {/* Page Hero */}
-      <div className="bg-[#0B3D2E] text-white py-14 md:py-20">
+      <div className="bg-[#0B3D2E] text-white pt-28 pb-14 md:pt-32 md:pb-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 mb-5">
             <BookOpen className="w-6 h-6 text-[#D4A843]" />

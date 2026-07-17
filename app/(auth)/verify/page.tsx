@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n/context"
 
 function VerifyContent() {
     const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
     const router = useRouter()
     const searchParams = useSearchParams()
     const email = searchParams.get("email")

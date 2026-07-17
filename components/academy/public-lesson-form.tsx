@@ -1,7 +1,6 @@
 'use client'
 
 
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,7 +37,7 @@ interface Props {
   onDelete?: () => void
 }
 
-export function PublicLessonForm({ initial, submitLabel = ((t as any).extracted_2026_v2?.["إنشاء الدرس"] || ((t as any).extracted_2026_v2?.["إنشاء الدرس"] || "إنشاء الدرس")), onSubmit, onDelete }: Props) {
+export function PublicLessonForm({ initial, submitLabel = 'إنشاء الدرس', onSubmit, onDelete }: Props) {
   const [values, setValues] = useState<PublicLessonFormValues>({ ...DEFAULTS, ...initial })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -52,19 +51,19 @@ export function PublicLessonForm({ initial, submitLabel = ((t as any).extracted_
     e.preventDefault()
     setError(null); setSuccess(null)
     if (!values.title.trim() || !values.scheduled_at) {
-      setError(((t as any).extracted_2026_v2?.["العنوان والموعد مطلوبان"] || ((t as any).extracted_2026_v2?.["العنوان والموعد مطلوبان"] || "العنوان والموعد مطلوبان")))
+      setError('العنوان والموعد مطلوبان')
       return
     }
     if (values.meeting_link && !/^https?:\/\//i.test(values.meeting_link)) {
-      setError(((t as any).extracted_2026_v2?.["رابط الانضمام لازم يبدأ بـ http(s)"] || ((t as any).extracted_2026_v2?.["رابط الانضمام لازم يبدأ بـ http(s)"] || "رابط الانضمام لازم يبدأ بـ http(s)")))
+      setError('رابط الانضمام لازم يبدأ بـ http(s)')
       return
     }
     setSubmitting(true)
     try {
       await onSubmit(values)
-      setSuccess(((t as any).extracted_2026_v2?.["تم الحفظ."] || ((t as any).extracted_2026_v2?.["تم الحفظ."] || "تم الحفظ.")))
+      setSuccess("تم الحفظ.")
     } catch (e) {
-      setError(e instanceof Error ? e.message : ((t as any).extracted_2026_v2?.["حدث خطأ"] || ((t as any).extracted_2026_v2?.["حدث خطأ"] || "حدث خطأ")))
+      setError(e instanceof Error ? e.message : "حدث خطأ")
     } finally {
       setSubmitting(false)
     }
@@ -73,35 +72,35 @@ export function PublicLessonForm({ initial, submitLabel = ((t as any).extracted_
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="title">{((t as any).extracted_2026_v2?.["عنوان الدرس"] || ((t as any).extracted_2026_v2?.["عنوان الدرس"] || "عنوان الدرس"))}<span className="text-red-500">*</span></Label>
+        <Label htmlFor="title">{"عنوان الدرس"}<span className="text-red-500">*</span></Label>
         <Input id="title" value={values.title} onChange={e => set('title', e.target.value)}
-          placeholder={((t as any).extracted_2026_v2?.["مثال: تفسير سورة الكهف"] || ((t as any).extracted_2026_v2?.["مثال: تفسير سورة الكهف"] || "مثال: تفسير سورة الكهف"))} required />
+          placeholder={"مثال: تفسير سورة الكهف"} required />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">{((t as any).extracted_2026_v2?.["وصف الدرس"] || ((t as any).extracted_2026_v2?.["وصف الدرس"] || "وصف الدرس"))}</Label>
+        <Label htmlFor="description">{"وصف الدرس"}</Label>
         <Textarea id="description" rows={4} value={values.description}
           onChange={e => set('description', e.target.value)}
-          placeholder={((t as any).extracted_2026_v2?.["ايه اللي هتتكلم عنه في الدرس؟"] || ((t as any).extracted_2026_v2?.["ايه اللي هتتكلم عنه في الدرس؟"] || "ايه اللي هتتكلم عنه في الدرس؟"))} />
+          placeholder={"ايه اللي هتتكلم عنه في الدرس؟"} />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="cover_image_url">{((t as any).extracted_2026_v2?.["رابط صورة الغلاف (Open Graph)"] || ((t as any).extracted_2026_v2?.["رابط صورة الغلاف (Open Graph)"] || "رابط صورة الغلاف (Open Graph)"))}</Label>
+        <Label htmlFor="cover_image_url">{"رابط صورة الغلاف (Open Graph)"}</Label>
         <Input id="cover_image_url" type="url" dir="ltr" value={values.cover_image_url}
           onChange={e => set('cover_image_url', e.target.value)}
           placeholder="https://...png" />
         <p className="text-xs text-muted-foreground">
-          {((t as any).extracted_2026_v2?.["الصورة دي بتظهر لما الرابط يتشير على فيس بوك/تويتر/واتساب."] || ((t as any).extracted_2026_v2?.["الصورة دي بتظهر لما الرابط يتشير على فيس بوك/تويتر/واتساب."] || "الصورة دي بتظهر لما الرابط يتشير على فيس بوك/تويتر/واتساب."))}</p>
+          {"الصورة دي بتظهر لما الرابط يتشير على فيس بوك/تويتر/واتساب."}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="scheduled_at">{((t as any).extracted_2026_v2?.["موعد الدرس"] || ((t as any).extracted_2026_v2?.["موعد الدرس"] || "موعد الدرس"))}<span className="text-red-500">*</span></Label>
+          <Label htmlFor="scheduled_at">{"موعد الدرس"}<span className="text-red-500">*</span></Label>
           <Input id="scheduled_at" type="datetime-local" value={values.scheduled_at}
             onChange={e => set('scheduled_at', e.target.value)} required />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="duration_minutes">{((t as any).extracted_2026_v2?.["المدة (بالدقائق)"] || ((t as any).extracted_2026_v2?.["المدة (بالدقائق)"] || "المدة (بالدقائق)"))}</Label>
+          <Label htmlFor="duration_minutes">{"المدة (بالدقائق)"}</Label>
           <Input id="duration_minutes" type="number" min={5} max={480}
             value={values.duration_minutes}
             onChange={e => set('duration_minutes', Number(e.target.value) || 60)} />
@@ -109,10 +108,10 @@ export function PublicLessonForm({ initial, submitLabel = ((t as any).extracted_
       </div>
 
       <div className="border-t border-border pt-4 space-y-4">
-        <h2 className="font-semibold">{((t as any).extracted_2026_v2?.["رابط الانضمام (Zoom/Meet)"] || ((t as any).extracted_2026_v2?.["رابط الانضمام (Zoom/Meet)"] || "رابط الانضمام (Zoom/Meet)"))}</h2>
+        <h2 className="font-semibold">{"رابط الانضمام (Zoom/Meet)"}</h2>
 
         <div className="space-y-2">
-          <Label>{((t as any).extracted_2026_v2?.["مقدم الخدمة"] || ((t as any).extracted_2026_v2?.["مقدم الخدمة"] || "مقدم الخدمة"))}</Label>
+          <Label>{"مقدم الخدمة"}</Label>
           <div className="flex gap-2 flex-wrap">
             {(['zoom', 'google_meet', 'other'] as const).map(p => (
               <button type="button" key={p} onClick={() => set('meeting_provider', p)}
@@ -121,23 +120,23 @@ export function PublicLessonForm({ initial, submitLabel = ((t as any).extracted_
                     ? 'bg-emerald-600 text-white border-emerald-600'
                     : 'bg-card text-foreground border-border hover:bg-muted'
                 }`}>
-                {p === 'zoom' ? 'Zoom' : p === 'google_meet' ? 'Google Meet' : ((t as any).extracted_2026_v2?.["آخر"] || ((t as any).extracted_2026_v2?.["آخر"] || "آخر"))}
+                {p === 'zoom' ? 'Zoom' : p === 'google_meet' ? 'Google Meet' : "آخر"}
               </button>
             ))}
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="meeting_link">{((t as any).extracted_2026_v2?.["الرابط"] || ((t as any).extracted_2026_v2?.["الرابط"] || "الرابط"))}</Label>
+          <Label htmlFor="meeting_link">{"الرابط"}</Label>
           <Input id="meeting_link" type="url" dir="ltr" value={values.meeting_link}
             onChange={e => set('meeting_link', e.target.value)}
             placeholder="https://zoom.us/j/123..." />
           <p className="text-xs text-muted-foreground">
-            {((t as any).extracted_2026_v2?.["الرابط ده بيتعرض للزوار لما الدرس يبدأ في موعده تلقائياً (مش قبل كده)."] || ((t as any).extracted_2026_v2?.["الرابط ده بيتعرض للزوار لما الدرس يبدأ في موعده تلقائياً (مش قبل كده)."] || "الرابط ده بيتعرض للزوار لما الدرس يبدأ في موعده تلقائياً (مش قبل كده)."))}</p>
+            {"الرابط ده بيتعرض للزوار لما الدرس يبدأ في موعده تلقائياً (مش قبل كده)."}</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="meeting_password">{((t as any).extracted_2026_v2?.["كلمة المرور (اختياري)"] || ((t as any).extracted_2026_v2?.["كلمة المرور (اختياري)"] || "كلمة المرور (اختياري)"))}</Label>
+          <Label htmlFor="meeting_password">{"كلمة المرور (اختياري)"}</Label>
           <Input id="meeting_password" type="text" dir="ltr"
             value={values.meeting_password}
             onChange={e => set('meeting_password', e.target.value)} />
@@ -151,10 +150,10 @@ export function PublicLessonForm({ initial, submitLabel = ((t as any).extracted_
         {onDelete && (
           <Button type="button" variant="outline" onClick={onDelete}
             className="text-red-600 hover:text-red-700">
-            {((t as any).extracted_2026_v2?.["حذف"] || ((t as any).extracted_2026_v2?.["حذف"] || "حذف"))}</Button>
+            {"حذف"}</Button>
         )}
         <Button type="submit" disabled={submitting}>
-          {submitting ? <><Loader2 className="w-4 h-4 animate-spin me-2" /> {((t as any).extracted_2026_v2?.["جاري الحفظ"] || ((t as any).extracted_2026_v2?.["جاري الحفظ"] || "جاري الحفظ"))}</> : submitLabel}
+          {submitting ? <><Loader2 className="w-4 h-4 animate-spin me-2" /> {"جاري الحفظ"}</> : submitLabel}
         </Button>
       </div>
     </form>

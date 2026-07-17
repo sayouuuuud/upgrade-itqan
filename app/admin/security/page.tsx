@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/i18n/context'
 
 export default function AdminSecurityPage() {
     const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
     const isAr = t.locale === 'ar'
     const [data, setData] = useState<any>(null)
     const [loading, setLoading] = useState(true)

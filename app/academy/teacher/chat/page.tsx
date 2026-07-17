@@ -1,7 +1,4 @@
 'use client'
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
-const a: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useState, useEffect, useRef, Suspense, Fragment } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChatDateDivider } from '@/components/chat/date-divider'
@@ -40,7 +37,7 @@ interface Message {
 
 function ChatContent() {
   const searchParams = useSearchParams()
-  const { locale } = useI18n()
+  const { locale, t } = useI18n()
   const isAr = locale === 'ar'
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConv, setActiveConv] = useState<Conversation | null>(null)
@@ -528,6 +525,8 @@ function ChatContent() {
 
 export default function TeacherChatPage() {
     
+  const { t } = useI18n()
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
   return (
     <Suspense fallback={<PageLoadingSkeleton />}>
       <ChatContent />

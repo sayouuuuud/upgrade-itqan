@@ -1,7 +1,4 @@
 'use client'
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
-const a: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -25,6 +22,8 @@ interface PublicLesson {
 
 export default function TeacherPublicLessonsPage() {
   
+  const { t } = useI18n()
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
   const a = t.admin
   const [lessons, setLessons] = useState<PublicLesson[]>([])
   const [loading, setLoading] = useState(true)
@@ -114,6 +113,8 @@ function LessonRow({ lesson, origin, onDelete }: {
   origin: string
   onDelete: (id: string) => void
 }) {
+  const { t } = useI18n()
+  const a = t.admin
   const url = `${origin}/lessons/${lesson.public_slug}`
 
   const copyUrl = async () => {

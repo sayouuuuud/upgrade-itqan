@@ -1,7 +1,5 @@
 "use client"
 
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useState, useRef } from "react"
 import { Upload, Trash2, Loader2, File, CheckCircle2 } from "lucide-react"
 
@@ -34,13 +32,13 @@ export default function FileUploader({ value, onChange, disabled, label, accept 
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.error || ((t as any).extracted_2026_v2?.["فشل رفع الملف"] || ((t as any).extracted_2026_v2?.["فشل رفع الملف"] || "فشل رفع الملف")))
+        throw new Error(errorData.error || "فشل رفع الملف")
       }
 
       const json = await res.json()
       onChange(json.url)
     } catch (err: any) {
-      setError(err?.message || ((t as any).extracted_2026_v2?.["فشل الرفع، يرجى المحاولة مرة أخرى"] || ((t as any).extracted_2026_v2?.["فشل الرفع، يرجى المحاولة مرة أخرى"] || "فشل الرفع، يرجى المحاولة مرة أخرى")))
+      setError(err?.message || "فشل الرفع، يرجى المحاولة مرة أخرى")
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ""
@@ -83,16 +81,16 @@ export default function FileUploader({ value, onChange, disabled, label, accept 
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300 truncate">
-              {((t as any).extracted_2026_v2?.["تم رفع الملف بنجاح"] || ((t as any).extracted_2026_v2?.["تم رفع الملف بنجاح"] || "تم رفع الملف بنجاح"))}</p>
+              {"تم رفع الملف بنجاح"}</p>
             <a href={value} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">
-              {((t as any).extracted_2026_v2?.["اضغط هنا للمعاينة"] || ((t as any).extracted_2026_v2?.["اضغط هنا للمعاينة"] || "اضغط هنا للمعاينة"))}</a>
+              {"اضغط هنا للمعاينة"}</a>
           </div>
           <button
             type="button"
             onClick={() => onChange(null)}
             disabled={disabled}
             className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition disabled:opacity-50"
-            title={((t as any).extracted_2026_v2?.["حذف الملف"] || ((t as any).extracted_2026_v2?.["حذف الملف"] || "حذف الملف"))}
+            title={"حذف الملف"}
           >
             <Trash2 className="w-5 h-5" />
           </button>
@@ -128,10 +126,10 @@ export default function FileUploader({ value, onChange, disabled, label, accept 
             </div>
             <div className="text-center">
               <p className={`text-sm font-bold ${isDragging ? 'text-primary' : ''}`}>
-                {uploading ? ((t as any).extracted_2026_v2?.["جاري الرفع..."] || ((t as any).extracted_2026_v2?.["جاري الرفع..."] || "جاري الرفع...")) : isDragging ? ((t as any).extracted_2026_v2?.["أفلت الملف هنا"] || ((t as any).extracted_2026_v2?.["أفلت الملف هنا"] || "أفلت الملف هنا")) : ((t as any).extracted_2026_v2?.["اضغط أو اسحب الملف هنا"] || ((t as any).extracted_2026_v2?.["اضغط أو اسحب الملف هنا"] || "اضغط أو اسحب الملف هنا"))}
+                {uploading ? "جاري الرفع..." : isDragging ? "أفلت الملف هنا" : "اضغط أو اسحب الملف هنا"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {((t as any).extracted_2026_v2?.["يدعم الصور، الملفات الصوتية، الفيديو، والمستندات"] || ((t as any).extracted_2026_v2?.["يدعم الصور، الملفات الصوتية، الفيديو، والمستندات"] || "يدعم الصور، الملفات الصوتية، الفيديو، والمستندات"))}</p>
+                {"يدعم الصور، الملفات الصوتية، الفيديو، والمستندات"}</p>
             </div>
           </label>
         </div>

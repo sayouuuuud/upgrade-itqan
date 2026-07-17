@@ -8,8 +8,9 @@ export function MisbahaLoader() {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const ctxRaw = canvas.getContext('2d')
+    if (!ctxRaw) return
+    const ctx = ctxRaw
 
     const DPR = window.devicePixelRatio || 1
     const W = 160

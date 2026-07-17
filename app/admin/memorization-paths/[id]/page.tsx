@@ -23,6 +23,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { PageLoadingSkeleton } from "@/components/ui/page-loading-skeleton"
+import { useI18n } from "@/lib/i18n/context"
 
 type Unit = {
   id: string
@@ -39,6 +40,8 @@ type Unit = {
 }
 
 export default function AdminMemorizationPathDetailPage() {
+  const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const params = useParams<{ id: string }>()
   const pathId = params.id
 
@@ -115,10 +118,10 @@ export default function AdminMemorizationPathDetailPage() {
         <div className="w-20 h-20 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-6">
           <ShieldAlert className="w-10 h-10" />
         </div>
-        <h3 className="text-xl font-bold text-foreground mb-2">المسار غير موجود</h3>
-        <p className="text-muted-foreground text-center">يبدو أن المسار الذي تحاول الوصول إليه غير موجود أو تم حذفه.</p>
+        <h3 className="text-xl font-bold text-foreground mb-2">{t.admin.memPathNotFound}</h3>
+        <p className="text-muted-foreground text-center">{t.admin.memPathNotFoundDesc}</p>
         <Button asChild className="mt-6">
-          <Link href="/admin/memorization-paths">العودة للقائمة</Link>
+          <Link href="/admin/memorization-paths">{t.admin.memPathBack}</Link>
         </Button>
       </div>
     )
@@ -141,7 +144,7 @@ export default function AdminMemorizationPathDetailPage() {
             href="/admin/memorization-paths" 
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-emerald-100 text-sm font-medium mb-6 backdrop-blur-md transition-colors"
           >
-            <ArrowRight className="h-4 w-4 rtl:rotate-180" /> عودة للقائمة
+            <ArrowRight className="h-4 w-4 rtl:rotate-180" /> {t.admin.memPathBackLink}
           </Link>
           
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -153,18 +156,18 @@ export default function AdminMemorizationPathDetailPage() {
               
               <div className="flex flex-wrap items-center gap-3">
                 <Badge className="bg-emerald-500/20 text-emerald-100 border-emerald-500/30 px-3 py-1 text-sm rounded-xl">
-                  {path.unit_type === 'juz' ? 'بالأجزاء' : path.unit_type === 'surah' ? 'بالسور' : path.unit_type}
+                  {path.unit_type === 'juz' ? t.admin.memPathByParts : path.unit_type === 'surah' ? t.admin.memPathBySurahs : path.unit_type}
                 </Badge>
                 <Badge className="bg-white/10 text-white border-white/20 px-3 py-1 text-sm rounded-xl backdrop-blur-md">
-                  {path.total_units} وحدة
+                  {path.total_units} {t.admin.memPathUnits}
                 </Badge>
                 {path.is_published ? (
                   <Badge className="bg-emerald-500 text-white border-0 px-3 py-1 text-sm rounded-xl shadow-lg shadow-emerald-500/20 gap-1.5">
-                    <Eye className="h-4 w-4" /> منشور
+                    <Eye className="h-4 w-4" /> {t.admin.memPathPublished}
                   </Badge>
                 ) : (
                   <Badge className="bg-slate-800 text-slate-300 border-slate-700 px-3 py-1 text-sm rounded-xl gap-1.5">
-                    <EyeOff className="h-4 w-4" /> مسودة
+                    <EyeOff className="h-4 w-4" /> {t.admin.memPathDraft}
                   </Badge>
                 )}
               </div>
@@ -189,7 +192,7 @@ export default function AdminMemorizationPathDetailPage() {
               <Users className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">الطلاب المشتركين</p>
+              <p className="text-sm font-medium text-muted-foreground mb-1">{t.admin.memPathEnrolled}</p>
               <h4 className="text-2xl font-bold text-foreground">{overall.enrolled || "0"}</h4>
             </div>
           </div>
@@ -201,7 +204,7 @@ export default function AdminMemorizationPathDetailPage() {
               <Medal className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">أتموا المسار</p>
+              <p className="text-sm font-medium text-muted-foreground mb-1">{t.admin.memPathCompleted}</p>
               <h4 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{overall.completed || "0"}</h4>
             </div>
           </div>
@@ -213,7 +216,7 @@ export default function AdminMemorizationPathDetailPage() {
               <Activity className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">الطلاب النشطين</p>
+              <p className="text-sm font-medium text-muted-foreground mb-1">{t.admin.memPathActiveStudents}</p>
               <h4 className="text-2xl font-bold text-foreground">{overall.active || "0"}</h4>
             </div>
           </div>
@@ -225,7 +228,7 @@ export default function AdminMemorizationPathDetailPage() {
               <TrendingUp className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">متوسط الإنجاز</p>
+              <p className="text-sm font-medium text-muted-foreground mb-1">{t.admin.memPathAvgProgress}</p>
               <h4 className="text-2xl font-bold text-foreground">{overall.avg_progress_percent || "0"}%</h4>
             </div>
           </div>
@@ -236,16 +239,16 @@ export default function AdminMemorizationPathDetailPage() {
         <div className="bg-card border border-border/50 rounded-2xl p-1.5 shadow-sm overflow-x-auto">
           <TabsList className="w-full flex justify-start sm:justify-center bg-transparent gap-2 h-auto">
             <TabsTrigger value="units" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-medium">
-              <ListTodo className="w-4 h-4 me-2" /> وحدات المسار ({units.length})
+              <ListTodo className="w-4 h-4 me-2" /> {t.admin.memPathUnitsTab} ({units.length})
             </TabsTrigger>
             <TabsTrigger value="funnel" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-medium">
-              <TrendingUp className="w-4 h-4 me-2" /> معدلات الإكمال
+              <TrendingUp className="w-4 h-4 me-2" /> {t.admin.memPathFunnelTab}
             </TabsTrigger>
             <TabsTrigger value="students" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-medium">
-              <Users className="w-4 h-4 me-2" /> الطلاب
+              <Users className="w-4 h-4 me-2" /> {t.admin.memPathStudentsTab}
             </TabsTrigger>
             <TabsTrigger value="settings" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-medium">
-              <Settings className="w-4 h-4 me-2" /> الإعدادات
+              <Settings className="w-4 h-4 me-2" /> {t.admin.memPathSettingsTab}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -255,10 +258,10 @@ export default function AdminMemorizationPathDetailPage() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-16 text-center font-bold">التسلسل</TableHead>
-                  <TableHead className="font-bold text-right">عنوان الوحدة</TableHead>
-                  <TableHead className="font-bold text-right">النوع</TableHead>
-                  <TableHead className="hidden sm:table-cell font-bold text-right">المدة المتوقعة</TableHead>
+                  <TableHead className="w-16 text-center font-bold">{t.admin.memPathSeqCol}</TableHead>
+                  <TableHead className="font-bold text-right">{t.admin.memPathUnitTitleCol}</TableHead>
+                  <TableHead className="font-bold text-right">{t.admin.memPathTypeCol}</TableHead>
+                  <TableHead className="hidden sm:table-cell font-bold text-right">{t.admin.memPathDurationCol}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -283,7 +286,7 @@ export default function AdminMemorizationPathDetailPage() {
                     <TableCell className="hidden sm:table-cell text-sm font-medium text-slate-600 dark:text-slate-400">
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-4 h-4 text-slate-400" />
-                        {u.estimated_minutes} دقيقة
+                        {u.estimated_minutes} {t.admin.memPathMinutes}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -291,7 +294,7 @@ export default function AdminMemorizationPathDetailPage() {
                 {units.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
-                      لا توجد وحدات في هذا المسار
+                      {t.admin.memPathNoUnits}
                     </TableCell>
                   </TableRow>
                 )}
@@ -303,7 +306,7 @@ export default function AdminMemorizationPathDetailPage() {
         <TabsContent value="funnel" className="mt-0">
           <Card className="p-6 rounded-3xl border-border/50 shadow-sm">
             <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-emerald-600" /> مسار إنجاز الطلاب عبر الوحدات
+              <Activity className="w-5 h-5 text-emerald-600" /> {t.admin.memPathFunnelTitle}
             </h3>
             <div className="space-y-4">
               {perUnit.map(u => {
@@ -330,11 +333,11 @@ export default function AdminMemorizationPathDetailPage() {
                       <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
                         <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                           <Users className="w-4 h-4" /> 
-                          <span>بدأ: <strong>{started}</strong></span>
+                          <span>{t.admin.memPathStarted}: <strong>{started}</strong></span>
                         </div>
                         <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
                           <CheckCircle2 className="w-4 h-4" /> 
-                          <span>أتم: <strong>{completed}</strong></span>
+                          <span>{t.admin.memPathFinished}: <strong>{completed}</strong></span>
                         </div>
                         <div className="px-3 py-1 bg-white dark:bg-slate-800 shadow-sm rounded-lg font-bold text-emerald-600 dark:text-emerald-400">
                           {pct}%
@@ -347,7 +350,7 @@ export default function AdminMemorizationPathDetailPage() {
               {perUnit.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/30 rounded-2xl border border-dashed border-border">
                   <TrendingUp className="w-10 h-10 text-slate-300 mb-3" />
-                  <p>لا توجد بيانات إحصائية متاحة بعد</p>
+                  <p>{t.admin.memPathNoStats}</p>
                 </div>
               )}
             </div>
@@ -359,10 +362,10 @@ export default function AdminMemorizationPathDetailPage() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="font-bold text-right">الطالب</TableHead>
-                  <TableHead className="text-center font-bold">الإنجاز</TableHead>
-                  <TableHead className="font-bold text-right">الحالة</TableHead>
-                  <TableHead className="hidden sm:table-cell font-bold text-right">آخر نشاط</TableHead>
+                  <TableHead className="font-bold text-right">{t.admin.memPathStudentCol}</TableHead>
+                  <TableHead className="text-center font-bold">{t.admin.memPathProgressCol}</TableHead>
+                  <TableHead className="font-bold text-right">{t.admin.memPathStatusCol}</TableHead>
+                  <TableHead className="hidden sm:table-cell font-bold text-right">{t.admin.memPathLastActivityCol}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -382,11 +385,11 @@ export default function AdminMemorizationPathDetailPage() {
                     <TableCell>
                       {s.status === "completed" ? (
                         <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
-                          أتم المسار
+                          {t.admin.memPathStatusCompleted}
                         </Badge>
                       ) : s.status === "active" ? (
                         <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-0">
-                          نشط
+                          {t.admin.memPathStatusActive}
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-slate-500 bg-slate-50 dark:bg-slate-900/50">
@@ -407,7 +410,7 @@ export default function AdminMemorizationPathDetailPage() {
                 {topStudents.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
-                      لا يوجد طلاب مشتركين بعد
+                      {t.admin.memPathNoStudents}
                     </TableCell>
                   </TableRow>
                 )}
@@ -419,12 +422,12 @@ export default function AdminMemorizationPathDetailPage() {
         <TabsContent value="settings" className="mt-0">
           <Card className="p-6 sm:p-8 rounded-3xl border-border/50 shadow-sm max-w-2xl">
             <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Settings className="w-5 h-5 text-emerald-600" /> إعدادات المسار
+              <Settings className="w-5 h-5 text-emerald-600" /> {t.admin.memPathSettingsTitle}
             </h3>
             
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">عنوان المسار</Label>
+                <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.admin.memPathTitleLabel}</Label>
                 <Input 
                   value={edit.title} 
                   onChange={e => setEdit({ ...edit, title: e.target.value })} 
@@ -433,7 +436,7 @@ export default function AdminMemorizationPathDetailPage() {
               </div>
               
               <div className="space-y-2">
-                <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">الوصف</Label>
+                <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.admin.memPathDescLabel}</Label>
                 <Textarea
                   rows={4}
                   value={edit.description}
@@ -444,25 +447,25 @@ export default function AdminMemorizationPathDetailPage() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">المستوى</Label>
+                  <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.admin.memPathLevelLabel}</Label>
                   <Select value={edit.level} onValueChange={v => setEdit({ ...edit, level: v })}>
                     <SelectTrigger className="h-12 rounded-xl bg-slate-50 dark:bg-slate-900/50"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="beginner">مبتدئ</SelectItem>
-                      <SelectItem value="intermediate">متوسط</SelectItem>
-                      <SelectItem value="advanced">متقدم</SelectItem>
+                      <SelectItem value="beginner">{t.admin.memPathLevelBeginner}</SelectItem>
+                      <SelectItem value="intermediate">{t.admin.memPathLevelIntermediate}</SelectItem>
+                      <SelectItem value="advanced">{t.admin.memPathLevelAdvanced}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">المدة المتوقعة (أيام)</Label>
+                  <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t.admin.memPathDaysLabel}</Label>
                   <Input
                     type="number"
                     value={edit.estimated_days}
                     onChange={e => setEdit({ ...edit, estimated_days: e.target.value })}
                     className="h-12 rounded-xl bg-slate-50 dark:bg-slate-900/50"
-                    placeholder="فارغ لعدم التحديد"
+                    placeholder={t.admin.memPathDaysPlaceholder}
                   />
                 </div>
               </div>
@@ -478,7 +481,7 @@ export default function AdminMemorizationPathDetailPage() {
                     />
                   </div>
                   <Label htmlFor="require_audio_edit" className="cursor-pointer font-medium text-slate-700 dark:text-slate-300">
-                    يتطلب تسجيل صوتي للتسميع قبل إتمام كل وحدة
+                    {t.admin.memPathRequireAudio}
                   </Label>
                 </div>
                 
@@ -492,7 +495,7 @@ export default function AdminMemorizationPathDetailPage() {
                     />
                   </div>
                   <Label htmlFor="is_published_edit" className="cursor-pointer font-medium text-slate-700 dark:text-slate-300">
-                    المسار منشور ومرئي للطلاب
+                    {t.admin.memPathIsPublished}
                   </Label>
                 </div>
               </div>
@@ -504,7 +507,7 @@ export default function AdminMemorizationPathDetailPage() {
                   className="gap-2 rounded-xl h-12 px-8 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md text-base"
                 >
                   {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
-                  حفظ التعديلات
+                  {saving ? t.admin.memPathSaving : t.admin.memPathSaveBtn}
                 </Button>
               </div>
             </div>

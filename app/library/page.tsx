@@ -39,6 +39,7 @@ interface CategoryOption {
 
 export default function PublicLibraryPage() {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const lib = t.library
   const isAr = t.locale === "ar"
   const [books, setBooks] = useState<BookListItem[]>([])
@@ -261,7 +262,7 @@ export default function PublicLibraryPage() {
                         >
                           {lf.language === OTHER_LANGUAGE_CODE
                             ? lf.language_label || lib?.otherLanguage || ((t.addedTranslations_2026?.['أخرى'] || (t.addedTranslations_2026?.['أخرى'] || 'أخرى')))
-                            : getLanguageDisplay(lf.language, lf.language_label, t.locale)}
+                            : getLanguageDisplay(lf.language, lf.language_label, t.locale as 'ar' | 'en')}
                         </span>
                       ))}
                       {book.languages.length > 2 && (

@@ -9,6 +9,7 @@ import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 
 export default function LandingPage() {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const { branding, contactInfo } = usePublicSettings()
   const [masteredStudents, setMasteredStudents] = useState(0)
 
@@ -20,15 +21,15 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden bg-[#0B3D2E]">
       {/* ========== HERO ========== */}
-      <section className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden px-4 py-20 text-center text-white bg-[#0B3D2E]">
+      <section className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden px-4 pt-24 pb-16 text-center text-white bg-[#0B3D2E]">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 opacity-5" style={{ background: 'radial-gradient(circle at center, #D4A843 0%, transparent 50%)' }} />
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D4A843] rounded-full mix-blend-multiply blur-3xl opacity-5 animate-blob-float" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#0B3D2E] rounded-full mix-blend-multiply blur-3xl opacity-10 animate-blob-float-delayed" />
         </div>
-        <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center gap-6 mt-12">
+        <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center gap-4">
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-black tracking-tight leading-[1.1] text-center px-2">
             <span>{t.landing.heroTitle} </span>
             <span className="text-[#D4A843]" style={{ textShadow: '0 0 20px rgba(212,168,67,0.3)' }}>{t.landing.heroEducational}</span>

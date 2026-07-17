@@ -31,6 +31,7 @@ interface Recitation {
 
 export default function ReaderRecitationsPage() {
   const { t } = useI18n()
+  const reader = (t as any).reader as Record<string, string> | undefined
   const [activeTab, setActiveTab] = useState<TabFilter>("new")
   const [recitations, setRecitations] = useState<Recitation[]>([])
   const [loading, setLoading] = useState(true)

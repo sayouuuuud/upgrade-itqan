@@ -1,5 +1,3 @@
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
-const a: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSession } from '@/lib/auth'
@@ -23,7 +21,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { RecordingShareToggle } from './recording-share-toggle'
 import { cn } from '@/lib/utils'
-import { useI18n } from "@/lib/i18n/context";
 
 interface SessionDetails {
   id: string
@@ -88,7 +85,7 @@ async function getSessionAttendance(id: string): Promise<AttendanceRecord[]> {
 }
 
 function getInitials(name: string) {
-  if (!name) return (t.addedTranslations_2026?.['؟'] || (t.addedTranslations_2026?.['؟'] || '؟'))
+  if (!name) return ''
   const parts = name.trim().split(' ')
   if (parts.length === 1) return parts[0].charAt(0)
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
@@ -100,7 +97,7 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
   if (!authSession || !['teacher', 'academy_admin'].includes(authSession.role)) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">{(t.addedTranslations_2026?.['غير مصرح لك بالوصول لهذه الصفحة'] || (t.addedTranslations_2026?.['غير مصرح لك بالوصول لهذه الصفحة'] || 'غير مصرح لك بالوصول لهذه الصفحة'))}</p>
+        <p className="text-muted-foreground">{''}</p>
       </div>
     )
   }
@@ -131,29 +128,29 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
   const infoItems = [
     {
       icon: Calendar,
-      label: (t.addedTranslations_2026?.['التاريخ'] || (t.addedTranslations_2026?.['التاريخ'] || 'التاريخ')),
+      label: '',
       value: dateLabel,
       color: 'text-blue-500',
       bg: 'bg-blue-100 dark:bg-blue-900/30'
     },
     {
       icon: Clock,
-      label: (t.addedTranslations_2026?.['الوقت'] || (t.addedTranslations_2026?.['الوقت'] || 'الوقت')),
+      label: '',
       value: timeLabel,
       color: 'text-purple-500',
       bg: 'bg-purple-100 dark:bg-purple-900/30'
     },
     {
       icon: Timer,
-      label: (t.addedTranslations_2026?.['المدة'] || (t.addedTranslations_2026?.['المدة'] || 'المدة')),
+      label: '',
       value: `${sessionDetails.duration_minutes} دقيقة`,
       color: 'text-orange-500',
       bg: 'bg-orange-100 dark:bg-orange-900/30'
     },
     {
       icon: Globe2,
-      label: (t.addedTranslations_2026?.['النوع'] || (t.addedTranslations_2026?.['النوع'] || 'النوع')),
-      value: sessionDetails.is_public ? (t.addedTranslations_2026?.['عامة'] || (t.addedTranslations_2026?.['عامة'] || 'عامة')) : (t.addedTranslations_2026?.['خاصة'] || 'خاصة'),
+      label: '',
+      value: sessionDetails.is_public ? '' : '',
       color: 'text-emerald-500',
       bg: 'bg-emerald-100 dark:bg-emerald-900/30'
     },
@@ -163,26 +160,26 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
     scheduled: {
       gradient: 'from-blue-600 to-indigo-600',
       shadow: 'shadow-blue-500/30',
-      label: (t.addedTranslations_2026?.['مجدولة'] || (t.addedTranslations_2026?.['مجدولة'] || 'مجدولة')),
+      label: '',
       icon: Clock
     },
     in_progress: {
       gradient: 'from-red-600 to-orange-600',
       shadow: 'shadow-red-500/30',
-      label: (t.addedTranslations_2026?.['مباشر الآن'] || (t.addedTranslations_2026?.['مباشر الآن'] || 'مباشر الآن')),
+      label: '',
       icon: Radio,
       pulse: true
     },
     completed: {
       gradient: 'from-emerald-500 to-teal-600',
       shadow: 'shadow-emerald-500/30',
-      label: (t.addedTranslations_2026?.['مكتملة'] || (t.addedTranslations_2026?.['مكتملة'] || 'مكتملة')),
+      label: '',
       icon: CheckCircle2
     },
     cancelled: {
       gradient: 'from-slate-600 to-slate-800',
       shadow: 'shadow-slate-500/30',
-      label: (t.addedTranslations_2026?.['ملغاة'] || (t.addedTranslations_2026?.['ملغاة'] || 'ملغاة')),
+      label: '',
       icon: Globe2
     },
   }
@@ -202,7 +199,7 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-muted-foreground transition-all hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/50 backdrop-blur-sm -ml-2"
       >
         <ArrowRight className="h-4 w-4" />
-        {(t.addedTranslations_2026?.['العودة إلى لوحة التحكم'] || (t.addedTranslations_2026?.['العودة إلى لوحة التحكم'] || 'العودة إلى لوحة التحكم'))}
+        {''}
                     </Link>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -245,7 +242,7 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
                   <Users className="h-7 w-7 text-white opacity-90" />
                   <div className="text-center mt-1">
                     <p className="text-3xl font-black leading-none drop-shadow-sm">{attendance.length}</p>
-                    <p className="mt-1.5 text-xs font-bold text-white/80 tracking-wide">{(t.addedTranslations_2026?.['إجمالي الحضور'] || (t.addedTranslations_2026?.['إجمالي الحضور'] || 'إجمالي الحضور'))}</p>
+                    <p className="mt-1.5 text-xs font-bold text-white/80 tracking-wide">{''}</p>
                   </div>
                 </div>
               </div>
@@ -276,7 +273,7 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
                       <Layers className="h-6 w-6" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{(t.addedTranslations_2026?.['السلسلة التابع لها'] || (t.addedTranslations_2026?.['السلسلة التابع لها'] || 'السلسلة التابع لها'))}</p>
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{''}</p>
                       <p className="text-lg font-black">{sessionDetails.series_title}</p>
                     </div>
                   </div>
@@ -289,7 +286,7 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-lg font-black">
                       <FileText className="h-5 w-5 text-blue-500" />
-                      {(t.addedTranslations_2026?.['وصف الجلسة'] || (t.addedTranslations_2026?.['وصف الجلسة'] || 'وصف الجلسة'))}
+                      {''}
                                                               </div>
                     <p className="rounded-2xl border border-border/50 bg-slate-50 dark:bg-slate-800/30 p-6 text-base leading-relaxed text-muted-foreground font-medium shadow-sm">
                       {sessionDetails.description}
@@ -321,11 +318,11 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
                   <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                     <Users className="h-5 w-5" />
                   </div>
-                  {(t.addedTranslations_2026?.['سجل الحضور'] || (t.addedTranslations_2026?.['سجل الحضور'] || 'سجل الحضور'))}
+                  {''}
                                                   </span>
                 {attendance.length > 0 && (
                   <Badge variant="secondary" className="font-bold px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                    {attendance.length} {(t.addedTranslations_2026?.['طالب'] || (t.addedTranslations_2026?.['طالب'] || 'طالب'))}
+                    {attendance.length} {''}
                                                         </Badge>
                 )}
               </CardTitle>
@@ -349,7 +346,7 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
                         <p className="truncate text-xs font-medium text-muted-foreground mt-0.5">{record.email}</p>
                       </div>
                       <div className="shrink-0 text-left bg-slate-100 dark:bg-slate-800 rounded-lg px-2.5 py-1.5">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-0.5">{(t.addedTranslations_2026?.['انضمام'] || (t.addedTranslations_2026?.['انضمام'] || 'انضمام'))}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-0.5">{''}</p>
                         <p className="font-mono text-xs font-bold text-foreground">
                           {new Date(record.joined_at).toLocaleTimeString('ar-EG', {
                             hour: '2-digit',
@@ -365,9 +362,9 @@ export default async function SessionDetailsPage({ params }: { params: Promise<{
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 shadow-inner">
                     <Users className="h-8 w-8 text-slate-400" />
                   </div>
-                  <p className="text-lg font-black">{(t.addedTranslations_2026?.['لا يوجد حضور بعد'] || (t.addedTranslations_2026?.['لا يوجد حضور بعد'] || 'لا يوجد حضور بعد'))}</p>
+                  <p className="text-lg font-black">{''}</p>
                   <p className="mt-2 text-sm font-medium text-muted-foreground max-w-[200px] leading-relaxed">
-                    {(t.addedTranslations_2026?.['لم يقم أي طالب بتسجيل الدخول أو الانضمام لهذه الجلسة حتى الآن.'] || (t.addedTranslations_2026?.['لم يقم أي طالب بتسجيل الدخول أو الانضمام لهذه الجلسة حتى الآن.'] || 'لم يقم أي طالب بتسجيل الدخول أو الانضمام لهذه الجلسة حتى الآن.'))}
+                    {''}
                                                             </p>
                 </div>
               )}

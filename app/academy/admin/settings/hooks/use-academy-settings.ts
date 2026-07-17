@@ -221,6 +221,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function useAcademySettings() {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const { data, error, isLoading, mutate } = useSWR(
@@ -235,23 +236,42 @@ export function useAcademySettings() {
   const [saving, setSaving] = useState(false)
   const [unsavedChanges, setUnsavedChanges] = useState<Partial<AcademySettings>>({})
 
-  // Parse settings from API response
-  const settings: AcademySettings = Object.entries(data?.settings || {}).reduce(
-    (acc, [key, val]: [string, any]) => {
-      acc[key as keyof AcademySettings] = val?.value ?? val
-      return acc
-    },
-    { ...defaultSettings } as AcademySettings
-  )
+  // Parse settings from API response — handles both array (rows) and object (legacy) shapes
+  const rawSettingsMap: Record<string, any> = Array.isArray(data?.settings)
+    ? data.settings.reduce((acc: Record<string, any>, row: any) => {
+        acc[row.setting_key] = row.setting_value
+        return acc
+      }, {})
+    : Object.entries(data?.settings || {}).reduce(
+        (acc: Record<string, any>, [key, val]: [string, any]) => {
+          acc[key] = (val as any)?.value ?? val
+          return acc
+        },
+        {}
+      )
+
+  const settings: AcademySettings = { ...defaultSettings, ...rawSettingsMap }
 
   // Get metadata (updatedAt, modifiedBy) for each setting
-  const metadata: Record<string, { updatedAt?: string; modifiedBy?: string }> = 
-    Object.entries(data?.settings || {}).reduce((acc, [key, val]: [string, any]) => {
-      if (val?.updatedAt || val?.modifiedBy) {
-        acc[key] = { updatedAt: val.updatedAt, modifiedBy: val.modifiedBy }
-      }
-      return acc
-    }, {} as Record<string, any>)
+  const metadata: Record<string, { updatedAt?: string; modifiedBy?: string }> =
+    Array.isArray(data?.settings)
+      ? data.settings.reduce((acc: Record<string, any>, row: any) => {
+          acc[row.setting_key] = {
+            updatedAt: row.updated_at,
+            modifiedBy: row.modified_by,
+          }
+          return acc
+        }, {})
+      : Object.entries(data?.settings || {}).reduce(
+          (acc: Record<string, any>, [key, val]: [string, any]) => {
+            const v = val as any
+            if (v?.updatedAt || v?.modifiedBy) {
+              acc[key] = { updatedAt: v.updatedAt, modifiedBy: v.modifiedBy }
+            }
+            return acc
+          },
+          {}
+        )
 
   // Update a single setting locally (track unsaved changes)
   const updateSetting = useCallback(

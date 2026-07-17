@@ -17,11 +17,12 @@ import { useI18n } from "@/lib/i18n/context"
 interface ForumFiqhSettingsProps {
   settings: AcademySettings
   onUpdate: (updates: Partial<AcademySettings>) => void
-  onReset: () => void
+  onReset?: () => void
 }
 
 export function ForumFiqhSettings({ settings, onUpdate, onReset }: ForumFiqhSettingsProps) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
   const { data: officersData } = useSWR<{
     officers: Array<{ user_id: string; name: string; is_active: boolean }>
@@ -56,7 +57,7 @@ export function ForumFiqhSettings({ settings, onUpdate, onReset }: ForumFiqhSett
                 <CardDescription className="text-xs mt-0.5">{a.ffForumSettingsDesc}</CardDescription>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground">
+            <Button variant="ghost" size="sm" onClick={() => onReset?.()} className="text-muted-foreground">
               <RotateCcw className="w-4 h-4 ml-1" />
               {a.gsRestore}
             </Button>

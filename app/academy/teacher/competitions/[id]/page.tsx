@@ -1,7 +1,4 @@
 'use client'
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
-const a: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Loader2, CheckCircle, Send } from 'lucide-react'
@@ -35,21 +32,22 @@ interface Entry {
 }
 
 const TAJWEED_RULES = [
-  { key: 'idgham', label: (t.addedTranslations_2026?.['الإدغام'] || (t.addedTranslations_2026?.['الإدغام'] || 'الإدغام')) },
-  { key: 'ikhfa', label: (t.addedTranslations_2026?.['الإخفاء'] || (t.addedTranslations_2026?.['الإخفاء'] || 'الإخفاء')) },
-  { key: 'iqlab', label: (t.addedTranslations_2026?.['الإقلاب'] || (t.addedTranslations_2026?.['الإقلاب'] || 'الإقلاب')) },
-  { key: 'izhar', label: (t.addedTranslations_2026?.['الإظهار'] || (t.addedTranslations_2026?.['الإظهار'] || 'الإظهار')) },
-  { key: 'madd', label: (t.addedTranslations_2026?.['المدود'] || (t.addedTranslations_2026?.['المدود'] || 'المدود')) },
-  { key: 'qalqala', label: (t.addedTranslations_2026?.['القلقلة'] || (t.addedTranslations_2026?.['القلقلة'] || 'القلقلة')) },
-  { key: 'ghunna', label: (t.addedTranslations_2026?.['الغنة'] || (t.addedTranslations_2026?.['الغنة'] || 'الغنة')) },
-  { key: 'tafkhim_tarqiq', label: (t.addedTranslations_2026?.['التفخيم والترقيق'] || (t.addedTranslations_2026?.['التفخيم والترقيق'] || 'التفخيم والترقيق')) },
-  { key: 'waqf', label: (t.addedTranslations_2026?.['الوقف والابتداء'] || (t.addedTranslations_2026?.['الوقف والابتداء'] || 'الوقف والابتداء')) },
-  { key: 'makharij', label: (t.addedTranslations_2026?.['مخارج الحروف'] || (t.addedTranslations_2026?.['مخارج الحروف'] || 'مخارج الحروف')) },
+  { key: 'idgham', label: '' },
+  { key: 'ikhfa', label: '' },
+  { key: 'iqlab', label: '' },
+  { key: 'izhar', label: '' },
+  { key: 'madd', label: '' },
+  { key: 'qalqala', label: '' },
+  { key: 'ghunna', label: '' },
+  { key: 'tafkhim_tarqiq', label: '' },
+  { key: 'waqf', label: '' },
+  { key: 'makharij', label: '' },
 ]
 
 export default function TeacherCompetitionDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    
   const { id } = use(params)
+  const { t } = useI18n()
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
   const [competition, setCompetition] = useState<Competition | null>(null)
   const [entries, setEntries] = useState<Entry[]>([])
   const [loading, setLoading] = useState(true)
@@ -116,7 +114,7 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
         loadData()
       } else {
         const data = await res.json()
-        alert(data.error || (t.addedTranslations_2026?.['حدث خطأ'] || (t.addedTranslations_2026?.['حدث خطأ'] || 'حدث خطأ')))
+        alert(data.error || '')
       }
     } finally {
       setSubmitting(false)
@@ -143,9 +141,9 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
   if (!competition) {
     return (
       <div className="text-center py-16">
-        <p className="text-muted-foreground">{(t.addedTranslations_2026?.['المسابقة غير موجودة أو غير مُسندة إليك'] || (t.addedTranslations_2026?.['المسابقة غير موجودة أو غير مُسندة إليك'] || 'المسابقة غير موجودة أو غير مُسندة إليك'))}</p>
+        <p className="text-muted-foreground">{''}</p>
         <Link href="/academy/teacher/competitions" className="text-emerald-600 text-sm mt-2 inline-block">
-          {(t.addedTranslations_2026?.['العودة للمسابقات'] || (t.addedTranslations_2026?.['العودة للمسابقات'] || 'العودة للمسابقات'))}
+          {''}
                         </Link>
       </div>
     )
@@ -155,22 +153,22 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
     <div className="space-y-6">
       <Link href="/academy/teacher/competitions" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowRight className="w-4 h-4" />
-        {(t.addedTranslations_2026?.['العودة للمسابقات'] || (t.addedTranslations_2026?.['العودة للمسابقات'] || 'العودة للمسابقات'))}
+        {''}
                     </Link>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{competition.title}</h1>
-          <p className="text-muted-foreground mt-1">{(t.addedTranslations_2026?.['تقييم مشاركات الطلاب'] || (t.addedTranslations_2026?.['تقييم مشاركات الطلاب'] || 'تقييم مشاركات الطلاب'))}</p>
+          <p className="text-muted-foreground mt-1">{''}</p>
         </div>
         <div className="flex gap-3">
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-2 text-center">
             <span className="text-2xl font-bold text-amber-600">{pendingCount}</span>
-            <p className="text-xs text-amber-700 dark:text-amber-400">{(t.addedTranslations_2026?.['بانتظار التقييم'] || (t.addedTranslations_2026?.['بانتظار التقييم'] || 'بانتظار التقييم'))}</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400">{''}</p>
           </div>
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl px-4 py-2 text-center">
             <span className="text-2xl font-bold text-green-600">{evaluatedCount}</span>
-            <p className="text-xs text-green-700 dark:text-green-400">{(t.addedTranslations_2026?.['تم تقييمها'] || (t.addedTranslations_2026?.['تم تقييمها'] || 'تم تقييمها'))}</p>
+            <p className="text-xs text-green-700 dark:text-green-400">{''}</p>
           </div>
         </div>
       </div>
@@ -193,7 +191,7 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
       {filteredEntries.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center">
           <CheckCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-          <p className="text-muted-foreground">{(t.addedTranslations_2026?.['لا توجد مشاركات'] || (t.addedTranslations_2026?.['لا توجد مشاركات'] || 'لا توجد مشاركات'))} {filter === 'pending' ? (t.addedTranslations_2026?.['بانتظار التقييم'] || (t.addedTranslations_2026?.['بانتظار التقييم'] || 'بانتظار التقييم')) : ''}</p>
+          <p className="text-muted-foreground">{''} {filter === 'pending' ? '' : ''}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -209,7 +207,7 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
                       entry.status === 'winner' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
                       'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                     )}>
-                      {entry.status === 'pending' ? (t.addedTranslations_2026?.['قيد التقييم'] || (t.addedTranslations_2026?.['قيد التقييم'] || 'قيد التقييم')) : entry.status === 'winner' ? (t.addedTranslations_2026?.['فائز'] || (t.addedTranslations_2026?.['فائز'] || 'فائز')) : (t.addedTranslations_2026?.['تم التقييم'] || 'تم التقييم')}
+                      {entry.status === 'pending' ? '' : entry.status === 'winner' ? '' : ''}
                     </span>
                   </div>
                   {entry.student_email && <p className="text-sm text-muted-foreground">{entry.student_email}</p>}
@@ -221,27 +219,27 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
                   )}
 
                   {entry.verses_count > 0 && (
-                    <p className="text-sm text-muted-foreground mt-1">{(t.addedTranslations_2026?.['عدد الآيات:'] || (t.addedTranslations_2026?.['عدد الآيات:'] || 'عدد الآيات:'))} {entry.verses_count}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{''} {entry.verses_count}</p>
                   )}
                   {entry.notes && (
-                    <p className="text-sm text-muted-foreground mt-1">{(t.addedTranslations_2026?.['ملاحظات الطالب:'] || (t.addedTranslations_2026?.['ملاحظات الطالب:'] || 'ملاحظات الطالب:'))} {entry.notes}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{''} {entry.notes}</p>
                   )}
 
                   {entry.score !== null && (
                     <div className="mt-2 flex items-center gap-2">
-                      <span className="text-sm font-medium">{(t.addedTranslations_2026?.['الدرجة:'] || 'الدرجة:')}</span>
+                      <span className="text-sm font-medium">{''}</span>
                       <span className="text-lg font-bold text-amber-600">{entry.score}</span>
                       {(entry.judge_count ?? 0) > 1 ? (
                         <span className="text-xs text-muted-foreground">
-                          {(t.addedTranslations_2026?.['متوسط'] || 'متوسط')} {entry.judge_count} {(t.addedTranslations_2026?.['محكّمين'] || 'محكّمين')}
+                          {''} {entry.judge_count} {''}
                         </span>
                       ) : entry.evaluated_by_name ? (
-                        <span className="text-xs text-muted-foreground">{(t.addedTranslations_2026?.['— بواسطة'] || '— بواسطة')} {entry.evaluated_by_name}</span>
+                        <span className="text-xs text-muted-foreground">{''} {entry.evaluated_by_name}</span>
                       ) : null}
                     </div>
                   )}
                   {entry.feedback && (
-                    <p className="text-sm mt-1 text-muted-foreground">{(t.addedTranslations_2026?.['الملاحظات:'] || (t.addedTranslations_2026?.['الملاحظات:'] || 'الملاحظات:'))} {entry.feedback}</p>
+                    <p className="text-sm mt-1 text-muted-foreground">{''} {entry.feedback}</p>
                   )}
                 </div>
 
@@ -251,7 +249,7 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
                       onClick={() => startEvaluate(entry)}
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors"
                     >
-                      {entry.status === 'pending' ? (t.addedTranslations_2026?.['قيّم'] || (t.addedTranslations_2026?.['قيّم'] || 'قيّم')) : (t.addedTranslations_2026?.['أعد التقييم'] || 'أعد التقييم')}
+                      {entry.status === 'pending' ? '' : ''}
                     </button>
                   )}
                 </div>
@@ -261,7 +259,7 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
                 <form onSubmit={handleEvaluate} className="mt-4 pt-4 border-t border-border space-y-4">
                   {competition.type === 'tajweed' ? (
                     <div>
-                      <p className="text-sm font-medium mb-3">{(t.addedTranslations_2026?.['تقييم أحكام التجويد (من 10):'] || (t.addedTranslations_2026?.['تقييم أحكام التجويد (من 10):'] || 'تقييم أحكام التجويد (من 10):'))}</p>
+                      <p className="text-sm font-medium mb-3">{''}</p>
                       <div className="grid grid-cols-2 gap-3">
                         {TAJWEED_RULES.map(r => (
                           <div key={r.key} className="flex items-center gap-2">
@@ -284,7 +282,7 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
                     </div>
                   ) : (
                     <div>
-                      <label className="block text-sm font-medium mb-1">{(t.addedTranslations_2026?.['الدرجة (من 100)'] || (t.addedTranslations_2026?.['الدرجة (من 100)'] || 'الدرجة (من 100)'))}</label>
+                      <label className="block text-sm font-medium mb-1">{''}</label>
                       <input
                         type="number"
                         min={0}
@@ -297,12 +295,12 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">{(t.addedTranslations_2026?.['ملاحظات التقييم'] || (t.addedTranslations_2026?.['ملاحظات التقييم'] || 'ملاحظات التقييم'))}</label>
+                    <label className="block text-sm font-medium mb-1">{''}</label>
                     <textarea
                       value={evalForm.feedback}
                       onChange={e => setEvalForm(prev => ({ ...prev, feedback: e.target.value }))}
                       className="w-full px-4 py-2.5 rounded-xl border border-border bg-background min-h-[80px] resize-y"
-                      placeholder={t.addedTranslations_2026?.['أضف ملاحظاتك على التلاوة...'] || (t.addedTranslations_2026?.['أضف ملاحظاتك على التلاوة...'] || 'أضف ملاحظاتك على التلاوة...')}
+                      placeholder={''}
                     />
                   </div>
 
@@ -313,14 +311,14 @@ export default function TeacherCompetitionDetailPage({ params }: { params: Promi
                       className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors disabled:opacity-50"
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin inline-block ml-1" /> : <Send className="w-4 h-4 inline-block ml-1" />}
-                      {(t.addedTranslations_2026?.['حفظ التقييم'] || (t.addedTranslations_2026?.['حفظ التقييم'] || 'حفظ التقييم'))}
+                      {''}
                                                       </button>
                     <button
                       type="button"
                       onClick={() => setEvaluatingId(null)}
                       className="px-4 py-2.5 bg-muted text-foreground rounded-xl font-bold transition-colors"
                     >
-                      {(t.addedTranslations_2026?.['إلغاء'] || (t.addedTranslations_2026?.['إلغاء'] || 'إلغاء'))}
+                      {''}
                                                       </button>
                   </div>
                 </form>

@@ -15,7 +15,7 @@ import { useI18n } from "@/lib/i18n/context"
 interface CoursesContentSettingsProps {
   settings: AcademySettings
   onUpdate: (updates: Partial<AcademySettings>) => void
-  onReset: () => void
+  onReset?: () => void
 }
 
 const storageProviderMeta = [
@@ -41,6 +41,7 @@ const defaultFormats = ["mp4", "webm", "mov", "pdf", "docx", "pptx", "mp3", "wav
 
 export function CoursesContentSettings({ settings, onUpdate, onReset }: CoursesContentSettingsProps) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const allowedFormats = settings.academy_courses_allowed_formats || defaultFormats
@@ -79,7 +80,7 @@ export function CoursesContentSettings({ settings, onUpdate, onReset }: CoursesC
                 <CardDescription className="text-xs mt-0.5">{a.csReviewDesc}</CardDescription>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground">
+            <Button variant="ghost" size="sm" onClick={() => onReset?.()} className="text-muted-foreground">
               <RotateCcw className="w-4 h-4 ml-1" />
               {a.gsRestore}
             </Button>

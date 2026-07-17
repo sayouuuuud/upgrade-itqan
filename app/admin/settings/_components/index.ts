@@ -1,10 +1,8 @@
-export { SystemSettings } from "./system-settings"
-export { ReadersSettings } from "./readers-settings"
-export { HalaqatSettings } from "./halaqat-settings"
-export { RecitationsSettings } from "./recitations-settings"
-export { PathsSettings } from "./paths-settings"
-export { GamificationSettings } from "./gamification-settings"
-export { CompetitionsSettings } from "./competitions-settings"
-export { NotificationsSettings } from "./notifications-settings"
+// System Settings Components — Super Admin Only
+// هذه المكونات تقرأ وتكتب المفاتيح الموجودة في DB مباشرةً (بدون إعادة تسمية)
+export { IdentitySettings } from "./identity-settings"
+export { EmailSettings } from "./email-settings"
 export { SecuritySettings } from "./security-settings"
+export { NotificationsSettings } from "./notifications-settings"
 export { MaintenanceSettings } from "./maintenance-settings"
+export { SeoSettings } from "./seo-settings"

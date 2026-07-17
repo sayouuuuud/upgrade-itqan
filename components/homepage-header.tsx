@@ -24,7 +24,7 @@ export default function HomepageHeader() {
     <HeaderNavClient
       isLoggedIn={isLoggedIn}
       dashboardLink={isLoggedIn ? (data?.dashboardLink ?? "/dashboard") : null}
-      dashboardText={isLoggedIn ? (data?.dashboardText ?? "حسابي") : null}
+      dashboardText={isLoggedIn ? (data?.dashboardText ?? "My Account") : null}
       userName={data?.user?.name}
     />
   )

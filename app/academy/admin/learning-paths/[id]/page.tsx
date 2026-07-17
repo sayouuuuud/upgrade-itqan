@@ -56,6 +56,7 @@ export default function AcademyAdminLearningPathDetailPage() {
   const params = useParams<{ id: string }>()
   const pathId = params.id
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const tp = (t as any).tajweedPaths
   const a = t.academyAdmin
 

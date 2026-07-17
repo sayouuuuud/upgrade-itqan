@@ -17,6 +17,7 @@ export default function ManageCoursePage() {
   const params = useParams()
   const router = useRouter()
   const { t } = useI18n()
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
   const courseId = params.id as string
 
   const [course, setCourse] = useState<any>(null)

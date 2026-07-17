@@ -1,7 +1,5 @@
 'use client'
 
-
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { FormEvent, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -75,11 +73,11 @@ export default function PublicSessionPage({ params }: { params: { token: string 
   }
 
   if (loading) {
-    return <div className="min-h-screen grid place-items-center" dir="rtl">{((t as any).extracted_2026_v2?.["جاري التحميل..."] || ((t as any).extracted_2026_v2?.["جاري التحميل..."] || "جاري التحميل..."))}</div>
+    return <div className="min-h-screen grid place-items-center" dir="rtl">{"جاري التحميل..."}</div>
   }
 
   if (!session) {
-    return <div className="min-h-screen grid place-items-center" dir="rtl">{((t as any).extracted_2026_v2?.["الدرس غير موجود أو غير متاح للعامة"] || ((t as any).extracted_2026_v2?.["الدرس غير موجود أو غير متاح للعامة"] || "الدرس غير موجود أو غير متاح للعامة"))}</div>
+    return <div className="min-h-screen grid place-items-center" dir="rtl">{"الدرس غير موجود أو غير متاح للعامة"}</div>
   }
 
   const startDate = new Date(session.scheduled_at)
@@ -95,7 +93,7 @@ export default function PublicSessionPage({ params }: { params: { token: string 
           <div className="bg-gradient-to-r from-emerald-700 to-blue-700 text-white p-8">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm mb-4">
               <Video className="w-4 h-4" />
-              {((t as any).extracted_2026_v2?.["درس عام مفتوح"] || ((t as any).extracted_2026_v2?.["درس عام مفتوح"] || "درس عام مفتوح"))}</div>
+              {"درس عام مفتوح"}</div>
             <h1 className="text-3xl md:text-4xl font-bold">{session.title}</h1>
             <p className="mt-3 text-white/85">{session.course_title}</p>
           </div>
@@ -107,7 +105,7 @@ export default function PublicSessionPage({ params }: { params: { token: string 
               </div>
               <div className="rounded-lg bg-muted p-4 flex items-center gap-3">
                 <Clock className="w-5 h-5 text-blue-700" />
-                <span>{session.duration_minutes} {((t as any).extracted_2026_v2?.["دقيقة"] || ((t as any).extracted_2026_v2?.["دقيقة"] || "دقيقة"))}</span>
+                <span>{session.duration_minutes} {"دقيقة"}</span>
               </div>
               <div className="rounded-lg bg-muted p-4 flex items-center gap-3">
                 <User className="w-5 h-5 text-purple-700" />
@@ -122,16 +120,16 @@ export default function PublicSessionPage({ params }: { params: { token: string 
                 <PlayCircle className="w-10 h-10" />
               </div>
               <h2 className="text-2xl font-bold">
-                {isEnded ? ((t as any).extracted_2026_v2?.["انتهى الدرس"] || ((t as any).extracted_2026_v2?.["انتهى الدرس"] || "انتهى الدرس")) : isLive ? ((t as any).extracted_2026_v2?.["الدرس مباشر الآن"] || ((t as any).extracted_2026_v2?.["الدرس مباشر الآن"] || "الدرس مباشر الآن")) : ((t as any).extracted_2026_v2?.["رابط الدرس جاهز"] || ((t as any).extracted_2026_v2?.["رابط الدرس جاهز"] || "رابط الدرس جاهز"))}
+                {isEnded ? "انتهى الدرس" : isLive ? "الدرس مباشر الآن" : "رابط الدرس جاهز"}
               </h2>
               <p className="text-muted-foreground">
-                {((t as any).extracted_2026_v2?.["لا تحتاج إلى تسجيل دخول. اضغط الرابط وادخل مباشرة."] || ((t as any).extracted_2026_v2?.["لا تحتاج إلى تسجيل دخول. اضغط الرابط وادخل مباشرة."] || "لا تحتاج إلى تسجيل دخول. اضغط الرابط وادخل مباشرة."))}</p>
+                {"لا تحتاج إلى تسجيل دخول. اضغط الرابط وادخل مباشرة."}</p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 {!isEnded && (
                   <Button size="lg" asChild className={`gap-2 ${isLive ? 'bg-red-600 hover:bg-red-700 animate-pulse' : 'bg-emerald-700 hover:bg-emerald-800'} text-white`}>
                     <Link href={`/academy/public/session/${params.token}/live`}>
                       <Radio className="w-5 h-5" />
-                      {isLive ? ((t as any).extracted_2026_v2?.["انضم للبث المباشر الآن"] || ((t as any).extracted_2026_v2?.["انضم للبث المباشر الآن"] || "انضم للبث المباشر الآن")) : ((t as any).extracted_2026_v2?.["الدخول إلى غرفة البث"] || ((t as any).extracted_2026_v2?.["الدخول إلى غرفة البث"] || "الدخول إلى غرفة البث"))}
+                      {isLive ? "انضم للبث المباشر الآن" : "الدخول إلى غرفة البث"}
                     </Link>
                   </Button>
                 )}
@@ -139,10 +137,10 @@ export default function PublicSessionPage({ params }: { params: { token: string 
                   <Button size="lg" variant="outline" asChild className="gap-2">
                     <a href={session.meeting_link} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="w-5 h-5" />
-                      {((t as any).extracted_2026_v2?.["الرابط الخارجي"] || ((t as any).extracted_2026_v2?.["الرابط الخارجي"] || "الرابط الخارجي"))}</a>
+                      {"الرابط الخارجي"}</a>
                   </Button>
                 ) : !isLive && !isEnded ? (
-                  <p className="text-sm text-amber-700 self-center">{((t as any).extracted_2026_v2?.["يمكن دخول البث الآن قبل البدء بقليل."] || ((t as any).extracted_2026_v2?.["يمكن دخول البث الآن قبل البدء بقليل."] || "يمكن دخول البث الآن قبل البدء بقليل."))}</p>
+                  <p className="text-sm text-amber-700 self-center">{"يمكن دخول البث الآن قبل البدء بقليل."}</p>
                 ) : null}
               </div>
             </div>
@@ -154,7 +152,7 @@ export default function PublicSessionPage({ params }: { params: { token: string 
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BookOpen className="w-5 h-5" />
-                {session.series_title || ((t as any).extracted_2026_v2?.["سلسلة الدروس"] || ((t as any).extracted_2026_v2?.["سلسلة الدروس"] || "سلسلة الدروس"))}
+                {session.series_title || "سلسلة الدروس"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -176,12 +174,12 @@ export default function PublicSessionPage({ params }: { params: { token: string 
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="w-5 h-5" />
-              {((t as any).extracted_2026_v2?.["اشترك في تذكيرات الشيخ"] || ((t as any).extracted_2026_v2?.["اشترك في تذكيرات الشيخ"] || "اشترك في تذكيرات الشيخ"))}</CardTitle>
+              {"اشترك في تذكيرات الشيخ"}</CardTitle>
           </CardHeader>
           <CardContent>
             {subscribed ? (
               <p className="rounded-lg bg-green-50 text-green-800 p-4">
-                {((t as any).extracted_2026_v2?.["تم الاشتراك. سيصلك تذكير قبل الدروس العامة القادمة."] || ((t as any).extracted_2026_v2?.["تم الاشتراك. سيصلك تذكير قبل الدروس العامة القادمة."] || "تم الاشتراك. سيصلك تذكير قبل الدروس العامة القادمة."))}</p>
+                {"تم الاشتراك. سيصلك تذكير قبل الدروس العامة القادمة."}</p>
             ) : (
               <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3">
                 <input
@@ -189,20 +187,20 @@ export default function PublicSessionPage({ params }: { params: { token: string 
                   required
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  placeholder={((t as any).extracted_2026_v2?.["البريد الإلكتروني"] || ((t as any).extracted_2026_v2?.["البريد الإلكتروني"] || "البريد الإلكتروني"))}
+                  placeholder={"البريد الإلكتروني"}
                   className="flex h-11 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
                 />
                 <Button type="submit" disabled={subscribing}>
-                  {subscribing ? ((t as any).extracted_2026_v2?.["جاري الاشتراك..."] || ((t as any).extracted_2026_v2?.["جاري الاشتراك..."] || "جاري الاشتراك...")) : ((t as any).extracted_2026_v2?.["اشترك في القائمة البريدية"] || ((t as any).extracted_2026_v2?.["اشترك في القائمة البريدية"] || "اشترك في القائمة البريدية"))}
+                  {subscribing ? "جاري الاشتراك..." : "اشترك في القائمة البريدية"}
                 </Button>
               </form>
             )}
             <div className="mt-6 rounded-lg border p-4">
-              <h3 className="font-semibold mb-2">{((t as any).extracted_2026_v2?.["هل تريد متابعة المنصة كاملة؟"] || ((t as any).extracted_2026_v2?.["هل تريد متابعة المنصة كاملة؟"] || "هل تريد متابعة المنصة كاملة؟"))}</h3>
+              <h3 className="font-semibold mb-2">{"هل تريد متابعة المنصة كاملة؟"}</h3>
               <p className="text-muted-foreground mb-3">
-                {((t as any).extracted_2026_v2?.["سجل حساباً لتتابع الحفظ والدورات والاختبارات والجلسات الخاصة."] || ((t as any).extracted_2026_v2?.["سجل حساباً لتتابع الحفظ والدورات والاختبارات والجلسات الخاصة."] || "سجل حساباً لتتابع الحفظ والدورات والاختبارات والجلسات الخاصة."))}</p>
+                {"سجل حساباً لتتابع الحفظ والدورات والاختبارات والجلسات الخاصة."}</p>
               <Button asChild variant="outline">
-                <Link href="/auth/signup">{((t as any).extracted_2026_v2?.["التسجيل في المنصة"] || ((t as any).extracted_2026_v2?.["التسجيل في المنصة"] || "التسجيل في المنصة"))}</Link>
+                <Link href="/auth/signup">{"التسجيل في المنصة"}</Link>
               </Button>
             </div>
           </CardContent>

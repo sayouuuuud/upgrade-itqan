@@ -27,6 +27,7 @@ function toViewableSrc(src: string): string {
  */
 export default function AdminPdfViewer({ src, label }: { src: string; label?: string }) {
   const { t } = useI18n();
+  const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar";
     const [expanded, setExpanded] = useState(false)
 

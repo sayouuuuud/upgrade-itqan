@@ -220,6 +220,7 @@ function parseFloatSafe(value: string | undefined) {
 
 export default function AcademyAdminLearningPathsPage() {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
   const SUBJECTS = useMemo(() => getSubjects(a), [a])
   const SUBJECT_LABELS = useMemo(() => getSubjectLabels(a), [a])

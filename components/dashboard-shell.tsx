@@ -355,15 +355,26 @@ const MAQRAA_EXCLUDED_HREFS = [
   '/admin/users',
   '/admin/settings',
   '/admin/email-templates',
-  // Academy-only content — the fiqh library lives under /academy and belongs to
-  // the Academy sidebar, so it must not leak into the Maqraa sidebar.
+  // Academy-only content — these live under /academy and must not leak into
+  // the Maqraa sidebar.
   '/academy/fiqh',
+  '/academy/admin/competitions',
+  '/academy/admin/leaderboard',
+  '/academy/admin/badges',
 ]
 const getMaqraaConfig = (t: any): ShellConfig => {
   const admin = getRoleConfig(t).admin
   const sections = admin.sections
     .map((s) => ({ ...s, items: s.items.filter((i) => !MAQRAA_EXCLUDED_HREFS.includes(i.href)) }))
     .filter((s) => s.items.length > 0)
+  // Maqraa-specific settings live under /maqraah/admin/settings (specialised
+  // settings only — global/system settings belong to the Super Admin).
+  sections.push({
+    title: t.locale === 'ar' ? 'إعدادات المقرأة' : 'Maqraa Settings',
+    items: [
+      { href: '/maqraah/admin/settings', label: t.locale === 'ar' ? 'إعدادات المقرأة' : 'Maqraa Settings', icon: Settings },
+    ],
+  })
   return { sections, label: 'مدير المقرأة', name: 'مدير المقرأة', sublabel: 'مدير المقرأة' }
 }
 
@@ -588,6 +599,7 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed()
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const [user, setUser] = useState<{
     name: string;
     email: string;

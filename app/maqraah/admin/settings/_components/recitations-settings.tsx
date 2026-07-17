@@ -13,13 +13,14 @@ import { useI18n } from "@/lib/i18n/context"
 interface Props {
   settings: MaqraahSettings
   onUpdate: (updates: Partial<MaqraahSettings>) => void
-  onReset: () => void
+  onReset?: () => void
 }
 
 const audioFormats = ["mp3", "m4a", "ogg", "wav", "aac"]
 
 export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const a = t.admin
   const formats = settings.maqraah_recitations_allowed_audio_formats || []
   const riwayat = settings.maqraah_recitations_available_riwayat || []
@@ -34,12 +35,12 @@ export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
   ]
 
   const toggleFormat = (f: string) => {
-    const next = formats.includes(f) ? formats.filter((x) => x !== f) : [...formats, f]
+    const next = formats.includes(f) ? formats.filter((x: string) => x !== f) : [...formats, f]
     onUpdate({ maqraah_recitations_allowed_audio_formats: next })
   }
 
   const toggleRiwayah = (r: string) => {
-    const next = riwayat.includes(r) ? riwayat.filter((x) => x !== r) : [...riwayat, r]
+    const next = riwayat.includes(r) ? riwayat.filter((x: string) => x !== r) : [...riwayat, r]
     onUpdate({ maqraah_recitations_available_riwayat: next })
   }
 

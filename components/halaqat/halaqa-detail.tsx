@@ -1,7 +1,6 @@
 "use client"
 
 
-const t: any = new Proxy({}, { get: () => new Proxy({}, { get: () => undefined }) });
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -24,6 +23,7 @@ import {
 } from 'lucide-react'
 import { GENDER_LABELS, type HalaqaPlatform } from '@/lib/halaqat'
 import { HalaqaSessions } from '@/components/halaqat/halaqa-sessions'
+import { useI18n } from '@/lib/i18n/context'
 
 interface Halaqa {
   id: string
@@ -77,6 +77,9 @@ export function HalaqaDetail({
   platform,
 }: Props) {
   const router = useRouter()
+  const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
+  const th = (t as any).halaqat as Record<string, string> | undefined
   const [halaqa, setHalaqa] = useState<Halaqa | null>(null)
   const [permissions, setPermissions] = useState<{ can_manage: boolean; is_enrolled: boolean } | null>(null)
   const [students, setStudents] = useState<Student[]>([])
@@ -143,7 +146,7 @@ export function HalaqaDetail({
         setShowAdd(false)
       } else {
         const err = await r.json().catch(() => ({}))
-        alert(err.error || ((t as any).extracted_2026_v2?.["تعذر إضافة الطالب"] || "تعذر إضافة الطالب"))
+        alert(err.error || th?.addStudentFail || 'Failed to add student')
       }
     } finally {
       setAddingId(null)
@@ -151,7 +154,7 @@ export function HalaqaDetail({
   }
 
   async function removeStudent(studentId: string) {
-    if (!confirm(((t as any).extracted_2026_v2?.["إزالة الطالب من الحلقة؟"] || "إزالة الطالب من الحلقة؟"))) return
+    if (!confirm(th?.removeStudentConfirm ?? 'Remove student from halaqa?')) return
     setRemovingId(studentId)
     try {
       const r = await fetch(`/api/halaqat/${halaqaId}/students`, {
@@ -206,9 +209,9 @@ export function HalaqaDetail({
     return (
       <div className="text-center py-16">
         <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto mb-3" />
-        <p className="text-muted-foreground">{((t as any).extracted_2026_v2?.["لم يتم العثور على الحلقة أو لا تملك صلاحية الوصول"] || "لم يتم العثور على الحلقة أو لا تملك صلاحية الوصول")}</p>
+        <p className="text-muted-foreground">{th?.notFoundOrNoAccess ?? 'Halaqa not found or you do not have access'}</p>
         <Link href={basePath} className="inline-block mt-4 text-emerald-600 hover:underline">
-          {((t as any).extracted_2026_v2?.["العودة للحلقات"] || "العودة للحلقات")}</Link>
+          {th?.backToHalaqat ?? 'Back to Halaqat'}</Link>
       </div>
     )
   }
@@ -226,7 +229,7 @@ export function HalaqaDetail({
             <Link
               href={basePath}
               className="shrink-0 p-2 -m-2 hover:bg-secondary rounded-lg transition-colors"
-              aria-label={((t as any).extracted_2026_v2?.["رجوع"] || "رجوع")}
+              aria-label={th?.back ?? 'Back'}
             >
               <ArrowRight className="w-5 h-5" />
             </Link>
@@ -235,7 +238,7 @@ export function HalaqaDetail({
                 {halaqa.name}
                 {halaqa.is_live && (
                   <span className="inline-flex items-center gap-1 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
-                    <Radio className="w-3 h-3 animate-pulse" /> {((t as any).extracted_2026_v2?.["مباشر الآن"] || "مباشر الآن")}</span>
+                    <Radio className="w-3 h-3 animate-pulse" /> {th?.liveNowBadge ?? 'Live Now'}</span>
                 )}
               </h1>
               <div className="flex flex-wrap items-center gap-2 mt-2 text-xs">
@@ -248,7 +251,7 @@ export function HalaqaDetail({
                   <Users className="w-3 h-3" /> {halaqa.current_students}/{halaqa.max_students}
                 </span>
                 <span className="inline-flex items-center gap-1 bg-secondary/60 px-2 py-0.5 rounded-full">
-                  {GENDER_LABELS[halaqa.gender] || ((t as any).extracted_2026_v2?.["مختلط"] || "مختلط")}
+                  {GENDER_LABELS[halaqa.gender] || (th?.genderMixed ?? 'Mixed')}
                 </span>
                 {scheduled && (
                   <span className="inline-flex items-center gap-1 bg-secondary/60 px-2 py-0.5 rounded-full">
@@ -257,7 +260,7 @@ export function HalaqaDetail({
                 )}
                 {halaqa.duration_minutes && (
                   <span className="inline-flex items-center gap-1 bg-secondary/60 px-2 py-0.5 rounded-full">
-                    <Clock className="w-3 h-3" /> {halaqa.duration_minutes} {((t as any).extracted_2026_v2?.["دقيقة"] || "دقيقة")}</span>
+                    <Clock className="w-3 h-3" /> {halaqa.duration_minutes} {th?.minute ?? 'min'}</span>
                 )}
               </div>
             </div>
@@ -268,7 +271,7 @@ export function HalaqaDetail({
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors"
             >
               <Video className="w-4 h-4" />
-              {halaqa.is_live ? ((t as any).extracted_2026_v2?.["انضم للبث"] || "انضم للبث") : ((t as any).extracted_2026_v2?.["دخول الغرفة"] || "دخول الغرفة")}
+                {halaqa.is_live ? (th?.joinBroadcast ?? 'Join Broadcast') : (th?.enterRoom ?? 'Enter Room')}
             </Link>
             {canManage && (
               <button
@@ -281,7 +284,7 @@ export function HalaqaDetail({
                 }`}
               >
                 {togglingLive ? <Loader2 className="w-4 h-4 animate-spin" /> : <Radio className="w-4 h-4" />}
-                {halaqa.is_live ? ((t as any).extracted_2026_v2?.["إنهاء البث"] || "إنهاء البث") : ((t as any).extracted_2026_v2?.["بدء البث المباشر"] || "بدء البث المباشر")}
+                {halaqa.is_live ? (th?.endBroadcast ?? 'End Broadcast') : (th?.startBroadcast ?? 'Start Live Broadcast')}
               </button>
             )}
           </div>
@@ -300,7 +303,7 @@ export function HalaqaDetail({
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          {((t as any).extracted_2026_v2?.["نظرة عامة"] || "نظرة عامة")}</button>
+          {th?.tabOverview ?? 'Overview'}</button>
         <button
           onClick={() => setTab('sessions')}
           className={`px-4 py-2.5 font-bold text-sm border-b-2 -mb-px transition-colors ${
@@ -309,7 +312,7 @@ export function HalaqaDetail({
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          {((t as any).extracted_2026_v2?.["الجلسات"] || "الجلسات")}</button>
+          {th?.sessions ?? 'Sessions'}</button>
         <button
           onClick={() => setTab('students')}
           className={`px-4 py-2.5 font-bold text-sm border-b-2 -mb-px transition-colors ${
@@ -318,21 +321,21 @@ export function HalaqaDetail({
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          {((t as any).extracted_2026_v2?.["الطلاب ("] || "الطلاب (")}{students.length})
+          {th?.tabStudents ?? 'Students'} ({students.length})
         </button>
       </div>
 
       {tab === 'overview' && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <InfoTile title={((t as any).extracted_2026_v2?.["حالة الحلقة"] || "حالة الحلقة")} value={halaqa.is_active ? ((t as any).extracted_2026_v2?.["نشطة"] || "نشطة") : ((t as any).extracted_2026_v2?.["متوقفة"] || "متوقفة")} accent={halaqa.is_active ? 'text-emerald-600' : 'text-muted-foreground'} />
-          <InfoTile title={((t as any).extracted_2026_v2?.["عدد الطلاب الحالي"] || "عدد الطلاب الحالي")} value={`${halaqa.current_students} / ${halaqa.max_students}`} />
-          <InfoTile title={((t as any).extracted_2026_v2?.["الجنس المسموح"] || "الجنس المسموح")} value={GENDER_LABELS[halaqa.gender] || ((t as any).extracted_2026_v2?.["مختلط"] || "مختلط")} />
-          {scheduled && <InfoTile title={((t as any).extracted_2026_v2?.["الموعد القادم"] || "الموعد القادم")} value={scheduled} />}
+          <InfoTile title={th?.infoStatus ?? 'Status'} value={halaqa.is_active ? (th?.activeBadge ?? 'Active') : (th?.inactiveBadge ?? 'Inactive')} accent={halaqa.is_active ? 'text-emerald-600' : 'text-muted-foreground'} />
+          <InfoTile title={th?.infoCurrentStudents ?? 'Current Students'} value={`${halaqa.current_students} / ${halaqa.max_students}`} />
+          <InfoTile title={th?.infoGender ?? 'Allowed Gender'} value={GENDER_LABELS[halaqa.gender] || (th?.genderMixed ?? 'Mixed')} />
+          {scheduled && <InfoTile title={th?.infoNextSchedule ?? 'Next Session'} value={scheduled} />}
           {halaqa.meeting_link && (
-            <InfoTile title={((t as any).extracted_2026_v2?.["رابط بديل"] || "رابط بديل")} value={<a className="text-emerald-600 underline" href={halaqa.meeting_link} target="_blank" rel="noreferrer">{((t as any).extracted_2026_v2?.["فتح الرابط"] || "فتح الرابط")}</a>} />
+            <InfoTile title={th?.infoAltLink ?? 'External Link'} value={<a className="text-emerald-600 underline" href={halaqa.meeting_link} target="_blank" rel="noreferrer">{th?.openLink ?? 'Open Link'}</a>} />
           )}
           <InfoTile
-            title={((t as any).extracted_2026_v2?.["رابط البث الداخلي"] || "رابط البث الداخلي")}
+            title={th?.infoLiveLink ?? 'Internal Stream Link'}
             value={
               <Link href={`${basePath}/${halaqaId}/live`} className="text-emerald-600 underline">
                 LiveKit Room
@@ -349,7 +352,7 @@ export function HalaqaDetail({
           {canManage && (
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                {students.length} {((t as any).extracted_2026_v2?.["طالب من أصل"] || "طالب من أصل")}{halaqa.max_students}
+                {students.length} {th?.studentsOf ?? 'students out of'} {halaqa.max_students}
               </p>
               <button
                 onClick={openAddModal}
@@ -357,13 +360,13 @@ export function HalaqaDetail({
                 className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold transition-colors disabled:opacity-50"
               >
                 <Plus className="w-4 h-4" />
-                {((t as any).extracted_2026_v2?.["إضافة طالب"] || "إضافة طالب")}</button>
+                {th?.addStudent ?? 'Add Student'}</button>
             </div>
           )}
 
           {students.length === 0 ? (
             <div className="bg-card border border-dashed border-border rounded-2xl p-10 text-center text-muted-foreground">
-              {((t as any).extracted_2026_v2?.["لم يلتحق أي طالب بهذه الحلقة بعد"] || "لم يلتحق أي طالب بهذه الحلقة بعد")}</div>
+              {th?.noStudentsYet ?? 'No students have joined this halaqa yet'}</div>
           ) : (
             <div className="grid gap-3">
               {students.map((s) => (
@@ -387,18 +390,18 @@ export function HalaqaDetail({
                       <CheckCircle2 className="w-3.5 h-3.5" /> {s.attendance_count}
                     </span>
                     <span className="inline-flex items-center gap-1 text-muted-foreground">
-                      <Clock className="w-3.5 h-3.5" /> {s.total_sessions} {((t as any).extracted_2026_v2?.["جلسة"] || "جلسة")}</span>
+                      <Clock className="w-3.5 h-3.5" /> {s.total_sessions} {th?.sessions ?? 'sessions'}</span>
                   </div>
                   {!s.is_active && (
                     <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
-                      {((t as any).extracted_2026_v2?.["موقوف"] || "موقوف")}</span>
+                      {th?.suspended ?? 'Suspended'}</span>
                   )}
                   {canManage && s.is_active && (
                     <button
                       onClick={() => removeStudent(s.student_id)}
                       disabled={removingId === s.student_id}
                       className="p-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                      title={((t as any).extracted_2026_v2?.["إزالة"] || "إزالة")}
+                      title={th?.remove ?? 'Remove'}
                     >
                       {removingId === s.student_id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -421,7 +424,7 @@ export function HalaqaDetail({
         >
           <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between p-5 border-b border-border">
-              <h3 className="font-bold text-lg">{((t as any).extracted_2026_v2?.["إضافة طلاب للحلقة"] || "إضافة طلاب للحلقة")}</h3>
+              <h3 className="font-bold text-lg">{th?.addStudentsTitle ?? 'Add Students to Halaqa'}</h3>
               <button onClick={() => setShowAdd(false)} className="p-2 hover:bg-muted rounded-lg">
                 <X className="w-5 h-5" />
               </button>
@@ -433,7 +436,7 @@ export function HalaqaDetail({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   type="search"
-                  placeholder={((t as any).extracted_2026_v2?.["ابحث بالاسم أو البريد…"] || "ابحث بالاسم أو البريد…")}
+                  placeholder={th?.searchPlaceholder ?? 'Search by name or email…'}
                   className="w-full pr-10 pl-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                 />
               </div>
@@ -441,7 +444,7 @@ export function HalaqaDetail({
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {filteredAvailable.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8 text-sm">
-                  {((t as any).extracted_2026_v2?.["لا يوجد طلاب مطابقون"] || "لا يوجد طلاب مطابقون")}</p>
+                  {th?.noMatchingStudents ?? 'No matching students'}</p>
               ) : (
                 filteredAvailable.map((s) => (
                   <button

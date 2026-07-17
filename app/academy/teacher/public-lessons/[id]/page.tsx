@@ -27,6 +27,7 @@ interface LessonData {
 
 export default function EditPublicLessonPage({ params }: { params: Promise<{ id: string }> }) {
   const { t } = useI18n();
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
 
   const { id } = use(params)
   const router = useRouter()

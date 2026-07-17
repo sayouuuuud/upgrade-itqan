@@ -20,28 +20,31 @@ function isFiqhLibraryPath(pathname: string) {
 }
 
 // In-process cache for maintenance status (avoids hammering the DB on every request).
-// TTL is short (20s) so enabling/disabling maintenance takes effect quickly.
-let maintenanceCache: { enabled: boolean; message: string; expiry: number } | null = null
+// TTL is 20 s so enabling/disabling maintenance takes effect quickly.
+type MaintenanceStatus = { enabled: boolean; scope: "site" | "academy" | "maqraah"; message: string; expiry: number }
+let maintenanceCache: MaintenanceStatus | null = null
 
-async function getMaintenanceStatus(req: NextRequest): Promise<{ enabled: boolean; message: string }> {
+async function getMaintenanceStatus(req: NextRequest): Promise<Omit<MaintenanceStatus, "expiry">> {
     const now = Date.now()
     if (maintenanceCache && maintenanceCache.expiry > now) {
-        return { enabled: maintenanceCache.enabled, message: maintenanceCache.message }
+        return { enabled: maintenanceCache.enabled, scope: maintenanceCache.scope, message: maintenanceCache.message }
     }
-    // Resolve the internal API URL against the incoming request. This mirrors the
-    // proven /api/internal/user-status self-fetch used elsewhere in this middleware
-    // and works correctly behind Vercel's proxy.
     try {
         const res = await Promise.race([
             fetch(new URL("/api/internal/maintenance-status", req.url), { cache: "no-store" }),
             new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 2000)),
         ])
         const data = await (res as Response).json()
-        maintenanceCache = { enabled: !!data.enabled, message: data.message ?? "", expiry: now + 20_000 }
-        return { enabled: maintenanceCache.enabled, message: maintenanceCache.message }
+        maintenanceCache = {
+            enabled: !!data.enabled,
+            scope: data.scope ?? "site",
+            message: data.message ?? "",
+            expiry: now + 20_000,
+        }
+        return { enabled: maintenanceCache.enabled, scope: maintenanceCache.scope, message: maintenanceCache.message }
     } catch {
         // On error, assume maintenance is OFF so the site keeps running
-        return { enabled: false, message: "" }
+        return { enabled: false, scope: "site", message: "" }
     }
 }
 
@@ -70,22 +73,31 @@ export default async function middleware(req: NextRequest) {
         pathname.startsWith("/api/internal") ||
         pathname.startsWith("/api/auth")
     if (!maintenanceAllowlist) {
-        const { enabled } = await getMaintenanceStatus(req)
+        const { enabled, scope } = await getMaintenanceStatus(req)
         if (enabled) {
-            // Peek at the session cookie to see if this is an admin
-            const sessionCookie = req.cookies.get("auth-token")?.value
-            let isAdmin = false
-            if (sessionCookie) {
-                try {
-                    const { verifyToken } = await import("@/lib/auth")
-                    const payload = await verifyToken(sessionCookie)
-                    isAdmin = payload?.role === "admin" || payload?.role === "super_admin"
-                } catch {
-                    isAdmin = false
+            // Determine whether this specific pathname falls under the active scope
+            const affectedByScopedMaintenance =
+                scope === "site" ||
+                (scope === "academy"  && (pathname.startsWith("/academy")  || pathname.startsWith("/api/academy")))  ||
+                (scope === "maqraah" && (pathname.startsWith("/student")   || pathname.startsWith("/reader")        ||
+                                         pathname.startsWith("/maqraah")   || pathname.startsWith("/api/maqraah")))
+
+            if (affectedByScopedMaintenance) {
+                // Admins can always pass through even during maintenance
+                const sessionCookie = req.cookies.get("auth-token")?.value
+                let isAdmin = false
+                if (sessionCookie) {
+                    try {
+                        const { verifyToken } = await import("@/lib/auth")
+                        const payload = await verifyToken(sessionCookie)
+                        isAdmin = payload?.role === "admin" || payload?.role === "super_admin"
+                    } catch {
+                        isAdmin = false
+                    }
                 }
-            }
-            if (!isAdmin) {
-                return NextResponse.redirect(new URL("/maintenance", req.url))
+                if (!isAdmin) {
+                    return NextResponse.redirect(new URL("/maintenance", req.url))
+                }
             }
         }
     }

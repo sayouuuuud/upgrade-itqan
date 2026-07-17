@@ -13,6 +13,7 @@ import { Mail, Edit, Check, Loader2, Eye } from "lucide-react"
 
 export default function AdminEmailTemplatesPage() {
     const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
     const a = t.admin
     const isAr = t.locale === 'ar'
 

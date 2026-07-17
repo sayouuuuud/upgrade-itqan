@@ -16,8 +16,8 @@ import { useI18n } from "@/lib/i18n/context"
 interface NotificationsEmailSettingsProps {
   settings: AcademySettings
   onUpdate: (updates: Partial<AcademySettings>) => void
-  onReset: () => void
-  onTestSmtp: (smtp: AcademySettings["smtp_config"]) => Promise<boolean>
+  onReset?: () => void
+  onTestSmtp?: (smtp: AcademySettings["smtp_config"]) => Promise<boolean>
 }
 
 export function NotificationsEmailSettings({
@@ -27,6 +27,7 @@ export function NotificationsEmailSettings({
   onTestSmtp,
 }: NotificationsEmailSettingsProps) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
   const [testing, setTesting] = useState(false)
   const [smtpStatus, setSmtpStatus] = useState<"idle" | "success" | "error">("idle")
@@ -86,7 +87,7 @@ export function NotificationsEmailSettings({
   const handleTestSmtp = async () => {
     setTesting(true)
     setSmtpStatus("idle")
-    const success = await onTestSmtp(smtp)
+    const success = await onTestSmtp?.(smtp)
     setSmtpStatus(success ? "success" : "error")
     setTesting(false)
   }
@@ -106,7 +107,7 @@ export function NotificationsEmailSettings({
                 <CardDescription className="text-xs mt-0.5">{a.neNotificationChannelsDesc}</CardDescription>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground">
+            <Button variant="ghost" size="sm" onClick={() => onReset?.()} className="text-muted-foreground">
               <RotateCcw className="w-4 h-4 ml-1" />
               {a.gsRestore}
             </Button>

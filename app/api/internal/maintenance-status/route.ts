@@ -1,29 +1,43 @@
 import { NextResponse } from "next/server"
 import { getSetting } from "@/lib/settings"
 
-// GET /api/internal/maintenance-status
-// Returns maintenance mode status with 1-minute cache (via getSetting)
-// This endpoint is intentionally unauthenticated — it is internal only
-// and exposed under /api/internal which the middleware allows publicly.
+export type MaintenanceScope = "site" | "academy" | "maqraah"
+
+/**
+ * GET /api/internal/maintenance-status
+ *
+ * Returns:
+ *   { enabled: boolean, scope: MaintenanceScope, message: string }
+ *
+ * - enabled: whether maintenance mode is on
+ * - scope:   which part of the site is in maintenance
+ *             "site"    → entire site (all platforms)
+ *             "academy" → only /academy/*
+ *             "maqraah" → only /reader /student /maqraah*
+ *
+ * Intentionally unauthenticated — called from middleware on every request.
+ * Setting keys are the new unified ones written by the super-admin settings page.
+ */
 export async function GET() {
   try {
-    const enabled = await getSetting<boolean>("maqraah_maintenance_mode", false)
+    const rawEnabled = await getSetting<boolean | string>("maintenance_enabled", false)
+    const enabled    = rawEnabled === true || String(rawEnabled) === "true"
+
+    const scope = await getSetting<MaintenanceScope>("maintenance_scope", "site")
     const message = await getSetting<string>(
-      "maqraah_maintenance_message",
+      "maintenance_message",
       "المنصة تحت الصيانة حالياً، نعود قريباً بإذن الله."
     )
 
     return NextResponse.json(
-      { enabled: enabled === true || String(enabled) === "true", message },
+      { enabled, scope: scope ?? "site", message },
       {
         headers: {
-          // Edge cache: re-use the response for 60 s before re-fetching from origin
-          "Cache-Control": "s-maxage=60, stale-while-revalidate=30",
+          "Cache-Control": "s-maxage=20, stale-while-revalidate=10",
         },
       }
     )
   } catch {
-    // On any DB error, report maintenance as OFF so the site keeps running
-    return NextResponse.json({ enabled: false, message: "" })
+    return NextResponse.json({ enabled: false, scope: "site", message: "" })
   }
 }
