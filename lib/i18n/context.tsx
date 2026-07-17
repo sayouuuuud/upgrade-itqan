@@ -62,6 +62,42 @@ function deepMerge(base: any, override: any): any {
   return result
 }
 
+// Polyfill missing namespaces to prevent runtime crashes (Next.js SSG + runtime)
+const safePolyfills = {
+  badgesPage: {},
+  contactPage: {},
+  fiqhSupervisor: {},
+  memorizationPathsPage: {},
+  mushafProgressPage: {},
+  parentPages: {},
+  pointsPage: {},
+  sessionsPage: {},
+  wirdPage: {},
+  admin: { certificates: {} },
+  reader: { memorizationPaths: { confirmDelete: "" } },
+  teacher: {},
+  academyAdmin: {},
+  notifications: {},
+  auth: {},
+  shell: {},
+  student: { competitionsPage: {} }
+}
+
+function deepAssignSafe(target: any, source: any) {
+  for (const key in source) {
+    if (target[key] === undefined) {
+      target[key] = source[key]
+    } else if (typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      if (typeof target[key] !== 'object' || target[key] === null) {
+        target[key] = {}
+      }
+      deepAssignSafe(target[key], source[key])
+    }
+  }
+}
+
+deepAssignSafe(ar, safePolyfills)
+
 // Precompute merged tables once (module scope) so every locale is fully populated.
 const translations: Record<Locale, TranslationSchema> = {
   ar: ar as TranslationSchema,
