@@ -90,7 +90,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     }
 
     const handleDeleteUser = async () => {
-        if (!window.confirm((t.addedTranslations_2026?.['هل أنت متأكد من حذف هذا المستخدم نهائياً؟ لا يمكن التراجع عن هذا الإجراء.'] || (t.addedTranslations_2026?.['هل أنت متأكد من حذف هذا المستخدم نهائياً؟ لا يمكن التراجع عن هذا الإجراء.'] || 'هل أنت متأكد من حذف هذا المستخدم نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')))) {
+        if (!window.confirm(isAr ? 'هل أنت متأكد من حذف هذا المستخدم نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this user? This action cannot be undone.')) {
             return
         }
 
@@ -311,7 +311,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-border/30">
                                     <span className="text-muted-foreground font-bold flex items-center gap-2.5">
-                                        <Laptop className="w-4 h-4 text-muted-foreground/50" /> {(t.addedTranslations_2026?.['الجهاز والمتصفح'] || (t.addedTranslations_2026?.['الجهاز والمتصفح'] || 'الجهاز والمتصفح'))}
+                                        <Laptop className="w-4 h-4 text-muted-foreground/50" /> {isAr ? 'الجهاز والمتصفح' : 'Device & Browser'}
                                     </span>
                                     <span className="text-foreground font-black text-xs max-w-[200px] truncate bg-muted/30 px-3 py-1 rounded-xl border border-border/20 flex-shrink-0" title={data.lastSession?.user_agent}>
                                         {data.lastSession?.user_agent || "N/A"}
@@ -329,35 +329,35 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                     <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
                                         <ClipboardList className="w-5 h-5" />
                                     </div>
-                                    {(t.addedTranslations_2026?.['بيانات التسجيل (مقرئ)'] || (t.addedTranslations_2026?.['بيانات التسجيل (مقرئ)'] || 'بيانات التسجيل (مقرئ)'))}
+                                    {isAr ? 'بيانات التسجيل (مقرئ)' : 'Registration Data (Reciter)'}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
                                 <div className="space-y-1">
                                     <div className="flex justify-between items-center py-2.5 border-b border-border/30">
-                                        <span className="text-muted-foreground font-bold">{(t.addedTranslations_2026?.['الاسم الثلاثي'] || (t.addedTranslations_2026?.['الاسم الثلاثي'] || 'الاسم الثلاثي'))}</span>
+                                        <span className="text-muted-foreground font-bold">{isAr ? 'الاسم الثلاثي' : 'Full Name (Triple)'}</span>
                                         <span className="text-foreground font-black">{user.full_name_triple || "---"}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-2.5 border-b border-border/30">
-                                        <span className="text-muted-foreground font-bold">{(t.addedTranslations_2026?.['المدينة'] || (t.addedTranslations_2026?.['المدينة'] || 'المدينة'))}</span>
+                                        <span className="text-muted-foreground font-bold">{isAr ? 'المدينة' : 'City'}</span>
                                         <span className="text-foreground font-black">{user.city || "---"}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-2.5 border-b border-border/30">
-                                        <span className="text-muted-foreground font-bold">{(t.addedTranslations_2026?.['التخصص'] || (t.addedTranslations_2026?.['التخصص'] || 'التخصص'))}</span>
+                                        <span className="text-muted-foreground font-bold">{isAr ? 'التخصص' : 'Specialization'}</span>
                                         <span className="text-foreground font-black">{user.specialization || "---"}</span>
                                     </div>
                                 </div>
                                 <div className="space-y-1">
                                     <div className="flex justify-between items-center py-2.5 border-b border-border/30">
-                                        <span className="text-muted-foreground font-bold">{(t.addedTranslations_2026?.['المؤهل'] || (t.addedTranslations_2026?.['المؤهل'] || 'المؤهل'))}</span>
+                                        <span className="text-muted-foreground font-bold">{isAr ? 'المؤهل' : 'Qualification'}</span>
                                         <span className="text-foreground font-black">{user.qualification || "---"}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-2.5 border-b border-border/30">
-                                        <span className="text-muted-foreground font-bold">{(t.addedTranslations_2026?.['الأجزاء المحفوظة'] || (t.addedTranslations_2026?.['الأجزاء المحفوظة'] || 'الأجزاء المحفوظة'))}</span>
+                                        <span className="text-muted-foreground font-bold">{isAr ? 'الأجزاء المحفوظة' : 'Memorized Parts'}</span>
                                         <span className="text-foreground font-black">{user.memorized_parts || 0}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-2.5 border-b border-border/30">
-                                        <span className="text-muted-foreground font-bold">{(t.addedTranslations_2026?.['سنوات الخبرة'] || (t.addedTranslations_2026?.['سنوات الخبرة'] || 'سنوات الخبرة'))}</span>
+                                        <span className="text-muted-foreground font-bold">{isAr ? 'سنوات الخبرة' : 'Years of Experience'}</span>
                                         <span className="text-foreground font-black">{user.years_of_experience || 0}</span>
                                     </div>
                                 </div>
@@ -368,7 +368,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                                 <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
                                                     <Award className="w-4 h-4" />
                                                 </div>
-                                                {(t.addedTranslations_2026?.['عرض الشهادة المرفقة'] || (t.addedTranslations_2026?.['عرض الشهادة المرفقة'] || 'عرض الشهادة المرفقة'))}
+                                                {isAr ? 'عرض الشهادة المرفقة' : 'View Attached Certificate'}
                                             </a>
                                         </Button>
                                     </div>
@@ -384,15 +384,15 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                 <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
                                     <Shield className="w-5 h-5" />
                                 </div>
-                                {(t.addedTranslations_2026?.['صلاحيات الوصول'] || (t.addedTranslations_2026?.['صلاحيات الوصول'] || 'صلاحيات الوصول'))}
+                                {isAr ? 'صلاحيات الوصول' : 'Access Permissions'}
                                 {isUpdatingAccess && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground mr-auto rtl:ml-auto rtl:mr-0" />}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex justify-between items-center py-3 border-b border-border/30">
                                 <div>
-                                    <span className="text-foreground font-bold block">{(t.addedTranslations_2026?.['منصة القرآن الكريم'] || (t.addedTranslations_2026?.['منصة القرآن الكريم'] || 'منصة القرآن الكريم'))}</span>
-                                    <span className="text-xs text-muted-foreground">{(t.addedTranslations_2026?.['السماح بالدخول لمقرأة إتقان'] || (t.addedTranslations_2026?.['السماح بالدخول لمقرأة إتقان'] || 'السماح بالدخول لمقرأة إتقان'))}</span>
+                                    <span className="text-foreground font-bold block">{isAr ? 'منصة القرآن الكريم' : 'Quran Platform'}</span>
+                                    <span className="text-xs text-muted-foreground">{isAr ? 'السماح بالدخول لمقرأة إتقان' : 'Allow access to Itqan Maqraa'}</span>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input
@@ -407,8 +407,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                             </div>
                             <div className="flex justify-between items-center py-3 border-b border-border/30">
                                 <div>
-                                    <span className="text-foreground font-bold block">{(t.addedTranslations_2026?.['منصة الأكاديمية (LMS)'] || (t.addedTranslations_2026?.['منصة الأكاديمية (LMS)'] || 'منصة الأكاديمية (LMS)'))}</span>
-                                    <span className="text-xs text-muted-foreground">{(t.addedTranslations_2026?.['السماح بالدخول للأكاديمية والدورات'] || (t.addedTranslations_2026?.['السماح بالدخول للأكاديمية والدورات'] || 'السماح بالدخول للأكاديمية والدورات'))}</span>
+                                    <span className="text-foreground font-bold block">{isAr ? 'منصة الأكاديمية (LMS)' : 'Academy Platform (LMS)'}</span>
+                                    <span className="text-xs text-muted-foreground">{isAr ? 'السماح بالدخول للأكاديمية والدورات' : 'Allow access to Academy and courses'}</span>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input
@@ -423,8 +423,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                             </div>
                             <div className="flex justify-between items-center py-3">
                                 <div>
-                                    <span className="text-foreground font-bold block">{(t.addedTranslations_2026?.['المنصة الافتراضية'] || (t.addedTranslations_2026?.['المنصة الافتراضية'] || 'المنصة الافتراضية'))}</span>
-                                    <span className="text-xs text-muted-foreground">{(t.addedTranslations_2026?.['تحديد المنصة التي سيتم توجيه المستخدم لها عند تسجيل الدخول'] || (t.addedTranslations_2026?.['تحديد المنصة التي سيتم توجيه المستخدم لها عند تسجيل الدخول'] || 'تحديد المنصة التي سيتم توجيه المستخدم لها عند تسجيل الدخول'))}</span>
+                                    <span className="text-foreground font-bold block">{isAr ? 'المنصة الافتراضية' : 'Default Platform'}</span>
+                                    <span className="text-xs text-muted-foreground">{isAr ? 'تحديد المنصة التي سيتم توجيه المستخدم لها عند تسجيل الدخول' : 'Set the platform the user will be redirected to upon login'}</span>
                                 </div>
                                 <select
                                     className="h-9 rounded-xl border border-border/50 bg-muted/30 px-3 text-sm font-bold disabled:opacity-50"
@@ -432,9 +432,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                     onChange={(e) => handleAccessUpdate('platform_preference', e.target.value)}
                                     disabled={isUpdatingAccess}
                                 >
-                                    <option value="both">{(t.addedTranslations_2026?.['بدون تحديد ( اختيار المنصة عند الدخول )'] || (t.addedTranslations_2026?.['بدون تحديد ( اختيار المنصة عند الدخول )'] || 'بدون تحديد ( اختيار المنصة عند الدخول )'))}</option>
-                                    <option value="quran">{(t.addedTranslations_2026?.['القرآن الكريم'] || (t.addedTranslations_2026?.['القرآن الكريم'] || 'القرآن الكريم'))}</option>
-                                    <option value="academy">{(t.addedTranslations_2026?.['الأكاديمية'] || (t.addedTranslations_2026?.['الأكاديمية'] || 'الأكاديمية'))}</option>
+                                    <option value="both">{isAr ? 'بدون تحديد ( اختيار المنصة عند الدخول )' : 'None (Choose platform upon login)'}</option>
+                                    <option value="quran">{isAr ? 'القرآن الكريم' : 'Quran'}</option>
+                                    <option value="academy">{isAr ? 'الأكاديمية' : 'Academy'}</option>
                                 </select>
                             </div>
                         </CardContent>

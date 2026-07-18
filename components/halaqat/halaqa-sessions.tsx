@@ -683,7 +683,7 @@ function EvaluationForm({
             onChange={(e) => setNextSurah(e.target.value ? Number(e.target.value) : '')}
             className="w-full mt-1 px-2 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
           >
-            <option value="">{'— سورة —'}</option>
+            <option value="">{th?.noSurah ?? '— None —'}</option>
             {SURAHS.map((s) => (
               <option key={s.number} value={s.number}>
                 {s.name}
