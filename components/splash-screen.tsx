@@ -66,6 +66,7 @@ function CornerOrnament({ className = "" }: { className?: string }) {
 
 export function SplashScreen({ isLoading, onLoadingComplete }: SplashScreenProps) {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const sp = (t as any).splashScreen as Record<string, string> | undefined
   const [show, setShow] = useState(true)
 

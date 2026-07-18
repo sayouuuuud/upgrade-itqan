@@ -24,6 +24,7 @@ export default function EditBookPage() {
   const params = useParams<{ id: string }>()
   const id = params?.id
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const [form, setForm] = useState<BookFormValue>({ ...emptyBookForm })

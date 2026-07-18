@@ -18,6 +18,7 @@ interface ViewsChartProps {
 
 export function ViewsChart({ data }: ViewsChartProps) {
     const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
     const isAr = t.locale === "ar"
     const [selectedDay, setSelectedDay] = useState<number | null>(null)
     const [hoveredDay, setHoveredDay] = useState<number | null>(null)

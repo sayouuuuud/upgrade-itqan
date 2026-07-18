@@ -40,6 +40,7 @@ interface AvailablePath {
 export default function SeriesDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const [series, setSeries] = useState<SeriesDetail | null>(null)

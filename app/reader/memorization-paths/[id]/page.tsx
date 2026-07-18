@@ -35,6 +35,7 @@ type Unit = {
 
 export default function ReaderMemorizationPathDetailPage() {
   const { t } = useI18n()
+  const reader = (t as any).reader as Record<string, string> | undefined
   const at = (t as any).addedTranslations_2026 as Record<string, string> | undefined
   const tr = (ar: string) => at?.[ar] ?? ar
   const params = useParams<{ id: string }>()

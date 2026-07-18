@@ -16,6 +16,7 @@ interface UserAccess {
 
 export default function AccessControlPage() {
     const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
     const a = t.academyAdmin
     const [users, setUsers] = useState<UserAccess[]>([])
     const [loading, setLoading] = useState(true)

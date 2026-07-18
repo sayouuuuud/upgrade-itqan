@@ -15,6 +15,7 @@ interface Props {
 
 export function GamificationSettings({ settings, onUpdate, onReset }: Props) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const a = t.admin
   const pointValues = settings.maqraah_points_values || {}
   const levels = settings.maqraah_points_levels || {}

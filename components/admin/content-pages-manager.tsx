@@ -65,6 +65,7 @@ interface PageDetail extends PageSummary {
 
 export function ContentPagesManager() {
   const { t } = useI18n();
+  const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar";
   const { data, mutate } = useSWR<{ pages: PageSummary[] }>(
     "/api/admin/content-pages",

@@ -10,6 +10,7 @@ import { useI18n } from "@/lib/i18n/context";
  */
 export default function AdminAudioPlayer({ src, label }: { src: string; label?: string }) {
   const { t } = useI18n();
+  const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar";
     const audioRef = useRef<HTMLAudioElement | null>(null)
     const [playing, setPlaying] = useState(false)

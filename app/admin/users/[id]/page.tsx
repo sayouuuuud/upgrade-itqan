@@ -54,6 +54,7 @@ import { DetailViewSkeleton } from "@/components/admin/skeletons"
 
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
     const router = useRouter()
     const isAr = t.locale === "ar"
     const [data, setData] = useState<any>(null)

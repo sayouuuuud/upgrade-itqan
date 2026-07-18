@@ -11,6 +11,7 @@ interface Props {
 
 export function NotificationsSettings({ settings, onUpdate }: Props) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const a = t.admin
 
   const ns = settings.notification_settings ?? {}

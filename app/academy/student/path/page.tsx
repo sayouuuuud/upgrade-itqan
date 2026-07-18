@@ -26,6 +26,7 @@ interface TajweedPath {
 
 export default function StudentLearningPathPage() {
   const { t } = useI18n()
+  const academyStudent = (t as any).academyStudent as Record<string, string> | undefined
   const [paths, setPaths] = useState<TajweedPath[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<string>('all')

@@ -48,6 +48,7 @@ const TAJWEED_LABELS: Record<string, string> = {
 export default function StudentCompetitionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { t } = useI18n()
+  const academyStudent = (t as any).academyStudent as Record<string, string> | undefined
   const [competition, setCompetition] = useState<Competition | null>(null)
   const [entry, setEntry] = useState<Entry | null>(null)
   const [stages, setStages] = useState<StudentStage[]>([])

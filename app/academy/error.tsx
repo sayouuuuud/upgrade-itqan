@@ -29,15 +29,8 @@ export default function AcademyError({
     console.error('[academy/error]', error)
   }, [error])
 
-  let locale = 'ar'
-  try {
-    const i18n = useI18n()
-    if (i18n) {
-      locale = i18n.locale
-    }
-  } catch {
-    // fallback
-  }
+  const { locale, t } = useI18n()
+  const ae = (t as any).academyError as Record<string, string> | undefined
   const isAr = locale === 'ar'
   const isDev = process.env.NODE_ENV !== 'production'
 
@@ -52,12 +45,12 @@ export default function AcademyError({
         </div>
         <div className="space-y-2">
           <h2 className="text-2xl font-bold text-foreground">
-            {isAr ? 'تعذّر تحميل الصفحة' : 'Failed to load page'}
+            {ae?.title ?? (isAr ? 'تعذّر تحميل الصفحة' : 'Failed to load page')}
           </h2>
           <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-            {isAr 
+            {ae?.message ?? (isAr 
               ? 'حدث خطأ غير متوقّع أثناء عرض هذه الصفحة. حاول إعادة التحميل، وإن استمرت المشكلة عُد إلى لوحة التحكم.' 
-              : 'An unexpected error occurred while rendering this page. Try reloading, and if the problem persists, return to the dashboard.'}
+              : 'An unexpected error occurred while rendering this page. Try reloading, and if the problem persists, return to the dashboard.')}
           </p>
         </div>
 
@@ -71,12 +64,12 @@ export default function AcademyError({
         <div className="flex flex-col sm:flex-row gap-2 justify-center">
           <Button onClick={() => reset()} className="gap-2">
             <RefreshCcw className="w-4 h-4" />
-            {isAr ? 'إعادة المحاولة' : 'Retry'}
+            {ae?.retry ?? (isAr ? 'إعادة المحاولة' : 'Retry')}
           </Button>
           <Button asChild variant="outline" className="gap-2 bg-transparent">
             <Link href="/academy/student">
               <Home className="w-4 h-4" />
-              {isAr ? 'لوحة التحكم' : 'Dashboard'}
+              {ae?.dashboard ?? (isAr ? 'لوحة التحكم' : 'Dashboard')}
             </Link>
           </Button>
         </div>

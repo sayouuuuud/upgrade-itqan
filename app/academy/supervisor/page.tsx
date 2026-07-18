@@ -30,6 +30,7 @@ const typeIcon: Record<string, any> = { video: Video, audio: Mic, text: FileText
 
 export default function AcademySupervisorDashboard() {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.admin
   const [stats, setStats] = useState<Stats>({ pendingLessons: 0, totalLessons: 0, fiqhUnanswered: 0, fiqhTotal: 0 })
   const [recentLessons, setRecentLessons] = useState<PendingLesson[]>([])

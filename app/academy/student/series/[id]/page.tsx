@@ -28,6 +28,7 @@ interface SeriesItem {
 
 export default function StudentSeriesDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { t } = useI18n();
+  const academyStudent = (t as any).academyStudent as Record<string, string> | undefined
   const { id } = use(params)
   const [series, setSeries] = useState<SeriesDetail | null>(null)
   const [loading, setLoading] = useState(true)

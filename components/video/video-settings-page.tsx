@@ -322,6 +322,7 @@ function StatCard({
 
 function OverviewTab({ stats, onViewAll }: { stats: Stats; onViewAll: () => void }) {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const vs = (t as any).videoSettings as Record<string, string> | undefined
 
   return (

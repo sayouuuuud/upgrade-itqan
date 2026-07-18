@@ -200,6 +200,7 @@ export default function StudentTajweedPathDetail() {
   const params = useParams<{ id: string }>()
   const pathId = params.id
   const { t } = useI18n()
+  const student = (t as any).student as Record<string, string> | undefined
   const tp = (t as any).tajweedPaths || {}
 
   const [path, setPath] = useState<any>(null)

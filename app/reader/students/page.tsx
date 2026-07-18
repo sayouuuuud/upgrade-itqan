@@ -33,6 +33,7 @@ interface Student {
 
 export default function ReaderStudentsPage() {
   const { t } = useI18n()
+  const reader = (t as any).reader as Record<string, string> | undefined
   const a = t.admin
   const router = useRouter()
   const [students, setStudents] = useState<Student[]>([])

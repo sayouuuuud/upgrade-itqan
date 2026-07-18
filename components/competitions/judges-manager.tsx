@@ -55,6 +55,7 @@ function RoleBadge({ role, jm }: { role: string; jm?: Record<string, string> }) 
 
 export function JudgesManager({ apiBase, competition, accent = 'primary', onClose }: Props) {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const jm = (t as any).judgesManager as Record<string, string> | undefined
 
   const [judges, setJudges] = useState<Judge[]>([])

@@ -18,6 +18,7 @@ interface FiqhQuestion {
 
 export default function SupervisorFiqhPage() {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.admin
   const [questions, setQuestions] = useState<FiqhQuestion[]>([])
   const [loading, setLoading] = useState(true)

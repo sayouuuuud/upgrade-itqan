@@ -32,6 +32,7 @@ function toLocalInput(iso?: string) {
 export default function EditTaskPage() {
     
   const { t } = useI18n()
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
   const params = useParams()
   const router = useRouter()
   const taskId = params.id as string

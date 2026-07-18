@@ -56,6 +56,7 @@ const emptyStage: StageForm = {
 
 export default function PathStagesManager({ pathId }: { pathId: string }) {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sm = (key: string): string => (t?.tajweedPaths as any)?.stageManager?.[key] ?? key
 

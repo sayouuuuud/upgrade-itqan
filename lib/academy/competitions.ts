@@ -321,21 +321,21 @@ export async function submitEntry(competitionId: string, studentId: string, data
     `SELECT status, min_verses FROM competitions WHERE id = $1`,
     [competitionId]
   )
-  if (!comp) return { success: false, error: ((en.extracted_2026_v2 as any)?.["المسابقة غير موجودة"] || "المسابقة غير موجودة") }
-  if (comp.status !== 'active') return { success: false, error: ((en.extracted_2026_v2 as any)?.["المسابقة غير نشطة"] || "المسابقة غير نشطة") }
+  if (!comp) return { success: false, error: "المسابقة غير موجودة" }
+  if (comp.status !== 'active') return { success: false, error: "المسابقة غير نشطة" }
 
   // Submissions always target the active stage. The stage must be open, and the
   // stage's own min_verses requirement takes precedence over the competition's.
   const stage = await getActiveStage(competitionId)
-  if (!stage) return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مرحلة نشطة"] || "لا توجد مرحلة نشطة") }
+  if (!stage) return { success: false, error: "لا توجد مرحلة نشطة" }
   if (stage.status !== 'active') {
-    return { success: false, error: ((en.extracted_2026_v2 as any)?.["هذه المرحلة غير مفتوحة للتسليم"] || "هذه المرحلة غير مفتوحة للتسليم") }
+    return { success: false, error: "هذه المرحلة غير مفتوحة للتسليم" }
   }
 
   const minVerses = Number(stage.min_verses ?? comp.min_verses) || 0
   const verses = Number(data.verses_count) || 0
   if (minVerses > 0 && verses < minVerses) {
-    return { success: false, error: `${(en.extracted_2026_v2 as any)?.["الحد الأدنى للمشاركة هو "] || "الحد الأدنى للمشاركة هو "}${minVerses}${(en.extracted_2026_v2 as any)?.[" آية"] || " آية"}` }
+    return { success: false, error: `الحد الأدنى للمشاركة هو ${minVerses} آية` }
   }
 
   // The student's entry row for THIS stage. For stage 1 it's created on demand;
@@ -345,11 +345,11 @@ export async function submitEntry(competitionId: string, studentId: string, data
     [competitionId, studentId, stage.id]
   )
   if (stage.order_index > 1 && !existing) {
-    return { success: false, error: ((en.extracted_2026_v2 as any)?.["لم تتأهّل لهذه المرحلة"] || "لم تتأهّل لهذه المرحلة") }
+    return { success: false, error: "لم تتأهّل لهذه المرحلة" }
   }
   // Block re-submission once this stage's entry has already been judged.
   if (existing && (existing.status === 'evaluated' || existing.status === 'winner')) {
-    return { success: false, error: ((en.extracted_2026_v2 as any)?.["تم تقييم مشاركتك بالفعل ولا يمكن تعديلها"] || "تم تقييم مشاركتك بالفعل ولا يمكن تعديلها") }
+    return { success: false, error: "تم تقييم مشاركتك بالفعل ولا يمكن تعديلها" }
   }
 
   // Ensure the participation row exists in this stage, then record submission.
@@ -441,10 +441,10 @@ export async function getCandidateJudges(search?: string, scope?: string): Promi
 
 export async function addCompetitionJudge(competitionId: string, judgeId: string) {
   const comp = await queryOne<{ scope: string }>(`SELECT scope FROM competitions WHERE id = $1`, [competitionId])
-  if (!comp) return { success: false as const, error: ((en.extracted_2026_v2 as any)?.["المسابقة غير موجودة"] || "المسابقة غير موجودة") }
+  if (!comp) return { success: false as const, error: "المسابقة غير موجودة" }
 
   const user = await queryOne<{ role: string }>(`SELECT role FROM users WHERE id = $1`, [judgeId])
-  if (!user) return { success: false as const, error: ((en.extracted_2026_v2 as any)?.["المستخدم غير موجود"] || "المستخدم غير موجود") }
+  if (!user) return { success: false as const, error: "المستخدم غير موجود" }
 
   let allowedRoles = [...JUDGE_ROLES] as string[]
   if (comp.scope === 'academy') {
@@ -454,7 +454,7 @@ export async function addCompetitionJudge(competitionId: string, judgeId: string
   }
 
   if (!allowedRoles.includes(user.role)) {
-    return { success: false as const, error: ((en.extracted_2026_v2 as any)?.["دور المستخدم غير صالح للتحكيم في هذه المسابقة"] || "دور المستخدم غير صالح للتحكيم في هذه المسابقة") }
+    return { success: false as const, error: "دور المستخدم غير صالح للتحكيم في هذه المسابقة" }
   }
   await query(
     `INSERT INTO competition_judges (competition_id, judge_id)
@@ -477,7 +477,7 @@ export async function evaluateEntry(entryId: string, judgeId: string, evaluation
   try {
     const score = Number(evaluation.score)
     if (!Number.isFinite(score) || score < 0 || score > 100) {
-      return { success: false, error: ((en.extracted_2026_v2 as any)?.["الدرجة يجب أن تكون بين 0 و 100"] || "الدرجة يجب أن تكون بين 0 و 100") }
+      return { success: false, error: "الدرجة يجب أن تكون بين 0 و 100" }
     }
 
     const entry = await queryOne<{
@@ -494,7 +494,7 @@ export async function evaluateEntry(entryId: string, judgeId: string, evaluation
     // Without this a joined-but-not-submitted (pending, no URL) entry could be
     // given a score and then sneak into the ranking.
     if (!entry.submission_url) {
-      return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا يمكن تقييم مشاركة لم تُسلَّم بعد"] || "لا يمكن تقييم مشاركة لم تُسلَّم بعد") }
+      return { success: false, error: "لا يمكن تقييم مشاركة لم تُسلَّم بعد" }
     }
 
     // Guard 2: never re-open scoring after results are official. Re-scoring an
@@ -505,7 +505,7 @@ export async function evaluateEntry(entryId: string, judgeId: string, evaluation
     )
     if (!comp) return { success: false, error: 'Competition not found' }
     if (comp.status === 'ended') {
-      return { success: false, error: ((en.extracted_2026_v2 as any)?.["تم اعتماد نتائج هذه المسابقة ولا يمكن تعديل التقييم"] || "تم اعتماد نتائج هذه المسابقة ولا يمكن تعديل التقييم") }
+      return { success: false, error: "تم اعتماد نتائج هذه المسابقة ولا يمكن تعديل التقييم" }
     }
 
     // Authorization: an assigned judge, the competition's own creator, or an
@@ -745,9 +745,9 @@ export async function awardCompetitionRank(
       return { success: true, awarded: 0, alreadyAwarded: true }
     }
 
-    const rankLabel = rank === 1 ? ((en.extracted_2026_v2 as any)?.["المركز الأول"] || "المركز الأول") : rank === 2 ? ((en.extracted_2026_v2 as any)?.["المركز الثاني"] || "المركز الثاني") : ((en.extracted_2026_v2 as any)?.["المركز الثالث"] || "المركز الثالث")
+    const rankLabel = rank === 1 ? "المركز الأول" : rank === 2 ? "المركز الثاني" : "المركز الثالث"
     await awardPoints(studentId, points, 'competition_win', {
-      description: `${rankLabel}${((en.extracted_2026_v2 as any)?.[" في مسابقة: "] || " في مسابقة: ")}${comp.title ?? ''}`.trim(),
+      description: `${rankLabel}${" في مسابقة: "}${comp.title ?? ''}`.trim(),
       relatedEntityType: 'competition',
       relatedEntityId: competitionId,
       applyStreakMultiplier: false,
@@ -865,12 +865,12 @@ async function finalizeStageAsResults(
 ): Promise<{ success: boolean; error?: string; winners?: number; ranked?: number }> {
   const { ready, ranking, topN } = await previewCompetitionResults(competitionId, stage.id)
   if (!ready) {
-    return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مشاركات مُقيّمة لاعتماد نتائجها"] || "لا توجد مشاركات مُقيّمة لاعتماد نتائجها") }
+    return { success: false, error: "لا توجد مشاركات مُقيّمة لاعتماد نتائجها" }
   }
 
   const winnerRows = ranking.filter((r) => r.is_winner)
   if (!allowTie && winnerRows.length > topN) {
-    return { success: false, error: ((en.extracted_2026_v2 as any)?.["يوجد تعادل في الدرجات يتجاوز العدد المسموح. يرجى تعديل التقييم لكسر التعادل."] || "يوجد تعادل في الدرجات يتجاوز العدد المسموح. يرجى تعديل التقييم لكسر التعادل.") }
+    return { success: false, error: "يوجد تعادل في الدرجات يتجاوز العدد المسموح. يرجى تعديل التقييم لكسر التعادل." }
   }
   const firstPlace = ranking.find((r) => r.rank === 1)
 
@@ -939,13 +939,13 @@ export async function finalizeCompetitionResults(
       ? stages.find((s) => s.id === stageId) ?? null
       : (await getActiveStage(competitionId))
     if (!stage) {
-      return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مرحلة نشطة"] || "لا توجد مرحلة نشطة") }
+      return { success: false, error: "لا توجد مرحلة نشطة" }
     }
     const remaining = stages.filter((s) => s.order_index > stage.order_index).map((s) => s.id)
     return await finalizeStageAsResults(competitionId, stage, remaining, allowTie)
   } catch (error) {
     console.error('Error finalizing competition results:', error)
-    return { success: false, error: ((en.extracted_2026_v2 as any)?.["حدث خطأ أثناء اعتماد النتائج"] || "حدث خطأ أثناء اعتماد النتائج") }
+    return { success: false, error: "حدث خطأ أثناء اعتماد النتائج" }
   }
 }
 
@@ -974,7 +974,7 @@ export async function advanceStageOrFinalize(
     const stages = await getStages(competitionId)
     const stage = await getActiveStage(competitionId)
     if (!stage) {
-      return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مرحلة نشطة"] || "لا توجد مرحلة نشطة") }
+      return { success: false, error: "لا توجد مرحلة نشطة" }
     }
 
     // Final stage → crown winners.
@@ -993,12 +993,12 @@ export async function advanceStageOrFinalize(
 
     const { ready, ranking, topN } = await previewCompetitionResults(competitionId, stage.id)
     if (!ready) {
-      return { success: false, error: ((en.extracted_2026_v2 as any)?.["لا توجد مشاركات مُقيّمة في هذه المرحلة"] || "لا توجد مشاركات مُقيّمة في هذه المرحلة") }
+      return { success: false, error: "لا توجد مشاركات مُقيّمة في هذه المرحلة" }
     }
 
     const advancing = ranking.filter((r) => r.is_winner) // is_winner == within advance_count here
     if (!opts?.allowTie && advancing.length > topN) {
-      return { success: false, error: ((en.extracted_2026_v2 as any)?.["يوجد تعادل في الدرجات يتجاوز العدد المسموح للتأهل. يرجى تعديل التقييم لكسر التعادل."] || "يوجد تعادل في الدرجات يتجاوز العدد المسموح للتأهل. يرجى تعديل التقييم لكسر التعادل.") }
+      return { success: false, error: "يوجد تعادل في الدرجات يتجاوز العدد المسموح للتأهل. يرجى تعديل التقييم لكسر التعادل." }
     }
     const eliminated = ranking.filter((r) => !r.is_winner)
 
@@ -1064,7 +1064,7 @@ export async function advanceStageOrFinalize(
     return { success: true, advanced: advancing.length, eliminated: eliminated.length, finalized: false }
   } catch (error) {
     console.error('Error advancing competition stage:', error)
-    return { success: false, error: ((en.extracted_2026_v2 as any)?.["حدث خطأ أثناء ترحيل المرحلة"] || "حدث خطأ أثناء ترحيل المرحلة") }
+    return { success: false, error: "حدث خطأ أثناء ترحيل المرحلة" }
   }
 }
 
@@ -1079,7 +1079,7 @@ export async function cancelCompetition(
   try {
     const comp = await queryOne<{ title: string | null; scope: string | null; status: string }>(
       `SELECT title, scope, status FROM competitions WHERE id = $1`, [competitionId])
-    if (!comp) return { success: false, error: ((en.extracted_2026_v2 as any)?.["المسابقة غير موجودة"] || "المسابقة غير موجودة") }
+    if (!comp) return { success: false, error: "المسابقة غير موجودة" }
 
     // Everyone who ever participated in any stage.
     const participants = await query<{ student_id: string }>(
@@ -1113,6 +1113,6 @@ export async function cancelCompetition(
     return { success: true, notified }
   } catch (error) {
     console.error('Error cancelling competition:', error)
-    return { success: false, error: ((en.extracted_2026_v2 as any)?.["حدث خطأ أثناء إنهاء المسابقة"] || "حدث خطأ أثناء إنهاء المسابقة") }
+    return { success: false, error: "حدث خطأ أثناء إنهاء المسابقة" }
   }
 }

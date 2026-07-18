@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 
 export function GlobalSearch({ role }: { role: 'admin' | 'reader' }) {
     const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
     const isAr = t.locale === "ar"
     const router = useRouter()
     const [query, setQuery] = useState("")

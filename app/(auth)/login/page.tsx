@@ -55,6 +55,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   // Guard: run the auth check only once to avoid loops.
   const authChecked = useRef(false)
 

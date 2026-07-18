@@ -23,6 +23,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export function RegistrationSettings({ settings, onUpdate, onReset }: RegistrationSettingsProps) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const { data: coursesData } = useSWR<{ data: Array<{ id: string; title: string; status: string }> }>(

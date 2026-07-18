@@ -28,6 +28,7 @@ interface ModeSwitcherProps {
 export function ModeSwitcher({ currentMode, userRole, academyRole, hasQuranAccess, hasAcademyAccess }: ModeSwitcherProps) {
   const router = useRouter()
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
 
   // Define available modes based on user role
   const modes: Mode[] = []

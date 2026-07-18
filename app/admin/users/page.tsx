@@ -29,6 +29,7 @@ function FilterPanel({
   onClose: () => void
 }) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const [localStatus, setLocalStatus] = useState(status)
   const [localGender, setLocalGender] = useState(gender)
 

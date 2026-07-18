@@ -50,6 +50,7 @@ interface Comment { id: string; author_name: string; comment_text: string; creat
 
 export default function ReaderSessionDetailPage() {
   const { t } = useI18n()
+  const reader = (t as any).reader as Record<string, string> | undefined
 
   const params = useParams()
   const router = useRouter()

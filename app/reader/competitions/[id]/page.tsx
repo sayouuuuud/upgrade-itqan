@@ -63,6 +63,7 @@ const TAJWEED_RULES = [
 export default function ReaderCompetitionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { t } = useI18n()
+  const reader = (t as any).reader as Record<string, string> | undefined
   const [competition, setCompetition] = useState<Competition | null>(null)
   const [entries, setEntries] = useState<Entry[]>([])
   const [loading, setLoading] = useState(true)
