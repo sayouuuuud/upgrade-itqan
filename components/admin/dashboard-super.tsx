@@ -140,21 +140,21 @@ export function DashboardSuper() {
       value: academy.courses,
       icon: LayoutDashboard,
       color: "bg-primary/10 text-primary border-primary/20",
-      href: "/admin/academy/courses",
+      href: "/academy/admin/courses",
     },
     {
       label: ds?.lessons ?? 'Lessons',
       value: academy.lessons,
       icon: BookOpen,
       color: "bg-accent/10 text-accent border-accent/20",
-      href: "/admin/academy/courses",
+      href: "/academy/admin/courses",
     },
     {
       label: ds?.enrollments ?? 'Enrollments',
       value: academy.enrollments,
       icon: GraduationCap,
       color: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
-      href: "/admin/academy/students",
+      href: "/academy/admin/students",
     },
   ]
 
@@ -236,7 +236,7 @@ export function DashboardSuper() {
               <GraduationCap className="h-4 w-4 text-accent" />
               <h3 className="font-bold text-foreground">{ds?.academyTitle ?? 'Academy'}</h3>
             </div>
-            <Link href="/admin/academy/courses" className="text-xs text-primary hover:underline">{ds?.manageAcademy ?? 'Manage Academy'}</Link>
+            <Link href="/academy/admin/courses" className="text-xs text-primary hover:underline">{ds?.manageAcademy ?? 'Manage Academy'}</Link>
           </div>
           <div className="grid grid-cols-3 divide-x divide-x-reverse divide-border">
             {academyCards.map((card) => {

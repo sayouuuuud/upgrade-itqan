@@ -132,6 +132,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 publicPath ? `رابط الدرس العام: ${publicPath}` : null,
             ].filter(Boolean).join('\n\n')
 
+            const contentEn = [
+                updated.description || 'A live session has been updated.',
+                publicPath ? `Public Lesson Link: ${publicPath}` : null,
+            ].filter(Boolean).join('\n\n')
+
             const announcement = await query<{ id: string }>(`
                 INSERT INTO announcements (
                     title_ar, title_en, content_ar, content_en, target_audience,
@@ -139,7 +144,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 )
                 VALUES ($1, $2, $3, $4, 'students', 'high', true, NOW(), $5, NOW())
                 RETURNING id
-            `, [updated.title, updated.title, content, content, session.sub])
+            `, [updated.title, updated.title, content, contentEn, session.sub])
 
             if (announcement[0]?.id) {
                 await query(`UPDATE course_sessions SET announcement_id = $1 WHERE id = $2`, [announcement[0].id, updated.id])

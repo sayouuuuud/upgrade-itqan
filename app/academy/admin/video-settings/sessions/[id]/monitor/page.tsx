@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { queryOne } from '@/lib/db'
-import { HalaqaVideoRoom } from '@/components/video/halaqa-video-room'
+import { StealthVideoRoom } from '@/components/video/stealth-video-room'
 import { ADMIN_ROLES } from '@/lib/halaqat'
 
 export const dynamic = 'force-dynamic'
@@ -52,14 +52,11 @@ export default async function StealthMonitorPage({
 
   // Kind needs to be asserted to VideoCallKind
   return (
-    <HalaqaVideoRoom
+    <StealthVideoRoom
       kind={row.kind as 'halaqa' | 'course_session'}
       refId={row.ref_id}
-      title={`${row.title || row.kind} (مراقبة خفية)`}
-      subtitle={`أنت الآن تراقب هذه الجلسة كإداري متخفٍ`}
+      title={row.title || row.kind}
       exitHref={`/academy/admin/video-settings/sessions/${id}`}
-      stealth
-      accent="emerald"
     />
   )
 }

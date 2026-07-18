@@ -125,6 +125,11 @@ export async function POST(req: NextRequest) {
         publicPath ? `رابط الدرس العام: ${publicPath}` : null,
       ].filter(Boolean).join('\n\n')
 
+      const contentEn = [
+        description || 'A new live session has been scheduled.',
+        publicPath ? `Public Lesson Link: ${publicPath}` : null,
+      ].filter(Boolean).join('\n\n')
+
       const announcement = await query<{ id: string }>(`
         INSERT INTO announcements (
           title_ar, title_en, content_ar, content_en, target_audience,
@@ -132,7 +137,7 @@ export async function POST(req: NextRequest) {
         )
         VALUES ($1, $2, $3, $4, 'students', 'high', true, NOW(), $5, NOW())
         RETURNING id
-      `, [title, title, content, content, session.sub])
+      `, [title, title, content, contentEn, session.sub])
 
       if (announcement[0]?.id) {
         await query(`

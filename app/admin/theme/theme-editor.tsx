@@ -137,7 +137,27 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
     }
   }
 
-  const handleReset = () => setTheme(DEFAULT_THEME)
+  const handleReset = async () => {
+    if (confirm(isAr ? "هل أنت متأكد من استعادة الألوان والخطوط الافتراضية؟ سيتم حفظها فوراً." : "Are you sure you want to restore default colors and fonts? They will be saved immediately.")) {
+      setTheme(DEFAULT_THEME)
+      setSaving(true)
+      try {
+        const res = await fetch("/api/admin/theme", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ theme: DEFAULT_THEME }),
+        })
+        if (res.ok) {
+          setSaved(true)
+          setTimeout(() => {
+            window.location.reload()
+          }, 800)
+        }
+      } finally {
+        setSaving(false)
+      }
+    }
+  }
 
   return (
     <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6" dir={isAr ? "rtl" : "ltr"}>

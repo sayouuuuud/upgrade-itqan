@@ -4,43 +4,10 @@ import { useState } from "react"
 import { ShieldCheck, GraduationCap, Mic, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useI18n } from "@/lib/i18n/context"
 import { switchAdminMode } from "@/lib/admin/switch-mode-action"
 
 type Mode = "super" | "maqraa" | "academy"
-
-const MODES: {
-  id: Mode
-  label: string
-  shortLabel: string
-  icon: typeof ShieldCheck
-  activeClass: string
-  dotClass: string
-}[] = [
-  {
-    id: "super",
-    label: "المدير العام",
-    shortLabel: "عام",
-    icon: ShieldCheck,
-    activeClass: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/40",
-    dotClass: "bg-amber-500",
-  },
-  {
-    id: "maqraa",
-    label: "مدير المقرأة",
-    shortLabel: "المقرأة",
-    icon: Mic,
-    activeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/40",
-    dotClass: "bg-emerald-500",
-  },
-  {
-    id: "academy",
-    label: "مدير الأكاديمية",
-    shortLabel: "الأكاديمية",
-    icon: GraduationCap,
-    activeClass: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/40",
-    dotClass: "bg-blue-500",
-  },
-]
 
 // Segmented control that lets a Super Admin switch the lens they operate
 // the dashboard through. Uses Server Action for instant mode switch + redirect
@@ -53,6 +20,41 @@ export function AdminRoleSwitcher({
   collapsed?: boolean
 }) {
   const [pending, setPending] = useState<Mode | null>(null)
+  const { t } = useI18n()
+
+  const MODES: {
+    id: Mode
+    label: string
+    shortLabel: string
+    icon: typeof ShieldCheck
+    activeClass: string
+    dotClass: string
+  }[] = [
+    {
+      id: "super",
+      label: t.adminRoleSwitcher?.superAdmin || "المدير العام",
+      shortLabel: t.adminRoleSwitcher?.superAdminShort || "عام",
+      icon: ShieldCheck,
+      activeClass: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/40",
+      dotClass: "bg-amber-500",
+    },
+    {
+      id: "maqraa",
+      label: t.adminRoleSwitcher?.maqraaAdmin || "مدير المقرأة",
+      shortLabel: t.adminRoleSwitcher?.maqraaAdminShort || "المقرأة",
+      icon: Mic,
+      activeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/40",
+      dotClass: "bg-emerald-500",
+    },
+    {
+      id: "academy",
+      label: t.adminRoleSwitcher?.academyAdmin || "مدير الأكاديمية",
+      shortLabel: t.adminRoleSwitcher?.academyAdminShort || "الأكاديمية",
+      icon: GraduationCap,
+      activeClass: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/40",
+      dotClass: "bg-blue-500",
+    },
+  ]
 
   async function pickMode(mode: Mode) {
     if (mode === currentMode || pending) return

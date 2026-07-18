@@ -123,7 +123,7 @@ export default function AdminSupervisorsPage() {
             {a.svManage}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {(t.addedTranslations_2026?.[isAr ? "حدّد نطاق إشراف كل مشرف على الطلاب أو المقرئين المُسندين له" : "حدّد نطاق إشراف كل مشرف على الطلاب أو الReciterين المُسندين له"] || 'حدّد نطاق إشراف كل مشرف على الطلاب أو المقرئين المُسندين له')}
+            {a.svManageHint}
           </p>
         </div>
       </header>
@@ -171,7 +171,7 @@ export default function AdminSupervisorsPage() {
                   ) : (
                     <span className="inline-flex items-center gap-1 text-foreground">
                       <CheckCircle2 className="h-4 w-4 text-primary" />
-                      {(t.addedTranslations_2026?.['${count} ${isStudent ? "طالب" : "مقرئ"} مُسند'] || '${count} ${isStudent ? "طالب" : "مقرئ"} مُسند')}
+                      {a.svAssignedCount?.replace('{count}', count.toString()).replace('{type}', isStudent ? (isAr ? "طالب" : "Student") : (isAr ? "مقرئ" : "Reciter")) || `${count} ${isStudent ? "Student" : "Reciter"} assigned`}
                     </span>
                   )}
                 </div>
@@ -198,7 +198,7 @@ export default function AdminSupervisorsPage() {
               {a.svSetScopeTitle} — {active?.name}
             </DialogTitle>
             <DialogDescription>
-              {(t.addedTranslations_2026?.['{isAr ? "اختر المستخدمين المُسندين" : "Translated"}. ترك الكل بدون تحديد يعني نطاقاً كاملاً (يرى الجميع).'] || 'اختر المستخدمين المُسندين. ترك الكل بدون تحديد يعني نطاقاً كاملاً (يرى الجميع).')}
+              {a.svScopeHint}
             </DialogDescription>
           </DialogHeader>
 
@@ -246,7 +246,7 @@ export default function AdminSupervisorsPage() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            {(t.addedTranslations_2026?.['${selected.size} {isAr ? "مُحدد" : "Translated"}'] || '${selected.size} مُحدد')}
+            {a.svSelected?.replace('{count}', selected.size.toString()) || `${selected.size} selected`}
           </p>
 
           <DialogFooter className="gap-2">
