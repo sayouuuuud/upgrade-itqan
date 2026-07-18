@@ -196,18 +196,18 @@ export default function AcademyAdminSettingsPage() {
           </div>
           <div>
             <h1 className="text-lg font-bold leading-none">
-              {a.settingsTitle || "إعدادات الأكاديمية"}
+              {a.settingsTitle || (isAr ? "إعدادات الأكاديمية" : "Academy Settings")}
             </h1>
           </div>
         </div>
         {hasUnsavedChanges && (
           <div className="flex items-center gap-2">
             <span className="hidden text-sm text-amber-600 sm:block">
-              {a.unsavedChanges || "تعديلات غير محفوظة"}
+              {a.unsavedChanges || (isAr ? "تعديلات غير محفوظة" : "Unsaved Changes")}
             </span>
             <Button size="sm" variant="ghost" onClick={discardChanges} disabled={saving}>
               <X className="h-3.5 w-3.5 me-1" />
-              {a.discard || "تجاهل"}
+              {a.discard || (isAr ? "تجاهل" : "Discard")}
             </Button>
             <Button size="sm" onClick={saveChanges} disabled={saving}>
               {saving ? (
@@ -215,7 +215,7 @@ export default function AcademyAdminSettingsPage() {
               ) : (
                 <Save className="h-3.5 w-3.5 me-1" />
               )}
-              {a.save || "حفظ"}
+              {a.save || (isAr ? "حفظ" : "Save")}
             </Button>
           </div>
         )}
@@ -225,7 +225,7 @@ export default function AcademyAdminSettingsPage() {
       <Alert className="border-blue-200 bg-blue-50">
         <AlertCircle className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-700">
-          {a.settingsHint || "إعدادات خاصة بالأكاديمية فقط. الإعدادات العامة للموقع يديرها المدير العام."}
+          {a.settingsHint || (isAr ? "إعدادات خاصة بالأكاديمية فقط. الإعدادات العامة للموقع يديرها المدير العام." : "Academy-specific settings only. General site settings are managed by the General Manager.")}
         </AlertDescription>
       </Alert>
 

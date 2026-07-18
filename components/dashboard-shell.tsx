@@ -339,7 +339,9 @@ const getSuperConfig = (t: any): ShellConfig => ({
       ],
     },
   ],
-  label: 'المدير العام', name: 'المدير العام', sublabel: 'المدير العام',
+  label: t.locale === 'ar' ? 'المدير العام' : 'Super Admin',
+  name: t.locale === 'ar' ? 'المدير العام' : 'Super Admin',
+  sublabel: t.locale === 'ar' ? 'المدير العام' : 'Super Admin',
 })
 
 // ── Maqraa mode ────────────────────────���─────────────────────────────���─���──��─
@@ -375,7 +377,12 @@ const getMaqraaConfig = (t: any): ShellConfig => {
       { href: '/maqraah/admin/settings', label: t.locale === 'ar' ? 'إعدادات المقرأة' : 'Maqraa Settings', icon: Settings },
     ],
   })
-  return { sections, label: 'مدير المقرأة', name: 'مدير المقرأة', sublabel: 'مدير المقرأة' }
+  return {
+    sections,
+    label: t.locale === 'ar' ? 'مدير المقرأة' : 'Maqraa Admin',
+    name: t.locale === 'ar' ? 'مدير المقرأة' : 'Maqraa Admin',
+    sublabel: t.locale === 'ar' ? 'مدير المقرأة' : 'Maqraa Admin'
+  }
 }
 
 // ── Academy mode ────────────────────────────────────────────────────────────

@@ -143,7 +143,6 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
     <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6" dir={isAr ? "rtl" : "ltr"}>
       {fontHref ? <link rel="stylesheet" href={fontHref} /> : null}
 
-      {/* Header */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -151,50 +150,35 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
               <Palette className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">{isAr ? "محرّر التصميم والألوان" : "Theme and Color Editor"}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">{at?.title ?? "Theme and Colors"}</h1>
               <p className="text-sm text-muted-foreground text-pretty">
-                {isAr ? "تحكّم في ألوان المنصة والخط ودرجة الاستدارة. يُطبَّق على الموقع كاملاً فور الحفظ." : "Control platform colors, font, and border radius. Applied site-wide immediately upon saving."}</p>
+                {at?.desc ?? "Customize platform colors and fonts. Changes will apply to all users immediately."}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleReset} className="gap-2">
+            <Button onClick={handleReset} variant="outline" className="gap-2">
               <RotateCcw className="h-4 w-4" />
-              {isAr ? "استعادة الافتراضي" : "Restore Default"}</Button>
+              <span className="hidden sm:inline">{at?.resetToDefault ?? "Reset to Default"}</span>
+            </Button>
             <Button onClick={handleSave} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <CheckCircle className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              {saved ? (isAr ? "تم الحفظ" : "Saved") : (isAr ? "حفظ التغييرات" : "Save Changes")}
+              {saved ? (at?.saved ?? "Saved") : (at?.saveChanges ?? "Save Changes")}
             </Button>
-          </div>
-        </div>
-
-        {/* Light/Dark Mode Toggle */}
-        <div className="flex items-center gap-3 bg-muted rounded-lg p-3 w-fit">
-          <span className="text-sm font-medium text-muted-foreground">{isAr ? "اختر الوضع:" : "Select Mode:"}</span>
-          <div className="flex gap-1 bg-background rounded p-1">
-            {(['light', 'dark'] as const).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                  mode === m
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {m === 'light' ? (isAr ? '☀️ فاتح' : '☀️ Light') : (isAr ? '🌙 داكن' : '🌙 Dark')}
-              </button>
-            ))}
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-5">
-        {/* Controls */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Colors */}
+      <div className="grid gap-6 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_500px]">
+        <div className="space-y-6 min-w-0">
+          <div className="flex items-center gap-2 border-b pb-2">
+            <Button variant={mode === 'light' ? 'default' : 'outline'} size="sm" onClick={() => setMode('light')}>{isAr ? "فاتح" : "Light Mode"}</Button>
+            <Button variant={mode === 'dark' ? 'default' : 'outline'} size="sm" onClick={() => setMode('dark')}>{isAr ? "داكن" : "Dark Mode"}</Button>
+          </div>
+
           <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
             <h2 className="flex items-center gap-2 text-base font-semibold text-card-foreground mb-4">
-              <Palette className="h-4 w-4 text-primary" /> {isAr ? "الألوان" : "Colors"}</h2>
+              <Palette className="h-4 w-4 text-primary" /> {mode === 'light' ? (at?.colors ?? "Colors (Light Mode)") : "Colors (Dark Mode)"}</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {COLOR_FIELDS.map((f) => (
                 <div key={f.key} className="space-y-1.5">
@@ -220,7 +204,6 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
             </div>
           </section>
 
-          {/* Brand / section-specific colors */}
           <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
             <h2 className="flex items-center gap-2 text-base font-semibold text-card-foreground mb-1">
               <Palette className="h-4 w-4 text-primary" /> {isAr ? "ألوان الواجهات الخاصة" : "Special Interface Colors"}</h2>
@@ -263,7 +246,7 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
                 <SelectContent>
                   {(Object.keys(THEME_FONTS) as ThemeFontId[]).map((id) => (
                     <SelectItem key={id} value={id}>
-                      {THEME_FONTS[id].label}
+                      {id === "cairo" ? (isAr ? "Cairo (الافتراضي)" : "Cairo (Default)") : THEME_FONTS[id].label}
                     </SelectItem>
                   ))}
                 </SelectContent>

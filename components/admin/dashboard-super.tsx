@@ -20,6 +20,7 @@ export function DashboardSuper() {
   const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar"
   const ds = (t as any).dashboardSuper as Record<string, string> | undefined
+  const adminRoles = (t as any).adminRoles as Record<string, string> | undefined
 
   const [data, setData] = useState<PlatformOverview | null>(null)
   const [analytics, setAnalytics] = useState<any>(null)
@@ -57,7 +58,7 @@ export function DashboardSuper() {
   if (error || !data) {
     return (
       <div className="flex flex-col items-center justify-center p-20 gap-4">
-        <div className="text-red-500 font-bold text-xl">{isAr ? "حدث خطأ أثناء تحميل النظرة الشاملة" : "An error occurred while loading overview"}</div>
+        <div className="text-red-500 font-bold text-xl">{ds?.errorLoadingOverview ?? 'An error occurred while loading overview'}</div>
         {error && <code className="bg-red-50 text-red-800 p-2 rounded text-sm">{error}</code>}
       </div>
     )
@@ -261,8 +262,8 @@ export function DashboardSuper() {
       {roleDistribution.length > 0 && (
         <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border bg-muted/50">
-            <h3 className="font-bold text-foreground">توزيع الأدوار</h3>
-            <p className="text-sm text-muted-foreground mt-0.5">عدد المستخدمين لكل دور عبر المنصتين</p>
+            <h3 className="font-bold text-foreground">{ds?.roleDistributionTitle ?? 'Role Distribution'}</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">{ds?.roleDistributionDesc ?? 'Number of users per role across both platforms'}</p>
           </div>
           <div className="p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {roleDistribution.map((row) => {
@@ -272,7 +273,7 @@ export function DashboardSuper() {
                   <p className="text-lg font-bold text-foreground">
                     {row.count.toLocaleString(isAr ? "ar-EG" : "en-US")}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{row.role}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{adminRoles?.[row.role] ?? row.role}</p>
                   <div className="mt-2 h-1 bg-border rounded-full overflow-hidden">
                     <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
                   </div>

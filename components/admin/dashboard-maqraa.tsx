@@ -18,6 +18,7 @@ export function DashboardMaqraa() {
   const { t } = useI18n()
   const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar"
+  const dm = (t as any).dashboardMaqraa as Record<string, string> | undefined
 
   const [data, setData] = useState<{ stats: any; latestRecitations: any[] } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -112,9 +113,9 @@ export function DashboardMaqraa() {
       {/* Quick Stats Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { label: isAr ? "إجمالي التلاوات" : "Total recitations", value: totalRecitations, icon: ClipboardList, circle: "bg-primary/10 border-primary/20", iconColor: "text-primary" },
-          { label: isAr ? "تلاوات متقنة" : "Mastered recitations", value: masteredCount, icon: CheckCircle2, circle: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-600 dark:text-emerald-400" },
-          { label: isAr ? "قيد المراجعة" : "In review", value: inReviewCount, icon: Clock, circle: "bg-amber-100/50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-900/50", iconColor: "text-amber-700 dark:text-amber-400" },
+          { label: dm?.totalRecitations ?? 'Total recitations', value: totalRecitations, icon: ClipboardList, circle: "bg-primary/10 border-primary/20", iconColor: "text-primary" },
+          { label: dm?.masteredRecitations ?? 'Mastered recitations', value: masteredCount, icon: CheckCircle2, circle: "bg-emerald-500/10 border-emerald-500/20", iconColor: "text-emerald-600 dark:text-emerald-400" },
+          { label: dm?.inReview ?? 'In review', value: inReviewCount, icon: Clock, circle: "bg-amber-100/50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-900/50", iconColor: "text-amber-700 dark:text-amber-400" },
           { label: t.admin.totalMembers, value: stats.totalStudents + stats.totalReaders, icon: Users, circle: "bg-accent/10 border-accent/20", iconColor: "text-accent" },
         ].map((card) => {
           const Icon = card.icon

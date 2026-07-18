@@ -388,7 +388,7 @@ export default function AcademySupervisorsPage() {
         <div className="flex gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-900 rounded-xl w-fit">
           {([
             { key: 'all', label: a.supvAll },
-            { key: 'supervisor', label: a.supvGeneralSupervisor || 'مشرف عام' },
+            { key: 'supervisor', label: a.supvGeneralSupervisor || (isAr ? 'مشرف عام' : 'General Supervisor') },
             { key: 'fiqh', label: a.supvFiqhQnA },
             { key: 'content', label: a.supvContentTab },
           ] as const).map(({ key, label }) => (
@@ -562,7 +562,7 @@ export default function AcademySupervisorsPage() {
               <Label className="text-xs font-bold text-muted-foreground">{a.supvAssignment}</Label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {([
-                  { key: 'supervisor', label: a.supvGeneralSupervisor || 'مشرف عام', desc: a.supvGeneralDesc || 'إشراف عام للوحة' },
+                  { key: 'supervisor', label: a.supvGeneralSupervisor || (isAr ? 'مشرف عام' : 'General Supervisor'), desc: a.supvGeneralDesc || (isAr ? 'إشراف عام للوحة' : 'General dashboard supervision') },
                   { key: 'fiqh', label: a.supvFiqhSupervisor, desc: a.supvFiqhDesc },
                   { key: 'content', label: a.supvContentSupervisor, desc: a.supvContentDesc },
                 ] as const).map(({ key, label, desc }) => (
@@ -683,7 +683,7 @@ export default function AcademySupervisorsPage() {
               <Label className="text-xs font-bold text-muted-foreground">{a.supvAssignment}</Label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {([
-                  { key: 'supervisor', label: a.supvGeneralSupervisor || 'مشرف عام', desc: a.supvGeneralDesc || 'إشراف عام للوحة' },
+                  { key: 'supervisor', label: a.supvGeneralSupervisor || (isAr ? 'مشرف عام' : 'General Supervisor'), desc: a.supvGeneralDesc || (isAr ? 'إشراف عام للوحة' : 'General dashboard supervision') },
                   { key: 'fiqh', label: a.supvFiqhSupervisor, desc: a.supvFiqhDesc },
                   { key: 'content', label: a.supvContentSupervisor, desc: a.supvContentDesc },
                 ] as const).map(({ key, label, desc }) => (

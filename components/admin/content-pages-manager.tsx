@@ -102,14 +102,14 @@ export function ContentPagesManager() {
         const body = await res.json().catch(() => ({}))
         throw new Error(body?.error || `خطأ ${res.status}`)
       }
-      toast.success("تمت إعادة الضبط إلى القيم الافتراضية")
+      toast.success(isAr ? "تمت إعادة الضبط إلى القيم الافتراضية" : "Successfully reset to defaults")
       // Re-fetch the page to refresh the form
       mutate()
       // Trigger SWR revalidation of the current page detail
       const detail = await fetch(`/api/admin/content-pages/${selectedSlug}`).then(r => r.json())
       if (detail?.page) setForm(detail.page)
     } catch (e: any) {
-      toast.error(e?.message || "فشل في إعادة الضبط")
+      toast.error(e?.message || (isAr ? "فشل في إعادة الضبط" : "Failed to reset"))
     } finally {
       setResetting(false)
     }
@@ -128,10 +128,10 @@ export function ContentPagesManager() {
         const body = await res.json().catch(() => ({}))
         throw new Error(body?.error || `خطأ ${res.status}`)
       }
-      toast.success("تم حفظ الصفحة بنجاح")
+      toast.success(isAr ? "تم حفظ الصفحة بنجاح" : "Page saved successfully")
       mutate()
     } catch (e: any) {
-      toast.error(e?.message || "فشل في حفظ الصفحة")
+      toast.error(e?.message || (isAr ? "فشل في حفظ الصفحة" : "Failed to save page"))
     } finally {
       setSaving(false)
     }
@@ -259,24 +259,25 @@ export function ContentPagesManager() {
                 disabled={resetting}
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                {resetting ? "جاري الإعادة..." : "إعادة الضبط"}
+                {resetting ? (isAr ? "جاري الإعادة..." : "Resetting...") : (isAr ? "إعادة الضبط" : "Reset")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>إعادة الضبط إلى القيم الافتراضية؟</AlertDialogTitle>
+                <AlertDialogTitle>{isAr ? "إعادة الضبط إلى القيم الافتراضية؟" : "Reset to default values?"}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  سيتم استبدال المحتوى الحالي بالنص الافتراضي الأصلي لهذه الصفحة.
-                  لا يمكن التراجع عن هذا الإجراء.
+                  {isAr
+                    ? "سيتم استبدال المحتوى الحالي بالنص الافتراضي الأصلي لهذه الصفحة. لا يمكن التراجع عن هذا الإجراء."
+                    : "The current content will be replaced by the original default text for this page. This action cannot be undone."}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                <AlertDialogCancel>{isAr ? "إلغاء" : "Cancel"}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleReset}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  نعم، أعد الضبط
+                  {isAr ? "نعم، أعد الضبط" : "Yes, reset"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

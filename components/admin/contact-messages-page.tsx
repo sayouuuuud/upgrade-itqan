@@ -171,7 +171,7 @@ export default function ContactMessagesPage() {
                                                 <div className="flex items-center gap-2">
                                                     <h2 className="text-xl font-black text-foreground">{selectedMessage.name}</h2>
                                                     {!selectedMessage.is_read && (
-                                                        <Badge className="bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-lg h-5">جديدة</Badge>
+                                                        <Badge className="bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-lg h-5">{isAr ? "جديدة" : "New"}</Badge>
                                                     )}
                                                 </div>
                                                 <p className="text-sm font-bold text-muted-foreground">{selectedMessage.email}</p>
