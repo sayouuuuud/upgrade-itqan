@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n/context'
 export default function AdminSecurityPage() {
     const { t } = useI18n()
     const isAr = t.locale === 'ar'
+    const adminRoles = (t as any).adminRoles as Record<string, string> | undefined
     const [data, setData] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -116,9 +117,7 @@ export default function AdminSecurityPage() {
                                             acc.role === 'reader' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
                                                 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                                             }`}>
-                                            {acc.role === 'admin' ? t.admin.adminRole :
-                                                acc.role === 'reader' ? (t.reader?.readerLabel || t.auth.reader) :
-                                                    (t.student?.studentLabel || t.auth.student)}
+                                            {adminRoles?.[acc.role] ?? acc.role}
                                         </span>
                                     </td>
                                     <td className="px-5 py-4 whitespace-nowrap text-xs text-muted-foreground">
@@ -203,7 +202,7 @@ export default function AdminSecurityPage() {
                                     </td>
                                     <td className="px-4 py-3">
                                         <span className={`px-2 py-1 rounded-full text-xs ${log.user_role === 'admin' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' : log.user_role === 'reader' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-muted text-muted-foreground border border-border'}`}>
-                                            {log.user_role === 'admin' ? t.auth.admin : log.user_role === 'reader' ? t.auth.reader : t.auth.student}
+                                            {adminRoles?.[log.user_role] ?? log.user_role}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{log.ip_address || '—'}</td>

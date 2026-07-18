@@ -246,7 +246,7 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
                 <SelectContent>
                   {(Object.keys(THEME_FONTS) as ThemeFontId[]).map((id) => (
                     <SelectItem key={id} value={id}>
-                      {THEME_FONTS[id].label}
+                      {id === "cairo" ? (isAr ? "Cairo (الافتراضي)" : "Cairo (Default)") : THEME_FONTS[id].label}
                     </SelectItem>
                   ))}
                 </SelectContent>
