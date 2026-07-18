@@ -20,6 +20,7 @@ const audioFormats = ["mp3", "m4a", "ogg", "wav", "aac"]
 
 export function RecitationsSettings({ settings, onUpdate, onReset }: Props) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const a = t.admin
   const formats = settings.maqraah_recitations_allowed_audio_formats || []
   const riwayat = settings.maqraah_recitations_available_riwayat || []

@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/i18n/context'
 
 export default function NewPublicLessonPage() {
   const { t } = useI18n();
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
 
   const router = useRouter()
   return (

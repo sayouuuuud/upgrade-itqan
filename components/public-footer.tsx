@@ -5,6 +5,7 @@ import { useI18n } from '@/lib/i18n/context'
 
 export function PublicFooter() {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
 
   return (
     <footer className="bg-[#082A1F] text-white/80 border-t border-white/5 pt-16 pb-8">

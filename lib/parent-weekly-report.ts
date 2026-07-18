@@ -149,14 +149,14 @@ function fmtDate(s: string): string {
 
 function statusLabel(status: string): string {
   const map: Record<string, string> = {
-    pending: (en.extracted_2026_v2 as any)?.["قيد المراجعة"] || "قيد المراجعة",
-    in_review: (en.extracted_2026_v2 as any)?.["قيد المراجعة"] || "قيد المراجعة",
-    mastered: (en.extracted_2026_v2 as any)?.["متقن"] || "متقن",
-    needs_session: (en.extracted_2026_v2 as any)?.["بحاجة لجلسة"] || "بحاجة لجلسة",
-    rejected: (en.extracted_2026_v2 as any)?.["مرفوض"] || "مرفوض",
-    completed: (en.extracted_2026_v2 as any)?.["مكتمل"] || "مكتمل",
-    confirmed: (en.extracted_2026_v2 as any)?.["مؤكد"] || "مؤكد",
-    cancelled: (en.extracted_2026_v2 as any)?.["ملغي"] || "ملغي",
+    pending: "قيد المراجعة",
+    in_review: "قيد المراجعة",
+    mastered: "متقن",
+    needs_session: "بحاجة لجلسة",
+    rejected: "مرفوض",
+    completed: "مكتمل",
+    confirmed: "مؤكد",
+    cancelled: "ملغي",
   }
   return map[status] || status
 }
@@ -209,13 +209,13 @@ export function renderWeeklyReportHtml(opts: {
   return `
     <div dir="rtl" style="font-family: Tahoma, Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; color:#0f172a;">
       <div style="text-align:center; padding:24px 0; border-bottom: 2px solid #0B3D2E;">
-        <h1 style="margin:0; color:#0B3D2E; font-size:24px;">${(en.extracted_2026_v2 as any)?.[" إتقان التعليمية"] || " إتقان التعليمية"}</h1>
-        <p style="margin:6px 0 0; color:#64748b; font-size:13px;">${(en.extracted_2026_v2 as any)?.["التقرير الأسبوعي"] || "التقرير الأسبوعي"}</p>
+        <h1 style="margin:0; color:#0B3D2E; font-size:24px;">${" إتقان التعليمية"}</h1>
+        <p style="margin:6px 0 0; color:#64748b; font-size:13px;">${"التقرير الأسبوعي"}</p>
       </div>
 
       <div style="margin: 24px 0;">
-        <p style="color:#64748b; font-size:14px; margin: 0;">${(en.extracted_2026_v2 as any)?.["السلام عليكم "] || "السلام عليكم "}${parentName}</p>
-        <h2 style="color:#0B3D2E; margin: 8px 0 0;">${(en.extracted_2026_v2 as any)?.["تقرير "] || "تقرير "}${childName} ${(en.extracted_2026_v2 as any)?.["لهذا الأسبوع"] || "لهذا الأسبوع"}</h2>
+        <p style="color:#64748b; font-size:14px; margin: 0;">${"السلام عليكم "}${parentName}</p>
+        <h2 style="color:#0B3D2E; margin: 8px 0 0;">${"تقرير "}${childName} ${"لهذا الأسبوع"}</h2>
         <p style="color:#94a3b8; font-size:13px; margin-top:4px;">${rangeStr}</p>
       </div>
 
@@ -223,22 +223,22 @@ export function renderWeeklyReportHtml(opts: {
         <tr>
           <td style="padding: 14px; background:#f0fdf4; border-radius:10px; text-align:center; width:25%;">
             <div style="font-size:24px; font-weight:bold; color:#166534;">${summary.recitations_count}</div>
-            <div style="font-size:12px; color:#475569;">${(en.extracted_2026_v2 as any)?.["تلاوة"] || "تلاوة"}</div>
+            <div style="font-size:12px; color:#475569;">${"تلاوة"}</div>
           </td>
           <td style="width:8px;"></td>
           <td style="padding: 14px; background:#eff6ff; border-radius:10px; text-align:center; width:25%;">
             <div style="font-size:24px; font-weight:bold; color:#1d4ed8;">${summary.sessions_attended}</div>
-            <div style="font-size:12px; color:#475569;">${(en.extracted_2026_v2 as any)?.["جلسة حضرها"] || "جلسة حضرها"}</div>
+            <div style="font-size:12px; color:#475569;">${"جلسة حضرها"}</div>
           </td>
           <td style="width:8px;"></td>
           <td style="padding: 14px; background:#fef3c7; border-radius:10px; text-align:center; width:25%;">
             <div style="font-size:24px; font-weight:bold; color:#b45309;">${summary.badges_earned}</div>
-            <div style="font-size:12px; color:#475569;">${(en.extracted_2026_v2 as any)?.["شارة جديدة"] || "شارة جديدة"}</div>
+            <div style="font-size:12px; color:#475569;">${"شارة جديدة"}</div>
           </td>
           <td style="width:8px;"></td>
           <td style="padding: 14px; background:#fef2f2; border-radius:10px; text-align:center; width:25%;">
             <div style="font-size:24px; font-weight:bold; color:#b91c1c;">${summary.sessions_upcoming}</div>
-            <div style="font-size:12px; color:#475569;">${(en.extracted_2026_v2 as any)?.["جلسة قادمة"] || "جلسة قادمة"}</div>
+            <div style="font-size:12px; color:#475569;">${"جلسة قادمة"}</div>
           </td>
         </tr>
       </table>
@@ -246,7 +246,7 @@ export function renderWeeklyReportHtml(opts: {
       ${
         summary.current_level
           ? `<div style="background:#0B3D2E; color:white; padding:18px; border-radius:12px; margin-bottom:24px; text-align:center;">
-              <div style="font-size:13px; opacity:0.85;">${(en.extracted_2026_v2 as any)?.["المستوى الحالي"] || "المستوى الحالي"}</div>
+              <div style="font-size:13px; opacity:0.85;">${"المستوى الحالي"}</div>
               <div style="font-size:18px; font-weight:bold; margin-top:6px;">${summary.current_level}</div>
             </div>`
           : ""
@@ -254,16 +254,16 @@ export function renderWeeklyReportHtml(opts: {
 
       ${
         recItems
-          ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${(en.extracted_2026_v2 as any)?.["📖 التلاوات"] || "📖 التلاوات"}</h3>
+          ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${"📖 التلاوات"}</h3>
             <table style="width:100%; border-collapse: collapse; background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;">
               ${recItems}
             </table>`
-          : `<p style="color:#94a3b8; font-size:14px;">${(en.extracted_2026_v2 as any)?.["لم يتم تقديم تلاوات هذا الأسبوع."] || "لم يتم تقديم تلاوات هذا الأسبوع."}</p>`
+          : `<p style="color:#94a3b8; font-size:14px;">${"لم يتم تقديم تلاوات هذا الأسبوع."}</p>`
       }
 
       ${
         sessItems
-          ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${(en.extracted_2026_v2 as any)?.["🎙️ الجلسات"] || "🎙️ الجلسات"}</h3>
+          ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${"🎙️ الجلسات"}</h3>
             <table style="width:100%; border-collapse: collapse; background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;">
               ${sessItems}
             </table>`
@@ -272,7 +272,7 @@ export function renderWeeklyReportHtml(opts: {
 
       ${
         badgeItems
-          ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${(en.extracted_2026_v2 as any)?.["🏅 الشارات الجديدة"] || "🏅 الشارات الجديدة"}</h3>
+          ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${"🏅 الشارات الجديدة"}</h3>
              <ul style="padding-right:18px; margin: 0;">${badgeItems}</ul>`
           : ""
       }
@@ -281,7 +281,7 @@ export function renderWeeklyReportHtml(opts: {
         reportUrl
           ? `<div style="text-align:center; margin: 28px 0;">
               <a href="${reportUrl}" style="display:inline-block; background:#0B3D2E; color:white; text-decoration:none; padding:12px 28px; border-radius:10px; font-weight:bold;">
-                ${(en.extracted_2026_v2 as any)?.["عرض التقرير الكامل في المنصة"] || "عرض التقرير الكامل في المنصة"}
+                ${"عرض التقرير الكامل في المنصة"}
               </a>
             </div>`
           : ""
@@ -289,7 +289,7 @@ export function renderWeeklyReportHtml(opts: {
 
       <hr style="border:none; border-top:1px solid #e2e8f0; margin: 24px 0;" />
       <p style="font-size: 12px; color:#94a3b8; text-align:center;">
-        ${(en.extracted_2026_v2 as any)?.["منصة إتقان التعليمية — جميع الحقوق محفوظة"] || "منصة إتقان التعليمية — جميع الحقوق محفوظة"}
+        ${"منصة إتقان التعليمية — جميع الحقوق محفوظة"}
       </p>
     </div>
   `
@@ -363,8 +363,8 @@ export async function sendWeeklyReport(opts: {
     summary,
   })
 
-  const subject = `${(en.extracted_2026_v2 as any)?.["تقرير "] || "تقرير "}${child.name}${(en.extracted_2026_v2 as any)?.[" الأسبوعي — إتقان التعليمية"] || " الأسبوعي — إتقان التعليمية"}`
-  const text = `${(en.extracted_2026_v2 as any)?.["تقرير الأسبوع: "] || "تقرير الأسبوع: "}${summary.recitations_count}${(en.extracted_2026_v2 as any)?.[" تلاوة، "] || " تلاوة، "}${summary.sessions_attended}${(en.extracted_2026_v2 as any)?.[" جلسة حضرها، "] || " جلسة حضرها، "}${summary.badges_earned}${(en.extracted_2026_v2 as any)?.[" شارة جديدة"] || " شارة جديدة"}`
+  const subject = `${"تقرير "}${child.name}${" الأسبوعي — إتقان التعليمية"}`
+  const text = `${"تقرير الأسبوع: "}${summary.recitations_count}${" تلاوة، "}${summary.sessions_attended}${" جلسة حضرها، "}${summary.badges_earned}${" شارة جديدة"}`
 
   let ok = false
   let errMsg: string | null = null

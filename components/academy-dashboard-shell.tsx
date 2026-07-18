@@ -453,6 +453,7 @@ export function AcademyDashboardShell({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed()
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const [user, setUser] = useState<{
     name: string;
     email: string;

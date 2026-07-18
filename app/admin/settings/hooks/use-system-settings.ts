@@ -66,6 +66,7 @@ const fetcher = async (url: string) => {
 
 export function useSystemSettings() {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const [saving, setSaving] = useState(false)
   const [pendingChanges, setPendingChanges] = useState<Record<string, any>>({})
 

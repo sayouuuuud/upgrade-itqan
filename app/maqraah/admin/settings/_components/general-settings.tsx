@@ -18,6 +18,7 @@ interface GeneralSettingsProps {
 
 export function GeneralSettings({ settings, onUpdate }: GeneralSettingsProps) {
   const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
   const gs = (t as any).generalSettings as Record<string, string> | undefined
 
   return (

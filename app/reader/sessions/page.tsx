@@ -663,6 +663,7 @@ export default function ReaderSessionsPage() {
 
 function CommentBox({ bookingId, locale }: { bookingId: string, locale: string }) {
   const { t } = useI18n()
+  const reader = (t as any).reader as Record<string, string> | undefined
   const [comments, setComments] = useState<Array<{ id: string; author_name: string; comment_text: string; created_at: string }>>([])
   const [text, setText] = useState("")
   const [sending, setSending] = useState(false)

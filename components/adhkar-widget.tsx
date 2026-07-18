@@ -119,6 +119,7 @@ function defaultPeriod(): Period {
 
 export function AdhkarWidget({ className = "" }: { className?: string }) {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const aw = (t as any).adhkarWidget as Record<string, string> | undefined
   const [period, setPeriod] = useState<Period>("morning")
   const [progress, setProgress] = useState<Record<string, number>>({})

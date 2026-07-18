@@ -11,6 +11,7 @@ import { AvatarUpload } from "@/components/avatar-upload"
 
 export default function SupervisorProfilePage() {
     const { t } = useI18n()
+  const admin = (t as any).admin as Record<string, string> | undefined
     const isAr = t.locale === "ar"
 
     const [profile, setProfile] = useState({ name: "", email: "", password: "", avatar_url: "" })

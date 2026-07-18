@@ -51,6 +51,7 @@ const PROVIDERS: { value: Provider; label: string }[] = [
 
 export function SendMeetingLinkModal({ open, onClose, sessionId, sessionTitle, onSent }: Props) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const sml = (t as any).sendMeetingLink as Record<string, string> | undefined
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)

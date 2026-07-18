@@ -23,6 +23,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export default function ReaderCertificatesPage() {
     
   const { t } = useI18n()
+  const reader = (t as any).reader as Record<string, string> | undefined
   const { locale } = useI18n();
   const isAr = locale === "ar";
 

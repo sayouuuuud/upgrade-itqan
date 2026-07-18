@@ -30,6 +30,7 @@ interface RecentQuestion {
 
 export default function FiqhSupervisorDashboard() {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.admin
   const [stats, setStats] = useState<Stats>({ total: 0, unanswered: 0, answered: 0, published: 0 })
   const [recent, setRecent] = useState<RecentQuestion[]>([])

@@ -24,6 +24,7 @@ const videoProviders = [
 
 export function LiveSessionsSettings({ settings, onUpdate, onReset }: LiveSessionsSettingsProps) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const providers = [

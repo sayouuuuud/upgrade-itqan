@@ -41,6 +41,7 @@ const defaultFormats = ["mp4", "webm", "mov", "pdf", "docx", "pptx", "mp3", "wav
 
 export function CoursesContentSettings({ settings, onUpdate, onReset }: CoursesContentSettingsProps) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const allowedFormats = settings.academy_courses_allowed_formats || defaultFormats

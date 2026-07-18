@@ -58,6 +58,7 @@ function getSteps(isSuper: boolean): Step[] {
 
 export function AdminOnboardingTour({ role, adminMode }: { role: string; adminMode?: "super" | "maqraa" | "academy" }) {
   const { t } = useI18n();
+  const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar";
   const isSuper = role === "admin" || role === "super_admin"
   const storageKey = `itqaan_admin_tour_v1_${isSuper ? "super" : "scoped"}`

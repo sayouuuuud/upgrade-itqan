@@ -63,6 +63,7 @@ export default function ReaderProfilePage() {
   }
 
   const { t } = useI18n()
+  const reader = (t as any).reader as Record<string, string> | undefined
   if (loading) return <ProfileSkeleton />
 
   return (

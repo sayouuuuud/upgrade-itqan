@@ -47,6 +47,7 @@ const INTEGRATION_ICONS: Record<string, React.ElementType> = {
 
 export default function IntegrationsDashboard() {
   const { t } = useI18n();
+  const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar";
   const [data, setData] = useState<IntegrationsData | null>(null)
   const [loading, setLoading] = useState(true)

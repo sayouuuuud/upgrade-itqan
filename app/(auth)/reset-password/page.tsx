@@ -20,6 +20,7 @@ function ResetPasswordContent() {
   const [success, setSuccess] = useState(false)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
 
   useEffect(() => {
     if (initialEmail && inputRefs.current[0]) {

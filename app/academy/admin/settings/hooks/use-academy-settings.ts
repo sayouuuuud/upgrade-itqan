@@ -221,6 +221,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function useAcademySettings() {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const { data, error, isLoading, mutate } = useSWR(

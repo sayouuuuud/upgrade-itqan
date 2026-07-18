@@ -29,6 +29,7 @@ interface Student {
 
 export default function TeacherStudentsPage() {
   const { t } = useI18n()
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
   const a = t.admin
   const router = useRouter()
   const [students, setStudents] = useState<Student[]>([])

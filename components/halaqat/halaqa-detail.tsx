@@ -78,6 +78,7 @@ export function HalaqaDetail({
 }: Props) {
   const router = useRouter()
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const th = (t as any).halaqat as Record<string, string> | undefined
   const [halaqa, setHalaqa] = useState<Halaqa | null>(null)
   const [permissions, setPermissions] = useState<{ can_manage: boolean; is_enrolled: boolean } | null>(null)

@@ -27,6 +27,7 @@ function buildPayload(v: BookFormValue) {
 export default function NewBookPage() {
   const router = useRouter()
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const [form, setForm] = useState<BookFormValue>({ ...emptyBookForm })

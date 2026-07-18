@@ -47,6 +47,7 @@ const TAJWEED_RULES = [
 export default function TeacherCompetitionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { t } = useI18n()
+  const academyTeacher = (t as any).academyTeacher as Record<string, string> | undefined
   const [competition, setCompetition] = useState<Competition | null>(null)
   const [entries, setEntries] = useState<Entry[]>([])
   const [loading, setLoading] = useState(true)

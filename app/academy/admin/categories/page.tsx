@@ -43,6 +43,7 @@ const PRESET_COLORS = ['#1E3A5F', '#2563EB', '#059669', '#D97706', '#DC2626', '#
 
 export default function CategoriesPage() {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const a = t.academyAdmin
 
   const emptyForm: FormState = {

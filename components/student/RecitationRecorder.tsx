@@ -176,6 +176,7 @@ interface RecitationRecorderProps {
 export function RecitationRecorder({ onSuccess }: RecitationRecorderProps) {
   const router = useRouter()
   const { t } = useI18n()
+  const student = (t as any).student as Record<string, string> | undefined
   const rr = (t as any).recitationRecorder as Record<string, string> | undefined
   const [recordingState, setRecordingState] = useState<RecordingState>("idle")
   const [timer, setTimer] = useState(0)

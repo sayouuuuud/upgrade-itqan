@@ -62,6 +62,7 @@ interface SessionInfo {
 
 export function VideoSessionDetail({ sessionId, backHref }: Props) {
   const { t } = useI18n();
+  const app = (t as any).app as Record<string, string> | undefined
   const vsd = (t as any).videoSessionDetail as Record<string, string> | undefined
 
   function getKindLabel(kind: string) {

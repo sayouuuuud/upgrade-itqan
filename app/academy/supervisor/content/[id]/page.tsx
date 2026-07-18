@@ -22,6 +22,7 @@ interface LessonDetail {
 
 export default function SupervisorContentDetailPage() {
   const { t } = useI18n();
+  const academy = (t as any).academy as Record<string, string> | undefined
 
     const params = useParams()
     const searchParams = useSearchParams()

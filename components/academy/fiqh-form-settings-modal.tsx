@@ -25,6 +25,7 @@ const emptyField: Partial<FiqhFormField> = {
 
 export function FiqhFormSettingsModal({ onClose }: Props) {
   const { t } = useI18n()
+  const academy = (t as any).academy as Record<string, string> | undefined
   const fs = (t as any).fiqhForm as Record<string, string> | undefined
   const [fields, setFields] = useState<FiqhFormField[]>([])
   const [loading, setLoading] = useState(true)

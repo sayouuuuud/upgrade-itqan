@@ -31,6 +31,7 @@ type State = 'pre' | 'live' | 'post'
 
 export function LessonViewer({ lesson, initialState }: { lesson: PublicLesson; initialState: State }) {
   const { t } = useI18n()
+  const app = (t as any).app as Record<string, string> | undefined
   const lv = (t as any).lessonViewer as Record<string, string> | undefined
   const [state, setState] = useState<State>(initialState)
   const [now, setNow] = useState(() => new Date())
