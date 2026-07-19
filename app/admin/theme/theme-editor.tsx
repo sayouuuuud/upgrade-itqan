@@ -71,6 +71,7 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
     const { t } = useI18n();
   const admin = (t as any).admin as Record<string, string> | undefined
     const isAr = t.locale === "ar";
+  const at = (t as any).adminTheme as Record<string, string> | undefined;
   const router = useRouter()
   const [theme, setTheme] = useState<ThemeConfig>(initialTheme)
   const [saving, setSaving] = useState(false)
