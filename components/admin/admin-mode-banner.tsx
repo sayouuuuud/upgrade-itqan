@@ -10,24 +10,22 @@ import { useI18n } from "@/lib/i18n/context";
 // in their default super-admin context, so changes go to that area.
 export function AdminModeBanner({ mode }: { mode: "maqraa" | "academy" }) {
   const { t } = useI18n();
-  const admin = (t as any).admin as Record<string, string> | undefined
-  const isAr = t.locale === "ar";
   const router = useRouter()
   const [exiting, setExiting] = useState(false)
 
   const config =
     mode === "maqraa"
       ? {
-          label: "وضع مدير المقرأة",
-          desc: "أنت تتصفح المنصة بصلاحيات مدير المقرأة. أي تعديل يخص جانب التلاوة والتسميع.",
+          label: t.adminModeBanner?.maqraaModeLabel || "وضع مدير المقرأة",
+          desc: t.adminModeBanner?.maqraaModeDesc || "أنت تتصفح المنصة بصلاحيات مدير المقرأة. أي تعديل يخص جانب التلاوة والتسميع.",
           icon: Mic,
           bar: "bg-emerald-600",
           text: "text-emerald-50",
           btn: "bg-emerald-700/60 hover:bg-emerald-700",
         }
       : {
-          label: "وضع مدير الأكاديمية",
-          desc: "أنت تتصفح المنصة بصلاحيات مدير الأكاديمية. أي تعديل يخص جانب الدورات والطلاب.",
+          label: t.adminModeBanner?.academyModeLabel || "وضع مدير الأكاديمية",
+          desc: t.adminModeBanner?.academyModeDesc || "أنت تتصفح المنصة بصلاحيات مدير الأكاديمية. أي تعديل يخص جانب الدورات والطلاب.",
           icon: GraduationCap,
           bar: "bg-blue-600",
           text: "text-blue-50",
@@ -72,7 +70,7 @@ export function AdminModeBanner({ mode }: { mode: "maqraa" | "academy" }) {
         className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${config.btn}`}
       >
         {exiting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
-        {isAr ? "العودة لوضع المدير العام" : "العودة لوضع Super Admin"}
+        {t.adminModeBanner?.returnToSuperAdmin || "العودة لوضع المدير العام"}
       </button>
     </div>
   )

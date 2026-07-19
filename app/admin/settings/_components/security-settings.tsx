@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Shield, KeyRound, Activity } from "lucide-react"
+import { Shield, Activity } from "lucide-react"
 import { SectionCard, ToggleRow } from "./section-card"
 import { useI18n } from "@/lib/i18n/context"
 
@@ -13,7 +13,6 @@ interface Props {
 
 export function SecuritySettings({ settings, onUpdate }: Props) {
   const { t } = useI18n()
-  const admin = (t as any).admin as Record<string, string> | undefined
   const a = t.admin
 
   const sec = settings.security_settings ?? {}
@@ -57,19 +56,6 @@ export function SecuritySettings({ settings, onUpdate }: Props) {
             />
           </div>
         </div>
-      </SectionCard>
-
-      <SectionCard
-        icon={KeyRound}
-        title={a.sec2FATitle}
-        description={a.sec2FADesc}
-      >
-        <ToggleRow
-          label={a.sec2FALabel}
-          description={a.sec2FAToggleDesc}
-          checked={settings.two_factor_auth ?? false}
-          onChange={(v) => onUpdate({ two_factor_auth: v })}
-        />
       </SectionCard>
 
       <SectionCard

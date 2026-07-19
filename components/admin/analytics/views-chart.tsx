@@ -95,6 +95,22 @@ export function ViewsChart({ data }: ViewsChartProps) {
 
     const targetValue = Math.round(maxValue * 0.7)
 
+    const handleDownload = () => {
+        const headers = ["Date", "Day", "Value", "Metric"]
+        const csvContent = [
+            headers.join(","),
+            ...chartData.map(d => `${d.fullDate},${d.day},${d.value},${metric}`)
+        ].join("\n")
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `views_analytics_${metric}.csv`
+        a.click()
+        URL.revokeObjectURL(url)
+    }
+
     return (
         <div className="w-full p-6 bg-card rounded-xl border border-border shadow-sm">
             {/* Header */}
@@ -154,7 +170,7 @@ export function ViewsChart({ data }: ViewsChartProps) {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Button variant="outline" size="icon" className="text-muted-foreground bg-card border-border hover:bg-muted h-9 w-9">
+                    <Button onClick={handleDownload} variant="outline" size="icon" className="text-muted-foreground bg-card border-border hover:bg-muted h-9 w-9">
                         <Download className="h-4 w-4" />
                     </Button>
                 </div>

@@ -49,60 +49,7 @@ const TYPE_ICON: Record<string, React.ElementType> = {
     general: Bell,
 }
 
-const TYPE_LABELS_AR: Record<string, string> = {
-    recitation_received: "تقرير جديد",
-    recitation_reviewed: "تقرير تم مراجعته",
-    mastered: "اتقان",
-    needs_session: "جلسة مطلوبة",
-    session_booked: "جلسة محجوزة",
-    session_reminder: "تذكير الجلسة",
-    new_reader_application: "طلب قارئ جديد",
-    reader_approved: "قارئ موافق عليه",
-    reader_rejected: "قارئ مرفوض",
-    new_recitation_admin: "تقرير جديد للمسؤول",
-    new_message: "رسالة جديدة",
-    new_announcement: "إعلان جديد",
-    new_contact_message: "رسالة تواصل",
-    general: "عام",
-}
-const TYPE_LABELS_EN: Record<string, string> = {
-    recitation_received: "New Report",
-    recitation_reviewed: "Report Reviewed",
-    mastered: "Mastered",
-    needs_session: "Session Needed",
-    session_booked: "Session Booked",
-    session_reminder: "Session Reminder",
-    new_reader_application: "New Reader Application",
-    reader_approved: "Reader Approved",
-    reader_rejected: "Reader Rejected",
-    new_recitation_admin: "New Admin Report",
-    new_message: "New Message",
-    new_announcement: "New Announcement",
-    new_contact_message: "Contact Message",
-    general: "General",
-}
-function getTypeLabel(type: string, isAr: boolean): string {
-    return (isAr ? TYPE_LABELS_AR : TYPE_LABELS_EN)[type] ?? type
-}
 
-const CATEGORY_LABELS_AR: Record<string, string> = {
-    recitation: "التقارير",
-    session: "الجلسات",
-    account: "الحساب",
-    message: "الرسائل",
-    announcement: "الإعلانات",
-    booking: "الحجوزات",
-    general: "عام",
-}
-const CATEGORY_LABELS_EN: Record<string, string> = {
-    recitation: "Reports",
-    session: "Sessions",
-    account: "Account",
-    message: "Messages",
-    announcement: "Announcements",
-    booking: "Bookings",
-    general: "General",
-}
 function getCategoryLabel(cat: string, isAr: boolean): string {
     return (isAr ? CATEGORY_LABELS_AR : CATEGORY_LABELS_EN)[cat] ?? cat
 }
@@ -202,6 +149,23 @@ export default function NotificationsPage() {
         return `${t.daysAgo} ${d}`
     }
 
+    const translateNotificationText = (text: string, isAr: boolean) => {
+        if (isAr) return text;
+        
+        let translated = text;
+        
+        // Admin Login
+        if (translated.includes('تسجيل دخول إداري')) {
+            translated = translated.replace('تسجيل دخول إداري', 'Admin Login');
+        }
+        if (translated.includes('قام') && translated.includes('بتسجيل الدخول إلى لوحة التحكم')) {
+            translated = translated.replace(/قام (.*?) بتسجيل الدخول إلى لوحة التحكم \((.*?)\) من (.*)/, '$1 logged into the dashboard ($2) from $3');
+        }
+        
+        return translated;
+    }
+
+
     // Date range filter helper
     const isWithinDateRange = (date: string, range: string): boolean => {
         const notifDate = new Date(date).getTime()
@@ -284,7 +248,7 @@ export default function NotificationsPage() {
                         )}
                     >
                         <Filter className="w-4 h-4" />
-                        {isAr ? 'تصفية' : 'Filter'}</button>
+                        {t.notifications?.filter || (isAr ? 'تصفية' : 'Filter')}</button>
 
                     {unreadCount > 0 && (
                         <button
@@ -305,28 +269,28 @@ export default function NotificationsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {/* Type Filter */}
                         <div>
-                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">{isAr ? 'النوع' : 'Type'}</label>
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">{t.notifications?.typeLabel || (isAr ? 'النوع' : 'Type')}</label>
                             <select
                                 value={filters.type || ''}
                                 onChange={(e) => setFilters({ ...filters, type: e.target.value || null })}
                                 className="w-full bg-muted border border-border rounded-xl px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                             >
-                                <option value="">{isAr ? 'جميع الأنواع' : 'All Types'}</option>
+                                <option value="">{t.notifications?.allTypes || (isAr ? 'جميع الأنواع' : 'All Types')}</option>
                                 {Object.keys(TYPE_LABELS_AR).map((type) => (
-                                    <option key={type} value={type}>{getTypeLabel(type, isAr)}</option>
+                                    <option key={type} value={type}>{getTypeLabel(type, t)}</option>
                                 ))}
                             </select>
                         </div>
 
                         {/* Category Filter */}
                         <div>
-                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">{isAr ? 'الفئة' : 'Category'}</label>
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">{t.notifications?.categoryLabel || (isAr ? 'الفئة' : 'Category')}</label>
                             <select
                                 value={filters.category || ''}
                                 onChange={(e) => setFilters({ ...filters, category: e.target.value || null })}
                                 className="w-full bg-muted border border-border rounded-xl px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                             >
-                                <option value="">{isAr ? 'جميع الفئات' : 'All Categories'}</option>
+                                <option value="">{t.notifications?.allCategories || (isAr ? 'جميع الفئات' : 'All Categories')}</option>
                                 {Object.keys(CATEGORY_LABELS_AR).map((cat) => (
                                     <option key={cat} value={cat}>{getCategoryLabel(cat, isAr)}</option>
                                 ))}
@@ -335,30 +299,30 @@ export default function NotificationsPage() {
 
                         {/* Read Status Filter */}
                         <div>
-                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">{isAr ? 'الحالة' : 'Status'}</label>
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">{t.notifications?.statusLabel || (isAr ? 'الحالة' : 'Status')}</label>
                             <select
                                 value={filters.readStatus}
                                 onChange={(e) => setFilters({ ...filters, readStatus: e.target.value as any })}
                                 className="w-full bg-muted border border-border rounded-xl px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                             >
-                                <option value="all">{isAr ? 'الكل' : 'All'}</option>
-                                <option value="unread">{isAr ? 'غير المقروءة' : 'Unread'}</option>
-                                <option value="read">{isAr ? 'المقروءة' : 'Read'}</option>
+                                <option value="all">{t.notifications?.statusAll || (isAr ? 'الكل' : 'All')}</option>
+                                <option value="unread">{t.notifications?.statusUnread || (isAr ? 'غير المقروءة' : 'Unread')}</option>
+                                <option value="read">{t.notifications?.statusRead || (isAr ? 'المقروءة' : 'Read')}</option>
                             </select>
                         </div>
 
                         {/* Date Range Filter */}
                         <div>
-                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">{isAr ? 'النطاق الزمني' : 'Date Range'}</label>
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block mb-3">{t.notifications?.dateRangeLabel || (isAr ? 'النطاق الزمني' : 'Date Range')}</label>
                             <select
                                 value={filters.dateRange}
                                 onChange={(e) => setFilters({ ...filters, dateRange: e.target.value as any })}
                                 className="w-full bg-muted border border-border rounded-xl px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                             >
-                                <option value="all">{isAr ? 'كل الفترات' : 'All Time'}</option>
-                                <option value="today">{isAr ? 'اليوم' : 'Today'}</option>
-                                <option value="week">{isAr ? 'هذا الأسبوع' : 'This Week'}</option>
-                                <option value="month">{isAr ? 'هذا الشهر' : 'This Month'}</option>
+                                <option value="all">{t.notifications?.rangeAllTime || (isAr ? 'كل الفترات' : 'All Time')}</option>
+                                <option value="today">{t.notifications?.rangeToday || (isAr ? 'اليوم' : 'Today')}</option>
+                                <option value="week">{t.notifications?.rangeWeek || (isAr ? 'هذا الأسبوع' : 'This Week')}</option>
+                                <option value="month">{t.notifications?.rangeMonth || (isAr ? 'هذا الشهر' : 'This Month')}</option>
                             </select>
                         </div>
                     </div>
@@ -369,7 +333,7 @@ export default function NotificationsPage() {
                             className="mt-6 w-full flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted/30 border-2 border-dashed border-border px-6 py-3 rounded-xl hover:border-primary/50 hover:text-primary transition-all"
                         >
                             <X className="w-4 h-4" />
-                            {isAr ? 'إعادة تعيين الفلاتر' : 'Reset Filters'}</button>
+                            {t.notifications?.resetFilters || (isAr ? 'إعادة تعيين الفلاتر' : 'Reset Filters')}</button>
                     )}
                 </div>
             )}
@@ -378,12 +342,12 @@ export default function NotificationsPage() {
             {hasActiveFilters && (
                 <div className="mb-6 flex items-center justify-between bg-primary/5 border border-primary/20 rounded-2xl px-6 py-3">
                     <p className="text-sm font-bold text-foreground">
-                        {filteredNotifications.length} {isAr ? 'من' : 'of'} {notifications.length} {isAr ? 'إشعار' : 'notifications'}</p>
+                        {filteredNotifications.length} {t.notifications?.of || (isAr ? 'من' : 'of')} {notifications.length} {t.notifications?.notificationsCount || (isAr ? 'إشعار' : 'notifications')}</p>
                     <button
                         onClick={resetFilters}
                         className="text-xs font-bold text-primary hover:underline"
                     >
-                        {isAr ? 'مسح الفلاتر' : 'Clear Filters'}</button>
+                        {t.notifications?.clearFilters || (isAr ? 'مسح الفلاتر' : 'Clear Filters')}</button>
                 </div>
             )}
 
@@ -394,11 +358,11 @@ export default function NotificationsPage() {
                         <Bell className="w-10 h-10 text-muted-foreground opacity-20" />
                     </div>
                     <h3 className="text-2xl font-black text-foreground mb-3 tracking-tight uppercase tracking-widest">
-                        {hasActiveFilters ? (isAr ? 'لا توجد إشعارات مطابقة' : 'No matching notifications') : t.notifications.noNotifications}
+                        {hasActiveFilters ? (t.notifications?.noMatching || (isAr ? 'لا توجد إشعارات مطابقة' : 'No matching notifications')) : t.notifications.noNotifications}
                     </h3>
                     <p className="text-muted-foreground font-bold max-w-sm mx-auto leading-relaxed">
                         {hasActiveFilters 
-                            ? (isAr ? 'جرب تغيير الفلاتر للعثور على الإشعارات' : 'Try changing the filters to find notifications')
+                            ? (t.notifications?.tryChangingFilters || (isAr ? 'جرب تغيير الفلاتر للعثور على الإشعارات' : 'Try changing the filters to find notifications'))
                             : t.notifications.noNotificationsDesc}
                     </p>
                 </div>
@@ -429,15 +393,17 @@ export default function NotificationsPage() {
                                 <div className="flex-1 min-w-0 py-1 text-right">
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-2">
                                         <h4 className={`text-lg font-black tracking-tight group-hover:text-primary transition-colors ${isUnread ? "text-foreground" : "text-muted-foreground"}`}>
-                                            {n.title}
+                                            {translateNotificationText(n.title, isAr)}
                                         </h4>
-                                        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-tighter text-muted-foreground/60 bg-muted/50 px-3 py-1.5 rounded-xl border border-border shrink-0">
-                                            <Clock className="w-3 h-3 text-primary" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl border whitespace-nowrap flex items-center gap-1.5">
+                                            {n.created_at.includes('T') ? (
+                                                <Clock className="w-3 h-3" />
+                                            ) : null}
                                             {getTimeAgo(n.created_at)}
-                                        </div>
+                                        </span>
                                     </div>
                                     <p className={`text-sm leading-relaxed max-w-2xl ${isUnread ? "text-foreground/80 font-bold" : "text-muted-foreground font-medium"}`}>
-                                        {n.message}
+                                        {translateNotificationText(n.message, isAr)}
                                     </p>
                                 </div>
                                 {n.link && (

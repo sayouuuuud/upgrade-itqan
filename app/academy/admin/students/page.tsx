@@ -121,7 +121,7 @@ export default function AcademyAdminStudentsPage() {
           </h1>
           <p className="text-muted-foreground text-sm flex items-center gap-2">
             <Activity className="w-4 h-4" />
-            {a.total || 'Total'} {totalStudents} {language === 'ar' ? 'مسجلين في الأكاديمية' : 'registered in the academy'}
+            {a.total || 'Total'} {totalStudents} {a.studentsList?.registeredInAcademy}
           </p>
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function AcademyAdminStudentsPage() {
               <p className="text-4xl font-bold tracking-tight">{totalStudents}</p>
               <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                 <TrendingUp className="w-3 h-3 text-green-500" />
-                <span className="text-green-500 font-medium">100%</span> {language === 'ar' ? 'من الإجمالي' : 'of total'}
+                <span className="text-green-500 font-medium">100%</span> {a.studentsList?.ofTotal}
               </p>
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function AcademyAdminStudentsPage() {
             <div>
               <p className="text-4xl font-bold tracking-tight">{activeStudents}</p>
               <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <span className="text-muted-foreground font-medium">{totalStudents > 0 ? Math.round((activeStudents / totalStudents) * 100) : 0}%</span> {language === 'ar' ? 'نشطين حالياً' : 'currently active'}
+                <span className="text-muted-foreground font-medium">{totalStudents > 0 ? Math.round((activeStudents / totalStudents) * 100) : 0}%</span> {a.studentsList?.currentlyActive}
               </p>
             </div>
           </div>
@@ -183,7 +183,7 @@ export default function AcademyAdminStudentsPage() {
             <div>
               <p className="text-4xl font-bold tracking-tight">{totalEnrollments}</p>
               <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <span className="text-muted-foreground font-medium">{totalStudents > 0 ? (totalEnrollments / totalStudents).toFixed(1) : 0}</span> {language === 'ar' ? 'دورة لكل طالب' : 'courses per student'}
+                <span className="text-muted-foreground font-medium">{totalStudents > 0 ? (totalEnrollments / totalStudents).toFixed(1) : 0}</span> {a.studentsList?.coursesPerStudent}
               </p>
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function AcademyAdminStudentsPage() {
                 onClick={() => setFilterGender('all')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${filterGender === 'all' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               >
-                {language === 'ar' ? 'الكل' : 'All'}
+                {a.studentsList?.all}
               </button>
               <button 
                 onClick={() => setFilterGender('male')}
@@ -239,7 +239,7 @@ export default function AcademyAdminStudentsPage() {
                 {searchQuery ? (a.noSearchResults || 'No results found') : (a.noStudentsYet || 'No students yet')}
               </h3>
               <p className="text-sm text-muted-foreground max-w-sm">
-                {searchQuery ? (language === 'ar' ? 'حاول استخدام كلمات بحث مختلفة أو تغيير الفلاتر.' : 'Try using different search terms or changing filters.') : (language === 'ar' ? 'لم يتم تسجيل أي طلاب في الأكاديمية حتى الآن.' : 'No students have registered in the academy yet.')}
+                {searchQuery ? a.studentsList?.searchNoResults : a.studentsList?.noStudentsYet}
               </p>
             </div>
           ) : (
@@ -250,7 +250,7 @@ export default function AcademyAdminStudentsPage() {
                   <th className={`px-6 py-4 font-semibold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{a.gender || 'Gender'}</th>
                   <th className={`px-6 py-4 font-semibold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{a.coursesActiveTotal || 'Courses'}</th>
                   <th className={`px-6 py-4 font-semibold ${language === 'ar' ? 'text-right' : 'text-left'}`}>{a.joinDate || 'Join Date'}</th>
-                  <th className="px-6 py-4 font-semibold text-center">{language === 'ar' ? 'إجراءات' : 'Actions'}</th>
+                  <th className="px-6 py-4 font-semibold text-center">{a.studentsList?.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
@@ -286,12 +286,12 @@ export default function AcademyAdminStudentsPage() {
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1.5 bg-green-500/10 text-green-600 dark:text-green-400 px-2 py-1 rounded-md text-xs font-medium border border-green-500/20">
                           <Activity className="w-3 h-3" />
-                          <span>{student.active_courses} {language === 'ar' ? 'نشط' : 'Active'}</span>
+                          <span>{student.active_courses} {a.studentsList?.active}</span>
                         </div>
                         <span className="text-muted-foreground/40">•</span>
                         <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
                           <BookOpen className="w-3 h-3" />
-                          <span>{student.courses_count} {language === 'ar' ? 'إجمالي' : 'Total'}</span>
+                          <span>{student.courses_count} {a.studentsList?.total}</span>
                         </div>
                       </div>
                     </td>
@@ -315,7 +315,7 @@ export default function AcademyAdminStudentsPage() {
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem onClick={() => openEditModal(student)} className="cursor-pointer gap-2">
                             <Edit className="w-4 h-4" />
-                            {language === 'ar' ? 'تعديل البيانات' : 'Edit Info'}
+                            {a.studentsList?.editInfo}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -331,7 +331,7 @@ export default function AcademyAdminStudentsPage() {
         {filtered.length > 0 && (
           <div className="p-4 border-t border-border/50 text-xs text-muted-foreground flex justify-between items-center bg-muted/10">
             <span>
-              {language === 'ar' ? 'يعرض' : 'Showing'} <span className="font-semibold text-foreground">{filtered.length}</span> {language === 'ar' ? 'من' : 'of'} <span className="font-semibold text-foreground">{students.length}</span> {language === 'ar' ? 'طالب' : 'students'}
+              {a.studentsList?.showing} <span className="font-semibold text-foreground">{filtered.length}</span> {a.studentsList?.of} <span className="font-semibold text-foreground">{students.length}</span> {a.studentsList?.studentsCount}
             </span>
           </div>
         )}
@@ -341,7 +341,7 @@ export default function AcademyAdminStudentsPage() {
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="rounded-3xl border-none shadow-2xl bg-card max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black text-foreground">{language === 'ar' ? 'تعديل بيانات الطالب' : 'Edit Student Info'}</DialogTitle>
+            <DialogTitle className="text-xl font-black text-foreground">{a.studentsList?.editStudentInfo}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">

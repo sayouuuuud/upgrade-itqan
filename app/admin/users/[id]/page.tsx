@@ -609,7 +609,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                                 <div className="flex flex-wrap gap-2">
                                                     {error.error_markers.map((m: any, i: number) => (
                                                         <Badge key={i} variant="outline" className="bg-red-500/5 text-red-600 dark:text-red-400 border-red-500/20 font-black px-3 py-1 rounded-xl">
-                                                            {m.type === 'tajweed' ? ((t.addedTranslations_2026?.['تجويد'] || (t.addedTranslations_2026?.['تجويد'] || 'تجويد'))) : ((t.addedTranslations_2026?.['نطق'] || (t.addedTranslations_2026?.['نطق'] || 'نطق')))}: {m.note}
+                                                            {m.type === 'tajweed' ? (a.tajweed || 'Tajweed') : (a.pronunciation || 'Pronunciation')}: {m.note}
                                                         </Badge>
                                                     ))}
                                                 </div>
@@ -625,7 +625,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                             <Card className="border-border/50 shadow-2xl shadow-black/5 rounded-3xl bg-card/60 backdrop-blur-xl text-muted-foreground min-h-[300px] flex items-center justify-center relative border">
                                 <div className="p-12 text-center">
                                     <AlertCircle className="w-16 h-16 mx-auto mb-6 opacity-20 text-red-500" />
-                                    <p className="text-lg font-black">{(t.addedTranslations_2026?.['لا يوجد سجل أخطاء مسجل لهذا الطالب.'] || (t.addedTranslations_2026?.['لا يوجد سجل أخطاء مسجل لهذا الطالب.'] || 'لا يوجد سجل أخطاء مسجل لهذا الطالب.'))}</p>
+                                    <p className="text-lg font-black">{a.noMistakeLog || 'No mistake log recorded for this student.'}</p>
                                 </div>
                             </Card>
                         )}

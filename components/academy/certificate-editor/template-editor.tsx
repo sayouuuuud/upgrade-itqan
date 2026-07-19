@@ -636,13 +636,13 @@ export function CertificateTemplateEditor({
             {previewSrc && (
               <div className="border-t bg-background/60 px-3 py-2 flex items-center justify-between">
                 <span className="text-xs font-medium">
-                  {"آخر معاينة"}
+                  {isAr ? "آخر معاينة" : "Last Preview"}
                 </span>
                 <div className="flex gap-2">
                   <Button size="sm" variant="ghost" asChild>
                     <a href={previewSrc} target="_blank" rel="noreferrer">
                       <Eye className="w-3 h-3" />
-                      {"افتح في تبويب"}
+                      {isAr ? "افتح في تبويب" : "Open in Tab"}
                     </a>
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setPreviewSrc(null)}>

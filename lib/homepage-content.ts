@@ -18,8 +18,8 @@ export type Bi = { ar: string; en: string }
 
 export const DEFAULT_HOMEPAGE_CONTENT = {
   // Brand / navbar
-  homepage_brand_name: { ar: 'متقن', en: 'Itqan' } as Bi,
-  homepage_brand_tagline: { ar: 'Itqan Platform', en: 'Itqan Platform' } as Bi,
+  homepage_brand_name: { ar: 'مُتْقِن', en: 'motqen' } as Bi,
+  homepage_brand_tagline: { ar: 'منصة مُتْقِن', en: 'motqen Platform' } as Bi,
   homepage_login_text: { ar: 'دخول', en: 'Login' } as Bi,
   homepage_register_text: { ar: 'التسجيل', en: 'Register' } as Bi,
   homepage_register_short: { ar: 'تسجيل', en: 'Sign up' } as Bi,

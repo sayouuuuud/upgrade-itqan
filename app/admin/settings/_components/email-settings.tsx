@@ -4,6 +4,7 @@ import { Mail } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SectionCard } from "./section-card"
+import { useI18n } from "@/lib/i18n/context"
 
 interface EmailSettingsProps {
   settings: Record<string, any>
@@ -11,6 +12,9 @@ interface EmailSettingsProps {
 }
 
 export function EmailSettings({ settings, onUpdate }: EmailSettingsProps) {
+  const { t } = useI18n()
+  const a = t.admin
+  
   // Canonical consumer is getSetting("smtp_config") in lib/settings.ts
   const smtp = settings.smtp_config || {}
 
@@ -21,12 +25,12 @@ export function EmailSettings({ settings, onUpdate }: EmailSettingsProps) {
   return (
     <SectionCard
       icon={Mail}
-      title="إعدادات البريد (SMTP)"
-      description="تُستخدم لإرسال جميع رسائل المنصة"
+      title={a.ssEmailSmtpSettings}
+      description={a.ssEmailSmtpDesc}
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="smtp_host">خادم SMTP</Label>
+          <Label htmlFor="smtp_host">{a.ssSmtpServer}</Label>
           <Input
             id="smtp_host"
             value={smtp.host || ""}
@@ -35,7 +39,7 @@ export function EmailSettings({ settings, onUpdate }: EmailSettingsProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="smtp_port">المنفذ</Label>
+          <Label htmlFor="smtp_port">{a.ssSmtpPort}</Label>
           <Input
             id="smtp_port"
             type="number"
@@ -45,7 +49,7 @@ export function EmailSettings({ settings, onUpdate }: EmailSettingsProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="smtp_user">اسم المستخدم</Label>
+          <Label htmlFor="smtp_user">{a.ssSmtpUsername}</Label>
           <Input
             id="smtp_user"
             type="email"
@@ -55,7 +59,7 @@ export function EmailSettings({ settings, onUpdate }: EmailSettingsProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="smtp_password">كلمة المرور</Label>
+          <Label htmlFor="smtp_password">{a.ssSmtpPassword}</Label>
           <Input
             id="smtp_password"
             type="password"
@@ -65,7 +69,7 @@ export function EmailSettings({ settings, onUpdate }: EmailSettingsProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="from_email">البريد المُرسِل</Label>
+          <Label htmlFor="from_email">{a.ssSmtpSenderEmail}</Label>
           <Input
             id="from_email"
             type="email"
@@ -75,12 +79,12 @@ export function EmailSettings({ settings, onUpdate }: EmailSettingsProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="from_name">اسم المُرسِل</Label>
+          <Label htmlFor="from_name">{a.ssSmtpSenderName}</Label>
           <Input
             id="from_name"
             value={smtp.fromName || ""}
             onChange={(e) => handleSmtpChange("fromName", e.target.value)}
-            placeholder="منصة إتقان"
+            placeholder={a.ssPlatformNamePlaceholder || "منصة إتقان"}
           />
         </div>
       </div>

@@ -111,6 +111,22 @@ export function NotificationDropdown({ role, unreadCount, onRefresh }: { role: s
         return `${t.daysAgo} ${d}`
     }
 
+    const translateNotificationText = (text: string, isAr: boolean) => {
+        if (isAr) return text;
+        
+        let translated = text;
+        
+        // Admin Login
+        if (translated.includes('تسجيل دخول إداري')) {
+            translated = translated.replace('تسجيل دخول إداري', 'Admin Login');
+        }
+        if (translated.includes('قام') && translated.includes('بتسجيل الدخول إلى لوحة التحكم')) {
+            translated = translated.replace(/قام (.*?) بتسجيل الدخول إلى لوحة التحكم \((.*?)\) من (.*)/, '$1 logged into the dashboard ($2) from $3');
+        }
+        
+        return translated;
+    }
+
     return (
         <DropdownMenu onOpenChange={(open) => open && fetchLatest()}>
             <DropdownMenuTrigger asChild>
@@ -175,14 +191,14 @@ export function NotificationDropdown({ role, unreadCount, onRefresh }: { role: s
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between gap-2">
                                                 <p className={`text-sm font-bold truncate ${n.is_read ? "text-muted-foreground" : "text-foreground"}`}>
-                                                    {n.title}
+                                                    {translateNotificationText(n.title, locale === 'ar')}
                                                 </p>
                                                 <span className="text-[10px] text-muted-foreground whitespace-nowrap">
                                                     {timeAgo(n.created_at)}
                                                 </span>
                                             </div>
                                             <p className={`text-xs mt-1 line-clamp-2 ${n.is_read ? "text-muted-foreground/70" : "text-muted-foreground"}`}>
-                                                {n.message}
+                                                {translateNotificationText(n.message, locale === 'ar')}
                                             </p>
                                             {!n.is_read && <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2" />}
                                         </div>

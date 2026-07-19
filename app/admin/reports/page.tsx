@@ -69,7 +69,7 @@ export default function AdminReportsPage() {
     <div className="flex flex-col items-center justify-center p-24 gap-4">
       <Loader2 className="w-10 h-10 animate-spin text-primary" />
       <p className="text-xs font-black uppercase tracking-widest text-muted-foreground animate-pulse">
-        {isAr ? 'جاري تحضير التقارير...' : 'Preparing reports...'}
+        {t.admin.reportsPage.preparingReports || 'Preparing reports...'}
       </p>
     </div>
   )
