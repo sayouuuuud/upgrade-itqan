@@ -171,20 +171,20 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
               <Palette className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">{at?.title ?? "Theme and Colors"}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">{at?.title ?? (isAr ? "المظهر والألوان" : "Theme and Colors")}</h1>
               <p className="text-sm text-muted-foreground text-pretty">
-                {at?.desc ?? "Customize platform colors and fonts. Changes will apply to all users immediately."}
+                {at?.desc ?? (isAr ? "تخصيص ألوان وخطوط المنصة. ستطبق التغييرات على جميع المستخدمين فوراً." : "Customize platform colors and fonts. Changes will apply to all users immediately.")}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button onClick={handleReset} variant="outline" className="gap-2">
               <RotateCcw className="h-4 w-4" />
-              <span className="hidden sm:inline">{at?.resetToDefault ?? "Reset to Default"}</span>
+              <span className="hidden sm:inline">{at?.resetToDefault ?? (isAr ? "استعادة الافتراضي" : "Reset to Default")}</span>
             </Button>
             <Button onClick={handleSave} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <CheckCircle className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              {saved ? (at?.saved ?? "Saved") : (at?.saveChanges ?? "Save Changes")}
+              {saved ? (at?.saved ?? (isAr ? "تم الحفظ" : "Saved")) : (at?.saveChanges ?? (isAr ? "حفظ التغييرات" : "Save Changes"))}
             </Button>
           </div>
         </div>
@@ -199,7 +199,7 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
 
           <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
             <h2 className="flex items-center gap-2 text-base font-semibold text-card-foreground mb-4">
-              <Palette className="h-4 w-4 text-primary" /> {mode === 'light' ? (at?.colors ?? "Colors (Light Mode)") : "Colors (Dark Mode)"}</h2>
+              <Palette className="h-4 w-4 text-primary" /> {mode === 'light' ? (isAr ? "الألوان (الوضع الفاتح)" : "Colors (Light Mode)") : (isAr ? "الألوان (الوضع الداكن)" : "Colors (Dark Mode)")}</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {COLOR_FIELDS.map((f) => (
                 <div key={f.key} className="space-y-1.5">
@@ -302,7 +302,7 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
             >
               <div style={{ background: "var(--bg)", color: "var(--fg)" }} className="p-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold">{isAr ? "منصة إتقان" : "Itqan Platform"}</span>
+                  <span className="text-lg font-bold">{isAr ? "منصة مُتْقِن" : "motqen Platform"}</span>
                   <span
                     style={{ background: "var(--a)", color: "var(--af)", borderRadius: "var(--rad)" }}
                     className="px-2.5 py-1 text-xs font-semibold"
@@ -371,7 +371,7 @@ export function ThemeEditor({ initialTheme }: { initialTheme: ThemeConfig }) {
               </div>
             </div>
             <p className="text-xs text-muted-foreground text-pretty">
-              {isAr ? "ملاحظة: المعاينة تعرض الوضع الفاتح. تُطبَّق الألوان على كامل المنصة بعد الضغط على حفظ." : "Note: Preview shows light mode. Colors apply to entire platform after clicking save."}</p>
+              {isAr ? "ملاحظة: تُطبَّق الألوان على كامل المنصة بعد الضغط على حفظ." : "Note: Colors apply to entire platform after clicking save."}</p>
           </div>
         </div>
       </div>
