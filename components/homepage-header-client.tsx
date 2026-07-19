@@ -99,7 +99,9 @@ export default function HeaderNavClient({
               href={dashboardLink}
               className="text-[15px] font-bold h-9 inline-flex items-center px-6 rounded-full bg-hp-navy text-hp-parchment dark:bg-hp-gold dark:text-hp-dark hover:bg-hp-green dark:hover:bg-hp-gold-light transition-colors duration-300 shadow-sm"
             >
-              {dashboardText}
+              {isAr
+                ? (dashboardLink.startsWith("/admin") ? "لوحة التحكم" : "حسابي")
+                : (dashboardLink.startsWith("/admin") ? "Dashboard" : "My Account")}
             </Link>
           ) : (
             <>
@@ -175,7 +177,9 @@ export default function HeaderNavClient({
                     onClick={() => setIsMenuOpen(false)}
                     className="block text-center text-base font-bold px-5 py-3 rounded-xl bg-hp-navy text-hp-parchment dark:bg-hp-gold dark:text-hp-dark hover:bg-hp-green dark:hover:bg-hp-gold-light transition-all shadow-sm"
                   >
-                    {dashboardText}
+                    {isAr
+                      ? (dashboardLink.startsWith("/admin") ? "لوحة التحكم" : "حسابي")
+                      : (dashboardLink.startsWith("/admin") ? "Dashboard" : "My Account")}
                   </Link>
                 ) : (
                   <>
