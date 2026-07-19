@@ -491,7 +491,7 @@ export const ar = {
   },
   conversationsSub: 'المحادثات',
   // Common
-  appName: 'منصة إتقان التعليمية',
+  appName: 'مُتْقِن',
   userFallbackLetter: 'أ',
   appTagline: 'منصة تحسين التلاوة',
   home: 'الرئيسية',

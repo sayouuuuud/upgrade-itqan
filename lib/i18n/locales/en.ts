@@ -490,7 +490,7 @@ export const en = {
   },
   conversationsSub: 'Conversations',
   // Common
-  appName: 'Itqan Educational Platform',
+  appName: 'motqen',
   userFallbackLetter: 'U',
   appTagline: 'Quran Recitation Improvement Platform',
   home: 'Home',

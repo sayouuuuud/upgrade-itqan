@@ -119,13 +119,13 @@ export function SplashScreen({ isLoading, onLoadingComplete }: SplashScreenProps
             className="text-7xl font-bold text-[#1B5E3B] leading-tight"
             style={{ fontFamily: 'var(--font-amiri)', letterSpacing: '1px' }}
           >
-            {sp?.brandName ?? 'Itqan'}
+            {sp?.brandName ?? t.appName ?? 'motqen'}
           </h1>
           <p
             className="text-xl text-[#1B5E3B]/60 font-medium tracking-widest"
             style={{ fontFamily: 'var(--font-cairo)' }}
           >
-            {sp?.tagline ?? 'Quran Learning Platform'}
+            {sp?.tagline ?? (t as any).appTagline ?? 'Quran Learning Platform'}
           </p>
 
           {/* سطر تزييني تحت الاسم */}

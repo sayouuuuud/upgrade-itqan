@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
   })
 
   return {
-    title: 'منصة إتقان التعليمية',
+    title: 'منصة مُتْقِن',
     description: 'منصة متكاملة لتحسين تلاوة القرآن الكريم - سجّل تلاوتك واحصل على تقييم من مقرئين معتمدين',
     generator: 'v0.app',
     icons: {

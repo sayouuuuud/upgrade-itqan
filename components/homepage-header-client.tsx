@@ -6,6 +6,8 @@ import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, Sun, Moon, Star, Globe } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
+import Image from "next/image"
+import { usePublicSettings } from "@/lib/hooks/use-public-settings"
 
 export default function HeaderNavClient({
   isLoggedIn,
@@ -20,6 +22,7 @@ export default function HeaderNavClient({
 }) {
   const { theme, setTheme } = useTheme()
   const { locale, t, toggleLocale } = useI18n()
+  const { branding } = usePublicSettings()
   const isAr = locale === "ar"
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -50,16 +53,15 @@ export default function HeaderNavClient({
     >
       <div className="w-full mx-auto h-[72px] px-5 sm:px-7 lg:px-8 flex items-center justify-between gap-6 bg-hp-parchment/96 dark:bg-hp-dark/96 backdrop-blur-md border border-hp-ink/12 dark:border-hp-cream/12 rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.08)]">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hp-green text-hp-gold shadow-sm">
-            <Star className="w-5 h-5 fill-hp-gold" />
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="font-bold text-lg text-hp-navy dark:text-hp-gold">إتقان</span>
-            <span className="hidden sm:block text-[10px] tracking-[0.25em] text-hp-ink/45 dark:text-hp-cream/45 font-semibold">
-              ITQAN PLATFORM
-            </span>
-          </div>
+        <Link href="/" className="flex items-center gap-2.5 shrink-0 hover:opacity-80 transition-opacity">
+          <Image
+            src={branding.logoUrl || "/branding/main-logo.png"}
+            alt={t.appName || "Logo"}
+            width={140}
+            height={56}
+            priority
+            className="h-10 w-auto object-contain"
+          />
         </Link>
 
         {/* Desktop Nav */}
