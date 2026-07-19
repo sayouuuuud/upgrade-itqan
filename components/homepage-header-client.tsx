@@ -70,7 +70,7 @@ export default function HeaderNavClient({
             <a
               key={item.href}
               href={item.href}
-              className="text-[15px] leading-none font-medium text-hp-ink/75 dark:text-hp-cream/75 hover:text-hp-navy dark:hover:text-hp-gold transition-colors"
+              className="text-[17px] leading-none font-medium text-hp-ink/75 dark:text-hp-cream/75 hover:text-hp-navy dark:hover:text-hp-gold transition-colors"
             >
               {item.label}
             </a>

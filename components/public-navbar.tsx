@@ -63,19 +63,19 @@ export function PublicNavbar({ initialUser = null }: { initialUser?: { role: str
         <div className="hidden md:flex items-center gap-1">
           <Link
             href="/about"
-            className="text-sm text-foreground/70 hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+            className="text-base font-medium text-foreground/70 hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           >
             {t.about}
           </Link>
           <Link
             href="/faq"
-            className="text-sm text-foreground/70 hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+            className="text-base font-medium text-foreground/70 hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           >
             {t.footer.faq}
           </Link>
           <Link
             href="/contact"
-            className="text-sm text-foreground/70 hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+            className="text-base font-medium text-foreground/70 hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           >
             {t.contact}
           </Link>
