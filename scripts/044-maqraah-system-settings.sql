@@ -81,7 +81,7 @@ VALUES
   ('maqraah_paths_tajweed_enabled',       'true'::jsonb,           'maqraah_paths', 'تفعيل مسار التجويد',               true),
   ('maqraah_paths_default_path',          '"memorization"'::jsonb, 'maqraah_paths', 'المسار الافتراضي',                 true),
   ('maqraah_paths_sequential_unlock',     'true'::jsonb,           'maqraah_paths', 'فتح المراحل بالترتيب',             true),
-  ('maqraah_paths_unlock_threshold',      '80'::jsonb,             'maqraah_paths', 'نسبة الإتقان لفتح المرحلة (%)',    true),
+  ('maqraah_paths_unlock_threshold',      '80'::jsonb,             'maqraah_paths', 'نسبة المتقن لفتح المرحلة (%)',    true),
   ('maqraah_paths_daily_target_verses',   '5'::jsonb,              'maqraah_paths', 'هدف الحفظ اليومي (آيات)',          true),
   ('maqraah_paths_weekly_target_verses',  '30'::jsonb,             'maqraah_paths', 'هدف الحفظ الأسبوعي (آيات)',        true),
   ('maqraah_paths_revision_ratio',        '5'::jsonb,              'maqraah_paths', 'نسبة المراجعة للحفظ الجديد',       true),

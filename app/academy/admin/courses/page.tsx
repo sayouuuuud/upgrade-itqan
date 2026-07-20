@@ -116,6 +116,18 @@ export default function AdminCoursesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [archivingId, setArchivingId] = useState<string | null>(null)
 
+  const [dismissedPendingCount, setDismissedPendingCount] = useState(-1)
+  const [dismissedRejectedCount, setDismissedRejectedCount] = useState(-1)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+    const storedPending = localStorage.getItem('dismissedPendingCount')
+    if (storedPending) setDismissedPendingCount(parseInt(storedPending, 10))
+    const storedRejected = localStorage.getItem('dismissedRejectedCount')
+    if (storedRejected) setDismissedRejectedCount(parseInt(storedRejected, 10))
+  }, [])
+
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | CourseStatus>('all')
   const [levelFilter, setLevelFilter] = useState<'all' | Level>('all')
@@ -399,17 +411,39 @@ export default function AdminCoursesPage() {
         <StatCard icon={<Users className="w-5 h-5 text-purple-500" />} value={stats.students} label={a.totalStudents} />
       </div>
 
-      {stats.pending > 0 && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3 flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300">
-          <ShieldCheck className="w-4 h-4 shrink-0" />
-          <span>{a.pendingReviewCount.replace('{count}', String(stats.pending))}</span>
+      {isMounted && stats.pending > 0 && stats.pending !== dismissedPendingCount && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3 flex items-center justify-between gap-2 text-sm text-amber-700 dark:text-amber-300">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <span>{a.pendingReviewCount.replace('{count}', String(stats.pending))}</span>
+          </div>
+          <button 
+            onClick={() => {
+              setDismissedPendingCount(stats.pending)
+              localStorage.setItem('dismissedPendingCount', String(stats.pending))
+            }}
+            className="p-1 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-full transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
-      {stats.rejected > 0 && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
-          <XCircle className="w-4 h-4 shrink-0" />
-          <span>{a.rejectedCount.replace('{count}', String(stats.rejected))}</span>
+      {isMounted && stats.rejected > 0 && stats.rejected !== dismissedRejectedCount && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 flex items-center justify-between gap-2 text-sm text-red-700 dark:text-red-300">
+          <div className="flex items-center gap-2">
+            <XCircle className="w-4 h-4 shrink-0" />
+            <span>{a.rejectedCount.replace('{count}', String(stats.rejected))}</span>
+          </div>
+          <button 
+            onClick={() => {
+              setDismissedRejectedCount(stats.rejected)
+              localStorage.setItem('dismissedRejectedCount', String(stats.rejected))
+            }}
+            className="p-1 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-full transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 

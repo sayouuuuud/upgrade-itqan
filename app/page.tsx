@@ -27,28 +27,12 @@ import {
 import { useI18n } from "@/lib/i18n/context"
 import { buildHomepageContent, buildHomepageColorVars, asBool, type Locale } from "@/lib/homepage-content"
 import HomepageHeader from "@/components/homepage-header"
+import { HomepageFooter } from "@/components/homepage-footer"
+import { OrnamentDivider } from "@/components/ui/ornament-divider"
 
 /* ============================================================
    ISLAMIC ORNAMENTAL SVG COMPONENTS
    ============================================================ */
-
-const OrnamentDivider = ({ className = "", color = "currentColor" }: { className?: string; color?: string }) => (
-  <svg viewBox="0 0 400 40" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-    <line x1="0" y1="20" x2="140" y2="20" stroke={color} strokeWidth="0.5" opacity="0.4" />
-    <line x1="260" y1="20" x2="400" y2="20" stroke={color} strokeWidth="0.5" opacity="0.4" />
-    <g transform="translate(200,20)">
-      <circle r="14" stroke={color} strokeWidth="0.6" fill="none" opacity="0.6" />
-      <circle r="8" stroke={color} strokeWidth="0.6" fill="none" opacity="0.5" />
-      <g stroke={color} strokeWidth="0.6" opacity="0.7">
-        <line x1="-18" y1="0" x2="-26" y2="0" />
-        <line x1="18" y1="0" x2="26" y2="0" />
-        <line x1="0" y1="-18" x2="0" y2="-26" />
-        <line x1="0" y1="18" x2="0" y2="26" />
-      </g>
-      <circle r="2" fill={color} opacity="0.8" />
-    </g>
-  </svg>
-)
 
 const EightStar = ({ size = 60, className = "", color = "currentColor", strokeWidth = 0.8 }: any) => (
   <svg viewBox="-50 -50 100 100" width={size} height={size} className={className} fill="none" stroke={color} strokeWidth={strokeWidth} aria-hidden>
@@ -779,12 +763,12 @@ export default function Home() {
               const Icon = door.icon
               const active = journeyTrack === door.key
               return (
-                <Reveal key={door.key} delay={i * 0.12}>
+                <Reveal key={door.key} delay={i * 0.12} className="h-full">
                   <button
                     type="button"
                     onClick={() => setJourneyTrack(active ? null : door.key)}
                     aria-pressed={active}
-                    className={`group relative w-full overflow-hidden rounded-t-[5rem] rounded-b-2xl border text-center px-8 pt-14 pb-10 transition-all duration-500 ${
+                    className={`group relative w-full h-full flex flex-col overflow-hidden rounded-t-[5rem] rounded-b-2xl border text-center px-8 pt-14 pb-10 transition-all duration-500 ${
                       active
                         ? "border-hp-bronze dark:border-hp-gold bg-hp-navy text-hp-parchment shadow-2xl shadow-hp-navy/25 -translate-y-1"
                         : "border-hp-navy/15 dark:border-hp-gold/20 bg-hp-card dark:bg-hp-dark-2 hover:-translate-y-1 hover:border-hp-bronze/60 dark:hover:border-hp-gold/50 hover:shadow-xl"
@@ -796,9 +780,9 @@ export default function Home() {
                         active ? "text-hp-gold/40" : "text-hp-bronze/15 dark:text-hp-gold/15 group-hover:text-hp-bronze/35 dark:group-hover:text-hp-gold/30"
                       }`}
                     />
-                    <div className="relative">
+                    <div className="relative h-full flex flex-col w-full">
                       <span
-                        className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border transition-all duration-500 ${
+                        className={`mx-auto mb-6 flex h-20 w-20 shrink-0 items-center justify-center rounded-full border transition-all duration-500 ${
                           active
                             ? "border-hp-gold/50 bg-hp-gold text-hp-navy"
                             : "border-hp-bronze/25 dark:border-hp-gold/25 bg-hp-navy/5 dark:bg-hp-gold/10 text-hp-navy dark:text-hp-gold group-hover:scale-110"
@@ -816,7 +800,7 @@ export default function Home() {
                         {door.tagline}
                       </p>
                       <span
-                        className={`inline-flex items-center gap-2 text-sm font-bold tracking-wide transition-colors ${
+                        className={`mt-auto inline-flex items-center justify-center gap-2 text-sm font-bold tracking-wide transition-colors ${
                           active ? "text-hp-gold" : "text-hp-bronze dark:text-hp-gold"
                         }`}
                       >
@@ -971,65 +955,7 @@ export default function Home() {
       </section>
 
       {/* ============ FOOTER ============ */}
-      <footer className="relative bg-hp-navy-deep text-hp-parchment/85 pt-20 pb-10 overflow-hidden">
-        {/* Ottoman carpet — woven texture beneath the dark wash */}
-        <div
-          className="absolute inset-0 bg-repeat opacity-[0.18] mix-blend-overlay pointer-events-none"
-          style={{
-            backgroundImage: "url(/patterns/ottoman-carpet.jpg)",
-            backgroundSize: "440px",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-hp-navy-deep via-hp-navy-deep/92 to-hp-navy-deep pointer-events-none" />
-        {/* Top thin gold seam */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-hp-gold/40 to-transparent" />
-
-        <div className="container mx-auto px-6 relative">
-          <div className="grid lg:grid-cols-12 gap-10 pb-12 border-b border-hp-parchment/10">
-            <div className="lg:col-span-5">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="relative w-12 h-12">
-                  <Logo light />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-hp-parchment" style={{ fontFamily: "var(--font-heading)" }}>
-                    {c.brandName}
-                  </div>
-                  <div className="text-[10px] tracking-[0.2em] text-hp-parchment/50 uppercase">
-                    {c.brandTagline}
-                  </div>
-                </div>
-              </div>
-              <p className="text-hp-parchment/60 leading-loose max-w-md mb-6">
-                {c.footerDesc}
-              </p>
-              <OrnamentDivider className="w-40 h-6 text-hp-gold/50" />
-            </div>
-
-            <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
-              {c.footerColumns.map((col, i) => (
-                <div key={i}>
-                  <h4 className="text-sm font-bold text-hp-gold mb-5 tracking-wider">{col.title}</h4>
-                  <ul className="space-y-3 text-sm">
-                    {col.links.map((l, k) => (
-                      <li key={k}><Link href={l.href} className="hover:text-hp-gold transition-colors">{l.label}</Link></li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-hp-parchment/55">
-            <div>© {new Date().getFullYear()} {c.footerCopyright}</div>
-            <div className="flex items-center gap-2">
-              <span>{c.footerMadePre}</span>
-              <span className="text-hp-gold">♥</span>
-              <span>{c.footerMadePost}</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <HomepageFooter c={c} />
     </div>
   )
 }

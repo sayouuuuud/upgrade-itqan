@@ -111,6 +111,64 @@ export function NotificationDropdown({ role, unreadCount, onRefresh }: { role: s
         return `${t.daysAgo} ${d}`
     }
 
+    const translateNotificationText = (text: string, isAr: boolean) => {
+        if (isAr || !text) return text;
+        
+        let translated = text;
+        translated = translated.replace(/«(.*?)»/g, "'$1'");
+        
+        const dict: Record<string, string> = {
+            'تسجيل دخول إداري': 'Admin Login',
+            'نتيجة مرحلة': 'Result of stage',
+            'تم إنهاء المسابقة': 'Competition Ended',
+            'تم إصدار شهادتك': 'Your Certificate Has Been Issued',
+            'تستحق شهادة جديدة!': 'You Deserve a New Certificate!',
+            'تمت الإجابة على سؤالك الفقهي': 'Your Fiqh Question Has Been Answered',
+            'تمت الإجابة على سؤالك': 'Your Question Has Been Answered',
+            'مبارك! حصلت على': 'Congratulations! You Won',
+            'مبارك!': 'Congratulations!',
+            'تم قبولك في دورة': 'You have been accepted into the course',
+            'تم رفض طلب انضمامك لدورة': 'Your enrollment request has been rejected for course',
+            
+            'شكراً لمشاركتك في': 'Thank you for participating in',
+            'لم تتأهل لمرحلة': 'You did not qualify for the stage',
+            'هذه المرة، نتمنى لك التوفيق!': 'this time, we wish you the best of luck!',
+            'هذه المرة, نتمنى لك التوفيق!': 'this time, we wish you the best of luck!',
+            'نأسف، تم إنهاء': 'We apologize,',
+            'من قبل الإدارة.': 'was ended by the administration.',
+            'تهانينا!': 'Congratulations!',
+            'تم إصدار شهادتك بنجاح.': 'Your certificate has been issued successfully.',
+            'اضغط هنا لعرضها وتحميلها.': 'Click here to view and download it.',
+            'لقد حصلت على': 'You have won',
+            'المركز الأول': 'First Place',
+            'المركز الثاني': 'Second Place',
+            'المركز الثالث': 'Third Place',
+            'المركز الرابع': 'Fourth Place',
+            'المركز الخامس': 'Fifth Place',
+            'في مسابقة': 'in the competition',
+            'اضغط لعرض النتيجة.': 'Click to view the result.',
+            'استلمت إجابة المسؤول على سؤالك الفقهي.': "You have received the admin's answer to your Fiqh question.",
+            'الرجاء إبداء موافقتك على نشر السؤال والإجابة في المكتبة العامة.': 'Please approve publishing the question and answer in the public library.',
+            'يمكنك الآن البدء في التعلم.': 'You can now start learning.',
+            'الدور التمهيدي': 'Preliminary Round',
+            'الدور الأول': 'First Round',
+            'الدور الثاني': 'Second Round',
+            'الدور الثالث': 'Third Round',
+            'الدور النهائي': 'Final Round',
+            ' في ': ' in ',
+        };
+
+        for (const [ar, en] of Object.entries(dict)) {
+            translated = translated.split(ar).join(en);
+        }
+
+        if (translated.includes('قام') && translated.includes('بتسجيل الدخول إلى لوحة التحكم')) {
+            translated = translated.replace(/قام (.*?) بتسجيل الدخول إلى لوحة التحكم \((.*?)\) من (.*)/, '$1 logged into the dashboard ($2) from $3');
+        }
+
+        return translated;
+    }
+
     return (
         <DropdownMenu onOpenChange={(open) => open && fetchLatest()}>
             <DropdownMenuTrigger asChild>
@@ -175,14 +233,14 @@ export function NotificationDropdown({ role, unreadCount, onRefresh }: { role: s
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between gap-2">
                                                 <p className={`text-sm font-bold truncate ${n.is_read ? "text-muted-foreground" : "text-foreground"}`}>
-                                                    {n.title}
+                                                    {translateNotificationText(n.title, locale === 'ar')}
                                                 </p>
                                                 <span className="text-[10px] text-muted-foreground whitespace-nowrap">
                                                     {timeAgo(n.created_at)}
                                                 </span>
                                             </div>
                                             <p className={`text-xs mt-1 line-clamp-2 ${n.is_read ? "text-muted-foreground/70" : "text-muted-foreground"}`}>
-                                                {n.message}
+                                                {translateNotificationText(n.message, locale === 'ar')}
                                             </p>
                                             {!n.is_read && <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2" />}
                                         </div>

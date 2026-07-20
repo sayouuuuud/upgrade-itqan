@@ -28,7 +28,7 @@ export async function POST() {
             </p>
           </div>
           <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 24px;">
-            منصة إتقان التعليمية
+            منصة متقن التعليمية
           </p>
         </div>
       `,

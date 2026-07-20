@@ -55,7 +55,7 @@ export async function getCertificateHtml(id: string, skipIssuedCheck = false): P
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>شهادة إتقان الفاتحة</title>
+  <title>شهادة متقن الفاتحة</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
     
@@ -331,7 +331,7 @@ export async function getCertificateHtml(id: string, skipIssuedCheck = false): P
             <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
           </svg>
         </div>
-        <h1 class="platform-title">منصة إتقان الفاتحة</h1>
+        <h1 class="platform-title">منصة متقن الفاتحة</h1>
         <p class="platform-subtitle">مبادرة تصحيح وذكر</p>
       </div>
 
@@ -341,7 +341,7 @@ export async function getCertificateHtml(id: string, skipIssuedCheck = false): P
         <h2 class="award-text">يُمنح هذا التبرير لـ</h2>
         <h3 class="student-name">${studentName}</h3>
         <p class="achievement-desc">
-          وذلك تقديراً لإتمامه إتقان قراءة سورة الفاتحة على الوجه المطلوب والمجاز من قبل اللجان العلمية بالمنصة.
+          وذلك تقديراً لإتمامه متقن قراءة سورة الفاتحة على الوجه المطلوب والمجاز من قبل اللجان العلمية بالمنصة.
         </p>
       </div>
 

@@ -329,7 +329,11 @@ export function HalaqaDetail({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <InfoTile title={th?.infoStatus ?? 'Status'} value={halaqa.is_active ? (th?.activeBadge ?? 'Active') : (th?.inactiveBadge ?? 'Inactive')} accent={halaqa.is_active ? 'text-emerald-600' : 'text-muted-foreground'} />
           <InfoTile title={th?.infoCurrentStudents ?? 'Current Students'} value={`${halaqa.current_students} / ${halaqa.max_students}`} />
-          <InfoTile title={th?.infoGender ?? 'Allowed Gender'} value={GENDER_LABELS[halaqa.gender] || (th?.genderMixed ?? 'Mixed')} />
+          <InfoTile title={th?.infoGender ?? 'Allowed Gender'} value={
+            halaqa.gender === 'male' ? (th?.genderMale ?? 'Male') :
+            halaqa.gender === 'female' ? (th?.genderFemale ?? 'Female') :
+            (th?.genderMixed ?? 'Mixed')
+          } />
           {scheduled && <InfoTile title={th?.infoNextSchedule ?? 'Next Session'} value={scheduled} />}
           {halaqa.meeting_link && (
             <InfoTile title={th?.infoAltLink ?? 'External Link'} value={<a className="text-emerald-600 underline" href={halaqa.meeting_link} target="_blank" rel="noreferrer">{th?.openLink ?? 'Open Link'}</a>} />

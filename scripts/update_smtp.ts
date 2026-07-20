@@ -8,7 +8,7 @@ async function main() {
         user: "sayedxiv@gmail.com",
         secure: true,
         password: "qdjdbfsmmlqgwoqd",
-        fromName: "إتقان التعليمية",
+        fromName: "متقن التعليمية",
         fromEmail: "sayedxiv@gmail.com"
     };
 

@@ -18,8 +18,8 @@ export type Bi = { ar: string; en: string }
 
 export const DEFAULT_HOMEPAGE_CONTENT = {
   // Brand / navbar
-  homepage_brand_name: { ar: 'متقن', en: 'Itqan' } as Bi,
-  homepage_brand_tagline: { ar: 'Itqan Platform', en: 'Itqan Platform' } as Bi,
+  homepage_brand_name: { ar: 'مُتْقِن', en: 'motqen' } as Bi,
+  homepage_brand_tagline: { ar: 'منصة مُتْقِن', en: 'motqen Platform' } as Bi,
   homepage_login_text: { ar: 'دخول', en: 'Login' } as Bi,
   homepage_register_text: { ar: 'التسجيل', en: 'Register' } as Bi,
   homepage_register_short: { ar: 'تسجيل', en: 'Sign up' } as Bi,
@@ -366,14 +366,37 @@ export function buildHomepageContent(settings: AnyMap, locale: Locale) {
 /** Build the inline CSS-var style that overrides the 8 base homepage colors. */
 export function buildHomepageColorVars(settings: AnyMap): Record<string, string> {
   const c = (key: string) => (settings[key] || DEFAULT_HOMEPAGE_COLORS[key]) as string
+  const n = c('homepage_color_navy')
+  const p = c('homepage_color_parchment')
+  const d = c('homepage_color_dark')
+  
   return {
-    '--hp-navy': c('homepage_color_navy'),
+    '--hp-navy': n,
     '--hp-green': c('homepage_color_green'),
     '--hp-bronze': c('homepage_color_bronze'),
     '--hp-gold': c('homepage_color_gold'),
-    '--hp-parchment': c('homepage_color_parchment'),
+    '--hp-parchment': p,
     '--hp-cream': c('homepage_color_cream'),
     '--hp-ink': c('homepage_color_ink'),
-    '--hp-dark': c('homepage_color_dark'),
+    '--hp-dark': d,
+    
+    /* Derived shades using CSS color-mix to fix missing backgrounds */
+    '--hp-navy-deep': `color-mix(in srgb, ${n} 80%, black)`,
+    '--hp-navy-2': `color-mix(in srgb, ${n} 90%, white)`,
+    '--hp-navd-1': `color-mix(in srgb, ${n} 10%, ${d})`,
+    '--hp-navd-2': `color-mix(in srgb, ${n} 20%, ${d})`,
+    '--hp-navd-3': `color-mix(in srgb, ${n} 30%, ${d})`,
+    
+    '--hp-card': '#FFFFFF',
+    '--hp-parch-1': `color-mix(in srgb, ${p} 95%, black)`,
+    '--hp-parch-2': `color-mix(in srgb, ${p} 90%, black)`,
+    '--hp-parch-3': `color-mix(in srgb, ${p} 85%, black)`,
+    
+    '--hp-parchm-1': `color-mix(in srgb, ${p} 80%, white)`,
+    '--hp-parchm-2': `color-mix(in srgb, ${p} 60%, white)`,
+    '--hp-parchm-3': `color-mix(in srgb, ${p} 40%, white)`,
+    
+    '--hp-dark-2': `color-mix(in srgb, ${d} 95%, white)`,
+    '--hp-dark-3': `color-mix(in srgb, ${d} 90%, white)`,
   }
 }

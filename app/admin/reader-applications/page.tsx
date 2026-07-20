@@ -80,7 +80,7 @@ export default function ReaderApplicationsPage() {
       if (!res.ok) {
         const msg =
           (data && (data.error || data.detail)) ||
-          ((t.addedTranslations_2026?.['{isAr ? "فشل تحميل الطلبات" : "فشل Loading الطلبات"} (${res.status})'] || 'فشل تحميل الطلبات (${res.status})'))
+          a.appLoadError?.replace('{status}', res.status.toString()) || `Failed to load applications (${res.status})`
         setFetchError(typeof msg === "string" ? msg : a.raLoadFailed)
         setApplications([])
         return
@@ -131,7 +131,7 @@ export default function ReaderApplicationsPage() {
         setApplications(prev => prev.map(a => a.id === userId ? { ...a, approval_status: data.status } : a))
         if (data.emailSent === false) {
           alert(
-            (t.addedTranslations_2026?.['{isAr ? "تم تحديث الطلب، لكن لم يتم إرسال البريد الإلكتروني" : "تم Refresh الطلب، لكن لم يتم إرسال البريد الإلكتروني"}. السبب: ${data.emailError || "إعدادات البريد غير مكتملة"}'] || 'تم تحديث الطلب، لكن لم يتم إرسال البريد الإلكتروني. السبب: ${data.emailError || "إعدادات البريد غير مكتملة"}')
+            a.appEmailError?.replace('{error}', data.emailError || "Incomplete email settings") || `Application updated, but email was not sent. Reason: ${data.emailError || "Incomplete email settings"}`
           )
         }
         setRejectionDialogOpen(false)
@@ -414,7 +414,7 @@ export default function ReaderApplicationsPage() {
                                 {a.raDeleteApplication}
                               </AlertDialogTitle>
                               <AlertDialogDescription className="text-muted-foreground font-bold leading-relaxed pt-2">
-                                {(t.addedTranslations_2026?.['{isAr ? "هل أنت متأكد من حذف طلب التسجيل الخاص بـ" : "هل أنت متأكد من Delete طلب التسجيل الخاص بـ"} "${selectedApp.full_name_triple || selectedApp.name}"? سيتم حذف الحساب وجميع البيانات المرتبطة نهائياً.'] || 'هل أنت متأكد من حذف طلب التسجيل الخاص بـ "${selectedApp.full_name_triple || selectedApp.name}"? سيتم حذف الحساب وجميع البيانات المرتبطة نهائياً.')}
+                                {a.appDeleteConfirm?.replace('{name}', selectedApp.full_name_triple || selectedApp.name) || `Are you sure you want to delete the application for "${selectedApp.full_name_triple || selectedApp.name}"? The account and all associated data will be permanently deleted.`}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter className="pt-6 gap-3">
@@ -505,7 +505,7 @@ export default function ReaderApplicationsPage() {
                                   <FileText className="w-6 h-6" />
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-sm font-black text-foreground mb-1">{(t.addedTranslations_2026?.['وثيقة ${idx + 1}'] || 'وثيقة ${idx + 1}')}</p>
+                                  <p className="text-sm font-black text-foreground mb-1">{a.appDocument?.replace('{index}', (idx + 1).toString()) || `Document ${idx + 1}`}</p>
                                   <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">{a.raClickToReview}</p>
                                 </div>
                               </div>
@@ -516,7 +516,7 @@ export default function ReaderApplicationsPage() {
                             <DialogHeader className="p-6 border-b border-border flex flex-row items-center justify-between shrink-0 bg-muted/30">
                               <DialogTitle className="flex items-center gap-3 text-lg font-black text-foreground" dir="ltr">
                                 <span className="truncate max-w-md">{selectedApp.full_name_triple || selectedApp.name}</span>
-                                <Badge variant="outline" className="rounded-lg">{(t.addedTranslations_2026?.['وثيقة ${idx + 1}'] || 'وثيقة ${idx + 1}')}</Badge>
+                                <Badge variant="outline" className="rounded-lg">{a.appDocument?.replace('{index}', (idx + 1).toString()) || `Document ${idx + 1}`}</Badge>
                               </DialogTitle>
                             </DialogHeader>
                             <div className="flex-1 overflow-auto p-6 bg-muted/20 flex flex-col items-center">
@@ -624,7 +624,7 @@ export default function ReaderApplicationsPage() {
                 onClick={() => setRejectionDialogOpen(false)}
                 className="flex-1 h-12 rounded-xl font-bold"
               >
-                {(t.addedTranslations_2026?.[isAr ? "إلغاء" : "Cancel"] || 'إلغاء')}
+                {t.cancel || 'Cancel'}
               </Button>
               <Button
                 onClick={confirmReject}

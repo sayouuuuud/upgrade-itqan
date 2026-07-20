@@ -62,42 +62,6 @@ function deepMerge(base: any, override: any): any {
   return result
 }
 
-// Polyfill missing namespaces to prevent runtime crashes (Next.js SSG + runtime)
-const safePolyfills = {
-  badgesPage: {},
-  contactPage: {},
-  fiqhSupervisor: {},
-  memorizationPathsPage: {},
-  mushafProgressPage: {},
-  parentPages: {},
-  pointsPage: {},
-  sessionsPage: {},
-  wirdPage: {},
-  admin: { certificates: {} },
-  reader: { memorizationPaths: { confirmDelete: "" } },
-  teacher: {},
-  academyAdmin: {},
-  notifications: {},
-  auth: {},
-  shell: {},
-  student: { competitionsPage: {} }
-}
-
-function deepAssignSafe(target: any, source: any) {
-  for (const key in source) {
-    if (target[key] === undefined) {
-      target[key] = source[key]
-    } else if (typeof source[key] === 'object' && !Array.isArray(source[key])) {
-      if (typeof target[key] !== 'object' || target[key] === null) {
-        target[key] = {}
-      }
-      deepAssignSafe(target[key], source[key])
-    }
-  }
-}
-
-deepAssignSafe(ar, safePolyfills)
-
 // Precompute merged tables once (module scope) so every locale is fully populated.
 const translations: Record<Locale, TranslationSchema> = {
   ar: ar as TranslationSchema,
@@ -105,7 +69,7 @@ const translations: Record<Locale, TranslationSchema> = {
 }
 
 const LOCALE_STORAGE_KEY = 'itqan-locale'
-const LOCALE_COOKIE_KEY = 'locale'
+const LOCALE_COOKIE_KEY = 'NEXT_LOCALE'
 
 function isLocale(v: unknown): v is Locale {
   return v === 'ar' || v === 'en'
@@ -116,7 +80,7 @@ function readStoredLocale(): Locale | null {
   try {
     const fromStorage = window.localStorage.getItem(LOCALE_STORAGE_KEY)
     if (isLocale(fromStorage)) return fromStorage
-    const match = document.cookie.match(/(?:^|;\s*)locale=(ar|en)/)
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${LOCALE_COOKIE_KEY}=(ar|en)`))
     if (match && isLocale(match[1])) return match[1]
   } catch {
     // ignore storage/cookie access errors (private mode, SSR, etc.)
@@ -151,33 +115,41 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined)
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  // Start from 'ar' to match the server-rendered <html lang="ar">, then
-  // reconcile with the stored preference after mount to avoid hydration mismatch.
-  const [locale, setLocaleState] = useState<Locale>('ar')
+import { useRouter } from 'next/navigation'
+
+export function LanguageProvider({ children, initialLocale = 'ar' }: { children: ReactNode, initialLocale?: Locale }) {
+  // Start from initialLocale (passed from server layout based on cookie)
+  // to avoid hydration mismatch and language flashes.
+  const [locale, setLocaleState] = useState<Locale>(initialLocale)
+  const router = useRouter()
 
   useEffect(() => {
+    // We already read from the cookie via SSR, but we sync local storage just in case
     const stored = readStoredLocale()
-    if (stored && stored !== 'ar') {
+    if (stored && stored !== locale) {
       setLocaleState(stored)
       applyDocumentLocale(stored)
+    } else {
+      applyDocumentLocale(locale)
     }
-  }, [])
+  }, [locale])
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale)
     applyDocumentLocale(newLocale)
     persistLocale(newLocale)
-  }, [])
+    router.refresh()
+  }, [router])
 
   const toggleLocale = useCallback(() => {
     setLocaleState((prev) => {
       const next = prev === 'ar' ? 'en' : 'ar'
       applyDocumentLocale(next)
       persistLocale(next)
+      setTimeout(() => router.refresh(), 0)
       return next
     })
-  }, [])
+  }, [router])
 
   return (
     <I18nContext.Provider

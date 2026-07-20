@@ -13,7 +13,7 @@ export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('')
     const router = useRouter()
     const { t } = useI18n()
-  const app = (t as any).app as Record<string, string> | undefined
+    const app = (t as any).app as Record<string, string> | undefined
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
 
                     {error === 'not_found' ? (
                         <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                            <p className="text-sm font-medium text-amber-900 mb-3">هذا البريد الإلكتروني غير مسجل في منصة إتقان الفاتحة.</p>
+                            <p className="text-sm font-medium text-amber-900 mb-3">هذا البريد الإلكتروني غير مسجل في منصة متقن الفاتحة.</p>
                             <Link href="/register" className="inline-flex items-center justify-center px-4 py-2 bg-[#D4A843] text-white rounded-lg text-sm font-bold hover:bg-[#C49A3A] transition-colors">
                                 إنشاء حساب جديد الآن
                             </Link>

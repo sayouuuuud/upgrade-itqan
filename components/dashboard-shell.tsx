@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/context'
 import { LanguageSwitcher } from '@/components/language-switcher'
+import { ModeSwitcher } from '@/components/mode-switcher'
 import { GlobalSearch } from '@/components/global-search'
 import { NotificationDropdown } from '@/components/notification-dropdown'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -21,7 +22,7 @@ import {
 import { usePublicSettings } from '@/lib/hooks/use-public-settings'
 import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { AdminModeBanner } from '@/components/admin/admin-mode-banner'
+
 import { AdminRoleSwitcher } from '@/components/admin/admin-role-switcher'
 import { AdminOnboardingTour } from '@/components/admin/admin-onboarding-tour'
 import { Palette, Sparkles, Grid, UserPlus, HelpCircle, ChevronDown } from 'lucide-react'
@@ -38,25 +39,7 @@ export function DashboardPageWrapper({ children, className }: { children: React.
   return <div className={cn('p-6 lg:p-8', className)}>{children}</div>
 }
 
-const getSafeT = (t: any) => ({
-  ...t,
-  admin: {
-    ...(t.admin || {}),
-    certificates: (t.admin && t.admin.certificates) || {}
-  },
-  student: t.student || {},
-  reader: t.reader || {},
-  shell: t.shell || {},
-  academy: t.academy || {},
-  academyAdmin: t.academyAdmin || {},
-  tajweedPaths: t.tajweedPaths || {},
-  auth: t.auth || {},
-  notifications: t.notifications || {},
-})
-
-const getRoleConfig = (rawT: any): Record<'student' | 'reader' | 'admin' | 'student_supervisor' | 'reciter_supervisor', { sections: NavSection[], label: string, name: string, sublabel: string }> => {
-  const t = getSafeT(rawT)
-  return {
+const getRoleConfig = (t: any): Record<'student' | 'reader' | 'admin' | 'student_supervisor' | 'reciter_supervisor', { sections: NavSection[], label: string, name: string, sublabel: string }> => ({
   student: {
     sections: [
       {
@@ -294,23 +277,19 @@ const getRoleConfig = (rawT: any): Record<'student' | 'reader' | 'admin' | 'stud
     ],
     label: t.auth.reciterSupervisor, name: t.auth.reciterSupervisor, sublabel: t.auth.reciterSupervisor
   }
-  }
-}
+})
 
 type ShellConfig = { sections: NavSection[]; label: string; name: string; sublabel: string }
 
 // ── Super Admin (governance) ────────────────────────────────────────────────
 // Platform-wide governance only. No operational maqraa/academy items — the
 // Super Admin switches the mode from the segmented control to manage those.
-const getSuperConfig = (rawT: any): ShellConfig => {
-  const t = getSafeT(rawT)
-  return {
+const getSuperConfig = (t: any): ShellConfig => ({
   sections: [
     {
       title: t.main,
       items: [
         { href: '/admin', label: t.admin.dashboard, icon: LayoutDashboard },
-        { href: '/admin/analytics', label: t.locale === 'ar' ? 'نظرة عامة على المنصة' : 'Platform Overview', icon: PieChart },
       ],
     },
     {
@@ -360,9 +339,10 @@ const getSuperConfig = (rawT: any): ShellConfig => {
       ],
     },
   ],
-  label: 'المدير العام', name: 'المدير العام', sublabel: 'المدير العام',
-  }
-}
+  label: t.locale === 'ar' ? 'المدير العام' : 'Super Admin',
+  name: t.locale === 'ar' ? 'المدير العام' : 'Super Admin',
+  sublabel: t.locale === 'ar' ? 'المدير العام' : 'Super Admin',
+})
 
 // ── Maqraa mode ────────────────────────���─────────────────────────────���─���──��─
 // The classic admin sidebar, minus every platform-wide / general item that now
@@ -397,15 +377,18 @@ const getMaqraaConfig = (t: any): ShellConfig => {
       { href: '/maqraah/admin/settings', label: t.locale === 'ar' ? 'إعدادات المقرأة' : 'Maqraa Settings', icon: Settings },
     ],
   })
-  return { sections, label: 'مدير المقرأة', name: 'مدير المقرأة', sublabel: 'مدير المقرأة' }
+  return {
+    sections,
+    label: t.locale === 'ar' ? 'مدير المقرأة' : 'Maqraa Admin',
+    name: t.locale === 'ar' ? 'مدير المقرأة' : 'Maqraa Admin',
+    sublabel: t.locale === 'ar' ? 'مدير المقرأة' : 'Maqraa Admin'
+  }
 }
 
 // ── Academy mode ────────────────────────────────────────────────────────────
 // Mirrors the classic academy_admin sidebar (links stay under /academy/admin/…
 // where the working pages live).
-const getAcademyConfig = (rawT: any): ShellConfig => {
-  const t = getSafeT(rawT)
-  return {
+const getAcademyConfig = (t: any): ShellConfig => ({
   sections: [
     {
       title: t.main || 'الر��يسية',
@@ -473,8 +456,7 @@ const getAcademyConfig = (rawT: any): ShellConfig => {
   label: t.academy?.adminPortal || 'إدارة الأكاديمية',
   name: t.academy?.admin || 'مدير الأكاديمية',
   sublabel: t.academy?.academyAdmin || 'مدير الأكاديمية',
-  }
-}
+})
 
 // Pick the sidebar config for an admin tier based on the active mode. Each mode
 // is fully scoped: no item from one mode ever leaks into another.
@@ -514,19 +496,20 @@ function CollapsibleNavSection({
   // Sections without a title are always visible (no accordion header).
   const hasTitle = !!section.title
 
-  // Initialise open state: sections with active items start open,
-  // others read from localStorage (default open).
-  const [open, setOpen] = useState<boolean>(() => {
-    if (!hasTitle || sectionHasActive) return true
-    if (typeof window === 'undefined') return true
-    const stored = localStorage.getItem(sectionKey)
-    return stored === null ? true : stored === '1'
-  })
+  // Initialise open state to match server SSR (always true default).
+  const [open, setOpen] = useState<boolean>(true)
 
-  // When an active item appears in this section (e.g. navigation), force open.
+  // On mount, apply localStorage preference if section isn't forced open
   useEffect(() => {
-    if (sectionHasActive) setOpen(true)
-  }, [sectionHasActive])
+    if (!hasTitle || sectionHasActive) {
+      setOpen(true)
+      return
+    }
+    const stored = localStorage.getItem(sectionKey)
+    if (stored !== null) {
+      setOpen(stored === '1')
+    }
+  }, [sectionKey, hasTitle, sectionHasActive])
 
   const toggle = () => {
     if (!hasTitle) return
@@ -897,11 +880,7 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
 
       {/* Main */}
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
-        {/* Super-admin borrowed-mode indicator: a loud reminder the admin is
-            operating outside their default super-admin context. */}
-        {isSuperAdminRole && (adminMode === 'maqraa' || adminMode === 'academy') && (
-          <AdminModeBanner mode={adminMode} />
-        )}
+
         <header className={cn(
           'border-b border-border flex items-center justify-between px-6 lg:px-8 bg-background/95 backdrop-blur-md z-40 sticky top-0 left-0 right-0',
           role === 'student' ? 'h-20' : 'h-16'
@@ -919,6 +898,14 @@ export function DashboardShell({ role, children, headerTitle, adminMode }: { rol
               </div>
             )}
 
+            {user && user.has_quran_access && user.has_academy_access && !['admin', 'super_admin', 'maqraa_admin', 'academy_admin'].includes(role) && !['admin', 'super_admin', 'maqraa_admin', 'academy_admin'].includes(user.role) && (
+              <ModeSwitcher
+                currentMode="library"
+                userRole={user.role}
+                hasQuranAccess={user.has_quran_access}
+                hasAcademyAccess={user.has_academy_access}
+              />
+            )}
             <ThemeToggle />
             <LanguageSwitcher variant="outline" />
 

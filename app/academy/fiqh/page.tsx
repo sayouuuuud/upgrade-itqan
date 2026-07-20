@@ -55,6 +55,18 @@ interface Category {
   name_en: string | null
 }
 
+const FIQH_CATEGORIES_EN: Record<string, string> = {
+  tajweed: 'Tajweed Rulings',
+  salah: 'Prayer',
+  tahara: 'Purity',
+  sawm: 'Fasting',
+  zakah: 'Zakah',
+  hajj: 'Hajj & Umrah',
+  quran: 'Quranic Sciences',
+  aqeedah: 'Aqeedah',
+  general: 'General',
+}
+
 type Tab = 'library' | 'mine' | 'ask'
 
 const STATUS_LABELS: Record<string, { ar: string; en: string; tone: string }> = {
@@ -496,7 +508,7 @@ function LibraryTab({
           <CategoryChip
             key={c.id}
             active={activeCat === c.slug}
-            label={isAr ? c.name_ar : c.name_en || c.name_ar}
+            label={isAr ? c.name_ar : FIQH_CATEGORIES_EN[c.slug] || FIQH_CATEGORIES_EN[c.slug.replace('-umrah', '')] || c.name_en || c.name_ar}
             onClick={() => onCategory(c.slug)}
           />
         ))}
@@ -540,7 +552,7 @@ function LibraryTab({
                       <div className="flex items-center gap-2 flex-wrap">
                         {q.category_name_ar && (
                           <span className="text-[11px] px-3 py-1 rounded-full bg-primary/10 text-primary font-bold border border-primary/20">
-                            {isAr ? q.category_name_ar : q.category_name_en || q.category_name_ar}
+                            {isAr ? q.category_name_ar : FIQH_CATEGORIES_EN[q.category_slug || ''] || FIQH_CATEGORIES_EN[(q.category_slug || '').replace('-umrah', '')] || q.category_name_en || q.category_name_ar}
                           </span>
                         )}
                       </div>
@@ -558,7 +570,7 @@ function LibraryTab({
                             <span className="flex items-center gap-1.5">
                               {isAr ? 'أجاب: ' : 'Answered by '}
                               <span className="text-foreground">
-                                {q.answered_by_name}
+                                {!isAr && q.answered_by_name === 'مشرف' ? 'Supervisor' : q.answered_by_name}
                               </span>
                             </span>
                           )}
@@ -853,7 +865,7 @@ function AskTab({
             <option value="">{isAr ? '— اختر تصنيفاً —' : '— Pick a category —'}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
-                {isAr ? c.name_ar : c.name_en || c.name_ar}
+                {isAr ? c.name_ar : FIQH_CATEGORIES_EN[c.slug] || c.name_en || c.name_ar}
               </option>
             ))}
           </select>

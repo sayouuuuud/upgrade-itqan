@@ -54,14 +54,14 @@ export function WelcomeTeacherPopup() {
           setFollowing(d.data.is_following)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
     return () => { cancelled = true }
   }, [])
 
   const dismiss = useCallback(() => {
     setClosing(true)
     fetch('/api/me/welcome/dismiss', { method: 'POST', credentials: 'include' })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => {
         setData(null)
       })
@@ -109,7 +109,7 @@ export function WelcomeTeacherPopup() {
 
         {/* Header banner */}
         <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 px-8 py-7 text-white text-center">
-          <p className="text-sm opacity-90 mb-1">أهلاً بيك في منصة إتقان 🌟</p>
+          <p className="text-sm opacity-90 mb-1">أهلاً بيك في منصة متقن 🌟</p>
           <h2 className="text-xl font-bold">شكراً لحضورك درس &quot;{data.from_lesson.title}&quot;</h2>
         </div>
 
@@ -154,11 +154,10 @@ export function WelcomeTeacherPopup() {
           <button
             onClick={toggleFollow}
             disabled={followLoading}
-            className={`mt-4 w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-colors disabled:opacity-50 ${
-              following
+            className={`mt-4 w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-colors disabled:opacity-50 ${following
                 ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-200'
                 : 'bg-emerald-600 text-white hover:bg-emerald-700'
-            }`}
+              }`}
           >
             {followLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

@@ -15,7 +15,7 @@ export function JsonLdSchema({ type, data = {}, breadcrumbs = [], faqs = [] }: S
             schema = {
                 '@context': 'https://schema.org',
                 '@type': 'Organization',
-                name: 'إتقان الفاتحة',
+                name: 'متقن الفاتحة',
                 url: 'https://itqaan.com',
                 logo: 'https://itqaan.com/logo.png',
                 sameAs: [],
@@ -27,7 +27,7 @@ export function JsonLdSchema({ type, data = {}, breadcrumbs = [], faqs = [] }: S
             schema = {
                 '@context': 'https://schema.org',
                 '@type': 'WebSite',
-                name: 'إتقان الفاتحة',
+                name: 'متقن الفاتحة',
                 url: 'https://itqaan.com',
                 potentialAction: {
                     '@type': 'SearchAction',
@@ -53,11 +53,11 @@ export function JsonLdSchema({ type, data = {}, breadcrumbs = [], faqs = [] }: S
             schema = {
                 '@context': 'https://schema.org',
                 '@type': 'Course',
-                name: 'إتقان سورة الفاتحة',
-                description: 'تعلم إتقان سورة الفاتحة مع مقرئين معتمدين',
+                name: 'متقن سورة الفاتحة',
+                description: 'تعلم متقن سورة الفاتحة مع مقرئين معتمدين',
                 provider: {
                     '@type': 'Organization',
-                    name: 'إتقان الفاتحة',
+                    name: 'متقن الفاتحة',
                     sameAs: 'https://itqaan.com',
                 },
                 inLanguage: 'ar',
@@ -82,7 +82,7 @@ export function JsonLdSchema({ type, data = {}, breadcrumbs = [], faqs = [] }: S
                 '@type': 'Article',
                 publisher: {
                     '@type': 'Organization',
-                    name: 'إتقان الفاتحة',
+                    name: 'متقن الفاتحة',
                     logo: { '@type': 'ImageObject', url: 'https://itqaan.com/logo.png' },
                 },
                 ...data,

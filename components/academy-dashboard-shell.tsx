@@ -452,7 +452,7 @@ export function AcademyDashboardShell({
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { collapsed, toggle: toggleCollapsed } = useSidebarCollapsed()
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const academy = (t as any).academy as Record<string, string> | undefined
   const [user, setUser] = useState<{
     name: string;
@@ -625,7 +625,7 @@ export function AcademyDashboardShell({
                 "font-black text-primary leading-none tracking-tight",
                 collapsed ? "text-2xl" : "text-3xl"
               )}>
-                {collapsed ? "إ" : "إتقان"}
+                {collapsed ? (locale === 'ar' ? "إ" : "I") : (locale === 'ar' ? "إتقان" : "Itqan")}
               </span>
             </Link>
           )}
@@ -743,6 +743,14 @@ export function AcademyDashboardShell({
             </h2>
           </div>
           <div className="flex items-center gap-4">
+            {user && user.has_quran_access && user.has_academy_access && role !== 'parent' && role !== 'academy_admin' && !['admin', 'super_admin', 'maqraa_admin', 'academy_admin'].includes(user.role) && (
+              <ModeSwitcher
+                currentMode="academy"
+                userRole={user.role}
+                hasQuranAccess={user.has_quran_access}
+                hasAcademyAccess={user.has_academy_access}
+              />
+            )}
             <ThemeToggle />
             <LanguageSwitcher variant="outline" />
 

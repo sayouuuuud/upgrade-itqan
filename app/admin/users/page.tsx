@@ -497,7 +497,7 @@ export default function AdminUsersPage() {
                           <div className="min-w-0 flex-1">
                             <p className="font-black text-foreground text-sm group-hover:text-primary transition-colors flex items-center gap-1.5">
                               {user.name}
-                              {user.gender === 'female' && <span className="w-1.5 h-1.5 rounded-full bg-pink-400 opacity-60 inline-block" title={(t.addedTranslations_2026?.['طالبة / معلمة'] || (t.addedTranslations_2026?.['طالبة / معلمة'] || 'طالبة / معلمة'))} />}
+                              {user.gender === 'female' && <span className="w-1.5 h-1.5 rounded-full bg-pink-400 opacity-60 inline-block" title={a.femaleIndicator || "Female Student/Teacher"} />}
                             </p>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">ID: #{user.id.substring(0, 8)}</span>
@@ -738,13 +738,13 @@ export default function AdminUsersPage() {
                 value={formData.role}
                 onChange={e => setFormData({ ...formData, role: e.target.value })}
               >
-                {(currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
+                {(!currentUserRole || currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
                   <option value="student">{t.auth.student}</option>
                 )}
-                {(currentUserRole === 'admin' || currentUserRole === 'reciter_supervisor') && (
+                {(!currentUserRole || currentUserRole === 'admin' || currentUserRole === 'reciter_supervisor') && (
                   <option value="reader">{t.auth.reader}</option>
                 )}
-                {currentUserRole === 'admin' && (
+                {(!currentUserRole || currentUserRole === 'admin') && (
                   <>
                     <option value="admin">{t.auth.admin}</option>
                     <option value="student_supervisor">{t.auth.studentSupervisor}</option>
@@ -819,13 +819,13 @@ export default function AdminUsersPage() {
                 value={formData.role}
                 onChange={e => setFormData({ ...formData, role: e.target.value })}
               >
-                {(currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
+                {(!currentUserRole || currentUserRole === 'admin' || currentUserRole === 'student_supervisor') && (
                   <option value="student">{t.auth.student}</option>
                 )}
-                {(currentUserRole === 'admin' || currentUserRole === 'reciter_supervisor') && (
+                {(!currentUserRole || currentUserRole === 'admin' || currentUserRole === 'reciter_supervisor') && (
                   <option value="reader">{t.auth.reader}</option>
                 )}
-                {currentUserRole === 'admin' && (
+                {(!currentUserRole || currentUserRole === 'admin') && (
                   <>
                     <option value="admin">{t.auth.admin}</option>
                     <option value="student_supervisor">{t.auth.studentSupervisor}</option>

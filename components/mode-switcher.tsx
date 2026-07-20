@@ -27,7 +27,8 @@ interface ModeSwitcherProps {
 
 export function ModeSwitcher({ currentMode, userRole, academyRole, hasQuranAccess, hasAcademyAccess }: ModeSwitcherProps) {
   const router = useRouter()
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+  const isAr = locale === 'ar'
   const app = (t as any).app as Record<string, string> | undefined
 
   // Define available modes based on user role
@@ -41,10 +42,10 @@ export function ModeSwitcher({ currentMode, userRole, academyRole, hasQuranAcces
 
     modes.push({
       id: 'library',
-      label: t.modeSwitcher?.library || 'المقرأة',
+      label: t.modeSwitcher?.library || (isAr ? 'المقرأة' : 'Maqraa'),
       icon: Mic,
       href: libraryHref,
-      description: t.modeSwitcher?.libraryDesc || 'تلاوات وتسميع القرآن والتصحيح'
+      description: t.modeSwitcher?.libraryDesc || (isAr ? 'تلاوات وتسميع القرآن والتصحيح' : 'Quran Recitation and Memorization')
     })
   }
 
@@ -53,18 +54,19 @@ export function ModeSwitcher({ currentMode, userRole, academyRole, hasQuranAcces
     const academyHref = getAcademyHref(userRole, academyRole)
     modes.push({
       id: 'academy',
-      label: t.modeSwitcher?.academy || 'الأكاديمية',
+      label: t.modeSwitcher?.academy || (isAr ? 'الأكاديمية' : 'Academy'),
       icon: GraduationCap,
       href: academyHref,
-      description: t.modeSwitcher?.academyDesc || 'الدورات والدروس التفاعلية'
+      description: t.modeSwitcher?.academyDesc || (isAr ? 'الدورات والدروس التفاعلية' : 'Interactive Courses and Lessons')
     })
   }
 
+  // Hide switcher for admin roles (Super Admin, Maqraa Admin, Academy Admin)
+  const isAdminRole = ['admin', 'super_admin', 'maqraa_admin', 'academy_admin'].includes(userRole)
+  if (isAdminRole) return null
+
   // Don't show switcher if only one mode available
-  // Exception: if an admin/super-admin (userRole === 'admin') has both access,
-  // always show it so they can switch back from academy to library
-  const isAdminWithBothAccess = userRole === 'admin' && hasQuranAccess && hasAcademyAccess
-  if (modes.length <= 1 && !isAdminWithBothAccess) return null
+  if (modes.length <= 1) return null
 
   function getAcademyHref(role: string, academyRole?: string | null): string {
     if (role === 'teacher') return '/academy/teacher'

@@ -43,13 +43,13 @@ function buildInviteEmail(opts: {
     <div dir="rtl" style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;
          border:1px solid #e2e8f0;border-radius:14px;color:#333;">
       <div style="text-align:center;margin-bottom:24px;">
-        <h1 style="color:#0B3D2E;font-size:26px;margin:0 0 4px;">إتقان التعليمية</h1>
+        <h1 style="color:#0B3D2E;font-size:26px;margin:0 0 4px;">متقن التعليمية</h1>
         <p style="color:#64748b;font-size:13px;margin:0;">دعوة للانضمام إلى المقرأة</p>
       </div>
 
       <h2 style="color:#0B3D2E;font-size:18px;">${greeting}</h2>
       <p style="color:#475569;line-height:1.7;">
-        يدعوك <strong>${inviterName}</strong> للانضمام إلى مقرأة <strong>إتقان التعليمية</strong>
+        يدعوك <strong>${inviterName}</strong> للانضمام إلى مقرأة <strong>متقن التعليمية</strong>
         بصفة <strong>${roleLabel}</strong>.
       </p>
 
@@ -70,15 +70,15 @@ function buildInviteEmail(opts: {
 
       <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;"/>
       <p style="font-size:11px;color:#94a3b8;text-align:center;">
-        منصة إتقان التعليمية — جميع الحقوق محفوظة
+        منصة متقن التعليمية — جميع الحقوق محفوظة
       </p>
     </div>
   `
 
   return {
-    subject: `دعوة للانضمام إلى مقرأة إتقان — ${roleLabel}`,
+    subject: `دعوة للانضمام إلى مقرأة متقن — ${roleLabel}`,
     html,
-    body: `أهلاً، تمت دعوتك للانضمام إلى مقرأة إتقان التعليمية. رابط الدعوة: ${inviteUrl} (صالحة حتى ${expireStr})`,
+    body: `أهلاً، تمت دعوتك للانضمام إلى مقرأة متقن التعليمية. رابط الدعوة: ${inviteUrl} (صالحة حتى ${expireStr})`,
   }
 }
 
@@ -92,11 +92,11 @@ export async function GET(req: NextRequest) {
   }
 
   const url = new URL(req.url)
-  const status   = url.searchParams.get('status') || 'all'
-  const search   = url.searchParams.get('search') || ''
-  const page     = Math.max(1, parseInt(url.searchParams.get('page') || '1'))
+  const status = url.searchParams.get('status') || 'all'
+  const search = url.searchParams.get('search') || ''
+  const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'))
   const pageSize = 20
-  const offset   = (page - 1) * pageSize
+  const offset = (page - 1) * pageSize
 
   const conditions: string[] = []
   const params: unknown[] = []
@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
 
   const batchId = entries.length > 1 ? crypto.randomUUID() : null
   const results = []
-  const errors  = []
+  const errors = []
 
   for (const entry of entries) {
     const email = (entry.email || '').toLowerCase().trim()
@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
       planTitle = planRows[0]?.title || null
     }
 
-    const token     = crypto.randomUUID()
+    const token = crypto.randomUUID()
     const expiresAt = new Date(Date.now() + EXPIRE_DAYS * 24 * 60 * 60 * 1000)
 
     const inserted = await query<{ id: string; token: string }>(
@@ -234,14 +234,14 @@ export async function POST(req: NextRequest) {
       expiresAt,
     })
 
-    await sendEmail({ to: email, ...emailContent }).catch(() => {})
+    await sendEmail({ to: email, ...emailContent }).catch(() => { })
     results.push({ email, id: inserted[0]?.id, token })
   }
 
   const status = errors.length === 0 ? 201 : results.length === 0 ? 400 : 207
-  return NextResponse.json({ 
-    sent: results, 
-    errors, 
+  return NextResponse.json({
+    sent: results,
+    errors,
     batchId,
     error: errors.length > 0 ? errors[0].error : undefined
   }, { status })

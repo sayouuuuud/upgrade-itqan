@@ -136,7 +136,7 @@ export async function sendAdminActivityReport(period: Period, dryRun = false) {
     return { report, recipients: admins.map((admin) => admin.email), sent: 0, dryRun: true }
   }
 
-  const subject = period === 'weekly' ? 'تقرير إتقان الأسبوعي للنشاط والنمو' : 'تقرير إتقان الشهري للنشاط والنمو'
+  const subject = period === 'weekly' ? 'تقرير متقن الأسبوعي للنشاط والنمو' : 'تقرير متقن الشهري للنشاط والنمو'
   const html = renderReportHtml(report)
   let sent = 0
   for (const admin of admins) {

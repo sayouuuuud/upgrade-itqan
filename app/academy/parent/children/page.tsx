@@ -163,13 +163,13 @@ export default function ParentChildrenPage() {
               }
             : prev
         )
-        toast.success(t.parentPages.children.requestCancelled)
+        toast.success(t.parentPages?.children?.requestCancelled)
       } else {
         const d = await res.json()
-        toast.error(d.error || t.parentPages.children.connectionError)
+        toast.error(d.error || t.parentPages?.children?.connectionError)
       }
     } catch {
-      toast.error(t.parentPages.children.connectionError)
+      toast.error(t.parentPages?.children?.connectionError)
     } finally {
       setCancellingPending(null)
     }
@@ -189,7 +189,7 @@ export default function ParentChildrenPage() {
       const data = await res.json()
 
       if (res.ok) {
-        toast.success(data.message || t.parentPages.children.successfullyUnlinked)
+        toast.success(data.message || t.parentPages?.children?.successfullyUnlinked)
         const removedId = unlinkingChild.child_id
         setOverview((prev) => {
           if (!prev) return prev
@@ -203,10 +203,10 @@ export default function ParentChildrenPage() {
           }
         })
       } else {
-        toast.error(data.error || t.parentPages.children.connectionError)
+        toast.error(data.error || t.parentPages?.children?.connectionError)
       }
     } catch {
-      toast.error(t.parentPages.children.connectionError)
+      toast.error(t.parentPages?.children?.connectionError)
     } finally {
       setUnlinkLoading(false)
       setUnlinkingChild(null)
@@ -224,7 +224,7 @@ export default function ParentChildrenPage() {
             </div>
           </div>
           <p className="text-sm text-muted-foreground font-medium animate-pulse">
-            {t.parentPages.children.loadingChildren}
+            {t.parentPages?.children?.loadingChildren}
           </p>
         </div>
       </div>
@@ -255,14 +255,14 @@ export default function ParentChildrenPage() {
           <div className="space-y-4 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background/80 backdrop-blur-md shadow-sm border border-border/50 text-primary text-sm font-bold">
               <Users className="w-4 h-4" />
-              {t.parentPages.children.manageChildren}
+              {t.parentPages?.children?.manageChildren}
             </div>
             <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-foreground flex items-center gap-3">
-              {t.parentPages.children.myChildren}
+              {t.parentPages?.children?.myChildren}
               <Sparkles className="w-8 h-8 text-amber-500 animate-pulse hidden md:block" />
             </h1>
             <p className="text-lg text-muted-foreground font-medium leading-relaxed">
-              {t.parentPages.children.childrenDesc}
+              {t.parentPages?.children?.childrenDesc}
             </p>
           </div>
           <Button
@@ -271,7 +271,7 @@ export default function ParentChildrenPage() {
           >
             <Link href="/academy/parent/link-child">
               <LinkIcon className="w-5 h-5 me-2 group-hover:rotate-12 transition-transform" />
-              {t.parentPages.children.linkNewChild}
+              {t.parentPages?.children?.linkNewChild}
             </Link>
           </Button>
         </div>
@@ -291,7 +291,7 @@ export default function ParentChildrenPage() {
                 <Clock className="w-4 h-4 text-amber-500" />
               </div>
               <h2 className="text-lg font-bold text-foreground">
-                {t.parentPages.children.pendingLinkRequests}
+                {t.parentPages?.children?.pendingLinkRequests}
               </h2>
               <Badge className="bg-amber-500 text-white border-0 text-xs font-bold shadow-sm ms-2">
                 {pendingRequests.length}
@@ -320,7 +320,7 @@ export default function ParentChildrenPage() {
                         <div className="flex items-center gap-2">
                           <p className="font-bold text-base text-foreground truncate">{req.child_name}</p>
                           <Badge variant="outline" className="text-[10px] bg-background/50 border-amber-200 dark:border-amber-800">
-                            {t.parentPages.dashboard.relationLabels[req.relation] || req.relation}
+                            {t.parentPages?.dashboard?.relationLabels[req.relation] || req.relation}
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5 truncate" dir="ltr">{req.child_email}</p>
@@ -329,7 +329,7 @@ export default function ParentChildrenPage() {
                       <div className="flex flex-col items-end gap-2 shrink-0">
                         <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-0 text-[10px] gap-1 shadow-none">
                           <Clock className="w-3 h-3" />
-                          {t.parentPages.children.waiting}
+                          {t.parentPages?.children?.waiting}
                         </Badge>
                         <Button
                           variant="ghost"
@@ -341,7 +341,7 @@ export default function ParentChildrenPage() {
                           {cancellingPending === req.child_id ? (
                             <Loader2 className="w-3 h-3 animate-spin" />
                           ) : (
-                            t.parentPages.children.cancelRequest
+                            t.parentPages?.children?.cancelRequest
                           )}
                         </Button>
                       </div>
@@ -371,15 +371,15 @@ export default function ParentChildrenPage() {
                 </div>
               </div>
               <h4 className="text-2xl font-black text-foreground mb-3">
-                {t.parentPages.children.noChildrenLinkedYet}
+                {t.parentPages?.children?.noChildrenLinkedYet}
               </h4>
               <p className="text-base text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
-                {t.parentPages.children.noChildrenLinkedYetDesc}
+                {t.parentPages?.children?.noChildrenLinkedYetDesc}
               </p>
               <Button asChild className="rounded-2xl font-bold h-14 px-10 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
                 <Link href="/academy/parent/link-child">
                   <LinkIcon className="w-5 h-5 me-2" />
-                  {t.parentPages.children.linkChildNow}
+                  {t.parentPages?.children?.linkChildNow}
                 </Link>
               </Button>
             </CardContent>
@@ -401,7 +401,7 @@ export default function ParentChildrenPage() {
                 <Users className="w-5 h-5 text-primary" />
               </div>
               <h2 className="text-2xl font-bold text-foreground">
-                {t.parentPages.children.linkedChildren}
+                {t.parentPages?.children?.linkedChildren}
               </h2>
               <Badge variant="secondary" className="rounded-full px-2.5 py-0.5 text-sm font-bold bg-muted/50">
                 {children.length}
@@ -436,12 +436,12 @@ export default function ParentChildrenPage() {
                             {child.child_name}
                           </Link>
                           <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-0 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0">
-                            {t.parentPages.dashboard.relationLabels[child.relation] || child.relation}
+                            {t.parentPages?.dashboard?.relationLabels[child.relation] || child.relation}
                           </Badge>
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground gap-1.5 font-medium">
                           <LinkIcon className="w-3.5 h-3.5 shrink-0" />
-                          <span className="truncate">{t.parentPages.children.linkedSince} {fmtDate(child.linked_at, isAr)}</span>
+                          <span className="truncate">{t.parentPages?.children?.linkedSince} {fmtDate(child.linked_at, isAr)}</span>
                         </div>
                       </div>
                       
@@ -451,7 +451,7 @@ export default function ParentChildrenPage() {
                           size="icon"
                           className="w-10 h-10 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                           onClick={() => setUnlinkingChild(child)}
-                          title={t.parentPages.children.unlink}
+                          title={t.parentPages?.children?.unlink}
                         >
                           <UserMinus className="w-4 h-4" />
                         </Button>
@@ -465,7 +465,7 @@ export default function ParentChildrenPage() {
                           <div className="flex items-center gap-2">
                             <Activity className="w-4 h-4 text-primary" />
                             <span className="text-sm font-bold text-foreground">
-                              {t.parentPages.children.academicProgress}
+                              {t.parentPages?.children?.academicProgress}
                             </span>
                           </div>
                           <span className="text-xl font-black text-primary">
@@ -492,7 +492,7 @@ export default function ParentChildrenPage() {
                         </div>
                         <div>
                           <p className="text-xl sm:text-2xl font-black text-foreground leading-none mb-1">{child.enrollments.total}</p>
-                          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground">{t.parentPages.children.enrolledCourses}</p>
+                          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground">{t.parentPages?.children?.enrolledCourses}</p>
                         </div>
                       </div>
                       
@@ -502,7 +502,7 @@ export default function ParentChildrenPage() {
                         </div>
                         <div>
                           <p className="text-xl sm:text-2xl font-black text-foreground leading-none mb-1">{child.bookings.upcoming}</p>
-                          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground">{t.parentPages.children.upcomingBookings}</p>
+                          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground">{t.parentPages?.children?.upcomingBookings}</p>
                         </div>
                       </div>
                       
@@ -522,7 +522,7 @@ export default function ParentChildrenPage() {
                         </div>
                         <div>
                           <p className="text-xl sm:text-2xl font-black text-foreground leading-none mb-1">{child.badges.total}</p>
-                          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground">{t.parentPages.children.earnedBadges}</p>
+                          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground">{t.parentPages?.children?.earnedBadges}</p>
                         </div>
                       </div>
                     </div>
@@ -534,7 +534,7 @@ export default function ParentChildrenPage() {
                         className="flex-1 rounded-xl h-12 font-bold shadow-sm"
                       >
                         <Link href={`/academy/parent/children/${child.child_id}`}>
-                          {t.parentPages.children.viewDetails}
+                          {t.parentPages?.children?.viewDetails}
                           <ChevronRight className={`w-4 h-4 ms-2 ${isAr ? 'rotate-180' : ''}`} />
                         </Link>
                       </Button>
@@ -545,7 +545,7 @@ export default function ParentChildrenPage() {
                       >
                         <Link href={`/academy/parent/children/${child.child_id}/restrictions`}>
                           <Shield className="w-4 h-4 sm:me-2 text-primary" />
-                          <span className="hidden sm:inline">{t.parentPages.children.restrictions}</span>
+                          <span className="hidden sm:inline">{t.parentPages?.children?.restrictions}</span>
                         </Link>
                       </Button>
                     </div>
@@ -567,10 +567,10 @@ export default function ParentChildrenPage() {
               </div>
               <div>
                 <h4 className="text-base font-bold text-red-900 dark:text-red-300 mb-1">
-                  {t.parentPages.children.rejectedRequests}
+                  {t.parentPages?.children?.rejectedRequests}
                 </h4>
                 <p className="text-sm text-red-700 dark:text-red-400">
-                  {t.parentPages.children.rejectedRequestsDesc.replace('{count}', String(summary?.rejected_links))}
+                  {t.parentPages?.children?.rejectedRequestsDesc.replace('{count}', String(summary?.rejected_links))}
                 </p>
               </div>
             </CardContent>
@@ -588,15 +588,15 @@ export default function ParentChildrenPage() {
                 <UserMinus className="w-8 h-8 text-destructive" />
               </div>
               <AlertDialogTitle className="text-2xl font-black text-center">
-                {t.parentPages.children.confirmUnlinkTitle}
+                {t.parentPages?.children?.confirmUnlinkTitle}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-center text-base">
-                {t.parentPages.children.confirmUnlinkDesc.replace('{name}', unlinkingChild?.child_name || '')}
+                {t.parentPages?.children?.confirmUnlinkDesc.replace('{name}', unlinkingChild?.child_name || '')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="gap-3 sm:gap-0">
               <AlertDialogCancel disabled={unlinkLoading} className="rounded-xl h-12 font-bold w-full sm:w-auto mt-0">
-                {t.parentPages.children.cancel}
+                {t.parentPages?.children?.cancel}
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleUnlink}
@@ -606,7 +606,7 @@ export default function ParentChildrenPage() {
                 {unlinkLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  t.parentPages.children.unlinkButton
+                  t.parentPages?.children?.unlinkButton
                 )}
               </AlertDialogAction>
             </AlertDialogFooter>

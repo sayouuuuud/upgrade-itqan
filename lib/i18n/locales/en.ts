@@ -1,4 +1,13 @@
 export const en = {
+  adminRoleSwitcher: {
+    superAdmin: 'General Admin',
+    superAdminShort: 'General',
+    maqraaAdmin: 'Maqrah Admin',
+    maqraaAdminShort: 'Maqrah',
+    academyAdmin: 'Academy Admin',
+    academyAdminShort: 'Academy',
+  },
+
   // Locale identifier
   locale: 'en',
   common: {
@@ -6,6 +15,12 @@ export const en = {
     toggleTheme: 'Toggle Theme',
     menu: 'Menu',
     maintenanceMessage: 'The site is currently under maintenance, we will be back soon 🔧',
+  },
+  nav: {
+    features: 'Features',
+    courses: 'Courses',
+    testimonials: 'Testimonials',
+    contact: 'Contact',
   },
   verify: {
     title: 'Verify your email',
@@ -475,7 +490,7 @@ export const en = {
   },
   conversationsSub: 'Conversations',
   // Common
-  appName: 'Itqan Educational Platform',
+  appName: 'motqen',
   userFallbackLetter: 'U',
   appTagline: 'Quran Recitation Improvement Platform',
   home: 'Home',
@@ -625,6 +640,7 @@ export const en = {
 
   // Auth
   auth: {
+    goToAccount: 'Go to Account',
     login: 'Sign In',
     register: 'Create Account',
     loginTitle: 'Welcome Back',
@@ -746,7 +762,71 @@ export const en = {
   },
 
   // Student
-  student: {
+  studentDashboard: {
+    levelAdvanced: 'Advanced',
+    levelIntermediate: 'Intermediate',
+    levelBeginner: 'Beginner',
+    levelNew: 'New',
+    noRecitationsYet: 'No recitations yet',
+    underReview: 'Under review',
+    statusMastered: 'Mastered',
+    needsSession: 'Needs session',
+    booked: 'Booked',
+    welcome: 'Welcome',
+    studentDashboardTitle: 'Student Dashboard',
+    trackProgressDesc: 'Track your progress in reciting the Holy Quran',
+    newRecitationBtn: 'New Recitation',
+    totalRecitations: 'Total Recitations',
+    masteredSurahs: 'Mastered',
+    currentLevel: 'Current Level',
+    point: 'Point',
+    yourRank: 'Your Rank',
+    consecutiveDays: 'Consecutive Days',
+    highestLevel: 'Highest Level',
+    yourProgress: 'Your Progress',
+    memorizedVerses: 'Memorized Verses',
+    completedJuz: 'Completed Juz',
+    consistencyDays: 'Consistency Days',
+    completionRate: 'Completion Rate',
+    totalMemorization: 'Total Memorization',
+    mushafMap: 'Mushaf Map',
+    memorized: 'Memorized',
+    remaining: 'Remaining',
+    progressChart: 'Progress Chart',
+    weekly: 'Weekly',
+    monthly: 'Monthly',
+    noDataYet: 'No data yet',
+    newMemorization: 'New Memorization',
+    review: 'Review',
+    dailyMemLog: 'Daily Memorization Log',
+    logVersesDesc: 'Log how many verses you memorized and reviewed today',
+    newMemVerses: 'New Memorized Verses',
+    reviewedVerses: 'Reviewed Verses',
+    saved: 'Saved',
+    logToday: 'Log Today',
+    progressReport: 'Progress Report',
+    consistencyPercent: '% Consistency',
+    versesMemThisWeek: 'Verses Memorized This Week',
+    activeDays: 'Active Days',
+    versesRevThisWeek: 'Verses Reviewed This Week',
+    totalLoggedVerses: 'Total Logged Verses',
+    prayerTimes: 'Prayer Times',
+    upcoming: 'Upcoming',
+    failedPrayerTimes: 'Failed to fetch prayer times',
+    dailyWird: 'Daily Wird',
+    edit: 'Edit',
+    noDailyWirdSet: 'You haven\'t set a daily wird yet',
+    addDailyWird: 'Add Daily Wird',
+    wirdResetsAutomatically: 'The wird resets automatically every day',
+    myLearningPaths: 'My Learning Paths',
+    all: 'All',
+    notJoinedPathYet: 'You haven\'t joined any path yet',
+    browsePaths: 'Browse Paths',
+    recentActivity: 'Recent Activity',
+    viewAll: 'View All',
+    noRecitationRecorded: 'You haven\'t recorded your recitation yet',
+    startReciting: 'Start Reciting',
+  },  student: {
     notificationsCount: 'You have {count} unread notifications',
     mobileLabel: 'Mobile number (optional)',
     mobilePurpose: 'Purpose: contact the student when needed, send future notifications',
@@ -1166,272 +1246,33 @@ export const en = {
         tafkhim_tarqiq: 'Tafkhim & Tarqiq',
         waqf: 'Waqf & Ibtida (Pause & Start)',
         makharij: 'Articulation Points'
-      }
-    },
-
-    // Wird Settings Page
-    wirdPage: {
-      title: 'Wird Settings',
-      subtitle: 'Set your daily wird and customize Fajr & Maghrib reminders.',
-      saveSuccess: 'Wird settings saved successfully',
-      remindersTitle: 'Automatic Reminders',
-      remindersDesc: 'You will receive a notification immediately after Fajr & Maghrib Athan.',
-      fajrReminder: 'Fajr Reminder',
-      fajrReminderDesc: 'After Fajr Athan',
-      maghribReminder: 'Maghrib Reminder',
-      maghribReminderDesc: 'After Maghrib Athan',
-      wirdItemsTitle: 'Wird Items',
-      wirdItemsDesc: 'Add what you want to read daily from the Holy Quran.',
-      noItemsYet: 'You haven\'t added any items yet',
-      addWirdHint: 'Add surahs, pages, or parts you want to read daily.',
-      personalGoalTitle: 'Personal Note / Goal',
-      personalGoalDesc: 'Write your goal or a personal reminder for yourself.',
-      personalGoalPlaceholder: 'e.g., I want to complete the Quran during Ramadan...',
-      saveSettingsBtn: 'Save Settings',
-      addNewItemTitle: 'Add New Item',
-      addToWirdBtn: 'Add to Wird',
-      selectSurahLabel: 'Select Surah',
-      fromPageLabel: 'From Page',
-      toPageLabel: 'To Page',
-      juzNumberLabel: 'Juz Number',
-      fromAyahLabel: 'From Verse',
-      toAyahLabel: 'To Verse',
-      customWirdLabel: 'Wird Description',
-      customWirdPlaceholder: 'e.g., Reading Adhkar, Memorizing Surah...',
-      readPagesTitle: 'Read Pages',
-      singlePageTitle: 'Page {page}',
-      rangePagesTitle: 'Pages {from}–{to}',
-      juzTitle: 'Juz {juz}',
-      juzDesc: 'Juz {juz} of the Holy Quran',
-      singleAyahTitle: 'Verse {ayah}',
-      rangeAyahsTitle: 'Verses {from}–{to}',
-      customWirdDefault: 'Custom Wird',
-      types: {
-        surah: 'Surah',
-        pages: 'Pages',
-        juz: 'Juz',
-        ayahs: 'Verses',
-        custom: 'Custom'
-      }
-    },
-
-    // Mushaf Progress Page
-    mushafProgressPage: {
-      title: 'My Mushaf Map',
-      subtitle: 'Track your progress in Quran memorization and review',
-      openMushaf: 'Open Mushaf',
-      totalProgress: 'Total Progress',
-      masteredAyahsCount: '{count} verses memorized of {total}',
-      legendMastered: 'Memorized',
-      legendReviewing: 'Under Review',
-      legendNone: 'Not Memorized Yet',
-      viewPages: 'View Pages',
-      viewSurahs: 'View Surahs',
-      pagesGridTitle: 'Pages View',
-      surahsGridTitle: 'Surahs View',
-      pageRange: 'Page {from} - {to}',
-      pageTooltip: 'Page {page} - {surah}',
-      versesCount: '{count} verses',
-      milestonesTitle: 'Milestones',
-      recentActivitiesTitle: 'Recent Activities',
-      noActivitiesYet: 'No activities yet',
-      startRecitationHint: 'Start reciting your recitation to see your progress here',
-      ayahsSummaryTitle: 'Verses Summary',
-      ayahsMastered: 'Verses Memorized',
-      ayahsReviewing: 'Verses Under Review',
-      ayahsRemaining: 'Verses Remaining',
-      relativeToday: 'Today',
-      relativeYesterday: 'Yesterday',
-      relativeDaysAgo: '{days} days ago',
-      relativeWeeksAgo: '{weeks} weeks ago',
-      milestoneCrown: 'Crown',
-      milestoneTrophy: 'Mastery Trophy',
-      milestoneStar: 'Memorization Star',
-      milestoneCheck: 'Milestone Completed'
-    },
-
-    // Badges Page
-    badgesPage: {
-      title: 'Badges & Achievements',
-      subtitle: 'Collect badges and show off your achievements',
-      earnedBadges: 'Earned Badges',
-      completedPct: '{pct}% Completed',
-      noBadgesYet: 'No badges currently available',
-      badgeEarnedAt: 'Earned on {date}',
-      points: '+{points} Points',
-      earnedLabel: 'Earned',
-      closeBtn: 'Close',
-      criteria: {
-        recitation_count: 'Recitations count',
-        recitation_total: 'Total recitations',
-        streak_days: 'Streak Days',
-        juz_memorized: 'Juz Memorized',
-        tajweed_path: 'Tajweed Path',
-        ramadan: 'Ramadan Days',
-        quran_complete: 'Quran Complete',
-        top_student: 'Top Points Student',
-        points_threshold: 'Points Threshold',
-        manual: 'Awarded Manually'
-      }
-    },
-
-    // Points Page
-    pointsPage: {
-      title: 'My Points',
-      leaderboardLink: 'Leaderboard',
-      noDataYet: 'No points data yet',
-      noDataDesc: 'Start submitting recitations or memorizing verses to earn points!',
-      pointLabel: 'Point',
-      currentLevelLabel: 'Current Level',
-      streakDaysLabel: 'consecutive days',
-      doublePointsLabel: 'Double Points x1.5',
-      pointsToNextLevel: '{points} points to next level',
-      howToEarnPoints: 'How to Earn Points',
-      doublePointsActiveMsg: 'Your points are doubled x1.5 because you have a Streak of more than 7 days!',
-      badgesCount: 'Badges ({count})',
-      noBadgesYet: 'No badges earned yet — gather more points!',
-      browseAllBadges: 'Browse all available badges',
-      viewAllBadges: 'View All Badges',
-      recentPointsLog: 'Recent Points Log',
-      noActivitiesYet: 'No activities yet',
-      statsMemorizedVerses: 'Verses Memorized',
-      statsRevisedVerses: 'Verses Reviewed',
-      statsLongestStreak: 'Longest Streak',
-      statsBadgesCount: 'Badges',
-      reasons: {
-        recitation: 'Submit Recitation',
-        mastered: 'Recitation Mastered',
-        task: 'Complete Task',
-        lesson: 'Lesson',
-        streak: 'Streak Day',
-        juz_complete: 'Complete Juz',
-        course_complete: 'Complete Course',
-        session_attend: 'Attend Class',
-        daily_login: 'Daily Login',
-        competition_win: 'Win Competition',
-        badge_earned: 'New Badge',
-        admin_adjust: 'Admin Adjustment'
-      }
-    },
-
-    // Memorization Paths Page & Details Page
-    memorizationPathsPage: {
-      title: 'Memorization Paths',
-      badgeTitle: 'Systematic Memorization Plan',
-      subtitle: 'Memorization Paths',
-      description: 'Organized memorization plans from Juz Amma to the complete Khatma — choose a path and start, and the next unit will open after completing the current one.',
-      migrationMissing: 'The system is ready but the database needs to run migrations first — contact admin if you see this message.',
-      tabs: {
-        myPaths: 'My Paths ({count})',
-        browse: 'Browse Paths ({count})',
-        searchPlaceholder: 'Search for a path...'
       },
-      emptyEnrolledTitle: 'You haven\'t subscribed to any path yet',
-      emptyEnrolledDesc: 'Discover available memorization plans in the "Browse Paths" tab and start your Quranic journey today.',
-      emptyBrowseTitle: 'No paths match your search',
-      estimatedDays: 'Estimated Time: {days} days',
-      enrolledStatusCompleted: 'Completed',
-      enrolledStatusPaused: 'Paused',
-      unitsCount: '{count} Units',
-      progressLabel: 'Completed Progress',
-      startBtn: 'Start Memorization',
-      continueBtn: 'Continue Memorization',
-      reviewBtn: 'Review Path',
-      backToPaths: 'Back to Paths',
-      requireAudioBadge: 'Requires Audio Recording',
-      estimatedDaysExpected: '{days} days expected',
-      readyToStartTitle: 'Ready to Start?',
-      readyToStartDesc: 'Subscribe to the path to start memorizing, and the first unit will open immediately.',
-      enrollBtn: 'Start Path Now',
-      pathCompletedTitle: 'Congratulations on completion!',
-      pathCompletedDesc: 'You have successfully completed this path.',
-      pathContentTitle: 'Path Content',
-      unitLabel: 'Unit {pos}',
-      unitInProgress: 'In Progress',
-      unitCompleted: 'Completed',
-      unitEstimatedTime: 'Expected Duration',
-      unitEstimatedTimeVal: '{mins} minutes',
-      unitPreviousAttempts: 'Previous Attempts',
-      unitPreviousAttemptsVal: '{attempts} attempts',
-      unitApprovedAudio: 'Your approved recording for this unit',
-      completeUnitBtn: 'Complete Unit',
-      updateRecordingBtn: 'Update Recording',
-      completeUnitDialogTitle: 'Complete Unit: {title}',
-      completeUnitDialogDesc: 'Audio recording is required before completing the unit — record a new recording or link a previous one.',
-      completeUnitDialogDescOptional: 'You can record audio to prove memorization or link a previous recording (optional), then press complete.',
-      newRecordTab: 'New Recording',
-      linkRecitationTab: 'Link Previous Recitation',
-      recordNewAudioLabel: 'Record unit recitation',
-      linkPreviousRecitationDesc: 'Select one of your previous recitations to link to this unit:',
-      noPreviousRecitations: 'No previous recitations to link — use direct recording instead.',
-      selectRecitationPlaceholder: 'Select a recitation...',
-      cancelBtn: 'Cancel',
-      confirmCompleteBtn: 'Confirm Completion',
-      pathNotFound: 'Path not found.',
-      unitCompleteError: 'Failed to complete unit',
-      types: {
-        juz: 'By Juz',
-        surah: 'By Surah',
-        hizb: 'By Hizb',
-        page: 'By Page',
-        custom: 'Custom'
-      },
-      unitTypes: {
-        juz: 'Juz',
-        surah: 'Surah',
-        hizb: 'Hizb',
-        page: 'Page',
-        custom: 'Custom'
-      },
-      levels: {
-        beginner: 'Beginner',
-        intermediate: 'Intermediate',
-        advanced: 'Advanced'
-      }
-    },
+    }
+  },
 
-    // Sessions & Rescheduling Page
-    sessionsPage: {
-      rescheduledStatus: 'Rescheduled',
-      cancelConfirmation: 'Are you sure you want to cancel this session?',
-      rescheduleRequestSentToast: 'Reschedule request sent. You\'ll be notified when the reader responds.',
-      rescheduleAcceptedToast: 'Reschedule accepted and appointment updated.',
-      rescheduleRejectedToast: 'Request rejected. You can contact support to request a different reader.',
-      noSessionsDesc: 'You haven\'t booked any correction sessions yet. Book your first session now to perfect your recitation.',
-      bookNewSessionBtn: 'Book New Session',
-      certifiedReaderBadge: 'Certified',
-      rescheduleRequestFromReader: 'Reschedule request from reader:',
-      acceptAndConfirmBtn: 'Accept & Confirm',
-      rejectRequestBtn: 'Reject Request',
-      joinLiveSessionInApp: 'Join live session (in-app)',
-      sessionLinkReadyMsg: 'The session link is ready. Please join at the scheduled time.',
-      sessionInactiveMsg: 'Session is inactive. No link will be generated.',
-      sessionControlsTitle: 'Session Controls',
-      chatPrivatelyWithReader: 'Chat privately with reader',
-      rescheduleBtn: 'Reschedule',
-      cancelSessionBtn: 'Cancel Session',
-      requestRescheduleTitle: 'Request Reschedule',
-      requestRescheduleDesc: 'Your proposal will be sent to the reader ({name}) for approval.',
-      newDateLabel: 'New Date',
-      newTimeLabel: 'New Time',
-      rescheduleWarningMsg: 'The new time won\'t be confirmed until the reader approves it. If rejected, the old time remains active.',
-      cancelRescheduleBtn: 'Cancel Edit',
-      sendProposalBtn: 'Send Proposal to Reader',
-      ticketCreateBtn: 'Create Ticket',
-      ticketListTitle: 'Tickets List',
-      noTicketsYet: 'No tickets yet',
-      ticketBadge: 'Ticket',
-      supportTeamName: 'Technical Support',
-      supportTeamDesc: 'Help and Support',
-      ticketClosedMsg: 'This ticket is closed. You can create a new ticket if you have another inquiry.',
-      editingMessageLabel: 'Editing message...',
-      cancelEditBtn: 'Cancel',
-      messagePlaceholder: 'Type your message...',
-      ticketSuccessToast: 'Ticket sent successfully.',
-      messageDeleteConfirmation: 'Are you sure you want to delete this message?',
-      conversationDeleteConfirmation: 'Are you sure you want to permanently delete this conversation for both parties?',
-      editedLabel: '(edited)'
-    },
+  extracted_2026_v2: {},
+  app: {
+    recTitle: 'Recordings',
+    recDesc: 'View and retrieve all your recordings',
+    recSearchPlaceholder: 'Search recordings...',
+    recMyRecordings: 'My Recordings',
+    recAllRecordingsAdmin: 'All Recordings',
+    recAllTypes: 'All Types',
+    recHalaqat: 'Halaqat',
+    recCourseLessons: 'Course Lessons',
+    recPrivateSessions: 'Private Sessions',
+    recAllPlatforms: 'All Platforms',
+    recAcademyPlatform: 'Academy',
+    recMaqraaPlatform: 'Maqraa',
+    recRetry: 'Try Again',
+    recNoRecordings: 'No Recordings',
+    recNoRecordingsDesc: 'We didn\'t find any recordings matching your criteria',
+    recLoadFailed: 'Failed to load recordings',
+    recUnexpectedError: 'An unexpected error occurred',
+    recAttendees: 'attendees',
+    recHost: 'Hosted by',
+    recNoLink: 'No Link',
+    recDetails: 'Details'
   },
 
   studentPages: {
@@ -1909,6 +1750,159 @@ export const en = {
         }
       }
     },
+    supervisorPages: {
+        teachers: {
+            title: 'Teachers Verification',
+            desc: 'Review teacher verification requests and professional profiles to officially approve them on the platform.',
+            pending: 'Pending Verification',
+            verified: 'Verified',
+            all: 'All',
+            searchPlaceholder: 'Search by name, email, or specialization...',
+            loading: 'Loading data...',
+            emptySearchTitle: 'No match found',
+            emptySearchDesc: 'Try using different search keywords.',
+            emptyListTitle: 'List is empty',
+            emptyListDesc: 'There are no teachers currently in this section.',
+            initial: 'U',
+            verifiedBadge: 'Verified',
+            courses: 'Courses',
+            students: 'Students',
+            rating: 'Rating',
+            experience: 'Experience',
+            joined: 'Joined:',
+            details: 'Details',
+            revokeVerification: 'Revoke',
+            approveVerification: 'Verify',
+            profileTitle: 'Teacher Profile',
+            verifiedOfficially: 'Officially Verified',
+            bio: 'Biography',
+            totalCourses: 'Total Courses',
+            totalStudents: 'Total Students',
+            avgRating: 'Avg Rating',
+            yearsOfExperience: 'Years of Experience',
+            subjects: 'Subjects Taught',
+            certifications: 'Certifications & Qualifications',
+            close: 'Close',
+            revokeVerificationBtn: 'Revoke Teacher Verification',
+            approveVerificationBtn: 'Officially Verify Teacher',
+            confirmVerify: 'Do you want to verify teacher "{name}"? A verification badge will be shown to students.',
+            confirmRevoke: 'Do you want to revoke the verification badge for teacher "{name}"?',
+            operationFailed: 'Failed to execute operation'
+        },
+        contentDetails: {
+            title: 'Content Supervision',
+            subtitle: 'Review and evaluate lessons and educational content',
+            unspecified: 'Unspecified',
+            typeVideo: 'Video',
+            typeAudio: 'Audio',
+            typeText: 'Text',
+            statusPending: 'Pending Review',
+            statusApproved: 'Approved',
+            statusRejected: 'Rejected',
+            filterPending: 'Pending',
+            filterApproved: 'Approved',
+            filterRejected: 'Rejected',
+            filterAll: 'All',
+            emptyTitle: 'No lessons available',
+            emptyText: 'No lessons matching the current filter were found.',
+            labelCourse: 'Course',
+            labelTeacher: 'Teacher',
+            labelType: 'Type',
+            rejectReason: 'Rejection Reason',
+            approve: 'Approve & Publish',
+            reject: 'Reject & Return',
+            close: 'Close',
+            lessonDetails: 'Lesson Details for Evaluation',
+            confirmApprove: 'Are you sure you want to approve and publish this lesson?',
+            confirmReject: 'Are you sure you want to reject this lesson? It will be returned to the teacher.',
+            loadingLesson: 'Loading lesson data...',
+            lessonNotFound: 'Lesson Not Found',
+            lessonNotFoundDesc: 'Sorry, we could not find the requested lesson.',
+            backToInbox: 'Back to Inbox',
+            reviewContent: 'Review Educational Content',
+            browserNotSupportVideo: 'Your browser does not support video playback',
+            browserNotSupportAudio: 'Your browser does not support audio playback',
+            textOnlyContent: 'Text-only content',
+            noMediaAttached: 'No media file is attached to this lesson',
+            lessonDetailedDesc: 'Detailed Lesson Description',
+            noDescAttached: 'No description attached to this lesson',
+            supervisionDecision: 'Supervision Decision',
+            reviewInstruction: 'Please review the lesson content carefully before deciding to approve or reject.',
+            approveAndPublish: 'Approve and Publish Lesson',
+            rejectContent: 'Reject Content',
+            lessonAlreadyApproved: 'Lesson is already approved',
+            lessonAlreadyRejected: 'Lesson is already rejected',
+            additionalAttachments: 'Additional Attachments',
+            downloadAttachment: 'Download Attachment',
+            explainRejection: 'Explain Rejection Reason',
+            rejectionInstruction: 'Please explain the rejection reason clearly so the teacher can fix the mistakes.',
+            rejectionPlaceholder: 'Write the rejection reason clearly here...',
+            cancelAndGoBack: 'Cancel and go back',
+            confirmRejectBtn: 'Confirm Rejection'
+        },
+        fiqhDetails: {
+            error: 'An error occurred',
+            connectionError: 'Connection error',
+            loadingQuestion: 'Loading question data...',
+            questionNotFound: 'Question Not Found',
+            questionNotFoundDesc: 'Sorry, we could not find the requested question.',
+            backToQuestions: 'Back to Questions',
+            questionDetails: 'Question Details and Answer Editor',
+            fiqhSupervisionPanel: 'Fiqh Supervision Panel',
+            asker: 'Asker',
+            anonymous: 'Anonymous',
+            approvedFiqhAnswer: 'Approved Fiqh Answer',
+            editOrAdd: 'Edit or Add',
+            answeredBy: 'Answered by:',
+            publishedPublic: 'Published to public',
+            unpublishedPrivate: 'Unpublished (student only)',
+            editAndUpdateAnswer: 'Edit and Update Answer',
+            writeNewAnswer: 'Write a new answer',
+            publishToPublic: 'Publish to Public',
+            appearsInFAQ: 'Appears in FAQ for students',
+            answerInstruction: 'Please be accurate and clear in the answer, with evidence if possible. Remember that these answers represent the academy methodologically and scientifically.',
+            writeDetailedAnswer: 'Write the detailed fiqh answer here...',
+            answerSavedSuccess: 'Answer reviewed and saved successfully!',
+            approving: 'Approving...',
+            updateAndApprove: 'Update and Approve Answer',
+            approveAnswer: 'Approve Answer',
+            cancelEdit: 'Cancel Edit'
+        }
+    },
+    supervisorDashboards: {
+        studentWelcome: 'Welcome, {name}',
+        studentDashTitle: 'Student Supervisor Dashboard',
+        studentDashDesc: 'Monitor students and their recitations — quick glance at what needs your attention',
+        errorLoading: 'An error occurred while loading data',
+        pendingRecitations: 'Pending Recitations',
+        masteredRecitations: 'Mastered Recitations',
+        manageStudents: 'Manage & Monitor Students',
+        reviewRecitations: 'Review Student Recitations',
+        followConversations: 'Follow Conversations',
+        
+        reciterWelcome: 'Welcome, {name}',
+        reciterDashTitle: 'Reciter Supervisor Dashboard',
+        reciterDashDesc: 'Manage reciters, applications, and monitor recitation quality',
+        approvedReciters: 'Approved Reciters',
+        pendingApps: 'Pending Applications',
+        acceptingRecitations: 'Accepting Recitations',
+        pendingReviews: 'Pending Reviews',
+        manageReciters: 'Manage & Monitor Reciters',
+        reviewApps: 'Review Applications',
+        followRecitations: 'Monitor Recitations',
+        maqraaForum: 'Maqraa Forum',
+        followDiscussions: 'Follow Maqraa Discussions',
+        appsPendingTitle: 'Applications Pending Review',
+        appsPendingDesc: 'Latest Reciter Applications',
+        noPendingApps: 'No pending applications at the moment',
+        waiting: 'Waiting',
+        
+        // tasks
+        task_pending_recitations: 'Pending Recitations',
+        task_unassigned_recitations: 'Unassigned Recitations',
+        task_reader_applications: 'Reader Applications',
+        task_open_tickets: 'Open Conversations/Tickets'
+    },
     parentPages: {
       dashboard: {
         loading: 'Loading...',
@@ -2152,6 +2146,51 @@ export const en = {
     noNotificationsDesc: 'When you receive a new notification regarding your requests or appointments, it will appear here.',
     showMore: 'Show more notifications',
     viewAll: 'View all notifications',
+    filterTitle: 'Filter Notifications',
+    type: 'Type',
+    allTypes: 'All Types',
+    category: 'Category',
+    allCategories: 'All Categories',
+    status: 'Status',
+    allStatus: 'All',
+    read: 'Read',
+    unread: 'Unread',
+    dateRange: 'Date Range',
+    allPeriods: 'All Time',
+    today: 'Today',
+    thisWeek: 'This Week',
+    thisMonth: 'This Month',
+    resetFilters: 'Reset Filters',
+    ofNotification: 'of Notification',
+    clear: 'Clear',
+    noMatching: 'No matching notifications',
+    tryChangingFilters: 'Try changing your filters to find notifications.',
+    types: {
+      recitation_received: "New Report",
+      recitation_reviewed: "Report Reviewed",
+      mastered: "Mastered",
+      needs_session: "Session Needed",
+      session_booked: "Session Booked",
+      session_reminder: "Session Reminder",
+      new_reader_application: "New Reader Application",
+      reader_approved: "Reader Approved",
+      reader_rejected: "Reader Rejected",
+      new_recitation_admin: "New Admin Report",
+      new_message: "New Message",
+      new_announcement: "New Announcement",
+      new_contact_message: "Contact Message",
+      general: "General"
+    },
+    categories: {
+      recitation: "Reports",
+      session: "Sessions",
+      account: "Account",
+      message: "Messages",
+      announcement: "Announcements",
+      booking: "Bookings",
+      general: "General"
+    },
+
   },
 
   // Reader
@@ -2486,6 +2525,25 @@ export const en = {
 
   // Admin
   admin: {
+    platformOverviewData: {
+      platformOverview: 'Platform Overview',
+      platformOverviewDesc: 'Comprehensive statistics for Super Admin combining Academy and Maqraa.',
+      members: 'Members',
+      totalMembers: 'Total Members',
+      activeMembers: 'Active Members',
+      newMembers30Days: 'New Members (30 days)',
+      academy: 'Academy',
+      courses: 'Courses',
+      lessons: 'Lessons',
+      enrollments: 'Enrollments',
+      maqraa: 'Maqraa',
+      recitations: 'Recitations',
+      pendingReview: 'Pending Review',
+      reviewed7Days: 'Reviewed (7 days)',
+      roleDistribution: 'Role Distribution',
+      noData: 'No data available.',
+      failedToLoad: 'Failed to load statistics.',
+    },
     deleteUser: 'Delete permanently',
     failedToDeleteUser: 'Failed to delete user',
     errorsLog: 'Errors log',
@@ -2529,6 +2587,8 @@ export const en = {
     ssPlatformName: 'Platform Name',
     ssPlatformNamePlaceholder: 'Itqan Academy',
     ssPlatformNameHint: 'Appears in the title and emails',
+    ssSiteTagline: 'Site Tagline',
+    ssSiteTaglinePlaceholder: 'For mastering Quran recitation',
     ssAppUrl: 'App URL',
     ssAppUrlHint: 'Used in invitation links and emails',
     ssPlatformDescription: 'Platform Description',
@@ -2975,6 +3035,23 @@ export const en = {
     settingsTabMaintenanceDesc: 'Maintenance mode and scope',
     settingsTabSeoLabel: 'SEO',
     settingsTabSeoDesc: 'Search engine metadata',
+    ssEmailSmtpSettings: 'Email Settings (SMTP)',
+    ssEmailSmtpDesc: 'Used for sending all platform emails',
+    ssSmtpServer: 'SMTP Server',
+    ssSmtpPort: 'Port',
+    ssSmtpUsername: 'Username',
+    ssSmtpPassword: 'Password',
+    ssSmtpSenderEmail: 'Sender Email',
+    ssSmtpSenderName: 'Sender Name',
+    ssSeoSettings: 'SEO Settings',
+    ssSeoDesc: 'Site metadata shown in search engines',
+    ssSeoTitle: 'Home Page Title (Meta Title)',
+    ssSeoTitlePlaceholder: 'ITQan — Quran Learning Platform',
+    ssSeoDescription: 'Site Description (Meta Description)',
+    ssSeoDescPlaceholder: 'Comprehensive educational platform for Quran memorization and Tajweed...',
+    ssSeoKeywords: 'Keywords (Meta Keywords)',
+    ssSeoKeywordsPlaceholder: 'quran, memorization, tajweed, learning',
+    ssSeoOgImage: 'OG Image URL',
     usersFilterClients: 'Filter Clients',
     usersFilterStatus: 'Status',
     usersFilterGender: 'Gender',
@@ -2991,6 +3068,15 @@ export const en = {
     save: 'Save',
     settingsHint: 'Settings specific to this academy only. General site settings are managed by the super admin.',
     maqraahSettingsTitle: 'Maqraah Settings',
+    setTabGeneral: 'General',
+    setTabReaders: 'Readers & Students',
+    setTabHalaqat: 'Halaqat & Sessions',
+    setTabRecitations: 'Recitations & Evaluation',
+    setTabPaths: 'Memorization & Tajweed Paths',
+    setTabGamification: 'Points & Levels',
+    setTabCompetitions: 'Competitions & Certificates',
+    setTabNotifications: 'Notifications & Email',
+    maqraahSettingsHint: 'Settings for Maqraah only. Does not affect Academy or the rest of the site.',
     maintenanceModeTitle: 'Maintenance Mode',
     maintenanceModeDesc: 'When enabled, a maintenance page is shown to visitors according to the selected scope.',
     maintenanceModeToggle: 'Enable Maintenance Mode',
@@ -3150,19 +3236,7 @@ export const en = {
     sidebarJoinApplication: 'Join Application',
 
     // Recordings Page
-    recTitle: 'Recordings',
-    recDesc: 'Browse past session recordings. View recordings you attended or started.',
-    recSearchPlaceholder: 'Search by title or host name...',
-    recMyRecordings: 'My Recordings',
-    recAllRecordingsAdmin: 'All Recordings (Admin)',
-    recAllTypes: 'All Types',
-    recHalaqat: 'Halaqat',
-    recCourseLessons: 'Course Lessons',
-    recPrivateSessions: 'Private Sessions',
-    recAllPlatforms: 'All Platforms',
-    recAcademyPlatform: 'Academy',
-    recMaqraaPlatform: 'Maqraa',
-    recRetry: 'Retry',
+  recRetry: 'Retry',
     recNoRecordings: 'No recordings',
     recNoRecordingsDesc: 'Try changing the filters above.',
     recAttendees: 'present',
@@ -3720,22 +3794,7 @@ export const en = {
     cvTickets: 'Tickets',
     cvPage: 'Page {page} of {total}',
 
-    // Settings Page Tabs
-    setTabSystem: 'System Settings',
-    setTabReaders: 'Readers & Applications',
-    setTabHalaqat: 'Halaqat & Sessions',
-    setTabRecitations: 'Recitations & Evaluation',
-    setTabPaths: 'Memorization & Tajweed Paths',
-    setTabGamification: 'Points & Levels',
-    setTabCompetitions: 'Competitions & Certificates',
-    setTabNotifications: 'Notifications & Email',
-    setTabSecurity: 'Security & Privacy',
-    setTabMaintenance: 'Maintenance',
-    setSearchPlaceholder: 'Search settings...',
-    setUnsavedChanges: 'unsaved changes',
-    setCancel: 'Cancel',
-    setSaveChanges: 'Save Changes',
-    setSaving: 'Saving...',
+
 
     // Bookings
     bkgTitle: 'Sessions & Bookings',
@@ -3824,10 +3883,14 @@ export const en = {
     svStudentSupervisor: 'Student Supervisor',
     svReciterSupervisor: 'Reciter Supervisor',
     svManage: 'Manage Supervisors',
+    svManageHint: 'Define the scope of each supervisor for their assigned students or reciters',
     svNoSupervisors: 'No supervisors yet',
     svFullScope: 'Full scope (all)',
     svSetScope: 'Set scope',
     svSetScopeTitle: 'Set Supervision Scope',
+    svScopeHint: 'Select the assigned users. Leaving all unchecked means full scope (sees everyone).',
+    svSelected: '{count} selected',
+    svAssignedCount: '{count} assigned {type}',
     svSearchPlaceholder: 'Search by name or email...',
     svNoUsers: 'No users found',
     svInactive: 'Inactive',
@@ -4204,6 +4267,7 @@ export const en = {
       rangeYear: 'Last year',
       title: 'Reports & Statistics',
       description: 'Full statistics and detailed analytics platform performance',
+      preparingReports: 'Preparing reports...',
       metric: 'Metric',
       value: 'Value',
       totalStudents: 'Total Students',
@@ -4311,7 +4375,7 @@ export const en = {
       yearsExperience: 'Years of Experience',
       accountActive: 'Account Active',
       evaluationActive: 'Active for Recitations',
-      sessionsActive: 'Active for Sessions/Students',
+      sessionsActive: 'Active for Sessions',
       cancel: 'Cancel',
       saveChanges: 'Save Changes',
     },
@@ -4830,8 +4894,41 @@ export const en = {
     submit: 'Submit',
   },
 
+  adminModeBanner: {
+    maqraaModeLabel: 'Maqraah Admin Mode',
+    maqraaModeDesc: 'You are browsing with Maqraah Admin permissions. Modifications affect recitation and listening.',
+    academyModeLabel: 'Academy Admin Mode',
+    academyModeDesc: 'You are browsing with Academy Admin permissions. Modifications affect courses and students.',
+    returnToSuperAdmin: 'Return to Super Admin',
+  },
+
   // Academy Admin
   academyAdmin: {
+    stealthMonitor: '(Stealth Monitor)',
+    stealthSubtitle: 'You are currently monitoring this session as a stealth administrator',
+    studentsList: {
+      registeredInAcademy: 'registered in the academy',
+      ofTotal: 'of total',
+      currentlyActive: 'currently active',
+      coursesPerStudent: 'courses per student',
+      all: 'All',
+      searchNoResults: 'Try using different search terms or changing filters.',
+      noStudentsYet: 'No students have registered in the academy yet.',
+      actions: 'Actions',
+      active: 'Active',
+      total: 'Total',
+      editInfo: 'Edit Info',
+      showing: 'Showing',
+      of: 'of',
+      studentsCount: 'students',
+      editStudentInfo: 'Edit Student Info',
+    },
+    points: {
+      previous: 'Previous',
+      error: 'Error',
+    },
+
+    supervision: 'Supervision',
     // Access Control
     accessControl: 'Access Control',
     accessControlDesc: 'Manage user platform access permissions',
@@ -4943,7 +5040,6 @@ export const en = {
       consistency: 'Consistency',
       other: 'Other',
     },
-    points: 'points',
 
     // Students
     academyStudents: 'Academy Students',
@@ -6694,10 +6790,10 @@ export const en = {
     settingsKeywordsGeneral: ['name', 'logo', 'link', 'description', 'language', 'timezone', 'اسم', 'شعار', 'رابط', 'وصف', 'لغة', 'توقيت'],
     settingsKeywordsRegistration: ['registration', 'student', 'teacher', 'approval', 'fields', 'تسجيل', 'طالب', 'أستاذ', 'موافقة', 'حقول'],
     settingsKeywordsCourses: ['course', 'video', 'file', 'storage', 'upload', 'watermark', 'دورة', 'فيديو', 'ملف', 'تخزين', 'تحميل', 'علامة مائية'],
-    settingsKeywordsSessions: ['session', 'video', 'reminder', 'zoom', 'livekit', 'جلسة', 'فيد��و', 'تذكير'],
+    settingsKeywordsSessions: ['session', 'video', 'reminder', 'zoom', 'livekit', 'جلسة', 'فيديو', 'تذكير'],
     settingsKeywordsGamification: ['points', 'level', 'badge', 'streak', 'leaderboard', 'نقاط', 'مستوى', 'شارة'],
     settingsKeywordsNotifications: ['notification', 'email', 'smtp', 'reminder', 'إشعار', 'بريد', 'إيميل', 'تذكير'],
-    settingsKeywordsForum: ['forum', 'fiqh', 'question', 'topic', 'banned', '��نتدى', 'فقه', 'سؤال', 'موضوع', 'كلمات ممنوعة'],
+    settingsKeywordsForum: ['forum', 'fiqh', 'question', 'topic', 'banned', 'منتدى', 'فقه', 'سؤال', 'موضوع', 'كلمات ممنوعة'],
     settingsKeywordsSecurity: ['security', 'password', '2fa', 'ip', 'session', 'rate limit', 'أمان', 'كلمة سر', 'جلسة'],
     settingsKeywordsMaintenance: ['maintenance', 'cache', 'backup', 'صيانة', 'نسخة احتياطية'],
 
@@ -6916,7 +7012,7 @@ export const en = {
       ratingLabel: "Average Rating",
       latestCourses: "Latest Courses",
       viewAllBtn: "View All",
-      noCourses: "You haven't created any courses yet",
+      noCourses: "You haven\'t created any courses yet",
       noCoursesDesc: "Start your teaching journey by creating your first course and publishing it to students.",
       createCourseBtn: "Create Course",
       published: "Published",
@@ -6979,8 +7075,8 @@ export const en = {
       "بعد أذان المغرب": "After Maghrib Athan",
       "عناصر الورد": "Wird Items",
       "أضف ما تريد قراءته يومياً من القرآن الكريم.": "Add what you want to read daily from the Holy Quran.",
-      "لم تُضِف أي عنصر بعد": "You haven't added any items yet",
-      "أضف السور أو الصفحات أو الأجزاء التي تريد قراء��ها ��ومياً.": "Add the surahs, pages, or juzs you want to read daily.",
+      "لم تُضِف أي عنصر بعد": "You haven\'t added any items yet",
+      "أضف السور أو الصفحات أو الأجزاء التي تريد قراءتها يومياً.": "Add the surahs, pages, or juzs you want to read daily.",
       "اكتب هدفك أو تذكيراً شخصياً لنفسك.": "Write your goal or a personal reminder.",
       "تم الحفظ": "Saved",
       "حفظ الإعدادات": "Save Settings",
@@ -7015,7 +7111,7 @@ export const en = {
       "آية قيد المراجعة": "Verse Under Review",
       "آية متبقية": "Remaining Verse",
       "جزء عمّ": "Juz Amma",
-      "جزء تبا��ك": "Juz Tabarak",
+      "جزء تبارك": "Juz Tabarak",
       "من سورة الملك": "From Surah Al-Mulk",
       "30 جزءاً بالترتيب": "30 Juzs in order",
       "الجدول الأساسي": "Base table",
@@ -7035,11 +7131,11 @@ export const en = {
       "تعذّر التحميل": "Failed to load",
       "اختر تصنيف السؤال": "Select Question Category",
       "تعذّر الإرسال": "Failed to send",
-      "تم إرسال سؤالك بنجاح. سيتم إبلا��ك عند ورود الإجابة.": "Question sent successfully. You will be notified when answered.",
+      "تم إرسال سؤالك بنجاح. سيتم إبلاغك عند ورود الإجابة.": "Question sent successfully. You will be notified when answered.",
       "المكتبة": "Library",
       "أسئلتي": "My Questions",
       "اطرح سؤالاً": "Ask a Question",
-      "مكتبة ا��فتاوى": "Fatwa Library",
+      "مكتبة الفتاوى": "Fatwa Library",
       "المكتبة الفقهية": "Fiqh Library",
       "تصفّح أسئلة فقهية أجاب عنها المسؤولون المتخصصون ووافق أصحابها على نشرها، أو اطرح سؤالك وسيصل إلى مسؤول مختص في التصنيف.": "Browse Fiqh questions answered by specialists, or ask your own.",
       "سجّل الدخول لعرض أسئلتك.": "Sign in to view your questions.",
@@ -7047,9 +7143,9 @@ export const en = {
       "ابحث في المكتبة الفقهية...": "Search Fiqh Library...",
       "الكل": "All",
       "لا توجد نتائج مطابقة. جرّب تعديل البحث أو التصنيف.": "No matching results. Try adjusting the search or category.",
-      "المكتبة فارغة بعد. كن أول ��ن يسأل!": "Library is empty. Be the first to ask!",
-      "��جهول": "Anonymous",
-      "الإجا��ة": "Answer",
+      "المكتبة فارغة بعد. كن أول من يسأل!": "Library is empty. Be the first to ask!",
+      "مجهول": "Anonymous",
+      "الإجابة": "Answer",
       "هل توافق على نشر السؤال والإجابة في المكتبة العامة؟": "Do you agree to publish the question and answer in the public library?",
       "موافقتك تجعل السؤال والإجابة مرئيين للجميع لينتفع بهما الآخرون. يمكنك اختيار النشر بدون اسمك.": "Your approval makes the Q&A visible to others. You can choose to publish anonymously.",
       "سائل مجهول": "Anonymous Asker",
@@ -7062,7 +7158,7 @@ export const en = {
       "السؤال": "Question",
       "اكتب سؤالك بوضوح. كلما كانت التفاصيل أكثر، كانت الإجابة أدق.": "Write clearly. The more details, the better the answer.",
       "إرسال مجهول الهوية": "Submit anonymously",
-      "جارٍ ال��رسال...": "Sending...",
+      "جارٍ الإرسال...": "Sending...",
       "إرسال السؤال": "Submit Question",
       "كل اللغات": "All Languages",
       "ابحث بعنوان الكتاب، المؤلف...": "Search by book title, author...",
@@ -7073,7 +7169,7 @@ export const en = {
       "مسح الفلاتر": "Clear Filters",
       "بدون غلاف": "No Cover",
       "اقرأ الآن": "Read Now",
-      "أخ����ى": "Other",
+      "أخرى": "Other",
       "عدد الصفحات": "Pages Count",
       "صفحة": "Page",
       "سنة النشر": "Publish Year",
@@ -7131,11 +7227,11 @@ export const en = {
       "إضافة ورد يومي": "Add Daily Wird",
       "يتم إعادة تعيين الورد كل يوم تلقائياً": "Wird resets automatically every day",
       "مساراتي التعليمية": "My Learning Paths",
-      "لم تنضم إلى أي مسار بعد": "You haven't joined any paths yet",
+      "لم تنضم إلى أي مسار بعد": "You haven\'t joined any paths yet",
       "تصفّح المسارات": "Browse Paths",
       "النشاط الأخير": "Recent Activity",
       "عرض الكل": "View All",
-      "لم تسجّل تلاوتك بعد": "You haven't recorded a recitation yet",
+      "لم تسجّل تلاوتك بعد": "You haven\'t recorded a recitation yet",
       "ابدأ التسميع": "Start Reciting",
       "مسجلين في الأكاديمية": "registered in the academy",
       "من الإجمالي": "of total",
@@ -7176,7 +7272,7 @@ export const en = {
       "اكتب نبذة قصيرة تعرف بنفسك للطلاب...": "Write a short bio for your students...",
       "المواد التي تدرّسها": "Subjects Taught",
       "الشهادات والإجازات": "Certifications",
-      "ل�� توجد شهادات بعد": "No certifications yet",
+      "لا توجد شهادات بعد": "No certifications yet",
       "فتح التسجيل للطلاب الجدد": "Open Registration",
       "إذا تم الإيقاف لن يظهر اسمك للطلاب الجدد": "If disabled, you won't appear to new students",
       "حفظ التغييرات": "Save Changes",
@@ -7194,7 +7290,7 @@ export const en = {
       "تم إرسال كود جديد!": "New code sent!",
       "تحقق من بريدك الإلكتروني": "Check your email",
       "جاري التأكيد...": "Confirming...",
-      "تأكيد الح��اب": "Confirm Account",
+      "تأكيد الحساب": "Confirm Account",
       "إعادة إرسال الكود": "Resend Code",
       "هل أدخلت بريداً خاطئاً؟": "Did you enter the wrong email?",
       "العودة للتسجيل": "Back to Registration",
@@ -7227,20 +7323,20 @@ export const en = {
       "آية": "Verse",
       "مكية": "Meccan",
       "مدنية": "Medinan",
-      "إعادة ��لمحاولة": "Retry",
+      "إعادة المحاولة": "Retry",
       "الآية": "Verse",
       "إيقاف مؤقت": "Pause",
       "متابعة التشغيل": "Resume Playing",
       "تشغيل الآية": "Play Verse",
       "إيقاف": "Stop",
-      "الصفحة السا��قة": "Previous Page",
+      "الصفحة السابقة": "Previous Page",
       "انتقال": "Go",
       "الصفحة التالية": "Next Page",
       "متابعة تلقائية": "Auto Continue",
       "تعذّر تشغيل الصوت، حاول قارئاً آخر": "Failed to play audio, try another reciter",
       "لا يمكن حذف الدورة. هل تود المحاولة على أي حال؟": "Cannot delete course. Do you want to try anyway?",
       "تعذر حذف الدورة.": "Failed to delete course.",
-      "تم إرسال ال��ورة للأدمن للمراجعة.": "Course sent to admin for review.",
+      "تم إرسال الدورة للأدمن للمراجعة.": "Course sent to admin for review.",
       "تعذر إرسال الدورة للمراجعة.": "Failed to send course for review.",
       "تعطيل الدورة؟ ستختفي من قائمة الطلاب الجدد بينما يكمل الطلاب الحاليون دراستهم.": "Disable course? It will disappear from new students' lists.",
       "إعادة تفعيل الدورة؟ ستظهر للطلاب الجدد مجدداً.": "Reactivate course? It will appear to new students again.",
@@ -7262,7 +7358,7 @@ export const en = {
       "الدورة بانتظار مراجعة الأدمن ولا تظهر للطلاب حتى تتم الموافقة.": "Course is pending admin review and won't appear to students yet.",
       "درس": "Lesson",
       "مسجلين": "Registered",
-      "إعادة الإرسا�� للمراجعة": "Resubmit for Review",
+      "إعادة الإرسال للمراجعة": "Resubmit for Review",
       "إدارة الدورة": "Manage Course",
       "تعديل الدورة": "Edit Course",
       "إعادة تفعيل": "Reactivate",
@@ -7310,7 +7406,7 @@ export const en = {
       "لا توجد تسجيلات حتى الآن": "No recordings yet",
       "لم يتم العثور على أي تسجيلات للجلسات التي حضرتها. بمجرد أن يقوم المعلم بمشاركة تسجيل جلسة سابقة، سيظهر هنا مباشرة.": "No recordings found for attended sessions. Once the teacher shares a recording, it will appear here.",
       "تحديث الصفحة": "Refresh Page",
-      "مش��رك حضر الجلسة": "Participant attended",
+      "مشارك حضر الجلسة": "Participant attended",
       "شاهد التسجيل": "Watch Recording",
       "قيد المعالجة": "Processing",
       "التفاصيل": "Details",
@@ -7327,18 +7423,18 @@ export const en = {
       "تفاصيل الجلسة": "Session Details",
       "رابط المشاركة": "Meeting Link",
       "جاري تحميل الدورات...": "Loading courses...",
-      "��رحباً بك في رحلتك التعليمية": "Welcome to your learning journey",
+      "مرحباً بك في رحلتك التعليمية": "Welcome to your learning journey",
       "دوراتي التعليمية": "My Educational Courses",
       "تابع تقدمك في الدورات المسجلة، واصل التعلم وحقق أهدافك المعرفية بخطى ثابتة.": "Track your progress, continue learning, and achieve your goals.",
       "استكشف دورات جديدة": "Explore new courses",
       "مكتملة": "Completed",
       "قيد التقدم": "In Progress",
-      "مت��سط الإنجاز": "Average Completion",
+      "متوسط الإنجاز": "Average Completion",
       "ابحث عن دورة...": "Search for a course...",
       "لا توجد نتائج مطابقة لبحثك": "No results matched your search",
       "حاول استخدام كلمات مفتاحية مختلفة للبحث.": "Try using different keywords for search.",
       "استكشف مكتبتنا الغنية بالدورات وابدأ رحلة التعلم الآن.": "Explore our rich course library and start learning now.",
-      "تصفح الدورات ال��تاحة": "Browse available courses",
+      "تصفح الدورات المتاحة": "Browse available courses",
       "مكتملة بنجاح": "Successfully completed",
       "تم إرسال طلب تعديل الموعد. سيتم إشعارك بعد رد الطالب.": "Reschedule request sent. You will be notified upon student reply.",
       "تم قبول طلب التعديل وتحديث الموعد.": "Reschedule request accepted and time updated.",
@@ -7366,8 +7462,8 @@ export const en = {
       "حفظ الرابط": "Save Link",
       "إدارة الجلسة": "Manage Session",
       "تعديل الميعاد": "Reschedule",
-      "اكتم��ل الجلسة": "Complete Session",
-      "تأكيد انتهاء هذه الجلس�� بنجاح": "Confirm this session ended successfully",
+      "اكتمال الجلسة": "Complete Session",
+      "تأكيد انتهاء هذه الجلسة بنجاح": "Confirm this session ended successfully",
       "التعليقات والملاحظات": "Comments and Notes",
       "ملاحظات خاصة بينك وبين الطالب حول هذه الجلسة": "Private notes between you and the student regarding this session",
       "اقتراح تعديل الموعد": "Propose Reschedule",
@@ -7384,1586 +7480,9 @@ export const en = {
       "تسجيل ولي أمر جديد": "Register New Parent",
       "تسجيل طالب جديد": "Register New Student",
       "المنصة المراد التسجيل بها": "Target Platform for Registration"
-  }
-,
-  extracted_2026_v2: {
-    "حلقة": "Ring",
-    "جلسة 1:1": "1:1 session",
-    "درس مباشر": "Live lesson",
-    "180p (منخفضة جداً)": "180p (very low)",
-    "360p (منخفضة)": "360p (low)",
-    "540p (متوسطة)": "540p (medium)",
-    "720p HD (موصى بها)": "720p HD (recommended)",
-    "فشل الحفظ": "Save failed",
-    "الأكاديمية": "Academy",
-    "المقرأة": "The reader",
-    "منصة": "platform",
-    "إعدادات البث والفيديو": "Streaming and video settings",
-    "تحكم كامل بإعدادات الفيديو، الجودة، التسجيل، وعرض إحصائيات لحظية وسجل تفصيلي لكل الجلسات.": "Full control over video settings, quality, and recording, and display real-time statistics and a detailed log of all sessions.",
-    "نظرة عامة": "Overview",
-    "الإعدادات": "Settings",
-    "سجل الجلسات": "Record sessions",
-    "تخزين التسجيلات (S3)": "Recording storage (S3)",
-    "غرف مباشرة الآن": "Live rooms now",
-    "مشارك حالياً": "Currently participating",
-    "إجمالي الجلسات": "Total sessions",
-    "في آخر 7 أيام": "In the last 7 days",
-    "إجمالي الدقائق": "Total minutes",
-    "د/جلسة": "D/session",
-    "مستخدمون فريدون": "Unique users",
-    "انضموا على الأقل لجلسة واحدة": "Join at least one session",
-    "متوسط التقييم": "Average rating",
-    "جلسة مقيّمة": "Evaluation session",
-    "حلقات": "Rings",
-    "جلسات 1:1": "1:1 sessions",
-    "دروس مباشرة": "Live lessons",
-    "LiveKit غير مكوّن": "LiveKit is not configured",
-    "أضف": "Add",
-    "و": "And",
-    "في متغيرات البيئة لتفعيل البث.": "In the environment variables to enable broadcasting.",
-    "آخر الجلسات": "Latest sessions",
-    "جودة الفيديو والحدود": "Video quality and limits",
-    "جودة الفيديو الافتراضية": "Default video quality",
-    "الحد الأقصى للمشاركين": "Maximum number of participants",
-    "عدد المشاركين الذين يمكنهم الانضمام إلى أي جلسة بآنٍ واحد": "The number of participants who can join any session at once",
-    "الحد الأقصى لمدة الجلسة (دقائق)": "Maximum session duration (minutes)",
-    "مهلة عدم النشاط (دقائق)": "Inactivity timeout (minutes)",
-    "إنهاء الغرفة تلقائياً بعد عدم وجود نشاط": "Automatically terminate the room after no activity",
-    "جلسات صوتية فقط (افتراضياً)": "Audio-only sessions (by default)",
-    "لتقليل استهلاك الإنترنت": "To reduce internet consumption",
-    "التسجيل": "Registration",
-    "السماح بتسجيل الجلسات": "Allow recording of sessions",
-    "يفعل زر بدء التسجيل داخل غرفة البث للمضيف": "Activates the Start Recording button within the host's broadcast room",
-    "بدء التسجيل تلقائياً عند بدء الجلسة": "Automatically start recording when the session starts",
-    "يبدأ تسجيل كل جلسة بمجرد فتحها": "Recording of each session begins as soon as it is opened",
-    "التخزين السحابي مفعّل. تُحفظ التسجيلات تلقائياً على السحابة (S3)\r\n                وتظهر في صفحة «الجلسات والبث المباشر» ضمن تبويب «التسجيلات» بعد انتهاء كل جلسة.": "Cloud storage is enabled. Recordings are automatically saved to the cloud (S3)\r\n                They appear on the “Sessions and Live Broadcast” page under the “Recordings” tab after the end of each session.",
-    "التخزين السحابي (S3) غير مكوّن على الخادم، لذلك لن يبدأ التسجيل.\r\n                يحتاج مدير النظام إلى ضبط متغيّرات البيئة:": "Cloud storage (S3) is not configured on the server, so recording will not start.\r\n                The system administrator needs to set environment variables:",
-    "،": ",",
-    "صلاحيات المشاركين": "Participant powers",
-    "السماح بالشات داخل الغرفة": "Allow chat inside the room",
-    "السماح بمشاركة الشاشة": "Allow screen sharing",
-    "السماح للطالب بفتح المايك": "Allow the student to open the microphone",
-    "السماح للطالب بفتح الكاميرا": "Allow the student to open the camera",
-    "طلب موافقة المضيف قبل الانضمام": "Require host approval before joining",
-    "تجربة المستخدم": "User experience",
-    "إظهار عدد المشاركين": "Show the number of participants",
-    "تفعيل تقييم الجلسة بعد انتهائها": "Activate the session evaluation after it ends",
-    "علامة مائية (اختياري)": "Watermark (optional)",
-    "مثال: itqan academy": "Example: itqan academy",
-    "نص يظهر بشفافية أسفل يمين غرفة البث": "Text that appears transparently at the bottom right of the broadcast room",
-    "جاري الحفظ…": "Saving...",
-    "لا توجد جلسات بعد.": "There are no sessions yet.",
-    "تسجيل متاح": "Registration available",
-    "· بدأها": "· He started it",
-    "مدة": "Duration",
-    "د": "D",
-    "ذروة": "Peak",
-    "مشاركون": "Participants",
-    "تعذر تحميل الجلسة": "The session could not be loaded",
-    "تعذر تحميل بيانات الجلسة": "Unable to load session data",
-    "العودة للسجل": "Back to record",
-    "العودة لسجل الجلسات": "Return to session log",
-    "مراقبة خفية": "Hidden surveillance",
-    "تشغيل التسجيل": "Play recording",
-    "مدة الجلسة": "Session duration",
-    "ذروة المشاركين": "Peak participants",
-    "إجمالي الحضور": "Total attendance",
-    "من 5": "From 5",
-    "لم يتم التقييم": "Not evaluated",
-    "سجل المشاركين": "Register participants",
-    "لم يسجل أي مشارك الدخول لهذه الجلسة.": "No participants are logged in for this session.",
-    "مضيف": "Host",
-    "دخول - خروج": "Entry - Exit",
-    "← مستمر": "← Ongoing",
-    "البقاء": "Stay",
-    "التقييمات": "Ratings",
-    "لم يقم أي طالب بتقييم هذه الجلسة بعد.": "No students have rated this session yet.",
-    "الصوت:": "Audio:",
-    "الفيديو:": "Video:",
-    "المدرّس:": "Teacher:",
-    "جاري تجهيز غرفة البث المباشر…": "The live broadcast room is being prepared...",
-    "يتم التحقق من الصلاحيات والاتصال بالخادم": "The permissions and connection to the server are verified",
-    "تعذر فتح الغرفة": "The room could not be opened",
-    "خطأ غير معروف": "Unknown error",
-    "تعذر إنشاء رمز الدخول": "The access code could not be generated",
-    "عنوان خادم البث غير مع��ّف": "Streaming server address not defined",
-    "رجوع": "Back",
-    "غرفة الجلسة": "Session room",
-    "المضيف": "Host",
-    "مشارك": "Participant",
-    "خروج": "Exit",
-    "الميكروفون": "Microphone",
-    "كتم": "Mute",
-    "الكاميرا": "Camera",
-    "إيقاف الكاميرا": "Turn off the camera",
-    "مشاركة الشاشة": "Screen sharing",
-    "إيقاف المشاركة": "Stop sharing",
-    "المحادثة": "Conversation",
-    "المشاركون": "Participants",
-    "هل تريد الخروج؟": "Do you want to go out?",
-    "سيتم قطع الاتصال بهذه الجلسة.": "This session will be disconnected.",
-    "قيّم هذه الجلسة": "Rate this session",
-    "رأيك يهمنا — سيظهر للمدرّس والإدارة فقط.": "Your opinion matters to us - it will be visible to the teacher and administration only.",
-    "التقييم العام": "Overall evaluation",
-    "جودة الصوت": "Sound quality",
-    "جودة الفيديو": "Video quality",
-    "أداء المدرّس": "Teacher performance",
-    "ملاحظات إضافية (اختياري)": "Additional notes (optional)",
-    "تخطي": "Skip",
-    "إرسال التقييم": "Submit evaluation",
-    "جاري الإرسال…": "Sending...",
-    "شكراً على تقييمك": "Thank you for your rating",
-    "سيساعدنا في تحسين الجلسات القادمة.": "It will help us improve the upcoming sessions.",
-    "نجوم": "Stars",
-    "بانتظار انضمام المشاركين": "Waiting for participants to join",
-    "سيظهر المشاركون هنا بمجرد دخولهم الغرفة.": "Participants will appear here once they enter the room.",
-    "المعلم": "Teacher",
-    "المقرئ": "The reciter",
-    "مشرف": "Supervisor",
-    "أنت": "You",
-    "س": "S",
-    "حدث خطأ غير متوقع": "An unexpected error occurred",
-    "بحث بعنوان الجلسة أو اسم الطالب...": "Search by session title or student name...",
-    "الجلسات الفردية": "Individual sessions",
-    "الحلقات": "Episodes",
-    "لا توجد تسجيلات": "There are no recordings",
-    "لم يتم العثور على تسجيلات مطابقة. ستظهر التسجيلات هنا بعد انتهاء الجلسات.": "No matching records found. The recordings will appear here after the sessions end.",
-    "لا يوجد رابط": "There is no link",
-    "تقرير جديد": "New report",
-    "تقرير تم مراجعته": "Reviewed report",
-    "اتقان": "Mastery",
-    "جلسة مطلوبة": "Session required",
-    "جلسة محجوزة": "Booked session",
-    "تذكير الجلسة": "Session reminder",
-    "طلب قارئ جديد": "New reader request",
-    "قارئ موافق عليه": "Reader approved",
-    "قارئ مرفوض": "Rejected reader",
-    "تقرير جديد للمسؤول": "New report to the official",
-    "رسالة جديدة": "New message",
-    "إعلان جديد": "New ad",
-    "رسالة تواصل": "Communication message",
-    "عام": "General",
-    "التقارير": "Reports",
-    "الحساب": "Account",
-    "الرسائل": "Messages",
-    "الإعلانات": "Advertisements",
-    "الحجوزات": "Reservations",
-    "تصفية": "Filter",
-    "النوع": "Type",
-    "جميع الأنواع": "All types",
-    "الفئة": "Category",
-    "جميع الفئات": "All categories",
-    "الحالة": "Status",
-    "غير المقروءة": "Unread",
-    "المقروءة": "Read",
-    "النطاق الزمني": "Time range",
-    "كل الفت��ات": "All periods",
-    "هذا الأسبوع": "This week",
-    "هذا الشهر": "This month",
-    "إعادة تعيين الفلاتر": "Reset filters",
-    "إشعار": "Notice",
-    "لا توجد إشعارات مطابقة": "There are no matching notifications",
-    "جرب تغيير الفلاتر للعثور على الإشعارات": "Try changing the filters to find notifications",
-    "متأخر": "Late",
-    "بعذر": "Excuse me",
-    "غائب": "Absent",
-    "ساعة": "An hour",
-    "لم يتم العثور على الحلقة أو لست منضماً إليها": "The episode was not found or you are not joined",
-    "العودة للحلقات": "Back to the episodes",
-    "مختلط": "Mixed",
-    "انضم للبث الآن": "Join the broadcast now",
-    "دخول الغرفة": "Entering the room",
-    "نسبة حضوري": "My attendance rate",
-    "مرات الحضور": "Attendance times",
-    "جلسات عُقدت": "Sessions held",
-    "زملائي": "My colleagues",
-    "سجل حضوري": "Record my attendance",
-    "الزملاء (": "Colleagues (",
-    "حالة الحلقة": "Loop status",
-    "نشطة": "Active",
-    "متوقفة": "Stopped",
-    "غير محدد": "Not specified",
-    "الموعد القادم": "Next appointment",
-    "سيُعلن لاحقاً": "Will be announced later",
-    "تاريخ انضمامي": "My joining date",
-    "مرات التأخير": "Delay times",
-    "مرات الغياب": "Absence times",
-    "رابط بديل للقاء": "Alternative link to meet",
-    "فتح الرابط": "Open the link",
-    "لم تُعقد أي جلسات بعد": "No sessions have been held yet",
-    "جارية الآن": "Now underway",
-    "المدة:": "Duration:",
-    "انضم": "Join",
-    "لا يوجد تسجيل": "No registration",
-    "لا يوجد سجل حضور بعد": "No attendance record yet",
-    "لا يوجد زملاء في الحلقة بعد": "There are no ring mates yet",
-    "تعذر إضافة الطالب": "Unable to add student",
-    "إزالة الطالب من الحلقة؟": "Remove student from loop?",
-    "لم يتم ال��ثور على الحلقة أو لا تملك صلاحية الوصول": "The episode was not found or does not have access",
-    "انضم للبث": "Join the broadcast",
-    "إنهاء البث": "End the broadcast",
-    "بدء البث المباشر": "Start live broadcast",
-    "الطلاب (": "students (",
-    "عدد الطلاب الحالي": "Current number of students",
-    "الجنس المسموح": "Allowed sex",
-    "رابط بديل": "Alternative link",
-    "رابط البث الداخلي": "Internal broadcast link",
-    "طالب من أصل": "Student of origin",
-    "إضافة طالب": "Add a student",
-    "لم يلتحق أي طالب بهذه الحلقة بعد": "No students have joined this class yet",
-    "جلسة": "Session",
-    "موقوف": "Suspended",
-    "إزالة": "Remove",
-    "إضافة طلاب للحلقة": "Add students to the session",
-    "ابحث بالاسم أو البريد…": "Search by name or email...",
-    "لا يوجد طلاب مطابقون": "There are no matching students",
-    "مباشرة": "directly",
-    "ممتاز": "Excellent",
-    "اجتاز": "Pass",
-    "يحتاج مراجعة": "Needs review",
-    "إعادة": "Re",
-    "حذف هذه الجلسة وكل تقييماتها؟": "Delete this session and all its ratings?",
-    "جلسة جديدة": "New session",
-    "لا توجد جلسات مجدولة بعد": "There are no sessions scheduled yet",
-    "حضور": "Presence",
-    "تقييم": "Evaluation",
-    "إخفاء تقييمي": "Hide my review",
-    "تقييمي وورد المتابعة": "My review and follow-up",
-    "التقييم والحضور": "Evaluation and attendance",
-    "بدء": "start",
-    "إنهاء": "Finish",
-    "حذف": "Delete",
-    "عنوان الجلسة مطلوب": "Session title is required",
-    "تعذر حف�� الجلسة": "The session could not be saved",
-    "تعديل الجلسة": "Modify the session",
-    "عنوان الجلسة": "Session title",
-    "مثال: الجلسة الأسبوعية - سورة البقرة": "Example: Weekly session - Surat Al-Baqarah",
-    "الموعد": "The appointment",
-    "المدة (دقيقة)": "Duration (minutes)",
-    "الورد (السورة)": "Al-Ward (Surah)",
-    "— بدون —": "— without —",
-    "من آية": "From a verse",
-    "إلى آية": "To Aya",
-    "ملاحظة الورد": "Rose note",
-    "��ثال: حفظ + مراجعة الوجه السابق": "Example: Save + review previous face",
-    "أجندة / تفاصيل": "Agenda/Details",
-    "لا يوجد طلاب في الحلقة": "There are no students in the circle",
-    "تعديل التقييم": "Modify the rating",
-    "الحفظ": "Preservation",
-    "التجويد": "Tajweed",
-    "��لطلاقة": "Fluency",
-    "التقدير": "Appreciation",
-    "ملاحظات": "Notes",
-    "الورد القادم": "Next rose",
-    "— سورة —": "- Surah -",
-    "إلى": "To",
-    "حفظ التقييم": "Save rating",
-    "لم يتم تسجيل تقييم لهذه الجلسة بعد": "No rating has been recorded for this session yet",
-    "الحضور:": "Attendance:",
-    "غير مسجل": "Not registered",
-    "ملاحظات المعلم:": "Teacher's notes:",
-    "ورد المتابعة": "Follow-up response",
-    "حلقات الأكاديمية": "Academy episodes",
-    "بيئة تعليمية متكاملة للمدرسين والطلاب": "An integrated learning environment for teachers and students",
-    "لا توجد حلقات بعد — أنشئ أول حلقة وابدأ رحلتك التعليمية": "No episodes yet — create your first episode and start your learning journey",
-    "حلقات المقرأة": "Reciter episodes",
-    "حلقات تحفيظ وتجويد القرآن الكريم بإشراف مباشر": "Classes for memorization and recitation of the Holy Quran under direct supervision",
-    "لا توجد حلقات بعد — أنشئ حلقة وابدأ التلقي مع الطلاب": "No rings yet — create a ring and start receiving with students",
-    "تعذر الحفظ": "Unable to save",
-    "حذف الحلقة وجميع بياناتها؟ لا يمكن التراجع.": "Delete the episode and all its data? It cannot be undone.",
-    "تعذر الحذف": "Unable to delete",
-    "حلقة جديدة": "New episode",
-    "إجمالي الحلقات": "Total episodes",
-    "حلقات مباشرة الآن": "Live episodes now",
-    "ابحث باسم الحلق�� أو المدرس…": "Search by the name of the class or teacher...",
-    "متوقف": "Stopped",
-    "لا توجد حلقات لعرضها": "There are no episodes to display",
-    "إضافة حلقة": "Add a loop",
-    "مسار فقط": "Path only",
-    "فتح الحلقة": "Open the loop",
-    "إدارة الحلقة": "Episode management",
-    "تعديل الحلقة": "Edit the loop",
-    "إضافة حلقة جديدة": "Add a new episode",
-    "اسم الحلقة": "Episode name",
-    "حلقة تجويد الجزء الأول": "Tajweed episode, part one",
-    "حلقة الصحابة لتحفيظ القرآن": "Companions circle for memorizing the Qur’an",
-    "الوصف": "Description",
-    "تفاصيل عن أهداف الحلقة، الجمهور المستهدف، طبيعة المحتوى…": "Details about the objectives of the episode, the target audience, the nature of the content...",
-    "المدرس": "The teacher",
-    "اختر مدرساً": "Choose a teacher",
-    "الجنس": "Sex",
-    "ذكور فقط": "Males only",
-    "إناث فقط": "Females only",
-    "الحد الأقصى للطلاب": "Maximum students",
-    "رؤية الحلقة": "See the episode",
-    "حلقة عامة": "General episode",
-    "متاحة لجميع الطلاب": "Available to all students",
-    "مخصصة لمسار": "Dedicated to a path",
-    "لطلاب المسارات فقط": "For track students only",
-    "اربط الحلقة بمسار": "Connect the loop to a path",
-    "— اختر مساراً —": "—Choose a path—",
-    "مسارات التجويد": "Tajweed paths",
-    "مسارات التحفيظ": "Memorization paths",
-    "تسجيل طلاب المسار تلقائياً": "Automatically register track students",
-    "سيتم إضافة جميع طلاب المسار النشطين إلى الحلقة عند الإنشاء": "All active track students will be added to the loop upon creation",
-    "موعد البدء (اختياري)": "Start date (optional)",
-    "مدة الجلسة بالدقائق": "Session duration in minutes",
-    "رابط بديل خارجي (اختياري)": "External alternative link (optional)",
-    "يستخدم البث الافتراضي LiveKit المدمج — اترك الحقل فارغاً في الغا��ب.": "The default stream uses built-in LiveKit — leave the field mostly blank.",
-    "حفظ التعديلات": "Save modifications",
-    "إنشاء الحلقة": "Create the loop",
-    "لا يوجد تقييم": "There is no rating",
-    "تم تفعيل الجلسة، جاري فتح غرفة البث...": "The session has been activated, the broadcast room is being opened...",
-    "تعذّر بدء الجلسة": "The session could not be started",
-    "فشل الاتصال بالخادم": "Failed to connect to the server",
-    "هل أنت متأكد من إنهاء هذه الجلسة؟ لن يتمكن الطلاب من الدخول بعدها.": "Are you sure to end this session? Students will not be able to log in after that.",
-    "تم إنهاء الجلسة": "The session has been terminated",
-    "تعذّر إنهاء الجلسة": "The session could not be ended",
-    "هل أنت متأكد من حذف هذه الجلسة نهائياً؟": "Are you sure you want to delete this session permanently?",
-    "تم حذف الجلسة": "The session has been deleted",
-    "تعذّر الحذف": "Unable to delete",
-    "تم حذف التسجيل": "The recording has been deleted",
-    "تعذّر حذف التسجيل": "The recording could not be deleted",
-    "الجلسات والبث المباشر": "Sessions and live broadcasts",
-    "أنشئ بثاً مباشراً، أدر جلساتك المجدولة، وراجع سجلك وتسجيلاتك من مكان واحد.": "Create a live stream, manage your scheduled sessions, and review your history and recordings from one place.",
-    "بث مباشر جديد": "New live broadcast",
-    "جلسات مجدولة": "Scheduled sessions",
-    "دقائق بث": "Broadcast minutes",
-    "متوسط تقييمك": "Your average rating",
-    "البث والجلسات": "Broadcasts and sessions",
-    "السجل": "Record",
-    "الجلسات المجدولة": "Scheduled sessions",
-    "لا توجد جلسات مجدولة": "There are no sessions scheduled",
-    "ابدأ بثاً مباشراً فورياً أو جدول جلسة قادمة للتواصل مع طلابك.": "Start an instant live stream or schedule an upcoming session to connect with your students.",
-    "إنشاء جلسة": "Create a session",
-    "الجلسات السابقة": "Previous sessions",
-    "لا يوجد سجل بعد": "No record yet",
-    "بمجرد أن تبدأ بثاً مباشراً ستظهر تفاصيله هنا تلقائياً مع الحضور والتقييمات.": "Once you start a live broadcast, its details will automatically appear here, along with attendees and ratings.",
-    "لا توجد تسجيلات بعد": "There are no recordings yet",
-    "ستظهر هنا تسجيلات الجلسات بعد انتهائها مباشرة (عند تفعيل التسجيل في إعدادات الأكاديمية).": "Session recordings will appear here immediately after they end (when recording is activated in the academy settings).",
-    "حتى": "Even",
-    "عامة": "General",
-    "سلسلة:": "Series:",
-    "بدء البث الآن": "Start streaming now",
-    "حضور مسجل": "Recorded attendance",
-    "تقري�� الحضور": "Attendance report",
-    "حذف السجل": "Delete history",
-    "تعذّر تحميل التقييمات": "Unable to load assessments",
-    "تقييمات الطلاب": "Student evaluations",
-    "ال��علّم": "Teacher",
-    "الصوت": "Sound",
-    "الفيديو": "video",
-    "لا توجد تقييمات بعد.": "There are no reviews yet.",
-    "إغلاق": "Close",
-    "(ذروة": "(peak",
-    "جاري التسجيل...": "Registration in progress...",
-    "تقييمات الطلاب (": "Student evaluations (",
-    "تفاصيل الدرس": "Lesson details",
-    "حذف التسجيل": "Delete the recording",
-    "سيتم حذف هذا التسجيل نهائياً من التخزين ولن يمكن استرجاعه. هل أنت متأكد؟": "This recording will be permanently deleted from storage and cannot be retrieved. Are you sure?",
-    "حذف نهائي": "Permanent deletion",
-    "مشاهدة التسجيل": "Watch the recording",
-    "ي��جى اختيار الدورة وإدخال عنوان الجلسة": "Please select a session and enter the session title",
-    "يرجى تحديد تاريخ ووقت الجلسة": "Please specify a date and time for the session",
-    "تعذّر حفظ الجلسة": "The session could not be saved",
-    "تم إنشاء البث، جاري فتح الغرفة...": "Broadcast created, opening room...",
-    "تم تعديل الجلسة": "The session has been modified",
-    "تمت جدولة الجلسة": "The session has been scheduled",
-    "تعديل بيانات الجلسة": "Modify session data",
-    "��دّث تفاصيل الجلسة المجدولة.": "Update your scheduled session details.",
-    "ابدأ بثاً فورياً يفتح غرفة مباشرة الآن، أو جدول جلسة لوقت لاحق.": "Start an instant broadcast that opens a live room now, or schedule a session for later.",
-    "ابدأ الآن": "Start now",
-    "جدولة لاحقاً": "Schedule for later",
-    "الدورة التدريبية": "Training course",
-    "لا توجد دورات متاحة": "There are no courses available",
-    "اختر الدورة...": "Choose the course...",
-    "مثال: مراجعة الوحدة الأولى وتطبيقات عملية": "Example: review of the first unit and practical applications",
-    "عدد الطلاب (الحد الأقصى)": "Number of students (maximum)",
-    "محاور الجلسة (اختياري)": "Session topics (optional)",
-    "نبذة عمّا سيتم تغطيته": "An overview of what will be covered",
-    "إشعار الطلاب": "Notice to students",
-    "تنبيه جميع المسجلين في الدورة بهذه الجلسة": "Notify all course registrants of this session",
-    "جلسة عامة": "Plenary session",
-    "إنشاء رابط للدخول ��ضيف بدون تسجيل": "Create a link to enter as a guest without registration",
-    "اسم السلسلة / التصنيف (اختياري)": "Series name/category (optional)",
-    "يتم تسجيل الجلسة تلقائياً وحفظها في \"التسجيلات\" عند تفعيل خاصية التسجيل من إعدادات الأكاديمية.": "The session is automatically recorded and saved in “Recordings” when the recording feature is activated in the academy settings.",
-    "جاري الحفظ...": "Saving...",
-    "ابدأ ال��ث الآن": "Start streaming now",
-    "جدولة الجلسة": "Schedule the session",
-    "فشل رفع التسجيل": "Failed to upload registration",
-    "لا يمكن الوصول إلى الميكروفون. يرجى السماح به في إعدادات المتصفح.": "The microphone cannot be accessed. Please allow it in your browser settings.",
-    "اضغط على زر التسجيل للبدء": "Click the Register button to get started",
-    "جاري التسجيل... اضغط للإيقاف": "Recording... Click to stop",
-    "جاري حفظ التسجيل...": "Saving recording...",
-    "تم تسجيل المقطع - يمكنك المعاينة أو إعادة التسجيل": "The clip has been recorded - you can preview or re-record",
-    "إعادة التسجيل": "Re-register",
-    "بدء التسجيل": "Start recording",
-    "إيقاف التسجيل": "Stop recording",
-    "جاري الرفع": "Uploading",
-    "تسجيل جديد": "New registration",
-    "إيقاف المعاينة": "Stop previewing",
-    "تشغيل المعاينة": "Play preview",
-    "تم حفظ التسجيل": "The recording has been saved",
-    "فشل رفع الملف": "File upload failed",
-    "فشل الرفع، يرجى المحاولة مرة أخرى": "Upload failed, please try again",
-    "تم رفع الملف بنجاح": "The file has been uploaded successfully",
-    "اضغط هنا للمعاينة": "Click here to view",
-    "حذف الملف": "Delete the file",
-    "جاري الرفع...": "Uploading...",
-    "أفلت الملف هنا": "Drop the file here",
-    "اضغط أو اسح�� الملف هنا": "Click or drag the file here",
-    "يدعم الصور، الملفات الصوتية، الفيديو، والمستندات": "Supports images, audio files, videos, and documents",
-    "حدث خطأ أثناء الحفظ": "An error occurred while saving",
-    "هل أنت متأكد من حذف هذا الحقل؟ سيتم حذفه من النموذج تماماً.": "Are you sure to delete this field? It will be deleted from the form completely.",
-    "إعدادات نموذج الأسئلة": "Question form settings",
-    "إضافة حقول مخصصة تظهر للطالب عند طرح سؤال جديد (مثل: العمر، الحالة الاجتماعية).": "Adding custom fields that appear to the student when asking a new question (such as: age, marital status).",
-    "تعديل الحقل": "Edit field",
-    "إضافة حقل جديد": "Add a new field",
-    "الاسم البرمجي (انجليزي، بدون مسافات)*": "Program name (English, without spaces)*",
-    "مثال: age": "Example: age",
-    "عنوان الحقل للمستخدم*": "User field address*",
-    "مثال: العمر": "Example: age",
-    "نوع الحقل": "Field type",
-    "نص (Text)": "Text",
-    "رقم (Number)": "Number",
-    "قائمة منسدلة (Select)": "Drop-down menu (Select)",
-    "الترتيب": "Ranking",
-    "خيارات القائمة المنسدلة (خيار واحد في كل سطر)": "Drop-down menu options (one option per line)",
-    "أعزب\\\\nمتزوج\\\\nمطلق": "Single\\nMarried\\nDivorced",
-    "حقل إجباري": "Required field",
-    "مُفعّل": "Activated",
-    "حفظ الحقل": "Save field",
-    "لا توجد حقول مخصصة حتى الآن.": "There are no custom fields yet.",
-    "مطلوب": "Wanted",
-    "قائمة": "List",
-    "رقم": "No",
-    "نص": "Text",
-    "تعطيل": "Disable",
-    "تفعيل": "Activate",
-    "آخر": "Another",
-    "خطأ": "Error",
-    "الرجاء إدخال رابط صحيح يبدأ بـ http(s)": "Please enter a valid link starting with http(s)",
-    "اختر طالباً واحداً على الأقل": "Choose at least one student",
-    "تم إرسال الرابط لجميع طلاب الكورس (": "The link was sent to all course students (",
-    "طالب)": "student)",
-    "تم إرسال الرابط للطلاب المحددين (": "The link has been sent to selected students (",
-    "إرسال رابط الجلسة": "Send session link",
-    "— أرسل رابط Zoom أو Google Meet لطلاب الكورس": "— Send a Zoom or Google Meet link to course students",
-    "الرابط الحالي للجلسة:": "Current session link:",
-    "مقدم الخدمة": "Service provider",
-    "رابط الانضمام": "Join link",
-    "كلمة المرور (اختياري)": "Password (optional)",
-    "ز.ب. 12345": "Z.B. 12345",
-    "الجمهور المستهدف": "Target audience",
-    "كل طلاب الكورس": "All course students",
-    "يعدّل رابط ا��جلسة الافتراضي (": "Modify the default session link (",
-    "طلاب محددون": "Specific students",
-    "رابط خاص لكل طالب يختاره": "A special link for each student of his choice",
-    "لا يوجد طلاب مسجلون في هذا الكورس بعد": "There are no students registered for this course yet",
-    "له رابط مرسل": "It has a link sent",
-    "نشر الرابط أيضاً كإعلان لطلاب الكورس": "The link was also published as an announcement to course students",
-    "عنوان الإعلان (اختياري)": "Ad title (optional)",
-    "رابط الجلسة:": "Session link:",
-    "محتوى الإعلان (اختياري)": "Ad content (optional)",
-    "اتركه فارغاً لاستخدام نص افتراضي يحتوي على الرابط.": "Leave blank to use default text containing the link.",
-    "جاري الإرسال...": "Sending...",
-    "إرسال الرابط": "Send link",
-    "إنشاء الدرس": "Create the lesson",
-    "العنوان والموعد مطلوبان": "Address and appointment are required",
-    "رابط الانضمام لازم يبدأ بـ http(s)": "Join link must start with http(s)",
-    "تم الحفظ.": "Saved.",
-    "عنوان الدرس": "Lesson title",
-    "مثال: تفسير سورة الكهف": "Example: Interpretation of Surat Al-Kahf",
-    "وصف الدرس": "Lesson description",
-    "ايه اللي هتتك��م عنه في الدرس؟": "What will you talk about in the lesson?",
-    "رابط صورة الغلاف (Open Graph)": "Cover image link (Open Graph)",
-    "الصورة دي بتظهر لما الرابط يتشير على فيس بوك/تويتر/واتساب.": "This image appears when the link is shared on Facebook/Twitter/WhatsApp.",
-    "موعد الدرس": "Lesson time",
-    "المدة (بالدقائق)": "Duration (minutes)",
-    "رابط الانضمام (Zoom/Meet)": "Join link (Zoom/Meet)",
-    "الرابط": "Link",
-    "الرابط ده بيتعرض للزوار لما الدرس يبدأ في موعده تلقائياً (مش قبل كده).": "This link is automatically displayed to visitors when the lesson starts on time (not before that).",
-    "جاري الحفظ": "Saving",
-    "تم حفظ القالب": "The template has been saved",
-    "تعذر حفظ المواضع": "Unable to save positions",
-    "تعذر إنشاء المعاينة": "Unable to create preview",
-    "خطأ في المعاينة": "Preview error",
-    "محرر مواضع الحقول": "Field placements editor",
-    "اختر الحقل من القائمة ثم اسحبه إلى مكانه المناسب على التيمبلت. اضغط معاينة لرؤية النتيجة.": "Select the field from the list and drag it to the appropriate location on the template. Click Preview to see the result.",
-    "أضف حقل": "Add a field",
-    "اختر حقل…": "Choose a field...",
-    "كل الحقول مضافة": "All fields added",
-    "الحقول الموضوعة": "Placed fields",
-    "لا توجد حقول بعد": "There are no fields yet",
-    "خصائص:": "Properties:",
-    "حجم الصورة (% من العرض)": "Image size (% of width)",
-    "حجم الخط (% من أقصر ضلع)": "Font size (% of shortest side)",
-    "محاذاة": "Align",
-    "يسار": "Left",
-    "وسط": "Medium",
-    "يمين": "Right",
-    "السمك": "Fish",
-    "عادي": "Normal",
-    "عريض": "Wide",
-    "اللون": "Color",
-    "أقصى عرض (٪)": "Maximum width (%)",
-    "دوران (درجة)": "Rotation (degree)",
-    "حقل موضوع · اسحب أي علامة لتحريكها": "Subject field · Drag any marker to move it",
-    "معاينة": "Preview",
-    "آخر معاينة": "Latest preview",
-    "افتح في تبويب": "Open in a tab",
-    "SELECT\n         CONCAT('جلسة تسميع مع ', COALESCE(u.name, 'مقرئ')) AS title,\n         b.scheduled_at,\n         b.status,\n         u.name AS counterpart_name,\n         (b.student_joined_at IS NOT NULL OR b.status = 'completed') AS attended,\n         (b.status = 'confirmed' AND b.scheduled_at > NOW()) AS upcoming\n       FROM bookings b\n       LEFT JOIN users u ON u.id = b.reader_id\n       WHERE b.student_id = $1\n         AND b.scheduled_at >= $2 AND b.scheduled_at <= $3\n       ORDER BY b.scheduled_at DESC": "SELECT\n         CONCAT('listening session with', COALESCE(u.name, 'reciter')) AS title,\n         b.scheduled_at,\n         b.status,\n         u.name AS counterpart_name,\n         (b.student_joined_at IS NOT NULL OR b.status = 'completed') AS attended,\n         (b.status = 'confirmed' AND b.scheduled_at > NOW()) AS upcoming\n       FROM bookings b\n       LEFT JOIN users u ON u.id = b.reader_id\n       WHERE b.student_id = $1\n         AND b.scheduled_at >= $2 AND b.scheduled_at <= $3\n       ORDER BY b.scheduled_at DESC",
-    "وحدة)": "unit)",
-    "مرحلة)": "stage)",
-    "بحاجة لجلسة": "Need a session",
-    "<div dir=\"rtl\" style=\"font-family: Tahoma, Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; color:#0f172a;\">\n      <div style=\"text-align:center; padding:24px 0; border-bottom: 2px solid #0B3D2E;\">\n        <h1 style=\"margin:0; color:#0B3D2E; font-size:24px;\">إتقان التعليمية</h1>\n        <p style=\"margin:6px 0 0; color:#64748b; font-size:13px;\">التقرير الأسبوعي</p>\n      </div>\n\n      <div style=\"margin: 24px 0;\">\n        <p style=\"color:#64748b; font-size:14px; margin: 0;\">السلام ع��يكم،": "<div dir=\"rtl\" style=\"font-family: Tahoma, Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; color:#0f172a;\">\n      <div style=\"text-align:center; padding:24px 0; border-bottom: 2px solid #0B3D2E;\">\n        <h1 style=\"margin:0; color:#0B3D2E; font-size:24px;\">Mastery Education</h1>\n        <p style=\"margin:6px 0 0; color:#64748b; font-size:13px;\">Weekly report</p>\n      </div>\n\n      <div style=\"margin: 24px 0;\">\n        <p style=\"color:#64748b; font-size:14px; margin: 0;\">Peace be upon you,",
-    "</p>\n        <h2 style=\"color:#0B3D2E; margin: 8px 0 0;\">تقرير": "</p>\n        <h2 style=\"color:#0B3D2E; margin: 8px 0 0;\">Report",
-    "لهذا الأسبوع</h2>\n        <p style=\"color:#94a3b8; font-size:13px; margin-top:4px;\">": "For this week</h2>\n        <p style=\"color:#94a3b8; font-size:13px; margin-top:4px;\">",
-    "</div>\n            <div style=\"font-size:12px; color:#475569;\">تلاوة</div>\n          </td>\n          <td style=\"width:8px;\"></td>\n          <td style=\"padding: 14px; background:#eff6ff; border-radius:10px; text-align:center; width:25%;\">\n            <div style=\"font-size:24px; font-weight:bold; color:#1d4ed8;\">": "</div>\n            <div style=\"font-size:12px; color:#475569;\">Recitation</div>\n          </td>\n          <td style=\"width:8px;\"></td>\n          <td style=\"padding: 14px; background:#eff6ff; border-radius:10px; text-align:center; width:25%;\">\n            <div style=\"font-size:24px; font-weight:bold; color:#1d4ed8;\">",
-    "</div>\n            <div style=\"font-size:12px; color:#475569;\">جلسة حضرها</div>\n          </td>\n          <td style=\"width:8px;\"></td>\n          <td style=\"padding: 14px; background:#fef3c7; border-radius:10px; text-align:center; width:25%;\">\n            <div style=\"font-size:24px; font-weight:bold; color:#b45309;\">": "</div>\n            <div style=\"font-size:12px; color:#475569;\">A session attended</div>\n          </td>\n          <td style=\"width:8px;\"></td>\n          <td style=\"padding: 14px; background:#fef3c7; border-radius:10px; text-align:center; width:25%;\">\n            <div style=\"font-size:24px; font-weight:bold; color:#b45309;\">",
-    "</div>\n            <div style=\"font-size:12px; color:#475569;\">شارة جديدة</div>\n          </td>\n          <td style=\"width:8px;\"></td>\n          <td style=\"padding: 14px; background:#fef2f2; border-radius:10px; text-align:center; width:25%;\">\n            <div style=\"font-size:24px; font-weight:bold; color:#b91c1c;\">": "</div>\n            <div style=\"font-size:12px; color:#475569;\">New badge</div>\n          </td>\n          <td style=\"width:8px;\"></td>\n          <td style=\"padding: 14px; background:#fef2f2; border-radius:10px; text-align:center; width:25%;\">\n            <div style=\"font-size:24px; font-weight:bold; color:#b91c1c;\">",
-    "</div>\n            <div style=\"font-size:12px; color:#475569;\">جلسة قادمة</div>\n          </td>\n        </tr>\n      </table>": "</div>\n            <div style=\"font-size:12px; color:#475569;\">Next session</div>\n          </td>\n        </tr>\n      </table>",
-    "<div style=\"background:#0B3D2E; color:white; padding:18px; border-radius:12px; margin-bottom:24px; text-align:center;\">\n              <div style=\"font-size:13px; opacity:0.85;\">المستوى الحالي</div>\n              <div style=\"font-size:18px; font-weight:bold; margin-top:6px;\">": "<div style=\"background:#0B3D2E; color:white; padding:18px; border-radius:12px; margin-bottom:24px; text-align:center;\">\n              <div style=\"font-size:13px; opacity:0.85;\">Current level</div>\n              <div style=\"font-size:18px; font-weight:bold; margin-top:6px;\">",
-    "<h3 style=\"color:#0B3D2E; margin: 24px 0 12px; font-size:16px;\">📖 التلاوات (Recitations)</h3>\n            <table style=\"width:100%; border-collapse: collapse; background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;\">": "<h3 style=\"color:#0B3D2E; margin: 24px 0 12px; font-size:16px;\">📖 Recitations</h3>\n            <table style=\"width:100%; border-collapse: collapse; background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;\">",
-    "<p style=\"color:#94a3b8; font-size:14px;\">لم يتم تقديم تلاوات هذا الأسبوع.</p>": "<p style=\"color:#94a3b8; font-size:14px;\">No recitations were offered this week.</p>",
-    "<h3 style=\"color:#0B3D2E; margin: 24px 0 12px; font-size:16px;\">🎙️ الجلسات (Sessions)</h3>\n            <table style=\"width:100%; border-collapse: collapse; background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;\">": "<h3 style=\"color:#0B3D2E; margin: 24px 0 12px; font-size:16px;\">🎙️ Sessions</h3>\n            <table style=\"width:100%; border-collapse: collapse; background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;\">",
-    "<h3 style=\"color:#0B3D2E; margin: 24px 0 12px; font-size:16px;\">🏅 الشارات الجديدة</h3>\n             <ul style=\"padding-right:18px; margin: 0;\">": "<h3 style=\"color:#0B3D2E; margin: 24px 0 12px; font-size:16px;\">🏅 New decals</h3>\n             <ul style=\"padding-right:18px; margin: 0;\">",
-    "\" style=\"display:inline-block; background:#0B3D2E; color:white; text-decoration:none; padding:12px 28px; border-radius:10px; font-weight:bold;\">\n                عرض التقرير الكامل في المنصة\n              </a>\n            </div>": "\" style=\"display:inline-block; background:#0B3D2E; color:white; text-decoration:none; padding:12px 28px; border-radius:10px; font-weight:bold;\">\n                View the full report on the platform\n              </a>\n            </div>",
-    "<hr style=\"border:none; border-top:1px solid #e2e8f0; margin: 24px 0;\" />\n      <p style=\"font-size: 12px; color:#94a3b8; text-align:center;\">\n        منصة إتقان التعليمية — جميع الحقوق محفوظة\n      </p>\n    </div>": "<hr style=\"border:none; border-top:1px solid #e2e8f0; margin: 24px 0;\" />\n      <p style=\"font-size: 12px; color:#94a3b8; text-align:center;\">\n        Itqan Educational Platform — All rights reserved\n      </p>\n    </div>",
-    "تقرير": "Report",
-    "الأسبوعي — إتقان التعليمية": "Weekly — Educational Mastery",
-    "تقرير الأسبوع:": "Report of the week:",
-    "تلاوة،": "recitation,",
-    "جلسة حضرها،": "A session he attended,",
-    "شارة جديدة": "New badge",
-    "SELECT cs.title,\n            COALESCE(c.title, 'جلسة مباشرة') AS course_title,\n            COALESCE(sa.joined_at, cs.scheduled_at) AS attended_at\n       FROM session_attendance sa\n       JOIN course_sessions cs ON cs.id = sa.session_id\n       LEFT JOIN courses c ON c.id = cs.course_id\n      WHERE sa.student_id = $1\n        AND COALESCE(sa.joined_at, cs.scheduled_at)::date BETWEEN $2::date AND $3::date\n        AND COALESCE(sa.attendance_status, 'present') IN ('present', 'attended')\n      ORDER BY attended_at DESC": "SELECT cs.title,\n            COALESCE(c.title, 'Live Session') AS course_title,\n            COALESCE(sa.joined_at, cs.scheduled_at) AS attended_at\n       FROM session_attendance sa\n       JOIN course_sessions cs ON cs.id = sa.session_id\n       LEFT JOIN courses c ON c.id = cs.course_id\n      WHERE sa.student_id = $1\n        AND COALESCE(sa.joined_at, cs.scheduled_at)::date BETWEEN $2::date AND $3::date\n        AND COALESCE(sa.attendance_status, 'present') IN ('present', 'attended')\n      ORDER BY attended_at DESC",
-    "<li>لا توجد تلاوات هذا الأسبوع.</li>": "<li>There are no recitations this week.</li>",
-    "<li>لا توجد ��لسات حضور مسجلة هذا الأسبوع.</li>": "<li>There are no attendance sessions recorded this week.</li>",
-    "<li>لا توجد شارات جديدة هذا الأسبوع.</li>": "<li>There are no new badges this week.</li>",
-    "<div dir=\"rtl\" style=\"font-family: Arial, sans-serif; max-width: 640px; margin: auto; color: #1f2937;\">\n      <h2 style=\"color:#0B3D2E;\">تقرير": "<div dir=\"rtl\" style=\"font-family: Arial, sans-serif; max-width: 640px; margin:auto; color: #1f2937;\">\n      <h2 style=\"color:#0B3D2E;\">Report",
-    "الأسبوعي</h2>\n      <p>السلام عليكم": "Weekly</h2>\n      <p>Peace be upon you",
-    "، هذا ملخص أداء": "This is a performance summary",
-    ".</p>\n      <div style=\"display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin: 20px 0;\">\n        <div style=\"padding:12px; border:1px solid #e5e7eb; border-radius:12px;\"><strong>تلاوات الأسبوع</strong><br />": ".</p>\n      <div style=\"display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin: 20px 0;\">\n        <div style=\"padding:12px; border:1px solid #e5e7eb; border-radius:12px;\"><strong>Recitations of the Week</strong><br />",
-    "</div>\n        <div style=\"padding:12px; border:1px solid #e5e7eb; border-radius:12px;\"><strong>جلسات حُضرت</strong><br />": "</div>\n        <div style=\"padding:12px; border:1px solid #e5e7eb; border-radius:12px;\"><strong>Sessions attended</strong><br />",
-    "</div>\n        <div style=\"padding:12px; border:1px solid #e5e7eb; border-radius:12px;\"><strong>المستوى الحالي</strong><br />": "</div>\n        <div style=\"padding:12px; border:1px solid #e5e7eb; border-radius:12px;\"><strong>Current level</strong><br />",
-    "</div>\n        <div style=\"padding:12px; border:1px solid #e5e7eb; border-radius:12px;\"><strong>الشارات الجديدة</strong><br />": "</div>\n        <div style=\"padding:12px; border:1px solid #e5e7eb; border-radius:12px;\"><strong>New badges</strong><br />",
-    "</div>\n      </div>\n      <h3>التلاوات (Recitations)</h3>\n      <ul>": "</div>\n      </div>\n      <h3>Recitations</h3>\n      <ul>",
-    "</ul>\n      <h3>ا��جلسات (Sessions)</h3>\n      <ul>": "</ul>\n      <h3>Sessions</h3>\n      <ul>",
-    "</ul>\n      <h3>الشارات</h3>\n      <ul>": "</ul>\n      <h3>Badges</h3>\n      <ul>",
-    "الأسبوعي": "Weekly",
-    "الفترة:": "Period:",
-    "تلاوات الأسبوع:": "Recitations of the week:",
-    "جلسات حُضرت:": "Sessions attended:",
-    "المستوى الحالي:": "Current level:",
-    "الشارات الجديدة:": "New badges:",
-    "الأسبوعي - منصة إتقان": "Weekly - Itqan platform",
-    "أول تلاوة": "First recitation",
-    "سجلت أول تلاوة لك في المنصة": "You recorded your first recitation in the podium",
-    "التلاوة": "Recitation",
-    "100 تلاوة": "100 recitations",
-    "سجلت 100 تلاوة": "I recorded 100 recitations",
-    "متقن التجويد": "Perfect intonation",
-    "اجتزت مسار التجويد الكامل": "I passed the full Tajweed course",
-    "أسبوع متواصل": "A week straight",
-    "حافظت على نشاطك لمدة 7 أيام": "Stay active for 7 days",
-    "المثابرة": "Persevere",
-    "شهر متواصل": "A continuous month",
-    "حافظت على نشاطك لمدة 30 يوماً": "Stay active for 30 days",
-    "شهر رمضان": "Ramadan",
-    "سجلت تلاوة كل يوم خلال شهر رمضان": "Recorded recitation every day during the month of Ramadan",
-    "حافظ جزء عمّ": "Hafez Juz Amma",
-    "أتقنت جميع سور الجزء الثلاثين": "I mastered all the surahs of the thirtieth part",
-    "الختمة الكاملة": "The complete seal",
-    "أتقنت القرآن كاملاً وحصلت على إجازة": "I mastered the entire Qur’an and obtained an ijaza",
-    "أول دورة": "First course",
-    "أكملت أول دورة لك": "You have completed your first course",
-    "5 دورات": "5 courses",
-    "أكملت 5 دورات": "Completed 5 courses",
-    "10 دورات": "10 courses",
-    "أكملت 10 دورات": "Completed 10 courses",
-    "أول مهمة": "First task",
-    "أنجزت أول مهمة": "First mission accomplished",
-    "المهام": "Tasks",
-    "سيد المهام": "Task master",
-    "أنجزت 50 مهمة": "Completed 50 tasks",
-    "نجم الحلقة": "Star of the episode",
-    "الأعلى نقاطاً في حلقته لمدة شهر": "Highest scorer in his episode for a month",
-    "تكريم": "Honor",
-    "المُعين": "The appointor",
-    "ساعدت زملاءك في المنتدى": "Help your colleagues on the forum",
-    "الباكر": "The early one",
-    "دخلت المنصة قبل الفجر 7 أيام": "I entered the platform before dawn 7 days ago",
-    "الساهر": "The watchful one",
-    "تلوت بعد منتصف الليل 7 ليالي": "I writhed after midnight for 7 nights",
-    "القرآن": "The Qur’an",
-    "(مضاعفة Streak ×1.5)": "(Double Streak ×1.5)",
-    "SELECT\n      COALESCE(up.total_points, 0)::int                         AS total_points,\n      COALESCE(up.streak_days, 0)::int                          AS streak_days,\n      (SELECT COUNT(*)::int FROM task_submissions ts\n         WHERE ts.student_id = $1 AND ts.status = 'graded')     AS task_count,\n      (SELECT COUNT(*)::int FROM enrollments e\n         WHERE e.student_id = $1\n           AND (LOWER(e.status) = 'completed'\n                OR e.completed_at IS NOT NULL\n                OR COALESCE(e.progress_percentage, 0) >= 100))  AS course_count,\n      (SELECT COUNT(*)::int FROM recitations r\n         WHERE r.student_id = $1)                                AS recitation_count,\n      (SELECT COUNT(DISTINCT r.surah_number)::int\n         FROM recitations r\n         JOIN reviews rv ON rv.recitation_id = r.id\n        WHERE r.student_id = $1\n          AND rv.verdict = 'mastered'\n          AND r.surah_number BETWEEN 78 AND 114)                 AS juz_amma_mastered_count,\n      (SELECT COUNT(DISTINCT r.surah_number)::int\n         FROM recitations r\n         JOIN reviews rv ON rv.recitation_id = r.id\n        WHERE r.student_id = $1\n          AND rv.verdict = 'mastered'\n          AND r.surah_number BETWEEN 1 AND 114)                  AS mastered_surah_count,\n      (SELECT COUNT(*)::int FROM enrollments e\n         JOIN courses c ON c.id = e.course_id\n        WHERE e.student_id = $1\n          AND (LOWER(e.status) = 'completed'\n               OR e.completed_at IS NOT NULL\n               OR COALESCE(e.progress_percentage, 0) >= 100)\n          AND (LOWER(COALESCE(c.subject, '')) = 'tajweed'\n               OR c.title ILIKE '%تجويد%'))                     AS tajweed_completed_count\n    FROM (SELECT 1) _\n    LEFT JOIN user_points up ON up.user_id = $1": "SELECT\n      COALESCE(up.total_points, 0)::int AS total_points,\n      COALESCE(up.streak_days, 0)::int AS streak_days,\n      (SELECT COUNT(*)::int FROM task_submissions ts\n         WHERE ts.student_id = $1 AND ts.status = 'graded') AS task_count,\n      (SELECT COUNT(*)::int FROM enrollments e\n         WHERE e.student_id = $1\n           AND (LOWER(e.status) = 'completed'\n                OR e.completed_at IS NOT NULL\n                OR COALESCE(e.progress_percentage, 0) >= 100)) AS course_count,\n      (SELECT COUNT(*)::int FROM recitations r\n         WHERE r.student_id = $1) AS recitation_count,\n      (SELECT COUNT(DISTINCT r.surah_number)::int\n         FROM recitations r\n         JOIN reviews rv ON rv.recitation_id = r.id\n        WHERE r.student_id = $1\n          AND rv.verdict = 'mastered'\n          AND r.surah_number BETWEEN 78 AND 114) AS juz_amma_mastered_count,\n      (SELECT COUNT(DISTINCT r.surah_number)::int\n         FROM recitations r\n         JOIN reviews rv ON rv.recitation_id = r.id\n        WHERE r.student_id = $1\n          AND rv.verdict = 'mastered'\n          AND r.surah_number BETWEEN 1 AND 114) AS mastered_surah_count,\n      (SELECT COUNT(*)::int FROM enrollments e\n         JOIN courses c ON c.id = e.course_id\n        WHERE e.student_id = $1\n          AND (LOWER(e.status) = 'completed'\n               OR e.completed_at IS NOT NULL\n               OR COALESCE(e.progress_percentage, 0) >= 100)\n          AND (LOWER(COALESCE(c.subject, '')) = 'tajweed'\n               OR c.title ILIKE '%Tajweed%')) AS tajweed_completed_count\n    FROM (SELECT 1)_\n    LEFT JOIN user_points up ON up.user_id = $1",
-    "مكافأة شارة:": "Badge reward:",
-    "تسجيل التلاوات (Record Recitations)": "Record Recitations",
-    "حضور الدروس (Attend Lessons)": "Attend Lessons",
-    "لوحة المتصدرين (Leaderboard)": "Leaderboard",
-    "شارات متقدمة (Advanced Badges)": "Advanced Badges",
-    "تحديات أسبوعية (Weekly Challenges)": "Weekly Challenges",
-    "مسارات تجويد متقدمة (Advanced Tajweed Paths)": "Advanced Tajweed Paths",
-    "ملف إنجاز عام (Public Portfolio)": "Public Portfolio",
-    "طلب الإجازة (Request Ijazah)": "Request Ijazah",
-    "تكريم الحافظين (Honoring Hafiz)": "Honoring Hafiz",
-    "إنجاز مهمة:": "Accomplish a task:",
-    "إنجاز مهمة": "Accomplish a task",
-    "حضور جلسة:": "Attending a session:",
-    "حضور جلسة": "Attend a session",
-    "إكمال درس:": "Complete a lesson:",
-    "إكمال درس": "Complete a lesson",
-    "يوم Streak": "Day Streak",
-    "تسجيل دخول يومي": "Daily login",
-    "إكمال دورة:": "Complete a course:",
-    "إكمال دورة": "Complete a course",
-    "تسجيل تلاوة": "Recording a recitation",
-    "إتقان تلاوة": "Mastering recitation",
-    "إنهاء جزء كامل:": "Finish a complete part:",
-    "المسابقة غير موجودة": "The competition does not exist",
-    "المسابقة غير نشطة": "The contest is inactive",
-    "الحد الأدنى للمشاركة هو": "The minimum participation is",
-    "تم تقييم مشاركتك بالفعل ولا يمكن تعديلها": "Your post has already been rated and cannot be edited",
-    "المستخدم غير موجود": "User not found",
-    "يمكن تعيين المدرّسين أو المقرئين فقط كمحكّمين": "Only teachers or reciters can be appointed as arbitrators",
-    "الدرجة يجب أن تكون بين 0 و 100": "The score must be between 0 and 100",
-    "المركز الأول": "First place",
-    "المركز الثاني": "Second place",
-    "المركز الثالث": "Third place",
-    "في مسابقة:": "In a competition:",
-    "لا توجد مشاركات مُقيّمة لاعتماد نتائجها": "There are no rated posts to approve their results",
-    "حدث خطأ أثناء اعتماد النتائج": "An error occurred while validating results",
-    "حافظ": "Hafez",
-    "خاتم": "Ring",
-    "تعديل يدوي من الأدمن": "Manual modification by admin",
-    "إكمال مهمة:": "Complete a task:",
-    "فوز في مسابقة:": "Win a competition:",
-    "المركز": "Center",
-    "مؤكدة": "Confirmed",
-    "تعذّر تحميل الجلسة": "The session could not be loaded",
-    "تم حفظ الرابط": "The link has been saved",
-    "تعذّر حفظ الرابط": "The link could not be saved",
-    "تم حفظ ملخص الجلسة": "The session summary has been saved",
-    "تعذّر الحفظ": "Unable to save",
-    "تم إعادة فتح الجلسة": "The session has been reopened",
-    "تعذّر التحديث": "Could not update",
-    "تعذّر إرسال التعليق": "The comment could not be sent",
-    "العودة إلى الجلسات": "Back to sessions",
-    "جلسة تلاوة فردية": "Individual recitation session",
-    "التسجيل المرفق": "Attached registration",
-    "رابط الجلسة": "Session link",
-    "ابدأ البث المباشر داخل المنصة": "Start broadcasting live within the platform",
-    "انتهت الجلسة": "The session has ended",
-    "الصق رابط جلسة خارجية (اختياري)": "Paste external session link (optional)",
-    "م��اسلة الطالب": "Message the student",
-    "الجلسة مكتملة": "The session is complete",
-    "تأكيد اكتمال الجلسة": "Confirm session completion",
-    "اضغط للتراجع": "Click to undo",
-    "وسم الجلسة كمنتهية بنجاح": "Mark the session as completed successfully",
-    "ملخص الجلسة وملاحظاتك": "Session summary and feedback",
-    "اكتب ملخص ما تم في الجلسة، نقاط القوة والملاحظات للطالب...": "Write a summary of what happened in the session, the student’s strengths and observations...",
-    "حفظ الملخص": "Save the summary",
-    "أضف تعليقاً...": "Add a comment...",
-    "جارية": "A slave girl",
-    "تعذر جلب بيانات الطالب": "Unable to retrieve student data",
-    "الطالب غير موجود": "The student is not present",
-    "عذراً، هذا الطالب غير موجود أو ليس لديك صلاحية لر��يته.": "Sorry, this student does not exist or you do not have access to see him.",
-    "العودة للقائمة": "Back to list",
-    "ملف الطالب": "Student file",
-    "تلاوات الطالب وجلساته ومساراته معك": "The student's recitations, sessions and paths are with you",
-    "مراسلة": "Messaging",
-    "أنثى": "Female",
-    "ذكر": "Male",
-    "أجزاء محفوظة": "Reserved parts",
-    "انضم في": "Join in",
-    "آخر دخول:": "Last entry:",
-    "تلاو��ت معلقة": "Suspended recitations",
-    "تلاوات متقنة": "Perfect recitations",
-    "جلسات مكتملة": "Plenum sessions",
-    "آيات هذا الأسبوع": "Verses this week",
-    "التلاوات (": "Recitations (",
-    "الجلسات (": "Sessions (",
-    "المسارات (": "paths (",
-    "لا توجد تلاوات لهذا الطالب بعد": "There are no recitations for this student yet",
-    "غير محددة": "Not specified",
-    "لا توجد جلسات مع هذا الطالب بعد": "There are no sessions with this student yet",
-    "الطالب غير مسجل في أي من مساراتك": "The student is not registered in any of your tracks",
-    "إجمالي الآيات الجديدة": "Total new verses",
-    "إجمالي المراجعة": "Total review",
-    "أيام نشطة (30 يوم)": "Active days (30 days)",
-    "متوسط الجودة": "Average quality",
-    "· مكتمل": "· Completed",
-    "· نشط": "· Active",
-    "جاري التحميل...": "Loading...",
-    "الدرس غير موجود أو غير متاح للعامة": "The lesson does not exist or is not available to the public",
-    "درس عام مفتوح": "Open public lesson",
-    "انتهى الدرس": "Lesson over",
-    "الدرس مباشر الآن": "The lesson is live now",
-    "رابط الدرس جاهز": "The lesson link is ready",
-    "لا تحتاج إلى تسجيل دخول. اضغط الرابط وادخل مباشرة.": "You don't need to log in. Click the link and enter directly.",
-    "انضم للبث المباشر الآن": "Join the live broadcast now",
-    "الدخول إلى غرفة البث": "Enter the broadcast room",
-    "الرابط الخارجي": "External link",
-    "يمكن دخول البث الآن قبل البدء بقليل.": "You can now enter the broadcast shortly before the start.",
-    "سلسلة الدروس": "Lesson series",
-    "اشترك في تذكيرات الشيخ": "Subscribe to Sheikh Reminders",
-    "تم الاشتراك. سيصلك تذكير قبل الدروس العامة القادمة.": "Subscribed. You will receive a reminder before the next public lessons.",
-    "البريد الإلكتروني": "Email",
-    "جاري الاشتراك...": "Subscribing...",
-    "اشترك في القائمة البريدية": "Subscribe to the mailing list",
-    "هل تريد متابعة المنصة كاملة؟": "Do you want to follow the entire platform?",
-    "سجل حساباً لتتابع ا��حفظ والدورات والاختبارات والجلسات الخاصة.": "Register an account to keep track of your memorization, courses, tests, and private sessions.",
-    "التسجيل في المنصة": "Register on the platform",
-    "تعذر الانضمام للبث": "Unable to join the broadcast",
-    "انضم إلى البث المباشر": "Join the live broadcast",
-    "لا تحتاج إلى تسجيل دخول. أدخل اسمك للظهور في قائمة الحضور.": "You don't need to log in. Enter your name to appear on the attendance list.",
-    "الاسم (اختياري)": "Name (optional)",
-    "ضيف": "Guest",
-    "ادخل البث الآن": "Enter the broadcast now",
-    "العودة": "Return",
-    "بث مباشر عام · مشاهدة فقط": "Public live broadcast · View only",
-    "مباشر ·": "Live ·",
-    "الدرس غير موجود": "Lesson not found",
-    "معاينة الدرس": "Lesson preview",
-    "المدة": "Duration",
-    "المسجلين": "registered",
-    "المستوى": "level",
-    "اشترك الآن": "Subscribe now",
-    "يمكنك اختيار الاشتراك بعد تسجيل الدخول أو إنشاء حساب جديد": "You can choose to subscribe after logging in or create a new account",
-    "مدرس الدرس": "Lesson teacher",
-    "تم قبول الطلب بنجاح": "The request was accepted successfully",
-    "التلاوات": "Recitations",
-    "المواعيد": "Appointments",
-    "المسابقات": "Contests",
-    "جاري التحديث...": "Updating...",
-    "رسائل غير مقروءة": "Unread messages",
-    "مشاركات تنتظر تقييمك": "Contributions awaiting your evaluation",
-    "إشعارات جديدة": "New notifications",
-    "جلستك القادمة": "Your next session",
-    "دخول الجلسة المباشرة": "Enter the live session",
-    "دخول": "Login",
-    "قادمة": "Coming",
-    "وصول سريع": "Fast access",
-    "تقرير تقدم الطلاب": "Student progress report",
-    "أيام الانتظام، آي��ت الأسبوع، ��المقارنة مع هدف الحفظ.": "Regular days, verses of the week, and comparison with the goal of memorization.",
-    "لا توجد بيانات تقدم للط��اب بعد": "There is no data provided to students yet",
-    "لا يوجد هدف محدد": "There is no specific goal",
-    "الانتظام": "Regularity",
-    "يوم/٣٠": "Day/30",
-    "حفظ الأسبوع": "Save the week",
-    "إجمالي الأسبوع": "Total week",
-    "حفظ + مراجعة": "Save + review",
-    "مقارنة الهدف": "Target comparison",
-    "نسبة ��حقيق هدف الأسبوع": "Percentage of achieving the weekly goal",
-    "طلبات مواعد جديدة": "Requests for new appointments",
-    "طلاب انتهت مهلتهم ويطلبون فرصة جديدة لحجز موعد.": "Students whose deadline has expired and are requesting a new opportunity to book an appointment.",
-    "قبول الطلب وتجديد الفرصة": "Accept the application and renew the opportunity",
-    "أب": "Father",
-    "أم": "Um",
-    "ولي أمر": "Guardian",
-    "مقبولة": "Acceptable",
-    "ناجحة": "Successful",
-    "تحتاج تحسين": "Need improvement",
-    "غير مقبولة": "Not acceptable",
-    "صادرة": "Outgoing",
-    "معتمدة": "Certified",
-    "بانتظار البيانات": "Waiting for data",
-    "تم تحديث صلة القرابة": "The relationship has been updated",
-    "تعذر التحديث": "Unable to update",
-    "الطالب غير موجود أو غير مربوط بحسابك.": "The student does not exist or is not linked to your account.",
-    "أكاديمية ومقرأة": "Academic and reading",
-    "مقرأة": "Read",
-    "أكاديمية": "Academy",
-    "نظرة": "Look",
-    "الواجبات والدرجات": "Assignments and grades",
-    "السلاسل والمسارات": "Chains and tracks",
-    "الشهادات": "Certificates",
-    "الشارات": "Badges",
-    "العودة لقائمة الأبناء": "Return to the list of children",
-    "صلة القرابة:": "Relationship:",
-    "ربط منذ": "Link since",
-    "تقييد": "restriction",
-    "التقدم": "Progress",
-    "تلاوات": "Recitations",
-    "آخر ٣٠ يوم": "Last 30 days",
-    "شهادة صادرة": "Certificate issued",
-    "نشاط الأسبوع": "Activity of the week",
-    "نشاط": "Activity",
-    "النشاط": "Activity",
-    "لا يوجد نشاط هذا الأسبوع": "There is no activity this week",
-    "أقرب المواعيد": "Soonest appointments",
-    "لا ��وجد مواعيد قادمة.": "There are no upcoming appointments.",
-    "الدورات المسجَّلة": "Registered courses",
-    "لا يوجد دورات مسجلة.": "There are no registered courses.",
-    "الواجبات": "Duties",
-    "مُصححة": "Corrected",
-    "تم تقييمها": "Rated",
-    "المعدل": "Rate",
-    "الواجبات المُسلَّمة ودرجاتها": "Assignments and their grades",
-    "لا توجد واجبات مُسلَّمة بعد.": "There are no assignments yet.",
-    "واجب": "Duty",
-    "بانتظار التصحيح": "Waiting for correction",
-    "ملاحظة المعلم:": "Teacher's note:",
-    "صُححت": "Corrected",
-    "سُلِّمت": "Delivered",
-    "مسارات الحفظ والتجويد": "Paths of memorization and intonation",
-    "غير مشترك في أي مسار.": "Not subscribed to any track.",
-    "السلاسل التعليمية": "Educational series",
-    "غير مشترك في أي سلسلة.": "Not subscribed to any series.",
-    "عنصر": "Element",
-    "المواعيد القادمة": "Upcoming appointments",
-    "مواعيد سابقة": "Previous appointments",
-    "الشهادات الصادرة": "Certificates issued",
-    "لا توجد شهادات صادرة بعد.": "There are no certificates issued yet.",
-    "شهادة": "Certificate",
-    "تحميل": "Download",
-    "قيد الإصدار": "Under release",
-    "المسابقات المُشارَك بها": "Participated competitions",
-    "لم يشارك في أي مسابقة بعد.": "He has not participated in any competition yet.",
-    "مسابقة": "Contest",
-    "الفائز": "Winner",
-    "قيد التقييم": "Under evaluation",
-    "ملاحظة المحكّم:": "Arbitrator's Note:",
-    "التلاوات الأخيرة": "The last recitations",
-    "لا توجد تلاوات بعد.": "There are no recitations yet.",
-    "الشارات المكتسبة": "Badges earned",
-    "لم يحصل على شارات بعد.": "He hasn't earned his badges yet.",
-    "حجز تلاوة": "Book a recitation",
-    "حصة": "Share",
-    "انضمام": "Join",
-    "قادم": "Coming",
-    "ملاحظة المعلم: ": "Teacher Note: ",
-    "ملاحظة المحكّم: ": "Judge Note: ",
-    "خصائص: ": "Properties: ",
-    "أعزب\\\\\\\\nمتزوج\\\\\\\\nمطلق": "Single\\nMarried\\nDivorced",
-    " ، ": ", ",
-    " ← مستمر": " ← Ongoing",
-    "التخزين السحابي مفعّل. تُحفظ التسجيلات تلقائياً على السحابة (S3)\\r\\n                وتظهر في صفحة «الجلسات والبث المباشر» ضمن تبويب «التسجيلات» بعد انتهاء كل جلسة.": "Cloud storage is enabled. Recordings are automatically saved to the cloud (S3)\\r\\n and appear in the 'Sessions and Live Streams' page under the 'Recordings' tab after each session ends.",
-    "التخزين السحابي (S3) غير مكوّن على الخادم، لذلك لن يبدأ التسجيل.\\r\\n                ي��تاج مد��ر النظام إلى ضبط متغيّرات البيئة:": "Cloud storage (S3) is not configured on the server, so recording will not start.\\r\\n The system administrator needs to set the environment variables:",
-    "مكافأة شارة: ": "Badge Reward: ",
-    "إنجاز مهمة: ": "Task Completion: ",
-    "حضور جلسة: ": "Session Attendance: ",
-    "إكمال درس: ": "Lesson Completion: ",
-    "إكمال دورة: ": "Course Completion: ",
-    "إكمال مهمة: ": "Task Completion: ",
-    "فوز في مسابقة: ": "Competition Win: ",
-    " المركز ": " Rank ",
-    "إنهاء جزء كامل: ": "Finished full Juz: ",
-    "إتمام جزء": "Completed Juz",
-    "الحد الأدنى للمشاركة هو ": "The minimum participation is ",
-    " آية": " verse(s)",
-    "تقرير ": "Report ",
-    " الأسبوعي": " Weekly",
-    "السلام عليكم ": "Hello ",
-    "، هذا ملخص أداء ": ", this is the performance summary for ",
-    " من ": " from ",
-    " إلى ": " to ",
-    "تلاوات الأسبوع": "Weekly Recitations",
-    "جلسات حُضرت": "Attended Sessions",
-    "الشارات الجديدة": "New Badges",
-    "التلاوات (Recitations)": "Recitations",
-    "الجلسات (Sessions)": "Sessions",
-    "الفترة: ": "Period: ",
-    "ت��اوات الأسبوع: ": "Weekly Recitations: ",
-    "جلسات حُضرت: ": "Attended Sessions: ",
-    "المستوى الحالي: ": "Current Level: ",
-    "الشارات الجديدة: ": "New Badges: ",
-    "جلسة حضرها": "Attended Session",
-    "جلسة قادمة": "Upcoming Session",
-    "📖 التلاوات (Recitations)": "📖 Recitations",
-    "🎙️ الجلسات (Sessions)": "🎙️ Sessions",
-    "🏅 الشارات الجديدة": "🏅 New Badges",
-    "عرض التقرير الكامل في المن��ة": "View full report on the platform",
-    "منصة إتقان التعليمية — جميع الحقوق محفوظة": "Itqan Educational Platform — All Rights Reserved",
-    "تقرير الأسبوع: ": "Weekly Report: ",
-    " تلاوة، ": " recitation(s), ",
-    " جلسة حضرها، ": " session(s) attended, ",
-    " إتقان التعليمية": " Itqan Educational",
-    "التقرير الأسبوعي": "Weekly Report",
-    "تقرير الأسبوعي — إتقان التعليمية": "Weekly Report — Itqan Educational",
-    "لهذا الأسبوع": "for this week",
-    "جلسة تسميع مع ": "Recitation session with ",
-    "📖 التلاوات": "📖 Recitations",
-    "لم يتم تقديم تلاوات هذا الأسبوع.": "No recitations submitted this week.",
-    "🎙️ الجلسات": "🎙️ Sessions",
-    "رجوع للقائمة": "Back to list",
-    "وحدة": "unit",
-    "منشور": "Published",
-    "مسودة": "Draft",
-    "مشتركين": "Enrolled",
-    "أتموا": "Completed",
-    "نشطون": "Active",
-    "متوسط التقدم": "Avg. progress",
-    "الوحدات": "Units",
-    "معدلات الإكمال": "Completion rates",
-    "الطلاب": "Students",
-    "لا توجد وحدات في المسار": "No units in this path",
-    "بدأ الوحدة:": "Unit started:",
-    "أتم الوحدة:": "Unit completed:",
-    "لا توجد بيانات إكمال بعد": "No completion data yet",
-    "وحدات منجزة من إجمالي": "units completed out of",
-    "آخر نشاط في المسار": "Last activity in path",
-    "لا يوجد طلاب مشتركين في هذا المسار بعد": "No students enrolled in this path yet",
-    "المدة المتوقعة بالأيام": "Estimated duration (days)",
-    "يتطلب تسجيلاً صوتياً قبل إتمام الوحدة": "Requires audio recording before completing unit",
-    "منشور للطلاب المشتركين": "Published for enrolled students",
-    "المدة المتوقعة (أيام)": "Est. duration (days)",
-    "يتطلب تسجيل صوتي قبل إتمام الوحدة": "Requires audio recording before completing unit",
-    "منشور للطلاب": "Published for students",
-    "المسار غير موجود.": "Path not found.",
-  },
-  changePasswordPage: {
-    title: 'Change Password',
-    subtitle: 'Enter your current and new password',
-    currentPasswordLabel: 'Current Password',
-    currentPasswordPlaceholder: '••••••••',
-    newPasswordLabel: 'New Password',
-    newPasswordPlaceholder: '••••••••',
-    confirmPasswordLabel: 'Confirm New Password',
-    confirmPasswordPlaceholder: '••��•••••',
-    btnSubmit: 'Change Password',
-    btnUpdating: 'Updating...',
-    errMinLength: 'Password must be at least 8 characters',
-    errMismatch: 'Passwords do not match',
-    errSamePassword: 'New password must be different from current',
-    errGeneric: 'An error occurred while changing password',
-    errConnection: 'Connection error occurred',
-    successTitle: 'Password Changed',
-    successDesc: 'You can now sign in with your new password',
-  },
-  badgesPage: {
-    title: 'Badges',
-    subtitle: 'Your earned badges and achievements',
-    earnedLabel: 'Earned',
-    earnedBadges: 'Earned Badges',
-    noBadgesYet: 'No badges earned yet',
-    badgeEarnedAt: 'Earned on',
-    completedPct: 'Completion',
-    criteriaLabel: 'Criteria',
-    criteria: {
-      memorize_ayahs: 'Memorize Ayahs',
-      memorize_pages: 'Memorize Pages',
-      memorize_surahs: 'Memorize Surahs',
-      complete_path: 'Complete Path',
-      attend_sessions: 'Attend Sessions',
-      streak_days: 'Streak Days',
-      earn_points: 'Earn Points',
-      complete_revision: 'Complete Revision',
-    },
-    points: 'points',
-    closeBtn: 'Close',
-  },
-  pointsPage: {
-    title: 'Points',
-    currentLevelLabel: 'Current Level',
-    pointLabel: 'point',
-    pointsToNextLevel: 'points to next level',
-    recentPointsLog: 'Recent Points Log',
-    noActivitiesYet: 'No activities yet',
-    noDataYet: 'No data yet',
-    noDataDesc: 'Start reciting and memorizing to earn points',
-    noBadgesYet: 'No badges yet',
-    statsBadgesCount: 'Badges',
-    statsLongestStreak: 'Longest streak',
-    statsMemorizedVerses: 'Memorized verses',
-    statsRevisedVerses: 'Revised verses',
-    streakDaysLabel: 'days',
-    badgesCount: 'badge',
-    browseAllBadges: 'Browse All Badges',
-    viewAllBadges: 'View All Badges',
-    doublePointsLabel: 'Double Points',
-    doublePointsActiveMsg: 'Points are doubled now!',
-    howToEarnPoints: 'How to earn points?',
-    leaderboardLink: 'Leaderboard',
-    reasons: {
-      memorization: 'Memorization',
-      revision: 'Revision',
-      recitation: 'Recitation',
-      attendance: 'Attendance',
-      streak: 'Daily Streak',
-      path_completion: 'Path Completion',
-      bonus: 'Bonus',
-      other: 'Other',
-    },
-  },
-  sessionsPage: {
-    bookNewSessionBtn: 'Book New Session',
-    noSessionsDesc: 'No sessions scheduled',
-    certifiedReaderBadge: 'Certified Reader',
-    chatPrivatelyWithReader: 'Chat privately with reader',
-    joinLiveSessionInApp: 'Join live session',
-    sessionControlsTitle: 'Session Settings',
-    sessionInactiveMsg: 'Session is inactive',
-    sessionLinkReadyMsg: 'Session link is ready',
-    newDateLabel: 'New Date',
-    newTimeLabel: 'New Time',
-    requestRescheduleTitle: 'Request Reschedule',
-    requestRescheduleDesc: 'Choose a suitable time',
-    rescheduleBtn: 'Reschedule',
-    sendProposalBtn: 'Send Proposal',
-    rescheduleWarningMsg: 'Make sure to choose a suitable time',
-    rescheduleRequestFromReader: 'Reschedule request from reader',
-    rescheduleAcceptedToast: 'Reschedule accepted',
-    rescheduleRejectedToast: 'Reschedule rejected',
-    rescheduleRequestSentToast: 'Reschedule request sent',
-    rescheduledStatus: 'Rescheduled',
-    cancelSessionBtn: 'Cancel Session',
-    cancelRescheduleBtn: 'Cancel Reschedule',
-    cancelConfirmation: 'Are you sure you want to cancel the session?',
-    rejectRequestBtn: 'Reject Request',
-    acceptAndConfirmBtn: 'Accept & Confirm',
-    noTicketsYet: 'No tickets yet',
-  },
-  wirdPage: {
-    title: 'Daily Wird',
-    subtitle: 'Track your daily recitation and memorization',
-    noItemsYet: 'No items in wird yet',
-    addToWirdBtn: 'Add to Wird',
-    addNewItemTitle: 'Add New Item',
-    addWirdHint: 'Add recitation, memorization or revision',
-    wirdItemsTitle: 'Wird Items',
-    wirdItemsDesc: 'What you committed to today',
-    juzTitle: 'Juz',
-    juzDesc: 'Select juz for reading',
-    juzNumberLabel: 'Juz Number',
-    rangeAyahsTitle: 'Ayah Range',
-    rangePagesTitle: 'Page Range',
-    readPagesTitle: 'Read Pages',
-    singleAyahTitle: 'Single Ayah',
-    singlePageTitle: 'Single Page',
-    fromAyahLabel: 'From Ayah',
-    toAyahLabel: 'To Ayah',
-    fromPageLabel: 'From Page',
-    toPageLabel: 'To Page',
-    selectSurahLabel: 'Select Surah',
-    customWirdLabel: 'Custom Wird',
-    customWirdDefault: 'Custom Wird',
-    customWirdPlaceholder: 'Enter your custom wird',
-    personalGoalTitle: 'Personal Goal',
-    personalGoalDesc: 'Set a daily memorization goal',
-    personalGoalPlaceholder: 'e.g. Memorize a quarter juz daily',
-    remindersTitle: 'Reminders',
-    remindersDesc: 'Enable reminders to stay consistent',
-    fajrReminder: 'Fajr Reminder',
-    fajrReminderDesc: 'Reminder at Fajr time',
-    maghribReminder: 'Maghrib Reminder',
-    maghribReminderDesc: 'Reminder at Maghrib time',
-    saveSettingsBtn: 'Save Settings',
-    saveSuccess: 'Settings saved',
-    types: {},
-  },
-  mushafProgressPage: {
-    title: 'Mushaf Progress',
-    subtitle: 'Track your Quran memorization progress',
-    ayahsSummaryTitle: 'Ayahs Summary',
-    ayahsMastered: 'Mastered Ayahs',
-    ayahsReviewing: 'Reviewing',
-    ayahsRemaining: 'Remaining',
-    totalProgress: 'Total Progress',
-    versesCount: 'verse',
-    viewSurahs: 'View Surahs',
-    viewPages: 'View Pages',
-    pageRange: 'Page Range',
-    pageTooltip: 'Page',
-    legendMastered: 'Mastered',
-    legendReviewing: 'Reviewing',
-    legendNone: 'Not memorized',
-    masteredAyahsCount: 'mastered ayah',
-    milestonesTitle: 'Milestones',
-    recentActivitiesTitle: 'Recent Activities',
-    noActivitiesYet: 'No activities yet',
-    openMushaf: 'Open Mushaf',
-    startRecitationHint: 'Start reciting to track progress',
-    relativeToday: 'Today',
-    relativeYesterday: 'Yesterday',
-    relativeDaysAgo: 'days ago',
-    relativeWeeksAgo: 'weeks ago',
-  },
-  memorizationPathsPage: {
-    backToPaths: 'Back to Paths',
-    tabs: {},
-    types: {},
-    levels: {},
-    unitTypes: {},
-    title: 'Memorization Paths',
-    description: 'Browse available memorization paths',
-    emptyBrowseTitle: 'No paths yet',
-    emptyEnrolledTitle: 'Not enrolled in any path yet',
-    emptyEnrolledDesc: 'Browse memorization paths and join one that suits you',
-    enrollBtn: 'Enroll',
-    enrolledStatusCompleted: 'Completed',
-    enrolledStatusPaused: 'Paused',
-    progressLabel: 'Progress',
-    unitsCount: 'unit',
-    estimatedDays: 'day',
-    estimatedDaysExpected: 'Est. Duration',
-    badgeTitle: 'Path Badge',
-    continueBtn: 'Continue',
-    startBtn: 'Start',
-    reviewBtn: 'Review',
-    migrationMissing: 'Incomplete data',
-    pathNotFound: 'Path not found',
-    pathContentTitle: 'Path Content',
-    unitLabel: 'Unit',
-    unitInProgress: 'In Progress',
-    unitCompleted: 'Completed',
-    unitEstimatedTime: 'Est. Time',
-    unitEstimatedTimeVal: 'min',
-    unitPreviousAttempts: 'Previous Attempts',
-    unitPreviousAttemptsVal: 'attempt',
-    unitApprovedAudio: 'Approved audio recording',
-    requireAudioBadge: 'Requires audio',
-    completeUnitBtn: 'Complete Unit',
-    completeUnitDialogTitle: 'Confirm Unit Completion',
-    completeUnitDialogDesc: 'Have you completed this unit? Your progress will be recorded.',
-    completeUnitDialogDescOptional: 'You can attach an audio recording (optional)',
-    confirmCompleteBtn: 'Yes, I completed it',
-    cancelBtn: 'Cancel',
-    readyToStartTitle: 'Ready to Start',
-    readyToStartDesc: 'This unit is ready to begin',
-    pathCompletedTitle: 'Path Completed!',
-    pathCompletedDesc: 'Congratulations! You have successfully completed this path.',
-    newRecordTab: 'New Recording',
-    linkRecitationTab: 'Link Existing Recitation',
-    noPreviousRecitations: 'No previous recitations',
-    linkPreviousRecitationDesc: 'Select a previous recitation to link to this unit',
-    selectRecitationPlaceholder: 'Select recitation...',
-    recordNewAudioLabel: 'New Audio Recording',
-    updateRecordingBtn: 'Update Recording',
-    unitCompleteError: 'Error completing unit',
-  },
-  supervisorContent: {
-    title: 'Content Review',
-    subtitle: 'Review and approve teacher content',
-    unspecified: 'Unspecified',
-    typeVideo: 'Video',
-    typeAudio: 'Audio',
-    typeText: 'Text',
-    statusPending: 'Pending Review',
-    statusApproved: 'Approved',
-    statusRejected: 'Rejected',
-    filterAll: 'All',
-    filterPending: 'Pending',
-    filterApproved: 'Approved',
-    filterRejected: 'Rejected',
-    searchPlaceholder: 'Search...',
-    noContentFound: 'No content found',
-    emptyTitle: 'No content to review',
-    emptyText: 'Teacher review requests will appear here',
-    labelCourse: 'Course',
-    labelTeacher: 'Teacher',
-    labelType: 'Type',
-    labelRejectionReason: 'Rejection Reason',
-    promptRejectionReason: 'Enter rejection reason...',
-    tooltipApprove: 'Approve content',
-    tooltipReject: 'Reject content',
-    btnReview: 'Review',
-    approve: 'Approve',
-    reject: 'Reject',
-    viewContent: 'View Content',
-  },
-  teacherCertificates: {
-    title: 'Certificates',
-    noCertificates: 'No certificates yet',
-    issuedAt: 'Issued on',
-    downloadBtn: 'Download',
-    shareBtn: 'Share',
-    certificateFor: 'Certificate for',
-    viewAll: 'View All',
-    filterAll: 'All',
-    filterActive: 'Active',
-    filterExpired: 'Expired',
-    student: 'Student',
-    course: 'Course',
-    status: 'Status',
-    actions: 'Actions',
-  },
-  rejectedPage: {
-    title: 'Application Rejected',
-    description: 'We\'re sorry, your application was not accepted this time.',
-    reapplyBtn: 'Reapply',
-    contactSupport: 'Contact Support',
-    reasonTitle: 'Rejection Reason',
-    noReason: 'No reason provided',
-    successTitle: 'Application Submitted',
-    successDesc: 'Your application will be reviewed and you will be notified of the result',
-    redirecting: 'Redirecting...',
-    toastErrorReapply: 'An error occurred while reapplying',
-    toastErrorConnection: 'Connection failed. Please try again.',
-  },
-  submittingStatus: 'Submitting...',
-  nav: {
-    home: 'Home',
-    sessions: 'Sessions',
-    progress: 'Progress',
-    profile: 'Profile',
-    settings: 'Settings',
-    logout: 'Logout',
-    mushaf: 'Mushaf',
-    paths: 'Paths',
-    badges: 'Badges',
-    points: 'Points',
-    competitions: 'Competitions',
-    wird: 'Wird',
-    library: 'Library',
-    courses: 'Courses',
-    features: 'Features',
-    testimonials: 'Testimonials',
-    contact: 'Contact Us',
-    login: 'Sign In',
-    register: 'Create Account',
-  },
-  modeSwitcher: {
-    student: 'Student Mode',
-    teacher: 'Teacher Mode',
-    admin: 'Admin Mode',
-    reader: 'Reader Mode',
-    switch: 'Switch Mode',
-  },
-  library: {
-    title: 'Library',
-    searchPlaceholder: 'Search library...',
-    noResults: 'No results found',
-    filterAll: 'All',
-    filterBooks: 'Books',
-    filterAudio: 'Audio',
-    filterVideo: 'Video',
-    filterArticles: 'Articles',
-    viewBtn: 'View',
-    downloadBtn: 'Download',
-    noLibraryItems: 'No library items',
-    noResultsDesc: 'Try changing your search terms or filters',
-    filterResults: 'Filter results',
-    backToLibrary: 'Back to Library',
-    pages: 'pages',
-    languages: 'Languages',
-    allLanguages: 'All Languages',
-    allCategories: 'All Categories',
-    otherLanguage: 'Other Language',
-    selectLanguage: 'Select Language',
-    downloadFile: 'Download File',
-    preview: 'Preview',
-    noFiles: 'No files',
-    relatedBooks: 'Related Books',
-    noCover: 'No cover available',
-    loading: 'Loading...',
-    readNow: 'Read Now',
-    contact: 'Contact',
-    libraryDesc: 'Browse the digital library',
-    features: 'Features',
-    testimonials: 'Testimonials',
-  },
-  studentLabel: 'Student',
-  readerLabel: 'Reader',
-  fiqhSupervisorProfile: {
-    title: 'Profile',
-    editProfile: 'Edit Profile',
-    saveChanges: 'Save Changes',
-    cancelEdit: 'Cancel',
-    fullName: 'Full Name',
-    email: 'Email',
-    phone: 'Phone',
-    bio: 'Bio',
-    specialization: 'Specialization',
-    profileUpdated: 'Profile updated',
-    profileUpdateError: 'Failed to update profile',
-    years_of_experience: 'Years of Experience',
-  },
-  parentChild: {
-    loading: 'Loading...',
-    studentNotFound: 'Student not found or not linked to your account.',
-    typeBoth: 'Academy & Maqraa',
-    typeMaqraa: 'Maqraa',
-    typeAcademy: 'Academy',
-    tabOverview: 'Overview',
-    tabCourses: 'Courses',
-    tabTasks: 'Tasks & Grades',
-    tabSeries: 'Series & Paths',
-    tabSchedule: 'Schedule',
-    tabCertificates: 'Certificates',
-    tabCompetitions: 'Competitions',
-    tabRecitations: 'Recitations',
-    tabBadges: 'Badges',
-    relationUpdated: 'Relation updated',
-    updateFail: 'Failed to update',
-    genericError: 'An error occurred',
-    backToChildren: 'Back to Children List',
-    relation: 'Relation:',
-    linkedSince: 'Linked since',
-    message: 'Message',
-    restrict: 'Restrict',
-    statCourses: 'Courses',
-    active: 'active',
-    completed: 'completed',
-    progress: 'Progress',
-    recitations: 'Recitations',
-    last30Days: 'Last 30 days',
-    certificates: 'Certificates',
-    certIssued: 'issued',
-    weeklyActivity: 'Weekly Activity',
-    activities: 'activities',
-    activity: 'Activity',
-    noActivityThisWeek: 'No activity this week',
-    upcomingSessions: 'Upcoming Sessions',
-    noUpcoming: 'No upcoming sessions.',
-    enrolledCourses: 'Enrolled Courses',
-    noCoursesEnrolled: 'No courses enrolled.',
-    pending: 'Pending',
-    tasks: 'Tasks',
-    total: 'total',
-    graded: 'Graded',
-    evaluated: 'evaluated',
-    average: 'Average',
-    tasksHeading: 'Submitted Tasks & Grades',
-    noTasksSubmitted: 'No tasks submitted yet.',
-    task: 'Task',
-    awaitingGrading: 'Awaiting grading',
-    teacherNote: 'Teacher note: ',
-    gradedOn: 'Graded',
-    submittedOn: 'Submitted',
-    pathsHeading: 'Memorization & Tajweed Paths',
-    noPathsEnrolled: 'Not enrolled in any path.',
-    memorization: 'Memorization',
-    tajweed: 'Tajweed',
-    seriesHeading: 'Learning Series',
-    noSeriesEnrolled: 'Not enrolled in any series.',
-    items: 'items',
-    upcomingSchedule: 'Upcoming Sessions',
-    pastSchedule: 'Past Sessions',
-    issuedCerts: 'Issued Certificates',
-    noIssuedCerts: 'No issued certificates yet.',
-    certificate: 'Certificate',
-    download: 'Download',
-    pendingCerts: 'Pending Issuance',
-    competitionsHeading: 'Participated Competitions',
-    noCompetitions: 'Has not participated in any competition yet.',
-    competition: 'Competition',
-    winner: 'Winner',
-    compActive: 'Active',
-    compEnded: 'Ended',
-    points: 'pts',
-    pendingEval: 'Under evaluation',
-    judgeNote: 'Judge note: ',
-  },
-  invite: {
-    platformName: 'Itqan Education Platform',
-    inviteTitle: 'Join Invitation',
-    welcome: 'Welcome!',
-    invitedBy: 'You received an invitation from',
-    admin: 'Admin',
-    toJoinAs: 'to join as',
-    attachedPlan: 'Attached Educational Plan',
-    email: 'Email',
-    fullName: 'Full Name',
-    namePlaceholder: 'Enter your full name',
-    password: 'Password',
-    passwordPlaceholder: 'At least 6 characters',
-    gender: 'Gender (optional)',
-    genderSelect: 'Select gender...',
-    male: 'Male',
-    female: 'Female',
-    creatingAccount: 'Creating account...',
-    registerAndAccept: 'Create Account & Accept',
-    loggedInNotice: 'You are currently signed in as',
-    acceptWillAdd: 'Accepting will add the permissions of this invitation to your current account.',
-    accepting: 'Accepting...',
-    continueAndAccept: 'Continue & Accept',
-    genericError: 'An error occurred, please try again',
-    namePasswordRequired: 'Name and password (min 6 characters) are required',
-    registerError: 'An error occurred during registration',
-    invalidLink: 'Invalid Link',
-    invalidDesc: 'This invitation does not exist or has been cancelled.',
-    backHome: 'Back to Home',
-    expiredTitle: 'Invitation Expired',
-    expiredDesc: 'This invitation has expired. Contact the admin for a new one.',
-    back: 'Back',
-    successTitle: 'Done!',
-    enrolledIn: 'You have been enrolled in',
-    welcomePlatform: 'Welcome to Itqan Education Platform.',
-    startPlan: 'Start Learning Plan',
-    goToDashboard: 'Go to Dashboard',
-    roleAcademyStudent: 'Academy Student',
-    roleStudent: 'Student',
-    roleTeacher: 'Teacher',
-    roleParent: 'Parent',
-    roleFiqh: 'Fiqh Supervisor',
-    roleContent: 'Content Supervisor',
-  },
-  fiqhForm: {
-    title: 'Question Form Settings',
-    desc: 'Add custom fields shown to the student when submitting a new question (e.g. age, marital status).',
-    editField: 'Edit Field',
-    addField: 'Add New Field',
-    labelName: 'Field key (English, no spaces)*',
-    namePlaceholder: 'e.g. age',
-    labelUserTitle: 'Field label for user*',
-    userTitlePlaceholder: 'e.g. Age',
-    labelFieldType: 'Field type',
-    typeText: 'Text',
-    typeNumber: 'Number',
-    typeSelect: 'Dropdown (Select)',
-    typeSelectShort: 'List',
-    labelOrder: 'Order',
-    labelOptions: 'Dropdown options (one per line)',
-    optionsPlaceholder: 'Single\nMarried\nDivorced',
-    required: 'Required',
-    active: 'Active',
-    cancel: 'Cancel',
-    saveField: 'Save Field',
-    noFields: 'No custom fields yet.',
-    disable: 'Disable',
-    enable: 'Enable',
-    saveFail: 'An error occurred while saving',
-    deleteConfirm: 'Are you sure you want to delete this field? It will be permanently removed from the form.',
-  },
-  stageManager: {
-    advances: 'Advances',
-    currentStage: 'Current Stage:',
-    pendingReview: 'submissions awaiting review',
-    allReviewed: 'All submissions reviewed',
-    winners: 'Winners',
-    qualifiers: 'Qualifiers',
-    finalizeResults: 'Finalize Results',
-    advanceQualifiers: 'Advance Qualifiers',
-    endCompetition: 'End Competition',
-    finalizeNow: 'Finalize Current Results',
-    cancelCompetition: 'Cancel Competition (no winner)',
-    winner: 'Winner',
-    qualifier: 'Qualified',
-    dialogTitleAdvance: 'Advance Qualifiers to Next Stage',
-    dialogTitleFinalize: 'Finalize Current Results',
-    dialogTitleCancel: 'Cancel Competition',
-    descAdvance: 'The top {count} students from «{stage}» will advance to the next stage and the rest will be eliminated. All participants will be notified.',
-    descFinalize: 'The results of «{stage}» will be finalized immediately. The highest scorer wins; points, certificates, and remaining stages will close.',
-    descCancel: 'The competition will end immediately with no winner, points, or certificates. All participants will be notified. This cannot be undone.',
-    tieNotice: 'There is a tie exceeding the allowed count. Allow them to share the rank and exceed the seat limit?',
-    back: 'Back',
-    confirm: 'Confirm',
-    genericError: 'An error occurred',
-    actionFail: 'Failed to perform the action',
-  },
-  lessonViewer: {
-    platformName: 'Itqan',
-    shareWith: 'Public lesson with',
-    minutes: 'min',
-    shareLesson: 'Share Lesson',
-    copied: 'Copied',
-    copyLink: 'Copy link',
-    publicLesson: 'Public lesson open to all',
-    cancelled: 'Cancelled',
-    liveNow: 'Live Now',
-    comingSoon: 'Coming Soon',
-    ended: 'Ended',
-    startsIn: 'Lesson starts in',
-    days: 'days',
-    hours: 'hours',
-    minutesUnit: 'min',
-    seconds: 'sec',
-    bookmarkHint: 'Bookmark this page and return when the lesson starts to join directly.',
-    noLinkYet: 'The lesson has started but the teacher has not added the link yet.',
-    refreshSoon: 'Refresh in a moment.',
-    openingLesson: 'Opening lesson...',
-    joinNow: 'Join Lesson Now',
-    password: 'Password:',
-    via: 'via',
-    thankYou: 'Thank you for attending!',
-    ctaPrompt: 'Enjoyed the lesson with {teacher}? Register on Itqan and join full courses, live sessions, and recitations with specialized scholars.',
-    ourTeacher: 'our teacher',
-    redirecting: 'Redirecting...',
-    registerFree: 'Register Now for Free',
-    registerNote: 'Registration is quick and free. You will receive notifications about upcoming lessons.',
-  },
-  readerDashboard: {
-    recitations: 'Recitations',
-    sessions: 'Sessions',
-    halaqat: 'Halaqat',
-    schedule: 'Schedule',
-    messages: 'Messages',
-    competitions: 'Competitions',
-    updating: 'Updating...',
-    unreadMessages: 'Unread messages',
-    pendingEvals: 'Submissions awaiting your review',
-    newNotifications: 'New notifications',
-    upcomingSession: 'Your Next Session',
-    student: 'Student',
-    today: 'Today',
-    joinLiveSession: 'Join Live Session',
-    sessionDetails: 'Session Details',
-    upcomingSessions: 'Upcoming Sessions',
-    viewAll: 'All',
-    join: 'Join',
-    upcoming: 'Upcoming',
-    quickAccess: 'Quick Access',
-    studentProgress: 'Student Progress Report',
-    studentProgressDesc: 'Attendance days, weekly verses, and comparison with memorization goal.',
-    noStudentProgress: 'No student progress data yet',
-    verses: 'verses',
-    noGoal: 'No goal set',
-  },
-  adhkarWidget: {
-    morningAdhkar: 'Morning Adhkar',
-    eveningAdhkar: 'Evening Adhkar',
-    completed: 'completed',
-    morning: 'Morning',
-    evening: 'Evening',
-    doneAllMorning: 'You completed Morning Adhkar, may Allah accept',
-    doneAllEvening: 'You completed Evening Adhkar, may Allah accept',
-    reset: 'Reset',
-    hint: 'Tap a dhikr to count it — resets daily',
-  },
-  generalSettings: {
-    identityTitle: 'Maqraah Identity',
-    name: 'Maqraah Name',
-    namePlaceholder: 'e.g. Itqan Maqraah',
-    description: 'Maqraah Description',
-    descriptionPlaceholder: 'A brief introduction shown to visitors',
-    contactTitle: 'Contact Information',
-    email: 'Email',
-    whatsapp: 'WhatsApp Number',
-    regionalTitle: 'Regional Settings',
-    timezone: 'Timezone',
-    tzRiyadh: 'Riyadh (UTC+3)',
-    tzDubai: 'Dubai (UTC+4)',
-    tzCairo: 'Cairo (UTC+2)',
-    tzUTC: 'Universal Time (UTC)',
-    language: 'Default Language',
-    arabic: 'Arabic',
-    direction: 'Interface Direction',
-    rtl: 'Right to Left (RTL)',
-    ltr: 'Left to Right (LTR)',
-  },
-  judgesManager: {
-    title: 'Competition Judges',
-    assignedJudges: 'Assigned Judges',
-    noJudges: 'No judges assigned yet',
-    noName: 'No name',
-    removeJudge: 'Remove judge',
-    addJudgeHeading: 'Add Judge (teacher, reader, or supervisor)',
-    searchPlaceholder: 'Search by name or email...',
-    noResults: 'No matching results',
-    noCandidates: 'No available candidates to add',
-    assign: 'Assign',
-    loadFail: 'Failed to load judges',
-    addFail: 'Failed to add judge',
-    removeFail: 'Failed to remove judge',
-    roleTeacher: 'Teacher',
-    roleReader: 'Reader',
-    roleStudentSupervisor: 'Student Supervisor',
-    roleReciterSupervisor: 'Reciter Supervisor',
-    roleAdmin: 'Admin',
-    roleAcademyAdmin: 'Academy Admin',
-  },
-  splashScreen: {
-    brandName: 'Itqan',
-    tagline: 'Quran Learning Platform',
-    loading: 'Loading platform...',
-  },
+},
   dashboardSuper: {
-    overviewTitle: 'Platform Overview',
-    overviewDesc: 'Unified statistics across both platforms',
-    usersSection: 'Users — Platform-wide',
-    visitsSection: 'Visit Analytics',
+    errorLoadingOverview: 'An error occurred while loading overview',
     newUsers30: 'New Users (30 days)',
     bothPlatforms: 'Across both platforms',
     totalRecitations: 'Total Recitations',
@@ -8972,984 +7491,35 @@ export const en = {
     courses: 'Courses',
     lessons: 'Lessons',
     enrollments: 'Enrollments',
+    overviewTitle: 'Platform Overview',
+    overviewDesc: 'Unified statistics across both platforms',
+    usersSection: 'Users — Platform-wide',
+    visitsSection: 'Visit Analytics',
     maqraahTitle: 'Maqraah',
     manageMaqraah: 'Manage Maqraah',
     academyTitle: 'Academy',
     manageAcademy: 'Manage Academy',
+    roleDistributionTitle: 'Role Distribution',
+    roleDistributionDesc: 'Number of users per role across both platforms'
   },
-  recitationRecorder: {
-    page: 'Page',
-    ayah: 'Ayah',
-    ayahs: 'Ayahs',
-    verseText: 'Verse Text Reference',
-    loadingText: 'Loading text...',
-    textLoadError: 'Failed to load verse text. Check your internet connection.',
-    validationAyahFrom: '"From ayah" must be between 1 and {max}',
-    validationAyahTo: '"To ayah" must be between 1 and {max}',
-    validationAyahOrder: '"From ayah" cannot be greater than "To ayah"',
-    recitationInfo: 'Recitation Information',
-    surah: 'Surah',
-    verses: 'verses',
-    ayahToAyah: 'Ayah to Ayah',
-    pageToPage: 'Page to Page',
-    fromPage: 'From page',
-    toPage: 'To page',
-    fromAyah: 'From ayah',
-    toAyah: 'To ayah',
-    recitationType: 'Recitation Type',
-    typeHifd: 'Memorization',
-    typeMuraja3a: 'Review',
-    typeTilawa: 'Recitation',
+  dashboardMaqraa: {
+    totalRecitations: 'Total Recitations',
+    masteredRecitations: 'Mastered Recitations',
+    inReview: 'In Review'
   },
-  templateEditor: {
-    savedTitle: 'Template saved',
-    savePositionsFail: 'Failed to save positions',
-    previewFail: 'Failed to generate preview',
-    previewError: 'Preview error',
-    editorTitle: 'Field Position Editor',
-    editorDesc: 'Select a field from the list then drag it to its position on the template. Press preview to see the result.',
-    addField: 'Add Field',
-    selectField: 'Select field…',
-    allFieldsAdded: 'All fields added',
-    placedFields: 'Placed Fields',
-    noFieldsYet: 'No fields yet',
-    properties: 'Properties:',
-    imageSize: 'Image size (% of width)',
-    fontSize: 'Font size (% of shorter side)',
-    align: 'Align',
-    alignLeft: 'Left',
-    alignCenter: 'Center',
-    alignRight: 'Right',
-    weight: 'Weight',
-    weightNormal: 'Normal',
-    weightBold: 'Bold',
-    color: 'Color',
-    maxWidth: 'Max width (%)',
-    rotation: 'Rotation (deg)',
-    fieldsPlacedAr: '{n} fields placed · drag any pin to move',
-    preview: 'Preview',
-    save: 'Save',
-  },
-  adminTajweedPaths: {
-    landingPage: 'Landing Page',
-    landingSettings: 'Landing Page Settings',
-    promoVideo: 'Promo Video URL',
-    targetAudience: 'Target Audience',
-    audiencePlaceholder: 'Who is this path for?',
-    whatYouLearn: 'What you will learn',
-    prerequisites: 'Prerequisites',
-    separateByComma: 'separate by comma',
-    enrollmentType: 'Enrollment Type',
-    enrollOpen: 'Open to all',
-    enrollCohorts: 'Cohorts',
-    enrollInviteOnly: 'Invite only',
-    certificateType: 'Certificate Type',
-    certificateCompletion: 'Certificate of Completion',
-    ijazah: 'Ijazah',
-    certificateNone: 'No certificate',
-    pathPrice: 'Path Price',
-    pricingNote: 'free = 0',
-    saveLanding: 'Save Landing Page Data',
-    linkedHalaqa: 'Linked Halaqa',
-    selectHalaqa: 'Select a halaqa to link to this stage',
-    noHalaqa: 'No halaqa',
-  
-    createNewHalaqa: 'Create new halaqa',
-  },
-  adminHomepage: {
-    overview: 'Platform Overview',
-  },
-  adminPoints: {
-    studentPoints: 'Student Points',
-  },
-  adminBadges: {
-    achievementBadges: 'Achievement Badges',
-  },
-  academyError: {
-    title: 'Failed to load page',
-    message: 'An unexpected error occurred while rendering this page. Try reloading, and if the problem persists, return to the dashboard.',
-    retry: 'Retry',
-    dashboard: 'Dashboard',
-  },
-  academyStudentPath: {
-    completed: 'You have completed this path. You can review any stage below at any time.',
-    enrolled: 'You are enrolled in this path. Follow your progress in the stages shown below.',
-  },
-  // Level 1 batch - Generic fallbacks
-  appGeneric: {
-    loading: 'Loading...',
-    error: 'An error occurred',
-    success: 'Success',
-    cancel: 'Cancel',
-    confirm: 'Confirm',
-    save: 'Save',
-    delete: 'Delete',
-    edit: 'Edit',
-    add: 'Add',
-    close: 'Close',
-  },
-  academyGeneric: {
-    welcome: 'Welcome',
-    course: 'Course',
-    lesson: 'Lesson',
+  adminRoles: {
+    super_admin: 'Super Admin',
+    admin: 'Admin',
+    academy_admin: 'Academy Admin',
+    maqraa_admin: 'Maqraah Admin',
     student: 'Student',
     teacher: 'Teacher',
-    progress: 'Progress',
-    completed: 'Completed',
-    pending: 'Pending',
-  },
-  adminGeneric: {
-    users: 'Users',
-    settings: 'Settings',
-    dashboard: 'Dashboard',
-    reports: 'Reports',
-    analytics: 'Analytics',
-  },
-
-  academy: {
-    _،_: ' ، ', // TODO: translate
-    آخر: 'آخر', // TODO: translate
-    آخر_معاينة: 'آخر معاينة', // TODO: translate
-    أب: 'أب', // TODO: translate
-    أخرى: 'أخرى', // TODO: translate
-    أسئلتي: 'أسئلتي', // TODO: translate
-    أكاديمية_إتقان: 'أكاديمية إتقان', // TODO: translate
-    أم: 'أم', // TODO: translate
-    إ: 'إ', // TODO: translate
-    إتقان: 'إتقان', // TODO: translate
-    إشراف_عام_للوحة: 'إشراف عام للوحة', // TODO: translate
-    إعدادات_الأكاديمية: 'إعدادات الأكاديمية', // TODO: translate
-    إعدادات_خاصة_بالأكاد: 'إعدادات خاصة بالأكاديمية فقط. الإعدادات العامة للموقع يديرها المدير العام.', // TODO: translate
-    اطرح_سؤالاً: 'اطرح سؤالاً', // TODO: translate
-    اعتماد_المسار_ونشره: 'اعتماد المسار ونشره', // TODO: translate
-    افتح_في_تبويب: 'افتح في تبويب', // TODO: translate
-    اكتب_سؤالك_بوضوح._كل: 'اكتب سؤالك بوضوح. كلما كانت التفاصيل أكثر، كانت الإجابة أدق.', // TODO: translate
-    اكتب_سؤالك_بوضوح_(10: 'اكتب سؤالك بوضوح (10 أحرف على الأقل)', // TODO: translate
-    التلاوات_الأخيرة: 'التلاوات الأخيرة', // TODO: translate
-    الجدولة: 'الجدولة', // TODO: translate
-    الدروس: 'الدروس', // TODO: translate
-    الدورات: 'الدورات', // TODO: translate
-    الدورات_المعطّلة_في_: 'الدورات المعطّلة في تخصصك — للمراجعة فقط', // TODO: translate
-    الرسائل: 'الرسائل', // TODO: translate
-    السلاسل: 'السلاسل', // TODO: translate
-    الشارات_المكتسبة: 'الشارات المكتسبة', // TODO: translate
-    الكل: 'الكل', // TODO: translate
-    المرفوضة: 'المرفوضة', // TODO: translate
-    المعتمدة: 'المعتمدة', // TODO: translate
-    المعلقة: 'المعلقة', // TODO: translate
-    المفتاح_المفعّل_يعني: 'المفتاح المفعّل يعني أن المحتوى متاح. أطفئه للحظر.', // TODO: translate
-    المقبولة: 'المقبولة', // TODO: translate
-    المكتبة: 'المكتبة', // TODO: translate
-    المكتبة_فارغة_بعد._ك: 'المكتبة فارغة بعد. كن أول من يسأل!', // TODO: translate
-    المنصة_تحت_الصيانة،_: 'المنصة تحت الصيانة، سنعود قريباً', // TODO: translate
-    انضمام: 'انضمام', // TODO: translate
-    بانتظار_البيانات: 'بانتظار البيانات', // TODO: translate
-    بانتظار_المراجعة: 'بانتظار المراجعة', // TODO: translate
-    بانتظار_الموافقة: 'بانتظار الموافقة', // TODO: translate
-    بانتظار_موافقة_السائ: 'بانتظار موافقة السائل', // TODO: translate
-    تأكيد_كلمة_المرور: 'تأكيد كلمة المرور', // TODO: translate
-    تجاهل: 'تجاهل', // TODO: translate
-    تحتاج_تحسين: 'تحتاج تحسين', // TODO: translate
-    تحكم_في_المحتوى_المت: 'تحكم في المحتوى المتاح للابن. كل شيء متاح افتراضياً.', // TODO: translate
-    تصفّح_أسئلة_فقهية_أج: 'تصفّح أسئلة فقهية أجاب عنها المسؤولون المتخصصون ووافق أصحابها على نشرها، أو اطرح سؤالك وسيصل إلى مسؤول مختص في التصنيف.', // TODO: translate
-    تعديلات_غير_محفوظة: 'تعديلات غير محفوظة', // TODO: translate
-    تعذر_تحميل_الكتاب: 'تعذر تحميل الكتاب', // TODO: translate
-    تم_إرسال_سؤالك_بنجاح: 'تم إرسال سؤالك بنجاح. سيتم إبلاغك عند ورود الإجابة.', // TODO: translate
-    تم_التعيين: 'تم التعيين', // TODO: translate
-    تمت_الإجابة: 'تمت الإجابة', // TODO: translate
-    جديد_-_بحاجة_للإجابة: 'جديد - بحاجة للإجابة', // TODO: translate
-    حجز_تلاوة: 'حجز تلاوة', // TODO: translate
-    حدث_خطأ: 'حدث خطأ', // TODO: translate
-    حصة: 'حصة', // TODO: translate
-    حفظ: 'حفظ', // TODO: translate
-    خطأ: 'خطأ', // TODO: translate
-    رفض_المسار: 'رفض المسار', // TODO: translate
-    رفضت_النشر: 'رفضت النشر', // TODO: translate
-    سائل_مجهول: 'سائل مجهول', // TODO: translate
-    سجّل_الدخول_لتطرح_سؤ: 'سجّل الدخول لتطرح سؤالك على مسؤول مختص.', // TODO: translate
-    سنة_النشر: 'سنة النشر', // TODO: translate
-    سيصل_سؤالك_إلى_مسؤول: 'سيصل سؤالك إلى مسؤول مختص في التصنيف الذي تختاره. ستصلك إجابة مع طلب موافقتك على النشر.', // TODO: translate
-    صادرة: 'صادرة', // TODO: translate
-    عدد_الصفحات: 'عدد الصفحات', // TODO: translate
-    غير_محدد: 'غير محدد', // TODO: translate
-    غير_مقبولة: 'غير مقبولة', // TODO: translate
-    في_الانتظار: 'في الانتظار', // TODO: translate
-    في_انتظار_موافقتك: 'في انتظار موافقتك', // TODO: translate
-    فيديو: 'فيديو', // TODO: translate
-    قادم: 'قادم', // TODO: translate
-    قيد_العمل: 'قيد العمل', // TODO: translate
-    قيد_المراجعة: 'قيد المراجعة', // TODO: translate
-    كل_اللغات: 'كل اللغات', // TODO: translate
-    كلمة_المرور_الجديدة: 'كلمة المرور الجديدة', // TODO: translate
-    كلمة_المرور_الحالية: 'كلمة المرور الحالية', // TODO: translate
-    كلمة_المرور_يجب_أن_ت: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل', // TODO: translate
-    كلمتا_المرور_غير_متط: 'كلمتا المرور غير متطابقتين', // TODO: translate
-    لا_توجد_تلاوات_بعد.: 'لا توجد تلاوات بعد.', // TODO: translate
-    لا_توجد_رسائل_بعد._ا: 'لا توجد رسائل بعد. ابدأ المحادثة إذا احتجت توضيحاً.', // TODO: translate
-    لا_توجد_نتائج_مطابقة: 'لا توجد نتائج مطابقة. جرّب تعديل البحث أو التصنيف.', // TODO: translate
-    لقد_قمت_بإنجاز_عملك_: 'لقد قمت بإنجاز عملك بنجاح. سيتم إشعارك عند وجود دروس جديدة بانتظار مراجعتك.', // TODO: translate
-    لم_تطرح_أي_سؤال_بعد.: 'لم تطرح أي سؤال بعد. ابدأ من تبويب ', // TODO: translate
-    لم_يحصل_على_شارات_بع: 'لم يحصل على شارات بعد.', // TODO: translate
-    لم_يُنشر: 'لم يُنشر', // TODO: translate
-    لم_يُنشر_(رفض_السائل: 'لم يُنشر (رفض السائل)', // TODO: translate
-    مؤرشفة: 'مؤرشفة', // TODO: translate
-    محادثة_جارية: 'محادثة جارية', // TODO: translate
-    مرفوض: 'مرفوض', // TODO: translate
-    مرفوضة: 'مرفوضة', // TODO: translate
-    مسارات_الأكاديمية: 'مسارات الأكاديمية', // TODO: translate
-    مسارات_المقرئ: 'مسارات المقرئ', // TODO: translate
-    مسودة: 'مسودة', // TODO: translate
-    مشرف_المحتوى_—_إدارة: 'مشرف المحتوى — إدارة ومراجعة محتوى المعلمين قبل نشره بالأكاديمية', // TODO: translate
-    مشرف_عام: 'مشرف عام', // TODO: translate
-    معتمد: 'معتمد', // TODO: translate
-    معتمدة: 'معتمدة', // TODO: translate
-    مغلق: 'مغلق', // TODO: translate
-    مقبولة: 'مقبولة', // TODO: translate
-    مقطع_صوتي: 'مقطع صوتي', // TODO: translate
-    ملغاة: 'ملغاة', // TODO: translate
-    منتهية: 'منتهية', // TODO: translate
-    منشور: 'منشور', // TODO: translate
-    منشور_في_المكتبة: 'منشور في المكتبة', // TODO: translate
-    منشورة: 'منشورة', // TODO: translate
-    منع_الابن_من_إرسال_و: 'منع الابن من إرسال واستقبال الرسائل', // TODO: translate
-    منع_الابن_من_حجز_جلس: 'منع الابن من حجز جلسات جديدة', // TODO: translate
-    موافقتك_تجعل_السؤال_: 'موافقتك تجعل السؤال والإجابة مرئيين للجميع لينتفع بهما الآخرون. يمكنك اختيار النشر بدون اسمك.', // TODO: translate
-    موافقتك_ستجعل_السؤال: 'موافقتك ستجعل السؤال والإجابة جزءاً من المكتبة الفقهية ليستفيد منها الجميع. يمكنك اختيار نشره مجهول الهوية.', // TODO: translate
-    مُسند_إليك: 'مُسند إليك', // TODO: translate
-    ناجحة: 'ناجحة', // TODO: translate
-    نص_مقروء: 'نص مقروء', // TODO: translate
-    هذه_الإجابة_لم_يوافق: 'هذه الإجابة لم يوافق السائل على نشرها للجمهور. ما زال بإمكان الإدارة الاطلاع عليها للمتابعة.', // TODO: translate
-    هنا_تظهر_الأسئلة_الف: 'هنا تظهر الأسئلة الفقهية المُسندة إليك للإجابة عليها.', // TODO: translate
-    ولي_أمر: 'ولي أمر', // TODO: translate
-  },
-
-  academyStudent: {
-    آخر: 'آخر', // TODO: translate
-    أب: 'أب', // TODO: translate
-    أحكام_التجويد: 'أحكام التجويد', // TODO: translate
-    أكمل_متطلبات_هذه_الم: 'أكمل متطلبات هذه المرحلة أولاً لتتمكن من اعتمادها.', // TODO: translate
-    أم: 'أم', // TODO: translate
-    أي_ملاحظات_تود_إضافت: 'أي ملاحظات تود إضافتها...', // TODO: translate
-    الحج_والعمرة: 'الحج والعمرة', // TODO: translate
-    الزكاة: 'الزكاة', // TODO: translate
-    الصلاة: 'الصلاة', // TODO: translate
-    الصيام: 'الصيام', // TODO: translate
-    الطهارة: 'الطهارة', // TODO: translate
-    العقيدة: 'العقيدة', // TODO: translate
-    تقديم_المشاركة: 'تقديم المشاركة', // TODO: translate
-    جلسة_فردية: 'جلسة فردية', // TODO: translate
-    حلقة_إقراء: 'حلقة إقراء', // TODO: translate
-    درس_دورة: 'درس دورة', // TODO: translate
-    سيتم_إلغاء_تسجيلك_وح: 'سيتم إلغاء تسجيلك وحذف تقدمك في هذه الدورة. يمكنك إعادة الانضمام لاحقاً مع البدء من جديد.', // TODO: translate
-    عام: 'عام', // TODO: translate
-    علوم_القرآن: 'علوم القرآن', // TODO: translate
-    قيد_التقييم: 'قيد التقييم', // TODO: translate
-    ملف_المشاركة_(صوت،_ف: 'ملف المشاركة (صوت، فيديو، أو صورة) *', // TODO: translate
-    منتهية: 'منتهية', // TODO: translate
-    هل_لديك_أي_ملاحظات_ت: 'هل لديك أي ملاحظات ترغب بإيصالها للمعلم بخصوص هذا التسليم؟', // TODO: translate
-    ولي_أمر: 'ولي أمر', // TODO: translate
-  },
-
-  academyTeacher: {
-    (ذروة: '(ذروة', // TODO: translate
-    )_+_(data.skipped_?_: ') + (data.skipped ? ` (${data.skipped} مسجلين مسبقاً)` : ', // TODO: translate
-    _?_`الكل_(${entries.: ' ? `الكل (${entries.length})` : f === ', // TODO: translate
-    أنشئ_بثاً_مباشراً،_أ: 'أنشئ بثاً مباشراً، أدر جلساتك المجدولة، وراجع سجلك وتسجيلاتك من مكان واحد.', // TODO: translate
-    إغلاق: 'إغلاق', // TODO: translate
-    إلغاء: 'إلغاء', // TODO: translate
-    إنشاء_جلسة: 'إنشاء جلسة', // TODO: translate
-    إنهاء: 'إنهاء', // TODO: translate
-    ابدأ_بثاً_مباشراً_فو: 'ابدأ بثاً مباشراً فورياً أو جدول جلسة قادمة للتواصل مع طلابك.', // TODO: translate
-    البث_والجلسات: 'البث والجلسات', // TODO: translate
-    التجويد: 'التجويد', // TODO: translate
-    التسجيلات: 'التسجيلات', // TODO: translate
-    التفسير: 'التفسير', // TODO: translate
-    الجلسات_السابقة: 'الجلسات السابقة', // TODO: translate
-    الجلسات_المجدولة: 'الجلسات المجدولة', // TODO: translate
-    الجلسات_والبث_المباش: 'الجلسات والبث المباشر', // TODO: translate
-    الدورة_التدريبية: 'الدورة التدريبية', // TODO: translate
-    السجل: 'السجل', // TODO: translate
-    السيرة_النبوية: 'السيرة النبوية', // TODO: translate
-    الصوت: 'الصوت', // TODO: translate
-    العقيدة: 'العقيدة', // TODO: translate
-    الفقه: 'الفقه', // TODO: translate
-    الفيديو: 'الفيديو', // TODO: translate
-    اللغة_العربية: 'اللغة العربية', // TODO: translate
-    المدة_(دقيقة): 'المدة (دقيقة)', // TODO: translate
-    المعلّم: 'المعلّم', // TODO: translate
-    بانتظار_الاعتماد: 'بانتظار الاعتماد', // TODO: translate
-    بث_مباشر_جديد: 'بث مباشر جديد', // TODO: translate
-    بدء_البث_الآن: 'بدء البث الآن', // TODO: translate
-    بمجرد_أن_تبدأ_بثاً_م: 'بمجرد أن تبدأ بثاً مباشراً ستظهر تفاصيله هنا تلقائياً مع الحضور والتقييمات.', // TODO: translate
-    تجويد: 'تجويد', // TODO: translate
-    تعديل: 'تعديل', // TODO: translate
-    تعديل_بيانات_الجلسة: 'تعديل بيانات الجلسة', // TODO: translate
-    تعذّر_تحميل_التقييما: 'تعذّر تحميل التقييمات', // TODO: translate
-    تفاصيل_الدرس: 'تفاصيل الدرس', // TODO: translate
-    تفسير: 'تفسير', // TODO: translate
-    تقرير_الحضور: 'تقرير الحضور', // TODO: translate
-    تقييمات: 'تقييمات', // TODO: translate
-    تقييمات_الطلاب: 'تقييمات الطلاب', // TODO: translate
-    تلاوة: 'تلاوة', // TODO: translate
-    تم_الاعتماد: 'تم الاعتماد', // TODO: translate
-    جاري_التحميل: 'جاري التحميل', // TODO: translate
-    جاري_التسجيل...: 'جاري التسجيل...', // TODO: translate
-    جاري_الحفظ...: 'جاري الحفظ...', // TODO: translate
-    جلسة_عامة: 'جلسة عامة', // TODO: translate
-    جلسة_فردية: 'جلسة فردية', // TODO: translate
-    حتى: 'حتى', // TODO: translate
-    حدث_خطأ_أثناء_الاعتم: 'حدث خطأ أثناء الاعتماد', // TODO: translate
-    حدث_خطأ_أثناء_الرفض: 'حدث خطأ أثناء الرفض', // TODO: translate
-    حدث_خطأ_أثناء_تحميل_: 'حدث خطأ أثناء تحميل الطلبات', // TODO: translate
-    حذف: 'حذف', // TODO: translate
-    حذف_التسجيل: 'حذف التسجيل', // TODO: translate
-    حذف_السجل: 'حذف السجل', // TODO: translate
-    حذف_نهائي: 'حذف نهائي', // TODO: translate
-    حضور_مسجل: 'حضور مسجل', // TODO: translate
-    حفظ: 'حفظ', // TODO: translate
-    حفظ_التعديلات: 'حفظ التعديلات', // TODO: translate
-    حلقة: 'حلقة', // TODO: translate
-    دخول_الغرفة: 'دخول الغرفة', // TODO: translate
-    درس_دورة: 'درس دورة', // TODO: translate
-    دقيقة: 'دقيقة', // TODO: translate
-    ستظهر_هنا_تسجيلات_ال: 'ستظهر هنا تسجيلات الجلسات بعد انتهائها مباشرة (عند تفعيل التسجيل في إعدادات الأكاديمية).', // TODO: translate
-    سلسلة: 'سلسلة:', // TODO: translate
-    سيرة: 'سيرة', // TODO: translate
-    شاهد_التسجيل: 'شاهد التسجيل', // TODO: translate
-    طالب: 'طالب', // TODO: translate
-    عام: 'عام', // TODO: translate
-    عامة: 'عامة', // TODO: translate
-    عدد_الطلاب_(الحد_الأ: 'عدد الطلاب (الحد الأقصى)', // TODO: translate
-    عقيدة: 'عقيدة', // TODO: translate
-    عنوان_الجلسة: 'عنوان الجلسة', // TODO: translate
-    فقه: 'فقه', // TODO: translate
-    لا_توجد_تسجيلات_بعد: 'لا توجد تسجيلات بعد', // TODO: translate
-    لا_توجد_تقييمات_بعد.: 'لا توجد تقييمات بعد.', // TODO: translate
-    لا_توجد_جلسات_مجدولة: 'لا توجد جلسات مجدولة', // TODO: translate
-    لا_توجد_طلبات_لعرضها: 'لا توجد طلبات لعرضها حالياً', // TODO: translate
-    لا_يوجد_تسجيل: 'لا يوجد تسجيل', // TODO: translate
-    لا_يوجد_تقييم: 'لا يوجد تقييم', // TODO: translate
-    لا_يوجد_رابط: 'لا يوجد رابط', // TODO: translate
-    لا_يوجد_سجل_بعد: 'لا يوجد سجل بعد', // TODO: translate
-    لغة_عربية: 'لغة عربية', // TODO: translate
-    مباشر_الآن: 'مباشر الآن', // TODO: translate
-    متوسط_تقييمك: 'متوسط تقييمك', // TODO: translate
-    مثال_مراجعة_الوحدة_ا: 'مثال: مراجعة الوحدة الأولى وتطبيقات عملية', // TODO: translate
-    مرفوضة: 'مرفوضة', // TODO: translate
-    مشاهدة_التسجيل: 'مشاهدة التسجيل', // TODO: translate
-    مكتملة: 'مكتملة', // TODO: translate
-    هل_أنت_متأكد_من_إنها: 'هل أنت متأكد من إنهاء هذه الجلسة؟ لن يتمكن الطلاب من الدخول بعدها.', // TODO: translate
-    هل_أنت_متأكد_من_حذف_: 'هل أنت متأكد من حذف هذه الجلسة نهائياً؟', // TODO: translate
-  },
-
-  admin: {
-    >{name_?_`مرحباً،_${: '>{name ? `مرحباً، ${name}` : ', // TODO: translate
-    _في_كرت_المسابقة_لتو: ' في كرت المسابقة لتوليد طلبات شهادات للطلاب الأفضل ترتيبًا.', // TODO: translate
-    أدوار_عامة: 'أدوار عامة', // TODO: translate
-    أغلب_المحتوى_والإعدا: 'أغلب المحتوى والإعدادات تُدار من هنا مباشرةً دون الحاجة لأي تدخل تقني.', // TODO: translate
-    أنت_تتصفح_المنصة_بصل: 'أنت تتصفح المنصة بصلاحيات مدير الأكاديمية. أي تعديل يخص جانب الدورات والطلاب.', // TODO: translate
-    أنشئ_مسابقات_تلاوة_و: 'أنشئ مسابقات تلاوة وتجويد وحفظ خاصة بطلاب المقرأة. تابع المشاركات وتحكيم القراء، وأعلن الفائزين لمنحهم النقاط والشارات.', // TODO: translate
-    أهلاً_بك_في_لوحة_الت: 'أهلاً بك في لوحة التحكم', // TODO: translate
-    أيقونة_المتصفح_(favi: 'أيقونة المتصفح (Favicon)', // TODO: translate
-    إدارة_الأدوار: 'إدارة الأدوار', // TODO: translate
-    إدارة_الدورات_والطلا: 'إدارة الدورات والطلاب والمعلمين.', // TODO: translate
-    إدارة_جانب_التلاوة_و: 'إدارة جانب التلاوة والتسميع والمقرئين.', // TODO: translate
-    إدارة_قوالب_الشهادات: 'إدارة قوالب الشهادات، الإعدادات، وطلبات الإصدار للأكاديمية.', // TODO: translate
-    إدارة_مجالك: 'إدارة مجالك', // TODO: translate
-    إطار_التركيز_حول_الح: 'إطار التركيز حول الحقول', // TODO: translate
-    إطارات_العناصر_والفو: 'إطارات العناصر والفواصل', // TODO: translate
-    إعادة_الضبط: 'إعادة الضبط', // TODO: translate
-    إعدادات_البريد_غير_م: 'إعدادات البريد غير مكتملة', // TODO: translate
-    إعدادات_المقرأة: 'إعدادات المقرأة', // TODO: translate
-    إعدادات_خاصة_بالمقرأ: 'إعدادات خاصة بالمقرأة فقط. لا تؤثر على الأكاديمية أو باقي الموقع.', // TODO: translate
-    اختر_القالب_واللغة_ق: 'اختر القالب واللغة قبل الإصدار. (توليد PDF التلقائي يأتي في التحديث القادم)', // TODO: translate
-    ارفع_صورة_أو_pdf_عال: 'ارفع صورة أو PDF عالي الجودة. ستحدد مواضع الحقول بصرياً في التحديث القادم.', // TODO: translate
-    الأخضر: 'الأخضر', // TODO: translate
-    الأزرار_والروابط_وال: 'الأزرار والروابط والعناصر الرئيسية', // TODO: translate
-    الأسئلة_الشائعة: 'الأسئلة الشائعة', // TODO: translate
-    الأساسية: 'الأساسية', // TODO: translate
-    الأكاديمية: 'الأكاديمية', // TODO: translate
-    الإدارة_العليا: 'الإدارة العليا', // TODO: translate
-    الإشعارات_والبريد: 'الإشعارات والبريد', // TODO: translate
-    الإنجليزية: 'الإنجليزية', // TODO: translate
-    البرونزي: 'البرونزي', // TODO: translate
-    التبديل_بين_الأوضاع: 'التبديل بين الأوضاع', // TODO: translate
-    التحذير: 'التحذير', // TODO: translate
-    التخزين: 'التخزين', // TODO: translate
-    التصميم_والهوية: 'التصميم والهوية', // TODO: translate
-    التلاوات_والتقييم: 'التلاوات والتقييم', // TODO: translate
-    التلاوة: 'التلاوة', // TODO: translate
-    التمييزات_والشارات_ا: 'التمييزات والشارات الذهبية', // TODO: translate
-    التواصل: 'التواصل', // TODO: translate
-    الحبر_(النص): 'الحبر (النص)', // TODO: translate
-    الحلقات_والجلسات: 'الحلقات والجلسات', // TODO: translate
-    الخطر_والإلغاء: 'الخطر والإلغاء', // TODO: translate
-    الخلفيات_الثانوية_وا: 'الخلفيات الثانوية والبطاقات', // TODO: translate
-    الخلفية_الباهتة: 'الخلفية الباهتة', // TODO: translate
-    الداكن_(خلفية_داكنة): 'الداكن (خلفية داكنة)', // TODO: translate
-    الدورات: 'الدورات', // TODO: translate
-    الذهبي: 'الذهبي', // TODO: translate
-    الذهبي_للصيانة: 'الذهبي للصيانة', // TODO: translate
-    السلاسل: 'السلاسل', // TODO: translate
-    الشروط_والأحكام: 'الشروط والأحكام', // TODO: translate
-    الشعار_الرئيسي: 'الشعار الرئيسي', // TODO: translate
-    الصفحة_مسودة: 'الصفحة مسودة', // TODO: translate
-    الصفحة_منشورة: 'الصفحة منشورة', // TODO: translate
-    العربية: 'العربية', // TODO: translate
-    العناصر_النشطة_في_ال: 'العناصر النشطة في القائمة', // TODO: translate
-    الفواصل_داخل_القائمة: 'الفواصل داخل القائمة', // TODO: translate
-    الكحلي_(الأساسي): 'الكحلي (الأساسي)', // TODO: translate
-    الكريمي: 'الكريمي', // TODO: translate
-    الكل: 'الكل', // TODO: translate
-    اللون_الأساسي: 'اللون الأساسي', // TODO: translate
-    اللون_الأساسي_للسايد: 'اللون الأساسي للسايدبار والعناصر في واجهة الأكاديمية', // TODO: translate
-    اللون_الثانوي: 'اللون الثانوي', // TODO: translate
-    اللون_المميّز: 'اللون المميّز', // TODO: translate
-    المدير_العام_(super_: 'المدير العام (Super Admin)', // TODO: translate
-    المسابقات: 'المسابقات', // TODO: translate
-    المسابقات_والشهادات: 'المسابقات والشهادات', // TODO: translate
-    المسار_التعليمي: 'المسار التعليمي', // TODO: translate
-    المقرأة: 'المقرأة', // TODO: translate
-    المقرئون_المعتمدون: 'المقرئون المعتمدون', // TODO: translate
-    المقرئون_والطلاب: 'المقرئون والطلاب', // TODO: translate
-    الموقع: 'الموقع', // TODO: translate
-    النجاح: 'النجاح', // TODO: translate
-    النص_الباهت: 'النص الباهت', // TODO: translate
-    النص_داخل_القائمة_ال: 'النص داخل القائمة الجانبية', // TODO: translate
-    النص_داخل_القوائم: 'النص داخل القوائم', // TODO: translate
-    النص_داخل_الكروت: 'النص داخل الكروت', // TODO: translate
-    النص_على_العنصر_النش: 'النص على العنصر النشط', // TODO: translate
-    النص_فوق_اللون_الأسا: 'النص فوق اللون الأساسي', // TODO: translate
-    النص_فوق_اللون_الثان: 'النص فوق اللون الثانوي', // TODO: translate
-    النص_فوق_اللون_الممي: 'النص فوق اللون المميّز', // TODO: translate
-    النص_فوق_لون_التحذير: 'النص فوق لون التحذير', // TODO: translate
-    النص_فوق_لون_الخطر: 'النص فوق لون الخطر', // TODO: translate
-    النص_فوق_لون_النجاح: 'النص فوق لون النجاح', // TODO: translate
-    النقاط_والمستويات: 'النقاط والمستويات', // TODO: translate
-    الورقي_(خلفية_فاتحة): 'الورقي (خلفية فاتحة)', // TODO: translate
-    الوسائط: 'الوسائط', // TODO: translate
-    بانتظار_المراجعة: 'بانتظار المراجعة', // TODO: translate
-    بانتظار_بيانات_الطال: 'بانتظار بيانات الطالب', // TODO: translate
-    تجاهل: 'تجاهل', // TODO: translate
-    تحكم_كامل_في_المنشور: 'تحكم كامل في المنشورات والأعضاء والقواعد والبلاغات.', // TODO: translate
-    تحكم_كامل_في_المنصة_: 'تحكم كامل في المنصة والموقع الخارجي والتصميم.', // TODO: translate
-    تسميعات_تنتظر_المراج: 'تسميعات تنتظر المراجعة', // TODO: translate
-    تسميعات_متقنة: 'تسميعات متقنة', // TODO: translate
-    تشغيل_الصوت: 'تشغيل الصوت', // TODO: translate
-    تصغير: 'تصغير', // TODO: translate
-    تظهر_في_تبويب_المتصف: 'تظهر في تبويب المتصفح', // TODO: translate
-    تعديلات_غير_محفوظة: 'تعديلات غير محفوظة', // TODO: translate
-    تعذّر_الاتصال_بالخاد: 'تعذّر الاتصال بالخادم', // TODO: translate
-    تم_الإصدار: 'تم الإصدار', // TODO: translate
-    تنبيهات_ورسائل_تحذير: 'تنبيهات ورسائل تحذيرية', // TODO: translate
-    جاري_الإعادة...: 'جاري الإعادة...', // TODO: translate
-    جلسة_محجوزة: 'جلسة محجوزة', // TODO: translate
-    حاد: 'حاد', // TODO: translate
-    حدود_القائمة_الجانبي: 'حدود القائمة الجانبية', // TODO: translate
-    حساب_مقرئ_يقيّم_التل: 'حساب مقرئ يقيّم التلاوات.', // TODO: translate
-    حفظ: 'حفظ', // TODO: translate
-    خطأ: 'خطأ', // TODO: translate
-    خطأ_في_الاتصال: 'خطأ في الاتصال', // TODO: translate
-    خفيف: 'خفيف', // TODO: translate
-    خلفية_البطاقات: 'خلفية البطاقات', // TODO: translate
-    خلفية_الحقول: 'خلفية الحقول', // TODO: translate
-    خلفية_الصفحة: 'خلفية الصفحة', // TODO: translate
-    خلفية_الصيانة: 'خلفية الصيانة', // TODO: translate
-    خلفية_القائمة_الجانب: 'خلفية القائمة الجانبية', // TODO: translate
-    خلفية_القوائم_المنسد: 'خلفية القوائم المنسدلة', // TODO: translate
-    خلفية_الكروت_والصناد: 'خلفية الكروت والصناديق', // TODO: translate
-    خلفية_الموقع_العامة: 'خلفية الموقع العامة', // TODO: translate
-    خلفية_حقول_الإدخال: 'خلفية حقول الإدخال', // TODO: translate
-    دائري: 'دائري', // TODO: translate
-    دائري_جداً: 'دائري جداً', // TODO: translate
-    رسائل_النجاح_والمواف: 'رسائل النجاح والموافقات', // TODO: translate
-    زر_الحذف_أو_الخطأ: 'زر الحذف أو الخطأ', // TODO: translate
-    سياسة_الخصوصية: 'سياسة الخصوصية', // TODO: translate
-    سيُحذف_كل_ما_حفظته_و: 'سيُحذف كل ما حفظته وستعود الصفحة الرئيسية إلى نصوصها وألوانها الأصلية. لا يمكن التراجع.', // TODO: translate
-    شعار_لوحة_التحكم: 'شعار لوحة التحكم', // TODO: translate
-    صفحتا_«التصميم»_و«ال: 'صفحتا «التصميم» و«الهوية» تتيحان لك تغيير الألوان والخطوط واسم الموقع وشعاره — وهي حصرية للمدير العام.', // TODO: translate
-    طلبات_انضمام_معلقة: 'طلبات انضمام معلقة', // TODO: translate
-    ظاهر: 'ظاهر', // TODO: translate
-    عام: 'عام', // TODO: translate
-    عند_انتهاء_المسابقة،: 'عند انتهاء المسابقة، اضغط زر ', // TODO: translate
-    عند_تفعيل_هذا_الخيار: 'عند تفعيل هذا الخيار، سيتم إصدار الشهادات تلقائياً للطلاب بمجرد استيفائهم لمتطلبات النجاح دون الحاجة لموافقة يدوية من الإدارة.', // TODO: translate
-    فشل_الإرسال: 'فشل الإرسال', // TODO: translate
-    قسم_الآراء: 'قسم الآراء', // TODO: translate
-    قسم_الإحصائيات: 'قسم الإحصائيات', // TODO: translate
-    قسم_المميزات: 'قسم المميزات', // TODO: translate
-    قيد_الانتظار: 'قيد الانتظار', // TODO: translate
-    قيد_المراجعة: 'قيد المراجعة', // TODO: translate
-    كتم_الصوت: 'كتم الصوت', // TODO: translate
-    كل_شيء_قابل_للتعديل: 'كل شيء قابل للتعديل', // TODO: translate
-    للعناصر_الثانوية_جدا: 'للعناصر الثانوية جداً', // TODO: translate
-    للنصوص_غير_الأساسية: 'للنصوص غير الأساسية', // TODO: translate
-    لون_الأكاديمية: 'لون الأكاديمية', // TODO: translate
-    لون_التحديد: 'لون التحديد', // TODO: translate
-    لون_الحدود: 'لون الحدود', // TODO: translate
-    لون_العناوين_والحدود: 'لون العناوين والحدود في صفحة الصيانة', // TODO: translate
-    لون_القائمة_الجانبية: 'لون القائمة الجانبية', // TODO: translate
-    لون_النص: 'لون النص', // TODO: translate
-    لون_النص_الأساسي: 'لون النص الأساسي', // TODO: translate
-    لون_خلفية_القوائم: 'لون خلفية القوائم', // TODO: translate
-    لون_خلفية_صفحة_وضع_ا: 'لون خلفية صفحة وضع الصيانة', // TODO: translate
-    متابعة_الطلاب_ومهام_: 'متابعة الطلاب ومهام الإشراف.', // TODO: translate
-    متابعة_المقرئين_وطلب: 'متابعة المقرئين وطلبات الانضمام.', // TODO: translate
-    متابعة_نقاشات_المقرأ: 'متابعة نقاشات المقرأة', // TODO: translate
-    متقن: 'متقن', // TODO: translate
-    متوسط_(الافتراضي): 'متوسط (الافتراضي)', // TODO: translate
-    مثبّت: 'مثبّت', // TODO: translate
-    مخصصة: 'مخصصة', // TODO: translate
-    مخفي: 'مخفي', // TODO: translate
-    مخفية_عن_الزوار_حتى_: 'مخفية عن الزوار حتى تنشر', // TODO: translate
-    مدير_الأكاديمية: 'مدير الأكاديمية', // TODO: translate
-    مدير_المقرأة: 'مدير المقرأة', // TODO: translate
-    مرئية_للزوار_على_الم: 'مرئية للزوار على الموقع', // TODO: translate
-    مراجعات_قيد_الانتظار: 'مراجعات قيد الانتظار', // TODO: translate
-    مرفوض: 'مرفوض', // TODO: translate
-    مركز_الشهادات: 'مركز الشهادات', // TODO: translate
-    مسار_التجويد: 'مسار التجويد', // TODO: translate
-    مسار_الحفظ: 'مسار الحفظ', // TODO: translate
-    مسارات_الحفظ_والتجوي: 'مسارات الحفظ والتجويد', // TODO: translate
-    مشرف_الجودة: 'مشرف الجودة', // TODO: translate
-    مشرف_الطلاب: 'مشرف الطلاب', // TODO: translate
-    مشرف_الفقه: 'مشرف الفقه', // TODO: translate
-    مشرف_المحتوى: 'مشرف المحتوى', // TODO: translate
-    مشرف_المقرئين: 'مشرف المقرئين', // TODO: translate
-    مشرف_عام: 'مشرف عام', // TODO: translate
-    معتمد: 'معتمد', // TODO: translate
-    معلم: 'معلم', // TODO: translate
-    مغلق: 'مغلق', // TODO: translate
-    مقرئ_معتمد: 'مقرئ معتمد', // TODO: translate
-    مكتملة: 'مكتملة', // TODO: translate
-    ملء_الشاشة: 'ملء الشاشة', // TODO: translate
-    ملف_pdf: 'ملف PDF', // TODO: translate
-    مميز_القائمة_الجانبي: 'مميز القائمة الجانبية', // TODO: translate
-    من_«إدارة_الأدوار»_ي: 'من «إدارة الأدوار» يمكنك معرفة صلاحيات كل دور وتعيين الأدوار للمستخدمين بسهولة.', // TODO: translate
-    من_الزر_أعلى_الصفحة_: 'من الزر أعلى الصفحة يمكنك التبديل بين وضع المدير العام ومدير المقرأة ومدير الأكاديمية. عند الانتقال لوضع آخر يظهر شريط ملوّن يذكّرك بذلك.', // TODO: translate
-    من_القائمة_الجانبية_: 'من القائمة الجانبية تصل إلى كل ما يخص مجالك من متابعة وإدارة ومراجعة.', // TODO: translate
-    من_نحن: 'من نحن', // TODO: translate
-    منتدى_المقرأة: 'منتدى المقرأة', // TODO: translate
-    ناقصة: 'ناقصة', // TODO: translate
-    نص_البطاقات: 'نص البطاقات', // TODO: translate
-    نص_التحذير: 'نص التحذير', // TODO: translate
-    نص_الخطر: 'نص الخطر', // TODO: translate
-    نص_القائمة_الجانبية: 'نص القائمة الجانبية', // TODO: translate
-    نص_القوائم_المنسدلة: 'نص القوائم المنسدلة', // TODO: translate
-    نص_اللون_الأساسي: 'نص اللون الأساسي', // TODO: translate
-    نص_اللون_الثانوي: 'نص اللون الثانوي', // TODO: translate
-    نص_اللون_المميّز: 'نص اللون المميّز', // TODO: translate
-    نص_النجاح: 'نص النجاح', // TODO: translate
-    نص_مميز_القائمة: 'نص مميز القائمة', // TODO: translate
-    هذه_جولة_سريعة_(خطوا: 'هذه جولة سريعة (خطوات قليلة) تعرّفك على أهم الأدوات. يمكنك تخطّيها في أي وقت.', // TODO: translate
-    وضع_مدير_الأكاديمية: 'وضع مدير الأكاديمية', // TODO: translate
-    وضع_مدير_المقرأة: 'وضع مدير المقرأة', // TODO: translate
-    يحتاج_جلسة: 'يحتاج جلسة', // TODO: translate
-    يدعم_markdown_**عريض: 'يدعم Markdown: **عريض**، *مائل*، ## عنوان، - قائمة', // TODO: translate
-    يستقبلون_التسميعات: 'يستقبلون التسميعات', // TODO: translate
-    يظهر_في_الموقع_الخار: 'يظهر في الموقع الخارجي والرسائل', // TODO: translate
-    يظهر_في_لوحات_المستخ: 'يظهر في لوحات المستخدمين', // TODO: translate
-  },
-
-  app: {
-    _/>_جاري_الاشتراك...: ' /> جاري الاشتراك...</> : ', // TODO: translate
-    آية_الكرسي_—_حِفظ_حت: 'آية الكرسي — حِفظ حتى تُمسي', // TODO: translate
-    أبريل: 'أبريل', // TODO: translate
-    أداء_المدرّس: 'أداء المدرّس', // TODO: translate
-    أغسطس: 'أغسطس', // TODO: translate
-    أفضل_إجابة: 'أفضل إجابة', // TODO: translate
-    أكتوبر: 'أكتوبر', // TODO: translate
-    أنت: 'أنت', // TODO: translate
-    أَصْبَحْنَا_وَأَصْبَ: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ', // TODO: translate
-    أَعُوذُ_بِكَلِمَاتِ_: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ', // TODO: translate
-    أَمْسَيْنَا_وَأَمْسَ: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ', // TODO: translate
-    إجمالي_الطلاب: 'إجمالي الطلاب', // TODO: translate
-    إخفاء_تقييمي: 'إخفاء تقييمي', // TODO: translate
-    إرسال_التقييم: 'إرسال التقييم', // TODO: translate
-    إضافة_حلقة: 'إضافة حلقة', // TODO: translate
-    إعادة: 'إعادة', // TODO: translate
-    إعادة_محاولة_الإصدار: 'إعادة محاولة الإصدار', // TODO: translate
-    إعلان_جديد: 'إعلان جديد', // TODO: translate
-    إلغاء: 'إلغاء', // TODO: translate
-    إلى: 'إلى', // TODO: translate
-    إنهاء: 'إنهاء', // TODO: translate
-    إيقاف_الكاميرا: 'إيقاف الكاميرا', // TODO: translate
-    إيقاف_المشاركة: 'إيقاف المشاركة', // TODO: translate
-    ابحث_باسم_الحلقة_أو_: 'ابحث باسم الحلقة أو المدرس…', // TODO: translate
-    اتقان: 'اتقان', // TODO: translate
-    اجتاز: 'اجتاز', // TODO: translate
-    احفظ_كمسودة_أولًا،_ث: 'احفظ كمسودة أولًا، ثم أرسلها للمراجعة قبل النشر.', // TODO: translate
-    اسمك_(اختياري): 'اسمك (اختياري)', // TODO: translate
-    اشرح_خلفية_سؤالك_وما: 'اشرح خلفية سؤالك وما جربته…', // TODO: translate
-    اشرح_للمؤلف_ما_يحتاج: 'اشرح للمؤلف ما يحتاج للتعديل', // TODO: translate
-    اشرح_موضوعك_بالتفصيل: 'اشرح موضوعك بالتفصيل…', // TODO: translate
-    اعتماد_وإصدار_الشهاد: 'اعتماد وإصدار الشهادة', // TODO: translate
-    اكتب_سؤالك_بوضوح: 'اكتب سؤالك بوضوح', // TODO: translate
-    الأحد: 'الأحد', // TODO: translate
-    الأحدث: 'الأحدث', // TODO: translate
-    الأربعاء: 'الأربعاء', // TODO: translate
-    الأعلى: 'الأعلى', // TODO: translate
-    الأكثر_تفاعلًا: 'الأكثر تفاعلًا', // TODO: translate
-    الإثنين: 'الإثنين', // TODO: translate
-    الإعلانات: 'الإعلانات', // TODO: translate
-    الاستشارات: 'الاستشارات', // TODO: translate
-    البقاء: 'البقاء', // TODO: translate
-    البلاغات_المرسلة_من_: 'البلاغات المرسلة من الأعضاء عن منشورات أو ردود.', // TODO: translate
-    التبديل_إلى_العربية: 'التبديل إلى العربية', // TODO: translate
-    التجويد: 'التجويد', // TODO: translate
-    التقارير: 'التقارير', // TODO: translate
-    التقدير: 'التقدير', // TODO: translate
-    التقييم_العام: 'التقييم العام', // TODO: translate
-    التقييم_والحضور: 'التقييم والحضور', // TODO: translate
-    الثلاثاء: 'الثلاثاء', // TODO: translate
-    الجلسات: 'الجلسات', // TODO: translate
-    الجمعة: 'الجمعة', // TODO: translate
-    الحجوزات: 'الحجوزات', // TODO: translate
-    الحساب: 'الحساب', // TODO: translate
-    الحضور: 'الحضور:', // TODO: translate
-    الحفظ: 'الحفظ', // TODO: translate
-    الخميس: 'الخميس', // TODO: translate
-    الرسائل: 'الرسائل', // TODO: translate
-    السبت: 'السبت', // TODO: translate
-    الطلاقة: 'الطلاقة', // TODO: translate
-    الكاميرا: 'الكاميرا', // TODO: translate
-    الكل: 'الكل', // TODO: translate
-    اللَّهُ_لَا_إِلَٰهَ_: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ... (آية الكرسي)', // TODO: translate
-    اللَّهُمَّ_أَنْتَ_رَ: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ ... (سيد الاستغفار)', // TODO: translate
-    اللَّهُمَّ_بِكَ_أَصْ: 'اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ', // TODO: translate
-    المحادثة: 'المحادثة', // TODO: translate
-    المدير_العام: 'المدير العام', // TODO: translate
-    المشاركون: 'المشاركون', // TODO: translate
-    المضيف: 'المضيف', // TODO: translate
-    المعلم: 'المعلم', // TODO: translate
-    المقال_قيد_المراجعة.: 'المقال قيد المراجعة. لا يمكن تعديله الآن.', // TODO: translate
-    المقالات: 'المقالات', // TODO: translate
-    المقالات_بانتظار_الم: 'المقالات بانتظار الموافقة قبل النشر.', // TODO: translate
-    المقرئ: 'المقرئ', // TODO: translate
-    الميكروفون: 'الميكروفون', // TODO: translate
-    النقاش: 'النقاش', // TODO: translate
-    الورد_(السورة): 'الورد (السورة)', // TODO: translate
-    الورد_القادم: 'الورد القادم', // TODO: translate
-    بانتظار_الاعتماد: 'بانتظار الاعتماد', // TODO: translate
-    بانتظار_انضمام_المشا: 'بانتظار انضمام المشاركين', // TODO: translate
-    بانتظار_بيانات_الطال: 'بانتظار بيانات الطالب', // TODO: translate
-    بحاجة_لموافقتك: 'بحاجة لموافقتك', // TODO: translate
-    بدء: 'بدء', // TODO: translate
-    بريدك_الإلكتروني: 'بريدك الإلكتروني', // TODO: translate
-    بعتنالك_إيميل_تأكيد،: 'بعتنالك إيميل تأكيد، افتحه واضغط على ', // TODO: translate
-    بعد_الإرسال،_سيُطلب_: 'بعد الإرسال، سيُطلب من السائل الموافقة على نشر السؤال والإجابة في المكتبة العامة.', // TODO: translate
-    بعد_التعديل_سيعود_ال: 'بعد التعديل سيعود المقال للمسودة.', // TODO: translate
-    بعذر: 'بعذر', // TODO: translate
-    بلا_إجابة: 'بلا إجابة', // TODO: translate
-    بيئة_تعليمية_متكاملة: 'بيئة تعليمية متكاملة للمدرسين والطلاب', // TODO: translate
-    بِسْمِ_اللَّهِ_الَّذ: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ، وَهُوَ السَّمِيعُ الْعَلِيمُ', // TODO: translate
-    تخطي: 'تخطي', // TODO: translate
-    تذكير_الجلسة: 'تذكير الجلسة', // TODO: translate
-    تعديل: 'تعديل', // TODO: translate
-    تعديل_التقييم: 'تعديل التقييم', // TODO: translate
-    تعذر_إنشاء_رمز_الدخو: 'تعذر إنشاء رمز الدخول', // TODO: translate
-    تعذر_الحذف: 'تعذر الحذف', // TODO: translate
-    تعذر_الحفظ: 'تعذر الحفظ', // TODO: translate
-    تعذر_فتح_الغرفة: 'تعذر فتح الغرفة', // TODO: translate
-    تقرير_تم_مراجعته: 'تقرير تم مراجعته', // TODO: translate
-    تقرير_جديد: 'تقرير جديد', // TODO: translate
-    تقرير_جديد_للمسؤول: 'تقرير جديد للمسؤول', // TODO: translate
-    تقييم: 'تقييم', // TODO: translate
-    تقييمي_وورد_المتابعة: 'تقييمي وورد المتابعة', // TODO: translate
-    تكفيك_من_كل_شيء: 'تكفيك من كل شيء', // TODO: translate
-    تم_اتخاذ_إجراء: 'تم اتخاذ إجراء', // TODO: translate
-    تم_استلام_طلب_التسجي: 'تم استلام طلب التسجيل كمدرس بنجاح، وسيتم مراجعته من قبل إدارة الأكاديمية. سيتم إشعارك عبر البريد الإلكتروني عند اعتماد الحساب.', // TODO: translate
-    تم_اعتماد_الطلب_لكن_: 'تم اعتماد الطلب لكن لم يُنشأ ملف الشهادة بعد. اضغط لإعادة محاولة الإصدار.', // TODO: translate
-    تم_الاعتماد: 'تم الاعتماد', // TODO: translate
-    تمام!_اتأكد_بريدك.: 'تمام! اتأكد بريدك.', // TODO: translate
-    جاري_الإرسال…: 'جاري الإرسال…', // TODO: translate
-    جاري_تجهيز_غرفة_البث: 'جاري تجهيز غرفة البث المباشر…', // TODO: translate
-    جارٍ_النشر…: 'جارٍ النشر…', // TODO: translate
-    جلسة: 'جلسة', // TODO: translate
-    جلسة_جديدة: 'جلسة جديدة', // TODO: translate
-    جلسة_محجوزة: 'جلسة محجوزة', // TODO: translate
-    جلسة_مطلوبة: 'جلسة مطلوبة', // TODO: translate
-    جودة_الصوت: 'جودة الصوت', // TODO: translate
-    جودة_الفيديو: 'جودة الفيديو', // TODO: translate
-    حاضر: 'حاضر', // TODO: translate
-    حدث_خطأ: 'حدث خطأ', // TODO: translate
-    حدث_خطأ_أثناء_إعادة_: 'حدث خطأ أثناء إعادة التقديم', // TODO: translate
-    حدث_خطأ_أثناء_تغيير_: 'حدث خطأ أثناء تغيير كلمة المرور', // TODO: translate
-    حدث_خطأ_غير_متوقع_أث: 'حدث خطأ غير متوقع أثناء تنفيذ الإجراء. حاول مرة أخرى.', // TODO: translate
-    حدث_خطأ_في_الاتصال: 'حدث خطأ في الاتصال', // TODO: translate
-    حدث_خطأ_في_الاتصال_ب: 'حدث خطأ في الاتصال بالخادم', // TODO: translate
-    حدث_خطأ_في_الشبكة: 'حدث خطأ في الشبكة', // TODO: translate
-    حذف: 'حذف', // TODO: translate
-    حذف_الحلقة_وجميع_بيا: 'حذف الحلقة وجميع بياناتها؟ لا يمكن التراجع.', // TODO: translate
-    حذف_هذه_الجلسة_وكل_ت: 'حذف هذه الجلسة وكل تقييماتها؟', // TODO: translate
-    حضور: 'حضور', // TODO: translate
-    حفظ_التقييم: 'حفظ التقييم', // TODO: translate
-    حلقات_الأكاديمية: 'حلقات الأكاديمية', // TODO: translate
-    حلقات_المقرأة: 'حلقات المقرأة', // TODO: translate
-    حلقات_تحفيظ_وتجويد_ا: 'حلقات تحفيظ وتجويد القرآن الكريم بإشراف مباشر', // TODO: translate
-    حلقات_مباشرة_الآن: 'حلقات مباشرة الآن', // TODO: translate
-    حلقة_جديدة: 'حلقة جديدة', // TODO: translate
-    حَسْبِيَ_اللَّهُ_لَا: 'حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ', // TODO: translate
-    حُطّت_خطاياه_وإن_كان: 'حُطّت خطاياه وإن كانت مثل زبد البحر', // TODO: translate
-    حِفظ_حتى_تُصبح: 'حِفظ حتى تُصبح', // TODO: translate
-    خروج: 'خروج', // TODO: translate
-    خطأ: 'خطأ', // TODO: translate
-    خطأ_غير_معروف: 'خطأ غير معروف', // TODO: translate
-    ده: 'ده', // TODO: translate
-    ديسمبر: 'ديسمبر', // TODO: translate
-    رأيك_يهمنا_—_سيظهر_ل: 'رأيك يهمنا — سيظهر للمدرّس والإدارة فقط.', // TODO: translate
-    راجع_بيانات_الطلاب_ا: 'راجع بيانات الطلاب الذين أكملوا دوراتك واعتمد إصدار شهاداتهم.', // TODO: translate
-    رجوع: 'رجوع', // TODO: translate
-    رسالة_تواصل: 'رسالة تواصل', // TODO: translate
-    رسالة_جديدة: 'رسالة جديدة', // TODO: translate
-    رَضِيتُ_بِاللَّهِ_رَ: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا', // TODO: translate
-    سبتمبر: 'سبتمبر', // TODO: translate
-    ستتم_مراجعة_المقال_م: 'ستتم مراجعة المقال من قبل المشرفين', // TODO: translate
-    ستظهر_طلبات_الطلاب_ب: 'ستظهر طلبات الطلاب بمجرد إكمالهم لبياناتهم.', // TODO: translate
-    سيتم_قطع_الاتصال_بهذ: 'سيتم قطع الاتصال بهذه الجلسة.', // TODO: translate
-    سيتم_مراجعة_طلبك_من_: 'سيتم مراجعة طلبك من قبل إدارة الأكاديمية قبل تفعيل حسابك كمدرس', // TODO: translate
-    سيد_الاستغفار: 'سيد الاستغفار', // TODO: translate
-    سيساعدنا_في_تحسين_ال: 'سيساعدنا في تحسين الجلسات القادمة.', // TODO: translate
-    سيظهر_المشاركون_هنا_: 'سيظهر المشاركون هنا بمجرد دخولهم الغرفة.', // TODO: translate
-    سُبْحَانَ_اللَّهِ_وَ: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ', // TODO: translate
-    شكراً_على_تقييمك: 'شكراً على تقييمك', // TODO: translate
-    صادرة: 'صادرة', // TODO: translate
-    طالب: 'طالب', // TODO: translate
-    طلب_قارئ_جديد: 'طلب قارئ جديد', // TODO: translate
-    ع: 'ع', // TODO: translate
-    عام: 'عام', // TODO: translate
-    عرض_كل_المنشورات: 'عرض كل المنشورات', // TODO: translate
-    عنوان_خادم_البث_غير_: 'عنوان خادم البث غير معرّف', // TODO: translate
-    عنوان_واضح_ومحدد: 'عنوان واضح ومحدد', // TODO: translate
-    غائب: 'غائب', // TODO: translate
-    غرفة_الجلسة: 'غرفة الجلسة', // TODO: translate
-    غير_مسجل: 'غير مسجل', // TODO: translate
-    فبراير: 'فبراير', // TODO: translate
-    فشل_تحميل_الأحداث: 'فشل تحميل الأحداث', // TODO: translate
-    في_الانتظار: 'في الانتظار', // TODO: translate
-    قارئ_مرفوض: 'قارئ مرفوض', // TODO: translate
-    قارئ_موافق_عليه: 'قارئ موافق عليه', // TODO: translate
-    قيد_المراجعة: 'قيد المراجعة', // TODO: translate
-    قيّم_هذه_الجلسة: 'قيّم هذه الجلسة', // TODO: translate
-    قُلْ_هُوَ_اللَّهُ_أَ: 'قُلْ هُوَ اللَّهُ أَحَدٌ ... (الإخلاص والمعوذتان)', // TODO: translate
-    كتم: 'كتم', // TODO: translate
-    كل_المقالات_التي_كتب: 'كل المقالات التي كتبتَها، بما فيها المسودات.', // TODO: translate
-    كلمات_المرور_غير_متط: 'كلمات المرور غير متطابقة', // TODO: translate
-    كلمة_المرور_الجديدة_: 'كلمة المرور الجديدة يجب أن تكون مختلفة عن الحالية', // TODO: translate
-    كلمة_المرور_يجب_أن_ت: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل', // TODO: translate
-    كن_أول_من_ينشر_في_هذ: 'كن أول من ينشر في هذا القسم', // TODO: translate
-    لا_توجد_جلسات_مجدولة: 'لا توجد جلسات مجدولة بعد', // TODO: translate
-    لا_توجد_حلقات_بعد_—_: 'لا توجد حلقات بعد — أنشئ حلقة وابدأ التلقي مع الطلاب', // TODO: translate
-    لا_توجد_حلقات_لعرضها: 'لا توجد حلقات لعرضها', // TODO: translate
-    لا_يوجد_طلاب_في_الحل: 'لا يوجد طلاب في الحلقة', // TODO: translate
-    لدى_المسؤول: 'لدى المسؤول', // TODO: translate
-    لم_يتم_تسجيل_تقييم_ل: 'لم يتم تسجيل تقييم لهذه الجلسة بعد', // TODO: translate
-    لم_يضرّه_شيء_تلك_الل: 'لم يضرّه شيء تلك الليلة', // TODO: translate
-    مؤرشف: 'مؤرشف', // TODO: translate
-    مارس: 'مارس', // TODO: translate
-    مايو: 'مايو', // TODO: translate
-    مباشر: 'مباشر', // TODO: translate
-    مباشر_الآن: 'مباشر الآن', // TODO: translate
-    مباشرة: 'مباشرة', // TODO: translate
-    متأخر: 'متأخر', // TODO: translate
-    متابع_للشيخ؟: 'متابع للشيخ؟', // TODO: translate
-    متوقف: 'متوقف', // TODO: translate
-    متوقفة: 'متوقفة', // TODO: translate
-    مجدولة: 'مجدولة', // TODO: translate
-    محادثة_جارية: 'محادثة جارية', // TODO: translate
-    محتوى_تعليمي_وتوعوي_: 'محتوى تعليمي وتوعوي من المعلمين والمشرفين', // TODO: translate
-    مدير_المقرأة: 'مدير المقرأة', // TODO: translate
-    مراجَعة: 'مراجَعة', // TODO: translate
-    مرفوض: 'مرفوض', // TODO: translate
-    مرفوضة: 'مرفوضة', // TODO: translate
-    مساحة_الطلاب_والمعلم: 'مساحة الطلاب والمعلمين وأولياء الأمور', // TODO: translate
-    مساحة_المقرئين_والطل: 'مساحة المقرئين والطلاب لتدارس القرآن', // TODO: translate
-    مسودة: 'مسودة', // TODO: translate
-    مش_عايز_تسجّل_دلوقتي: 'مش عايز تسجّل دلوقتي؟', // TODO: translate
-    مشارك: 'مشارك', // TODO: translate
-    مشاركة_الشاشة: 'مشاركة الشاشة', // TODO: translate
-    مشرف: 'مشرف', // TODO: translate
-    مغلق: 'مغلق', // TODO: translate
-    مفتوحة: 'مفتوحة', // TODO: translate
-    ملاحظات: 'ملاحظات', // TODO: translate
-    ملاحظات_إضافية_(اختي: 'ملاحظات إضافية (اختياري)', // TODO: translate
-    ملاحظات_المعلم: 'ملاحظات المعلم:', // TODO: translate
-    ملغاة: 'ملغاة', // TODO: translate
-    ممتاز: 'ممتاز', // TODO: translate
-    من: 'من', // TODO: translate
-    منتهية: 'منتهية', // TODO: translate
-    منشور: 'منشور', // TODO: translate
-    منشوراتي_فقط: 'منشوراتي فقط', // TODO: translate
-    نشر: 'نشر', // TODO: translate
-    نشطة: 'نشطة', // TODO: translate
-    نوفمبر: 'نوفمبر', // TODO: translate
-    هل_أنت_متأكد_من_حذف_: 'هل أنت متأكد من حذف هذا المنشور؟ سيتم حذف جميع التعليقات المرتبطة به ولا يمكن التراجع عن هذا الإجراء.', // TODO: translate
-    هل_تريد_الخروج؟: 'هل تريد الخروج؟', // TODO: translate
-    هل_توافق_على_نشر_سؤا: 'هل توافق على نشر سؤالك والإجابة في المكتبة العامة لينتفع بها الآخرون؟ يمكنك اختيار النشر باسمك أو بدون اسم.', // TODO: translate
-    وذلك_تقديراً_لإتمامه: 'وذلك تقديراً لإتمامه إتقان قراءة سورة الفاتحة على الوجه المطلوب.', // TODO: translate
-    ورد_المتابعة: 'ورد المتابعة', // TODO: translate
-    يتم_التحقق_من_الصلاح: 'يتم التحقق من الصلاحيات والاتصال بالخادم', // TODO: translate
-    يحتاج_مراجعة: 'يحتاج مراجعة', // TODO: translate
-    يدعم_#_عناوين،_**عري: 'يدعم: # عناوين، **عريض**، *مائل*، `كود`، روابط، قوائم', // TODO: translate
-    يناير: 'يناير', // TODO: translate
-    يوليو: 'يوليو', // TODO: translate
-    يونيو: 'يونيو', // TODO: translate
-    —_سورة_—: '— سورة —', // TODO: translate
-  },
-
-  reader: {
-    _?_`الكل_(${entries.: ' ? `الكل (${entries.length})` : f === ', // TODO: translate
-    آية: 'آية', // TODO: translate
-    إجمالي_الأسبوع: 'إجمالي الأسبوع', // TODO: translate
-    إضافة_مرحلة_جديدة: 'إضافة مرحلة جديدة', // TODO: translate
-    إعادة_المحاولة: 'إعادة المحاولة', // TODO: translate
-    اعتماد_النتائج_وإعلا: 'اعتماد النتائج وإعلان الفائزين', // TODO: translate
-    الانتظام: 'الانتظام', // TODO: translate
-    الجلسات_الفردية: 'الجلسات الفردية', // TODO: translate
-    الحلقات: 'الحلقات', // TODO: translate
-    الكل: 'الكل', // TODO: translate
-    المركز_الثالث: 'المركز الثالث', // TODO: translate
-    بحث_بعنوان_الجلسة_أو: 'بحث بعنوان الجلسة أو اسم الطالب...', // TODO: translate
-    تعديل_التقييم: 'تعديل التقييم', // TODO: translate
-    تم_التقييم: 'تم التقييم', // TODO: translate
-    جلسة_فردية: 'جلسة فردية', // TODO: translate
-    حاضر: 'حاضر', // TODO: translate
-    حدث_خطأ_غير_متوقع: 'حدث خطأ غير متوقع', // TODO: translate
-    حفظ_+_مراجعة: 'حفظ + مراجعة', // TODO: translate
-    حفظ_الأسبوع: 'حفظ الأسبوع', // TODO: translate
-    حلقة: 'حلقة', // TODO: translate
-    درس_دورة: 'درس دورة', // TODO: translate
-    طالب: 'طالب', // TODO: translate
-    فشل_تحميل_التسجيلات: 'فشل تحميل التسجيلات', // TODO: translate
-    قيد_الانتظار: 'قيد الانتظار', // TODO: translate
-    لا_توجد_تسجيلات: 'لا توجد تسجيلات', // TODO: translate
-    لا_يوجد_رابط: 'لا يوجد رابط', // TODO: translate
-    لم_يتم_العثور_على_أي: 'لم يتم العثور على أي مشاركات تطابق بحثك.', // TODO: translate
-    لم_يتم_العثور_على_تس: 'لم يتم العثور على تسجيلات مطابقة. ستظهر التسجيلات هنا بعد انتهاء الجلسات.', // TODO: translate
-    مؤكدة: 'مؤكدة', // TODO: translate
-    مقارنة_الهدف: 'مقارنة الهدف', // TODO: translate
-    مكتملة: 'مكتملة', // TODO: translate
-    ملغاة: 'ملغاة', // TODO: translate
-    نسبة_تحقيق_هدف_الأسب: 'نسبة تحقيق هدف الأسبوع', // TODO: translate
-    يوم/٣٠: 'يوم/٣٠', // TODO: translate
-  },
-
-  student: {
-    2_صفحات: '2 صفحات', // TODO: translate
-    آ: 'آ', // TODO: translate
-    آخر: 'آخر', // TODO: translate
-    آيات_محددة: 'آيات محددة', // TODO: translate
-    آية_محفوظة_من: 'آية محفوظة من', // TODO: translate
-    أ: 'أ', // TODO: translate
-    أبو_بكر_الشاطري: 'أبو بكر الشاطري', // TODO: translate
-    أبوظبي: 'أبوظبي', // TODO: translate
-    إ: 'إ', // TODO: translate
-    إسطنبول: 'إسطنبول', // TODO: translate
-    إلى: 'إلى', // TODO: translate
-    ا: 'ا', // TODO: translate
-    اختر_التخصصات_التي_ت: 'اختر التخصصات التي تريد أن تظهر لك الدورات المرتبطة بها. اتركها فارغة لعرض كل الدورات.', // TODO: translate
-    الآن: 'الآن', // TODO: translate
-    الآيات: 'الآيات', // TODO: translate
-    الأب: 'الأب', // TODO: translate
-    الأردن: 'الأردن', // TODO: translate
-    الأم: 'الأم', // TODO: translate
-    الإسكندرية: 'الإسكندرية', // TODO: translate
-    الإمارات: 'الإمارات', // TODO: translate
-    البحرين: 'البحرين', // TODO: translate
-    التجويد: 'التجويد', // TODO: translate
-    التفسير: 'التفسير', // TODO: translate
-    الجزائر: 'الجزائر', // TODO: translate
-    الجيزة: 'الجيزة', // TODO: translate
-    الحصري_(مجوّد): 'الحصري (مجوّد)', // TODO: translate
-    الخرطوم: 'الخرطوم', // TODO: translate
-    الدار_البيضاء: 'الدار البيضاء', // TODO: translate
-    الدمام: 'الدمام', // TODO: translate
-    الدوحة: 'الدوحة', // TODO: translate
-    الرباط: 'الرباط', // TODO: translate
-    الرياض: 'الرياض', // TODO: translate
-    السودان: 'السودان', // TODO: translate
-    السيرة_النبوية: 'السيرة النبوية', // TODO: translate
-    الصفحات: 'الصفحات', // TODO: translate
-    العراق: 'العراق', // TODO: translate
-    العقيدة: 'العقيدة', // TODO: translate
-    الفقه: 'الفقه', // TODO: translate
-    القاهرة: 'القاهرة', // TODO: translate
-    الكويت: 'الكويت', // TODO: translate
-    اللغة_العربية: 'اللغة العربية', // TODO: translate
-    المدينة_المنورة: 'المدينة المنورة', // TODO: translate
-    المغرب: 'المغرب', // TODO: translate
-    المملكة_العربية_السع: 'المملكة العربية السعودية', // TODO: translate
-    المملكة_المتحدة: 'المملكة المتحدة', // TODO: translate
-    المنامة: 'المنامة', // TODO: translate
-    المنشاوي_(مجوّد): 'المنشاوي (مجوّد)', // TODO: translate
-    باريس: 'باريس', // TODO: translate
-    بانتظار_المراجعة: 'بانتظار المراجعة', // TODO: translate
-    بسماللهالرحمنالرحيم: 'بسماللهالرحمنالرحيم', // TODO: translate
-    بغداد: 'بغداد', // TODO: translate
-    بمجرد_قبولك_لطلب_ربط: 'بمجرد قبولك لطلب ربط من ولي أمرك، ستظهر بياناته هنا لتتمكن من متابعة الارتباط بكل سهولة.', // TODO: translate
-    بيروت: 'بيروت', // TODO: translate
-    بِسْمِ_ٱللَّهِ_ٱلرَّ: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ', // TODO: translate
-    تركيا: 'تركيا', // TODO: translate
-    تصفح_بيانات_عائلتك،_: 'تصفح بيانات عائلتك، راجع طلبات الربط من أولياء الأمور، وابق على تواصل دائم ببيئة تعليمية آمنة.', // TODO: translate
-    تعذّر_تحميل_نص_الآيا: 'تعذّر تحميل نص الآيات. تحقق من اتصالك بالإنترنت.', // TODO: translate
-    تلاوة: 'تلاوة', // TODO: translate
-    تونس: 'تونس', // TODO: translate
-    جارية: 'جارية', // TODO: translate
-    جدة: 'جدة', // TODO: translate
-    حفظ_أول_جزء: 'حفظ أول جزء', // TODO: translate
-    حفظ_أول_صفحة: 'حفظ أول صفحة', // TODO: translate
-    حفظ_القرآن_كاملاً: 'حفظ القرآن كاملاً', // TODO: translate
-    حفظ_نصف_القرآن: 'حفظ نصف القرآن', // TODO: translate
-    حفظ_١٠_أجزاء: 'حفظ ١٠ أجزاء', // TODO: translate
-    حفظ_٥_أجزاء: 'حفظ ٥ أجزاء', // TODO: translate
-    دبي: 'دبي', // TODO: translate
-    دمشق: 'دمشق', // TODO: translate
-    سعد_الغامدي: 'سعد الغامدي', // TODO: translate
-    سعود_الشريم: 'سعود الشريم', // TODO: translate
-    سورة: 'سورة', // TODO: translate
-    سورة_البقرة: 'سورة البقرة', // TODO: translate
-    سورة_كاملة: 'سورة كاملة', // TODO: translate
-    سوريا: 'سوريا', // TODO: translate
-    شهاداتي: 'شهاداتي', // TODO: translate
-    صفحة: 'صفحة', // TODO: translate
-    صفحة_1–5: 'صفحة 1–5', // TODO: translate
-    عبد_الباسط_(مجوّد): 'عبد الباسط (مجوّد)', // TODO: translate
-    عبد_الباسط_عبد_الصمد: 'عبد الباسط عبد الصمد', // TODO: translate
-    عبد_الرحمن_السديس: 'عبد الرحمن السديس', // TODO: translate
-    علي_الحذيفي: 'علي الحذيفي', // TODO: translate
-    عمان: 'عمان', // TODO: translate
-    عمّان: 'عمّان', // TODO: translate
-    عند_قبول_طلب_ولي_الأ: 'عند قبول طلب ولي الأمر، سيتمكن من متابعة تقدمك الدراسي. يمكنك دائماً إلغاء الربط متى شئت لحماية خصوصيتك.', // TODO: translate
-    فرنسا: 'فرنسا', // TODO: translate
-    قراءة_صفحات: 'قراءة صفحات', // TODO: translate
-    قطر: 'قطر', // TODO: translate
-    قيد_المراجعة: 'قيد المراجعة', // TODO: translate
-    كاملة: 'كاملة', // TODO: translate
-    كل_شهاداتك_في_مكان_و: 'كل شهاداتك في مكان واحد — الصادرة، قيد المراجعة، والتي تنتظر إكمال بياناتها.', // TODO: translate
-    لبنان: 'لبنان', // TODO: translate
-    لندن: 'لندن', // TODO: translate
-    ماهر_المعيقلي: 'ماهر المعيقلي', // TODO: translate
-    مبتدئ: 'مبتدئ', // TODO: translate
-    متقن: 'متقن', // TODO: translate
-    مجدولة: 'مجدولة', // TODO: translate
-    محمد_أيوب: 'محمد أيوب', // TODO: translate
-    محمد_صديق_المنشاوي: 'محمد صديق المنشاوي', // TODO: translate
-    محمود_خليل_الحصري: 'محمود خليل الحصري', // TODO: translate
-    مسقط: 'مسقط', // TODO: translate
-    مشاري_راشد_العفاسي: 'مشاري راشد العفاسي', // TODO: translate
-    مصر: 'مصر', // TODO: translate
-    مكة_المكرمة: 'مكة المكرمة', // TODO: translate
-    مكتملة: 'مكتملة', // TODO: translate
-    ملغاة: 'ملغاة', // TODO: translate
-    من_الرحلة: 'من الرحلة', // TODO: translate
-    هاني_الرفاعي: 'هاني الرفاعي', // TODO: translate
-    ورد_مخصص: 'ورد مخصص', // TODO: translate
-    ولي_الأمر: 'ولي الأمر', // TODO: translate
-    يحتاج_مراجعة: 'يحتاج مراجعة', // TODO: translate
-    يرجى_تأكيد_صحة_البيا: 'يرجى تأكيد صحة البيانات قبل الإرسال', // TODO: translate
-    ٠: '٠', // TODO: translate
-    ٠١٢٣٤٥٦٧٨٩: '٠١٢٣٤٥٦٧٨٩', // TODO: translate
-    ٪: '٪', // TODO: translate
-    ٱ: 'ٱ', // TODO: translate
-  },
-
+    reader: 'Reader',
+    parent: 'Parent',
+    content_supervisor: 'Content Supervisor',
+    fiqh_supervisor: 'Fiqh Supervisor',
+    student_supervisor: 'Student Supervisor',
+    reciter_supervisor: 'Reciter Supervisor',
+    supervisor: 'Supervisor'
+  }
 }

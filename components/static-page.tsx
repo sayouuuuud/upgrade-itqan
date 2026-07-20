@@ -62,43 +62,41 @@ export function StaticPage({ slug }: StaticPageProps) {
   )
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"}>
+    <div dir={isAr ? "rtl" : "ltr"} className="min-h-screen bg-hp-parchment text-hp-ink dark:bg-hp-dark dark:text-hp-cream transition-colors duration-500">
       {/* Page Hero */}
-      <div className="bg-[#0B3D2E] text-white pt-28 pb-14 md:pt-32 md:pb-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 mb-5">
-            <BookOpen className="w-6 h-6 text-[#D4A843]" />
+      <div className="relative pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden border-b border-hp-navy/10 dark:border-hp-parchment/10">
+        <div className="absolute inset-0 bg-hp-navy-deep opacity-[0.03] dark:opacity-20 pointer-events-none" />
+        <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-hp-gold/10 text-hp-gold mb-6 ring-1 ring-hp-gold/20">
+            <BookOpen className="w-7 h-7" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-white text-balance">
+          <h1 className="text-4xl md:text-5xl font-black text-hp-navy dark:text-hp-cream tracking-tight text-balance mb-4" style={{ fontFamily: "var(--font-heading)" }}>
             {title}
           </h1>
-          <p className="mt-3 text-sm text-white/50">
-            {isAr ? "آخر تحديث:" : "Last updated:"}{" "}
-            <span className="text-white/70">{updatedAt}</span>
+          <p className="text-sm md:text-base text-hp-ink/60 dark:text-hp-cream/60 flex items-center justify-center gap-2">
+            <span>{isAr ? "آخر تحديث:" : "Last updated:"}</span>
+            <span className="font-medium text-hp-navy dark:text-hp-gold">{updatedAt}</span>
           </p>
-          {/* Decorative gold divider */}
-          <div className="mt-6 mx-auto w-16 h-0.5 bg-[#D4A843]/60 rounded-full" />
+          <div className="mt-8 mx-auto w-16 h-0.5 bg-hp-gold/60 rounded-full" />
         </div>
       </div>
 
       {/* Content */}
-      <div className="bg-background py-12 md:py-16">
+      <div className="py-12 md:py-20 relative z-10 bg-hp-parchment dark:bg-hp-dark transition-colors duration-500">
         <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="bg-card rounded-2xl p-6 md:p-10 shadow-sm border border-border/40">
+          <div className="bg-hp-card dark:bg-hp-dark-2 rounded-3xl p-8 md:p-12 shadow-sm border border-hp-navy/5 dark:border-hp-cream/5 ring-1 ring-black/[0.02] dark:ring-white/[0.02]">
             <div
               className="
-                prose prose-neutral dark:prose-invert max-w-none leading-relaxed
-                prose-headings:text-foreground prose-headings:font-bold
-                prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4
-                prose-h2:border-b prose-h2:border-[#0B3D2E]/15 prose-h2:pb-3
-                prose-h2:text-[#0B3D2E] dark:prose-h2:text-[#4ade80]
-                prose-h3:text-base prose-h3:mt-6 prose-h3:mb-2 prose-h3:text-foreground
-                prose-p:text-muted-foreground prose-p:leading-8
-                prose-strong:text-foreground
-                prose-li:text-muted-foreground prose-li:leading-8
-                prose-a:text-[#1B5E3B] prose-a:font-medium hover:prose-a:underline
-                prose-ol:text-muted-foreground
-                prose-ul:text-muted-foreground
+                prose prose-neutral dark:prose-invert max-w-none
+                prose-headings:text-hp-navy dark:prose-headings:text-hp-cream prose-headings:font-bold prose-headings:tracking-tight
+                prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:border-b prose-h2:border-hp-navy/10 dark:prose-h2:border-hp-cream/10 prose-h2:pb-4
+                prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
+                prose-p:text-hp-ink/80 dark:prose-p:text-hp-cream/80 prose-p:leading-relaxed prose-p:text-[1.05rem]
+                prose-strong:text-hp-navy dark:prose-strong:text-hp-cream prose-strong:font-semibold
+                prose-li:text-hp-ink/80 dark:prose-li:text-hp-cream/80 prose-li:leading-relaxed
+                prose-a:text-hp-gold prose-a:font-semibold prose-a:no-underline hover:prose-a:underline
+                prose-ul:my-6 prose-ol:my-6
+                prose-hr:border-hp-navy/10 dark:prose-hr:border-hp-cream/10 prose-hr:my-10
               "
             >
               <ReactMarkdown remarkPlugins={[remarkGfm]}>

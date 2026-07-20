@@ -169,7 +169,7 @@ export const mockNotifications = [
   { id: 'n1', type: 'mastered' as const, title: 'تهانينا! قراءتك متقنة', body: 'تهانينا! قراءتك متقنة لسورة الفاتحة. سيتم إشعارك بموعد الحفل الختامي لاحقاً.', isRead: false, createdAt: '2026-02-22T10:30:00' },
   { id: 'n2', type: 'booking_confirmed' as const, title: 'تم تأكيد الحجز', body: 'جلسة مع الشيخ عبدالله إبراهيم يوم الثلاثاء الساعة 2:00 مساءً', isRead: false, createdAt: '2026-02-21T15:00:00' },
   { id: 'n3', type: 'needs_session' as const, title: 'تحتاج إلى جلسة تصحيح', body: 'تمت مراجعة قراءتك. تحتاج إلى جلسة تصحيح بسيطة. يمكنك حجز الموعد الآن.', isRead: true, createdAt: '2026-02-20T13:00:00' },
-  { id: 'n4', type: 'system' as const, title: 'مرحباً بك في إتقان', body: 'شكراً لانضمامك لمنصة إتقان - ابدأ بتسجيل قراءتك لسورة الفاتحة', isRead: true, createdAt: '2026-02-15T12:00:00' },
+  { id: 'n4', type: 'system' as const, title: 'مرحباً بك في إتقان', body: 'شكراً لانضمامك لمنصة متقن - ابدأ بتسجيل قراءتك لسورة الفاتحة', isRead: true, createdAt: '2026-02-15T12:00:00' },
 ]
 
 export const mockAdminStats = {

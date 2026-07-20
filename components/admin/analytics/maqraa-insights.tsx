@@ -1,9 +1,12 @@
 "use client"
 
 import {
-  PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip,
 } from "recharts"
+import { useState } from "react"
+import { DonutChart } from "@/components/ui/donut-chart"
+import { motion, AnimatePresence } from "framer-motion"
+import { cn } from "@/lib/utils"
 import { ClipboardList, Mic, TrendingUp } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
 
@@ -39,6 +42,7 @@ export function MaqraaInsights({ statusDistribution, readersActivity, recitation
   const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar"
   const nf = (n: number) => n.toLocaleString(isAr ? "ar-EG" : "en-US")
+  const [hoveredStatus, setHoveredStatus] = useState<string | null>(null)
 
   const statusEntries = Object.entries(statusDistribution || {})
     .map(([key, count]) => ({ key, count: Number(count) || 0 }))
@@ -70,42 +74,80 @@ export function MaqraaInsights({ statusDistribution, readersActivity, recitation
             <h3 className="font-bold">{isAr ? "حالة التلاوات" : "Recitation status"}</h3>
           </div>
 
-          {statusData.length > 0 ? (
-            <div className="h-[250px] w-full flex items-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={85}
-                    paddingAngle={4}
-                    dataKey="value"
-                    nameKey="name"
-                    stroke="none"
-                  >
-                    {statusData.map((entry, index) => (
-                      <Cell key={entry.name} fill={STATUS_COLORS[index % STATUS_COLORS.length]} className="hover:opacity-80 transition-opacity" />
+          {statusData.length > 0 ? (() => {
+            const donutData = statusData.map((d, index) => ({
+                value: d.value,
+                label: d.name,
+                color: `var(--chart-${(index % 5) + 1})`,
+                percentage: d.percentage
+            }))
+            
+            const activeSegment = donutData.find(s => s.label === hoveredStatus)
+            const displayValue = activeSegment?.value ?? statusTotal
+            const displayLabel = activeSegment?.label ?? (isAr ? "الإجمالي" : "Total")
+            const displayPercentage = activeSegment ? activeSegment.percentage : 100
+
+            return (
+              <div className="flex flex-col md:flex-row items-center gap-6 justify-center mt-4 h-full min-h-[250px]">
+                <div className="relative flex items-center justify-center shrink-0">
+                    <DonutChart
+                        data={donutData}
+                        size={180}
+                        strokeWidth={20}
+                        onSegmentHover={(segment) => setHoveredStatus(segment?.label ?? null)}
+                        centerContent={
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={displayLabel}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ duration: 0.2, ease: "circOut" }}
+                                    className="flex flex-col items-center justify-center text-center"
+                                >
+                                    <p className="text-muted-foreground text-[10px] font-medium truncate max-w-[100px]">
+                                        {displayLabel}
+                                    </p>
+                                    <p className="text-xl font-bold text-foreground">
+                                        {nf(displayValue)}
+                                    </p>
+                                </motion.div>
+                            </AnimatePresence>
+                        }
+                    />
+                </div>
+                <div className="flex flex-col gap-2 flex-1 w-full max-w-sm justify-center">
+                    {donutData.map((segment, index) => (
+                        <motion.div
+                            key={segment.label}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.1 + index * 0.05, duration: 0.3 }}
+                            className={cn(
+                                "flex items-center gap-3 p-2 rounded-xl border transition-all duration-200 cursor-pointer",
+                                hoveredStatus === segment.label 
+                                    ? "bg-card border-primary/40 shadow-sm scale-[1.02]" 
+                                    : "bg-muted/30 border-transparent hover:bg-muted/50 hover:border-border/50"
+                            )}
+                            onMouseEnter={() => setHoveredStatus(segment.label)}
+                            onMouseLeave={() => setHoveredStatus(null)}
+                        >
+                            <div
+                                className="h-3 w-3 shrink-0 rounded-full shadow-sm"
+                                style={{ backgroundColor: segment.color }}
+                            />
+                            <span className="text-sm font-medium text-foreground truncate flex-1">
+                                {segment.label}
+                            </span>
+                            <span className="text-xs font-bold text-foreground bg-background px-2 py-1 rounded-md shadow-sm border border-border/50">
+                                {segment.percentage}%
+                            </span>
+                        </motion.div>
                     ))}
-                  </Pie>
-                  <RechartsTooltip contentStyle={tooltipStyle} formatter={(v: any) => nf(Number(v))} />
-                  <Legend
-                    layout="vertical"
-                    verticalAlign="middle"
-                    align="right"
-                    iconType="circle"
-                    iconSize={8}
-                    formatter={(value, entry: any) => (
-                      <span className={`text-xs font-bold text-foreground/70 ${isAr ? "mr-2" : "ml-2"}`}>
-                        {value} ({entry.payload.percentage || 0}%)
-                      </span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
+                </div>
+              </div>
+            )
+          })() : (
             <div className="h-[250px] flex items-center justify-center text-muted-foreground">{t.admin.analytics.noData}</div>
           )}
         </div>

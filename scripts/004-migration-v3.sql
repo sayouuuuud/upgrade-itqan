@@ -1,13 +1,13 @@
 -- =============================================
 -- Migration V3 – Fix Schema Mismatches & Add Missing Features
 -- Run AFTER 003-migration-v2.sql
--- Platform: إتقان الفاتحة (Itqaan Al-Fatiha)
+-- Platform: متقن الفاتحة (Itqaan Al-Fatiha)
 -- =============================================
 
 -- 1) إضافة إعدادات مفقودة
 INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public)
 VALUES
-  ('platform_name', '"إتقان الفاتحة"', 'general', 'اسم المنصة', true),
+  ('platform_name', '"متقن الفاتحة"', 'general', 'اسم المنصة', true),
   ('surah_name', '"الفاتحة"', 'general', 'اسم السورة المعتمدة', true)
 ON CONFLICT (setting_key) DO NOTHING;
 

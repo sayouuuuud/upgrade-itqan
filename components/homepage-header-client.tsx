@@ -6,6 +6,8 @@ import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, Sun, Moon, Star, Globe } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
+import Image from "next/image"
+import { usePublicSettings } from "@/lib/hooks/use-public-settings"
 
 export default function HeaderNavClient({
   isLoggedIn,
@@ -20,6 +22,7 @@ export default function HeaderNavClient({
 }) {
   const { theme, setTheme } = useTheme()
   const { locale, t, toggleLocale } = useI18n()
+  const { branding } = usePublicSettings()
   const isAr = locale === "ar"
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -46,29 +49,28 @@ export default function HeaderNavClient({
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="sticky top-4 z-50 px-4 sm:px-8 lg:px-12"
+      className="fixed top-4 left-0 w-full z-50 px-4 sm:px-8 lg:px-12"
     >
-      <div className="w-full mx-auto h-[72px] px-5 sm:px-7 lg:px-8 flex items-center justify-between gap-6 bg-hp-parchment/96 dark:bg-hp-dark/96 backdrop-blur-md border border-hp-ink/12 dark:border-hp-cream/12 rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.08)]">
+      <div className="w-full mx-auto h-[80px] px-5 sm:px-7 lg:px-8 flex items-center justify-between gap-6 bg-hp-parchment/96 dark:bg-hp-dark/96 backdrop-blur-md border border-hp-ink/12 dark:border-hp-cream/12 rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.08)]">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hp-green text-hp-gold shadow-sm">
-            <Star className="w-5 h-5 fill-hp-gold" />
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="font-bold text-lg text-hp-navy dark:text-hp-gold">إتقان</span>
-            <span className="hidden sm:block text-[10px] tracking-[0.25em] text-hp-ink/45 dark:text-hp-cream/45 font-semibold">
-              ITQAN PLATFORM
-            </span>
-          </div>
+        <Link href="/" className="flex items-center gap-2.5 shrink-0 hover:opacity-80 transition-opacity z-10">
+          <Image
+            src={branding.logoUrl || "/branding/main-logo.png"}
+            alt={t.appName || "Logo"}
+            width={160}
+            height={64}
+            priority
+            className="h-12 w-auto object-contain"
+          />
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-8">
+        <nav className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
           {navItems.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="text-[15px] leading-none font-medium text-hp-ink/75 dark:text-hp-cream/75 hover:text-hp-navy dark:hover:text-hp-gold transition-colors"
+              className="text-[18px] leading-none font-medium text-hp-ink/75 dark:text-hp-cream/75 hover:text-hp-navy dark:hover:text-hp-gold transition-colors"
             >
               {item.label}
             </a>
@@ -76,7 +78,7 @@ export default function HeaderNavClient({
         </nav>
 
         {/* Desktop Auth + Controls */}
-        <div className="hidden lg:flex items-center gap-2.5">
+        <div className="hidden lg:flex items-center gap-2.5 z-10">
           <button
             onClick={toggleLocale}
             aria-label={isAr ? "Switch to English" : "التبديل إلى العربية"}
@@ -99,7 +101,9 @@ export default function HeaderNavClient({
               href={dashboardLink}
               className="text-[15px] font-bold h-9 inline-flex items-center px-6 rounded-full bg-hp-navy text-hp-parchment dark:bg-hp-gold dark:text-hp-dark hover:bg-hp-green dark:hover:bg-hp-gold-light transition-colors duration-300 shadow-sm"
             >
-              {dashboardText}
+              {isAr
+                ? (dashboardLink.startsWith("/admin") ? "لوحة التحكم" : "حسابي")
+                : (dashboardLink.startsWith("/admin") ? "Dashboard" : "My Account")}
             </Link>
           ) : (
             <>
@@ -175,7 +179,9 @@ export default function HeaderNavClient({
                     onClick={() => setIsMenuOpen(false)}
                     className="block text-center text-base font-bold px-5 py-3 rounded-xl bg-hp-navy text-hp-parchment dark:bg-hp-gold dark:text-hp-dark hover:bg-hp-green dark:hover:bg-hp-gold-light transition-all shadow-sm"
                   >
-                    {dashboardText}
+                    {isAr
+                      ? (dashboardLink.startsWith("/admin") ? "لوحة التحكم" : "حسابي")
+                      : (dashboardLink.startsWith("/admin") ? "Dashboard" : "My Account")}
                   </Link>
                 ) : (
                   <>

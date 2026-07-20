@@ -31,6 +31,7 @@ export function ReciterSupervisorDashboard({ name }: { name?: string }) {
   const { t } = useI18n()
   const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar"
+  const sd = (t as any).supervisorDashboards as Record<string, string> | undefined
   const [readers, setReaders] = useState<Reader[]>([])
   const [apps, setApps] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
@@ -73,24 +74,24 @@ export function ReciterSupervisorDashboard({ name }: { name?: string }) {
   const totalPendingReviews = readers.reduce((s, r) => s + parseInt(r.pending_reviews_count || "0"), 0)
 
   const statCards = [
-    { label: "المقرئون المعتمدون", value: approvedReaders.length, icon: BookOpen, color: "text-primary", bg: "bg-primary/10", href: "/admin/readers" },
-    { label: "طلبات انضمام معلقة", value: pendingApps.length, icon: UserCheck, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10", href: "/admin/reader-applications" },
-    { label: "يستقبلون التسميعات", value: acceptingReaders.length, icon: Mic, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", href: "/admin/readers" },
-    { label: "مراجعات قيد الانتظار", value: totalPendingReviews, icon: Clock, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10", href: "/admin/recitations" },
+    { label: sd?.approvedReciters || "المقرئون المعتمدون", value: approvedReaders.length, icon: BookOpen, color: "text-primary", bg: "bg-primary/10", href: "/admin/readers" },
+    { label: sd?.pendingApps || "طلبات انضمام معلقة", value: pendingApps.length, icon: UserCheck, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10", href: "/admin/reader-applications" },
+    { label: sd?.acceptingRecitations || "يستقبلون التسميعات", value: acceptingReaders.length, icon: Mic, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", href: "/admin/readers" },
+    { label: sd?.pendingReviews || "مراجعات قيد الانتظار", value: totalPendingReviews, icon: Clock, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10", href: "/admin/recitations" },
   ]
 
   const quickLinks = [
-    { href: "/admin/readers", label: t.admin.readers, desc: "إدارة المقرئين ومتابعتهم", icon: BookOpen },
-    { href: "/admin/reader-applications", label: t.admin.readerApplications, desc: "مراجعة طلبات الانضمام", icon: UserCheck },
-    { href: "/admin/recitations", label: t.admin.recitations, desc: "متابعة التسميعات", icon: ClipboardList },
-    { href: "/community/maqraa/forum", label: "منتدى المقرأة", desc: "متابعة نقاشات المقرأة", icon: MessagesSquare },
+    { href: "/admin/readers", label: t.admin.readers, desc: sd?.manageReciters || "إدارة المقرئين ومتابعتهم", icon: BookOpen },
+    { href: "/admin/reader-applications", label: t.admin.readerApplications, desc: sd?.reviewApps || "مراجعة طلبات الانضمام", icon: UserCheck },
+    { href: "/admin/recitations", label: t.admin.recitations, desc: sd?.followRecitations || "متابعة التسميعات", icon: ClipboardList },
+    { href: "/community/maqraa/forum", label: sd?.maqraaForum || "منتدى المقرأة", desc: sd?.followDiscussions || "متابعة نقاشات المقرأة", icon: MessagesSquare },
   ]
 
   return (
     <div className="space-y-6 pb-20 lg:pb-0 font-sans" dir={isAr ? "rtl" : "ltr"}>
       <div>
-        <h1 className="text-2xl font-black text-foreground">{name ? `مرحباً، ${name}` : "لوحة مشرف المقرئين"}</h1>
-        <p className="text-sm text-muted-foreground mt-1">إدارة المقرئين وطلبات الانضمام ومتابعة جودة التسميعات</p>
+        <h1 className="text-2xl font-black text-foreground">{name ? (sd?.reciterWelcome || "مرحباً، {name}").replace("{name}", name) : (sd?.reciterDashTitle || "لوحة مشرف المقرئين")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{sd?.reciterDashDesc || "إدارة المقرئين وطلبات الانضمام ومتابعة جودة التسميعات"}</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -123,8 +124,8 @@ export function ReciterSupervisorDashboard({ name }: { name?: string }) {
       <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
         <div className="p-6 border-b border-border flex items-center justify-between bg-muted/50">
           <div>
-            <h3 className="font-bold text-foreground">طلبات انضمام تنتظر المراجعة</h3>
-            <p className="text-sm text-muted-foreground mt-1">أحدث طلبات المقرئين</p>
+            <h3 className="font-bold text-foreground">{sd?.appsPendingTitle || "طلبات انضمام تنتظر المراجعة"}</h3>
+            <p className="text-sm text-muted-foreground mt-1">{sd?.appsPendingDesc || "أحدث طلبات المقرئين"}</p>
           </div>
           <Link href="/admin/reader-applications" className="text-sm text-primary font-medium hover:underline flex items-center gap-1">
             {t.admin.viewAll}
@@ -133,7 +134,7 @@ export function ReciterSupervisorDashboard({ name }: { name?: string }) {
         </div>
         <div className="divide-y divide-border">
           {pendingApps.length === 0 ? (
-            <div className="px-6 py-10 text-center text-sm text-muted-foreground">لا توجد طلبات معلقة حالياً</div>
+            <div className="px-6 py-10 text-center text-sm text-muted-foreground">{sd?.noPendingApps || "لا توجد طلبات معلقة حالياً"}</div>
           ) : pendingApps.slice(0, 5).map(app => (
             <Link key={app.id} href="/admin/reader-applications" className="flex items-center gap-4 px-6 py-4 hover:bg-muted/40 transition-colors group">
               <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -145,7 +146,7 @@ export function ReciterSupervisorDashboard({ name }: { name?: string }) {
                   {[app.qualification, app.city].filter(Boolean).join(" · ") || "—"}
                 </p>
               </div>
-              <span className="shrink-0 px-2.5 py-1 text-xs font-bold rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400">ينتظر</span>
+              <span className="shrink-0 px-2.5 py-1 text-xs font-bold rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400">{sd?.waiting || "ينتظر"}</span>
             </Link>
           ))}
         </div>

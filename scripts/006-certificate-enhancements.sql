@@ -36,5 +36,5 @@ ON CONFLICT (name) DO NOTHING;
 -- 5) Add some default entities if empty
 INSERT INTO authorized_entities (name)
 VALUES
-  ('منصة إتقان الفاتحة (الافتراضي)')
+  ('منصة متقن الفاتحة (الافتراضي)')
 ON CONFLICT (name) DO NOTHING;

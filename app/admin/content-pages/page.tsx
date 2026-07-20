@@ -18,17 +18,22 @@ const HomepageEditor = dynamic(
   }
 )
 
+import { useI18n } from "@/lib/i18n/context"
+
 export default function ContentPagesPage() {
+  const { t } = useI18n()
+  const isAr = t.locale === 'ar'
+  
   return (
     <Tabs defaultValue="homepage" className="w-full">
       <TabsList className="mb-6 gap-1 bg-muted/50 p-1">
         <TabsTrigger value="homepage" className="gap-2 data-[state=active]:bg-[#1B5E3B] data-[state=active]:text-white">
           <Home className="w-4 h-4" />
-          الصفحة الرئيسية
+          {isAr ? "الصفحة الرئيسية" : "Homepage"}
         </TabsTrigger>
         <TabsTrigger value="static" className="gap-2 data-[state=active]:bg-[#1B5E3B] data-[state=active]:text-white">
           <FileText className="w-4 h-4" />
-          الصفحات الثابتة
+          {isAr ? "الصفحات الثابتة" : "Static Pages"}
         </TabsTrigger>
       </TabsList>
 

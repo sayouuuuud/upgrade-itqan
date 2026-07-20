@@ -52,7 +52,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'تم قبول الدعوة بالفعل' }, { status: 400 })
     }
 
-    const newToken  = crypto.randomUUID()
+    const newToken = crypto.randomUUID()
     const expiresAt = new Date(Date.now() + EXPIRE_DAYS * 24 * 60 * 60 * 1000)
 
     await query(
@@ -63,7 +63,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       [newToken, expiresAt.toISOString(), id]
     )
 
-    const appUrl    = await getAppUrl()
+    const appUrl = await getAppUrl()
     const inviteUrl = `${appUrl}/academy/invite/${newToken}`
 
     const roleLabels: Record<string, string> = {
@@ -80,11 +80,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const html = `
       <div dir="rtl" style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;
            border:1px solid #e2e8f0;border-radius:14px;color:#333;">
-        <h1 style="color:#0B3D2E;font-size:24px;text-align:center;margin-bottom:4px;">إتقان التعليمية</h1>
+        <h1 style="color:#0B3D2E;font-size:24px;text-align:center;margin-bottom:4px;">متقن التعليمية</h1>
         <p style="color:#64748b;font-size:13px;text-align:center;margin-top:0;">تجديد دعوة الانضمام</p>
         <h2 style="color:#0B3D2E;font-size:18px;">${inv.invited_name ? `أهلاً ${inv.invited_name}،` : 'أهلاً بك،'}</h2>
         <p style="color:#475569;line-height:1.7;">
-          تم تجديد دعوتك للانضمام إلى منصة <strong>إتقان التعليمية</strong>
+          تم تجديد دعوتك للانضمام إلى منصة <strong>متقن التعليمية</strong>
           بصفة <strong>${roleLabels[inv.role_to_assign] || inv.role_to_assign}</strong>.
           ${inv.plan_title ? `<br/>الخطة التعليمية: <strong>${inv.plan_title}</strong>` : ''}
         </p>
@@ -99,16 +99,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           تنتهي صلاحية هذه الدعوة في ${expireStr}.
         </p>
         <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;"/>
-        <p style="font-size:11px;color:#94a3b8;text-align:center;">منصة إتقان التعليمية — جميع الحقوق محفوظة</p>
+        <p style="font-size:11px;color:#94a3b8;text-align:center;">منصة متقن التعليمية — جميع الحقوق محفوظة</p>
       </div>
     `
 
     await sendEmail({
       to: inv.email,
-      subject: 'تجديد دعوتك — إتقان التعليمية',
+      subject: 'تجديد دعوتك — متقن التعليمية',
       body: `تجديد الدعوة. رابط: ${inviteUrl} (صالحة حتى ${expireStr})`,
       html,
-    }).catch(() => {})
+    }).catch(() => { })
 
     return NextResponse.json({ success: true, newToken })
   }

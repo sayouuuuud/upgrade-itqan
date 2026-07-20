@@ -466,7 +466,7 @@
 **Line 538:** `<Label>ماذا ستتعلم؟ (What you will learn) - افصل بينها بفاصلة</Label>`
 
 **File:** [D:\Workspace\Itqan Upgrade\app\admin\tajweed-paths\[id]\page.tsx](file:///D:/Workspace/Itqan Upgrade/app/admin/tajweed-paths/[id]/page.tsx#L539)
-**Line 539:** `<Textarea rows={3} value={edit.what_you_will_learn.join(', ')} onChange={e => setEdit({ ...edit, what_you_will_learn: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })} placeholder="إتقان مخارج الحروف، التلاوة الصحيحة..." />`
+**Line 539:** `<Textarea rows={3} value={edit.what_you_will_learn.join(', ')} onChange={e => setEdit({ ...edit, what_you_will_learn: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })} placeholder="متقن مخارج الحروف، التلاوة الصحيحة..." />`
 
 **File:** [D:\Workspace\Itqan Upgrade\app\admin\tajweed-paths\[id]\page.tsx](file:///D:/Workspace/Itqan Upgrade/app/admin/tajweed-paths/[id]/page.tsx#L542)
 **Line 542:** `<Label>المتطلبات السابقة (Prerequisites) - افصل بينها بفاصلة</Label>`

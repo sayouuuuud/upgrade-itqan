@@ -36,11 +36,11 @@ export async function POST(req: NextRequest) {
     // Send the email
     await sendEmail({
       to: email,
-      subject: "استعادة كلمة المرور - إتقان الفاتحة",
+      subject: "استعادة كلمة المرور - متقن الفاتحة",
       html: `
         <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
           <h2 style="color: #1B5E3B;">أهلاً بك يا ${user.name}</h2>
-          <p style="font-size: 16px; color: #475569;">لقد تلقينا طلباً لاستعادة كلمة المرور الخاصة بحسابك في منصة إتقان الفاتحة. يرجى استخدام الكود التالي:</p>
+          <p style="font-size: 16px; color: #475569;">لقد تلقينا طلباً لاستعادة كلمة المرور الخاصة بحسابك في منصة متقن الفاتحة. يرجى استخدام الكود التالي:</p>
           
           <div style="background-color: #f8fafc; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;">
             <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #C9A227;">${resetCode}</span>

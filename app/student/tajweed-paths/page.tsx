@@ -90,7 +90,7 @@ export default function StudentTajweedPathsPage() {
         <div className="relative z-10 space-y-4 max-w-2xl text-center md:text-start mx-auto md:mx-0">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm mx-auto md:mx-0">
             <GraduationCap className="w-4 h-4 text-emerald-200" />
-            <span className="text-emerald-50">{isAr ? (t.addedTranslations_2026?.['إتقان التلاوة والأحكام'] || 'إتقان التلاوة والأحكام') : "Mastery of Recitation & Rules"}</span>
+            <span className="text-emerald-50">{isAr ? (t.addedTranslations_2026?.['متقن التلاوة والأحكام'] || 'متقن التلاوة والأحكام') : "Mastery of Recitation & Rules"}</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
             {isAr ? (
@@ -123,13 +123,13 @@ export default function StudentTajweedPathsPage() {
       <Tabs defaultValue="enrolled" className="space-y-6" dir={isAr ? 'rtl' : 'ltr'}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-card p-2 rounded-2xl border border-border shadow-sm">
           <TabsList className="bg-transparent border-none p-0 h-auto gap-2 flex-wrap">
-            <TabsTrigger 
-              value="enrolled" 
+            <TabsTrigger
+              value="enrolled"
               className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl px-6 py-2.5 font-bold transition-all"
             >
               {tp.tabs?.myPaths} ({formatDigits(enrolled.length)})
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="browse"
               className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl px-6 py-2.5 font-bold transition-all"
             >
@@ -227,11 +227,11 @@ function EnrolledCard({ path, formatDigits, tp }: { path: Path, formatDigits: (n
   const completed = path.stages_completed || 0
   const total = path.total_stages || 1
   const pct = Math.round((completed / total) * 100)
-  
+
   return (
     <div className="group bg-card rounded-3xl border border-border/60 p-6 flex flex-col hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
       <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-      
+
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-500/20">
           <GraduationCap className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
@@ -272,7 +272,7 @@ function EnrolledCard({ path, formatDigits, tp }: { path: Path, formatDigits: (n
           <span className="text-emerald-600 dark:text-emerald-400 font-black bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-md text-sm">{formatDigits(pct)}%</span>
         </div>
         <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-1000 relative"
             style={{ width: `${pct}%` }}
           >
@@ -281,12 +281,12 @@ function EnrolledCard({ path, formatDigits, tp }: { path: Path, formatDigits: (n
         </div>
       </div>
 
-      <Link 
+      <Link
         href={`/student/tajweed-paths/${path.id}`}
         className={cn(
           "mt-6 w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold transition-all duration-300",
-          pct === 100 
-            ? "bg-muted text-foreground hover:bg-muted/80" 
+          pct === 100
+            ? "bg-muted text-foreground hover:bg-muted/80"
             : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:shadow-emerald-600/30"
         )}
       >
@@ -339,7 +339,7 @@ function BrowseCard({ path, formatDigits, tp }: { path: Path, formatDigits: (n: 
         </div>
       )}
 
-      <Link 
+      <Link
         href={`/student/tajweed-paths/${path.id}`}
         className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold bg-muted/50 hover:bg-emerald-600 text-foreground hover:text-white transition-all duration-300 border border-border hover:border-transparent mt-auto"
       >

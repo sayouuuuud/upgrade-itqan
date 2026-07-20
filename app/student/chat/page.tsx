@@ -303,7 +303,7 @@ function StudentChatInner() {
     }
 
     const handleDeleteMessage = async (msgId: string) => {
-        if (!activeConv || !confirm(t.sessionsPage.messageDeleteConfirmation)) return
+        if (!activeConv || !confirm(t.sessionsPage?.messageDeleteConfirmation)) return
         setMessages(p => p.filter(m => m.id !== msgId))
         try {
             await fetch(`/api/conversations/${activeConv.id}/messages/${msgId}`, { method: "DELETE" })
@@ -311,7 +311,7 @@ function StudentChatInner() {
     }
 
     const handleDeleteConversation = async () => {
-        if (!activeConv || !confirm(t.sessionsPage.conversationDeleteConfirmation)) return
+        if (!activeConv || !confirm(t.sessionsPage?.conversationDeleteConfirmation)) return
         setDeletingConvId(activeConv.id)
         try {
             await fetch(`/api/conversations/${activeConv.id}`, { method: "DELETE" })
@@ -370,7 +370,7 @@ function StudentChatInner() {
                             // Show success message
                             toast({
                                 title: isAr ? '' : "Success",
-                                description: t.sessionsPage.ticketSuccessToast
+                                description: t.sessionsPage?.ticketSuccessToast
                             });
                         }
                     }
@@ -420,7 +420,7 @@ function StudentChatInner() {
                     className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                     <MessageSquare className="w-4 h-4 mr-2 rtl:ml-2 rtl:mr-0" />
-                    {t.sessionsPage.ticketCreateBtn}
+                    {t.sessionsPage?.ticketCreateBtn}
                 </Button>
             </div>
 
@@ -433,7 +433,7 @@ function StudentChatInner() {
                             className="rounded-full font-bold gap-2 px-6 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all text-sm h-full flex items-center"
                         >
                             <span className="text-xl font-light opacity-50 mb-0.5">⋮</span>
-                            {t.sessionsPage.ticketListTitle}
+                            {t.sessionsPage?.ticketListTitle}
                         </TabsTrigger>
                         <TabsTrigger 
                             value="messages" 
@@ -450,7 +450,7 @@ function StudentChatInner() {
                     <Card className="border-border w-full lg:w-1/3 flex flex-col h-full overflow-hidden shadow-sm">
                         <CardHeader className="pb-3 border-b border-border bg-muted/30">
                         <CardTitle className="text-base font-bold text-foreground/80">
-                                {activeTab === "messages" ? t.student.conversationsHeader : t.sessionsPage.ticketListTitle}
+                                {activeTab === "messages" ? t.student.conversationsHeader : t.sessionsPage?.ticketListTitle}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0 flex-1 overflow-y-auto">
@@ -470,7 +470,7 @@ function StudentChatInner() {
                                 <div className="p-8 text-center text-muted-foreground flex flex-col items-center">
                                     <MessageSquare className="w-10 h-10 text-muted-foreground/30 mb-2" />
                                     <p className="font-medium text-muted-foreground">
-                                        {activeTab === "messages" ? (t.student.noConversationsYet || (isAr ? '' : "No messages currently.")) : t.sessionsPage.noTicketsYet}
+                                        {activeTab === "messages" ? (t.student.noConversationsYet || (isAr ? '' : "No messages currently.")) : t.sessionsPage?.noTicketsYet}
                                     </p>
                                     <p className="text-xs text-muted-foreground/60 mt-1 text-center">
                                         {activeTab === "messages" ? (t.student.noMessagesDesc || (isAr ? '' : "The reciter's notes or any messages related to your recitation will appear here.")) : ""}
@@ -482,7 +482,7 @@ function StudentChatInner() {
                                         const colorClass = avatarColors[idx % avatarColors.length]
                                         const isSelected = activeConv?.id === c.id
                                         const hasUnread = c.unread_count_student > 0
-                                        const name = c.is_ticket ? t.sessionsPage.supportTeamName : (c.admin_id ? t.admin?.administration || '' : (c.reader_name || t.student.certifiedReaderFallback))
+                                        const name = c.is_ticket ? t.sessionsPage?.supportTeamName : (c.admin_id ? t.admin?.administration || '' : (c.reader_name || t.student.certifiedReaderFallback))
 
                                         return (
                                             <button
@@ -506,7 +506,7 @@ function StudentChatInner() {
                                                             </p>
                                                             {c.is_ticket && (
                                                                 <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-400">
-                                                                    {t.sessionsPage.ticketBadge}
+                                                                    {t.sessionsPage?.ticketBadge}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -546,16 +546,16 @@ function StudentChatInner() {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <CardTitle className="text-base text-foreground truncate max-w-full">
-                                                {currentConv.is_ticket ? t.sessionsPage.supportTeamName : (currentConv.admin_id ? (t.admin?.administration || '') : (currentConv.reader_name || t.student.certifiedReaderFallback))}
+                                                {currentConv.is_ticket ? t.sessionsPage?.supportTeamName : (currentConv.admin_id ? (t.admin?.administration || '') : (currentConv.reader_name || t.student.certifiedReaderFallback))}
                                             </CardTitle>
                                             {currentConv.is_ticket && (
                                                 <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-400">
-                                                    {t.sessionsPage.ticketBadge}
+                                                    {t.sessionsPage?.ticketBadge}
                                                 </span>
                                             )}
                                         </div>
                                         <p className="text-xs text-muted-foreground">
-                                            {currentConv.is_ticket ? t.sessionsPage.supportTeamDesc : (currentConv.admin_id ? (isAr ? '' : "Platform Admin") : t.student.certifiedReaderFallback)}
+                                            {currentConv.is_ticket ? t.sessionsPage?.supportTeamDesc : (currentConv.admin_id ? (isAr ? '' : "Platform Admin") : t.student.certifiedReaderFallback)}
                                         </p>
                                     </div>
                                     {!currentConv.is_ticket && (
@@ -670,7 +670,7 @@ function StudentChatInner() {
                                 <div className="p-4 border-t border-border bg-card">
                                     {currentConv.is_ticket && (currentConv.ticket_status === 'closed' || currentConv.ticket_status === 'resolved') ? (
                                         <div className="text-center p-3 bg-muted text-muted-foreground rounded-xl text-sm border border-border">
-                                            {t.sessionsPage.ticketClosedMsg}
+                                            {t.sessionsPage?.ticketClosedMsg}
                                         </div>
                                     ) : (
                                         <>
@@ -678,10 +678,10 @@ function StudentChatInner() {
                                                 <div className="flex items-center justify-between bg-accent/10 text-accent p-2 rounded-lg text-xs mb-2 border border-accent/20">
                                                     <div className="flex items-center gap-2">
                                                         <Edit2 className="w-3.5 h-3.5" />
-                                                        <span>{t.sessionsPage.editingMessageLabel}</span>
+                                                        <span>{t.sessionsPage?.editingMessageLabel}</span>
                                                     </div>
                                                     <button onClick={() => { setEditingMessage(null); setMessageText("") }} className="hover:underline font-bold">
-                                                        {t.sessionsPage.cancelEditBtn}
+                                                        {t.sessionsPage?.cancelEditBtn}
                                                     </button>
                                                 </div>
                                             )}
@@ -731,7 +731,7 @@ function StudentChatInner() {
                     <DialogHeader className="p-6 bg-muted/30 border-b border-border">
                         <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-2">
                             <MessageSquare className="w-5 h-5 text-primary" />
-                            {t.sessionsPage.ticketCreateBtn}
+                            {t.sessionsPage?.ticketCreateBtn}
                         </DialogTitle>
                         <DialogDescription className="text-muted-foreground text-sm mt-1.5">
                             {isAr ? '' : "Please describe your issue or inquiry, and we will get back to you as soon as possible."}
@@ -767,7 +767,7 @@ function StudentChatInner() {
                             onClick={() => setIsTicketDialogOpen(false)}
                             className="text-muted-foreground hover:bg-muted sm:mr-2"
                         >
-                            {t.sessionsPage.cancelEditBtn}
+                            {t.sessionsPage?.cancelEditBtn}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

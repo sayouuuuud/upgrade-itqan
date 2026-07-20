@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
   })
 
   return {
-    title: 'منصة إتقان التعليمية',
+    title: 'منصة مُتْقِن',
     description: 'منصة متكاملة لتحسين تلاوة القرآن الكريم - سجّل تلاوتك واحصل على تقييم من مقرئين معتمدين',
     generator: 'v0.app',
     icons: {
@@ -48,15 +48,21 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-export default function RootLayout({
+import { cookies } from "next/headers"
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = await cookies()
+  const localeCookie = cookieStore.get("NEXT_LOCALE")
+  const locale = (localeCookie?.value === "en" ? "en" : "ar") as "ar" | "en"
+
   return (
     <html
-      lang="ar"
-      dir="rtl"
+      lang={locale}
+      dir={locale === "ar" ? "rtl" : "ltr"}
       className={`${cairo.variable} ${amiri.variable}`}
       suppressHydrationWarning
     >
@@ -70,7 +76,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LanguageProvider>
+          <LanguageProvider initialLocale={locale}>
             <SplashScreenWrapper>
               {children}
             </SplashScreenWrapper>

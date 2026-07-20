@@ -59,9 +59,9 @@ const DEFAULT_TEMPLATES = [
         template_key: "welcome_email",
         template_name_ar: "رسالة الترحيب",
         template_name_en: "Welcome Email",
-        subject_ar: "أهلاً بك في منصة إتقان الفاتحة",
+        subject_ar: "أهلاً بك في منصة متقن الفاتحة",
         subject_en: "Welcome to Itqaan Platform",
-        body_ar: "مرحباً بك {{userName}} في منصتنا.\\nنسأل الله لك التوفيق في رحلة إتقان سورة الفاتحة.\\n\\nفريق العمل",
+        body_ar: "مرحباً بك {{userName}} في منصتنا.\\nنسأل الله لك التوفيق في رحلة متقن سورة الفاتحة.\\n\\nفريق العمل",
         body_en: "Welcome {{userName}} to our platform.\\nWe wish you success in your journey to master Surah Al-Fatiha.\\n\\nTeam",
         variables: ["userName"]
     }
@@ -80,15 +80,15 @@ export async function GET(req: NextRequest) {
         // مدير المنصة يرى قوالبه فقط + العامة. السوبر أدمن يرى الكل أو يفلتر
         let scopeCondition = ''
         if (isSuperAdmin) {
-          if (scopeParam && scopeParam !== 'all') {
-            scopeCondition = `WHERE scope = '${scopeParam}'`
-          }
-          // scopeParam=all أو فارغ => يرى الكل
+            if (scopeParam && scopeParam !== 'all') {
+                scopeCondition = `WHERE scope = '${scopeParam}'`
+            }
+            // scopeParam=all أو فارغ => يرى الكل
         } else {
-          // مدير مقرأة: يرى maqraa + general
-          // مدير أكاديمية: يرى academy + general
-          const platformScope = (session.role as string) === 'academy_admin' ? 'academy' : 'maqraa'
-          scopeCondition = `WHERE scope IN ('${platformScope}', 'general')`
+            // مدير مقرأة: يرى maqraa + general
+            // مدير أكاديمية: يرى academy + general
+            const platformScope = (session.role as string) === 'academy_admin' ? 'academy' : 'maqraa'
+            scopeCondition = `WHERE scope IN ('${platformScope}', 'general')`
         }
 
         let templates = await query(`SELECT * FROM email_templates ${scopeCondition} ORDER BY scope, created_at ASC`)

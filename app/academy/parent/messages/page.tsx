@@ -225,8 +225,8 @@ export default function ParentMessagesPage() {
           other_user_id: 'admin',
           other_user_name:
             platform === 'maqraa'
-              ? t.parentPages.messages.maqraaSupportTitle
-              : t.parentPages.messages.academySupportTitle,
+              ? t.parentPages?.messages?.maqraaSupportTitle
+              : t.parentPages?.messages?.academySupportTitle,
           other_user_avatar: null,
           last_message: null,
           last_message_at: null,
@@ -260,10 +260,10 @@ export default function ParentMessagesPage() {
           </div>
           <div>
             <h1 className="text-lg font-black text-foreground">
-              {t.parentPages.messages.title}
+              {t.parentPages?.messages?.title}
             </h1>
             <p className="text-xs text-muted-foreground">
-              {t.parentPages.messages.desc}
+              {t.parentPages?.messages?.desc}
             </p>
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function ParentMessagesPage() {
                 className={`absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground`}
               />
               <Input
-                placeholder={t.parentPages.messages.search}
+                placeholder={t.parentPages?.messages?.search}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={`h-9 rounded-xl text-sm ${isAr ? 'pr-9' : 'pl-9'}`}
@@ -298,7 +298,7 @@ export default function ParentMessagesPage() {
                 className="flex-1 h-9 rounded-xl text-xs font-bold"
               >
                 <Shield className="w-3.5 h-3.5 me-1" />
-                {t.parentPages.messages.supportTicket}
+                {t.parentPages?.messages?.supportTicket}
               </Button>
               <Button
                 onClick={startConversation}
@@ -311,7 +311,7 @@ export default function ParentMessagesPage() {
                 ) : (
                   <>
                     <MessageSquare className="w-3.5 h-3.5 me-1" />
-                    {t.parentPages.messages.new}
+                    {t.parentPages?.messages?.new}
                   </>
                 )}
               </Button>
@@ -324,7 +324,7 @@ export default function ParentMessagesPage() {
               <div className="p-8 text-center">
                 <Inbox className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground">
-                  {t.parentPages.messages.noConversations}
+                  {t.parentPages?.messages?.noConversations}
                 </p>
               </div>
             ) : (
@@ -350,16 +350,16 @@ export default function ParentMessagesPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h4 className="font-bold text-sm text-foreground truncate">
-                            {conv.other_user_name || t.parentPages.messages.teacher}
+                            {conv.other_user_name || t.parentPages?.messages?.teacher}
                           </h4>
                           {conv.is_ticket && (
                             <Badge variant="secondary" className="text-[9px] px-1 py-0 shrink-0">
-                              {t.parentPages.messages.support}
+                              {t.parentPages?.messages?.support}
                             </Badge>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground truncate mt-0.5">
-                          {conv.last_message || t.parentPages.messages.noMessages}
+                          {conv.last_message || t.parentPages?.messages?.noMessages}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
@@ -393,10 +393,10 @@ export default function ParentMessagesPage() {
               <div className="text-center">
                 <MessageSquare className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
                 <h3 className="font-bold text-foreground mb-1">
-                  {t.parentPages.messages.selectConversation}
+                  {t.parentPages?.messages?.selectConversation}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {t.parentPages.messages.selectConversationDesc}
+                  {t.parentPages?.messages?.selectConversationDesc}
                 </p>
               </div>
             </div>
@@ -439,12 +439,12 @@ export default function ParentMessagesPage() {
                   <div className="flex items-center gap-1.5">
                     {activeConv.is_ticket ? (
                       <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4">
-                        {t.parentPages.messages.supportTicket}
+                        {t.parentPages?.messages?.supportTicket}
                       </Badge>
                     ) : (
                       <p className="text-[11px] text-muted-foreground flex items-center gap-1">
                         <UserRound className="w-3 h-3" />
-                        {t.parentPages.messages.teacher}
+                        {t.parentPages?.messages?.teacher}
                       </p>
                     )}
                   </div>
@@ -463,10 +463,10 @@ export default function ParentMessagesPage() {
                       <MessageSquare className="w-7 h-7 text-primary/60" />
                     </div>
                     <p className="text-sm font-medium text-muted-foreground">
-                      {t.parentPages.messages.noMessagesYet}
+                      {t.parentPages?.messages?.noMessagesYet}
                     </p>
                     <p className="text-xs text-muted-foreground/70 max-w-xs">
-                      {t.parentPages.messages.startConversationDesc}
+                      {t.parentPages?.messages?.startConversationDesc}
                     </p>
                   </div>
                 ) : (
@@ -535,7 +535,7 @@ export default function ParentMessagesPage() {
                     value={reply}
                     onChange={(e) => setReply(e.target.value)}
                     disabled={!activeConv || sending}
-                    placeholder={t.parentPages.messages.writeMessage}
+                    placeholder={t.parentPages?.messages?.writeMessage}
                     className="border-0 bg-transparent shadow-none focus-visible:ring-0 h-9"
                   />
                   <Button
@@ -563,11 +563,11 @@ export default function ParentMessagesPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-blue-600" />
-              {t.parentPages.messages.openSupportTicket}
+              {t.parentPages?.messages?.openSupportTicket}
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            {t.parentPages.messages.chooseSupportTeam}
+            {t.parentPages?.messages?.chooseSupportTeam}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <Button
@@ -576,7 +576,7 @@ export default function ParentMessagesPage() {
               className="rounded-xl h-auto py-4 flex-col gap-1 font-bold"
             >
               <Shield className="w-5 h-5" />
-              {t.parentPages.messages.academySupport}
+              {t.parentPages?.messages?.academySupport}
             </Button>
             <Button
               onClick={() => handleCreateTicket('maqraa')}
@@ -585,7 +585,7 @@ export default function ParentMessagesPage() {
               className="rounded-xl h-auto py-4 flex-col gap-1 font-bold"
             >
               <Shield className="w-5 h-5" />
-              {t.parentPages.messages.maqraaSupport}
+              {t.parentPages?.messages?.maqraaSupport}
             </Button>
           </div>
         </DialogContent>

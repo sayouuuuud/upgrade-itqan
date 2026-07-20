@@ -160,7 +160,7 @@ export default function PublicCertificatePage({ params }: { params: Promise<{ id
                             <Award className="w-12 h-12 text-[#C9A227] -rotate-45" />
                         </div>
                         <div className="mt-8">
-                            <h1 className="text-4xl font-extrabold text-[#1B5E3B] tracking-tight">{isAr ? "منصة إتقان الفاتحة" : "Itqaan Al-Fatiha Platform"}</h1>
+                            <h1 className="text-4xl font-extrabold text-[#1B5E3B] tracking-tight">{isAr ? "منصة متقن الفاتحة" : "Itqaan Al-Fatiha Platform"}</h1>
                             <p className="text-[#C9A227] font-bold text-xl mt-2 tracking-widest">{isAr ? "مبادرة تصحيح وذكر" : "Recitation & Mastery Initiative"}</p>
                         </div>
                     </div>
@@ -172,7 +172,7 @@ export default function PublicCertificatePage({ params }: { params: Promise<{ id
                         </h3>
                         <p className="text-2xl text-slate-600 leading-relaxed max-w-2xl mt-12">
                             {isAr
-                                ? "وذلك تقديراً لإتمامه إتقان قراءة سورة الفاتحة على الوجه المطلوب."
+                                ? "وذلك تقديراً لإتمامه متقن قراءة سورة الفاتحة على الوجه المطلوب."
                                 : "In recognition of achieving full mastery in the recitation of Surah Al-Fatiha."}
                         </p>
                     </div>

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
             مرحباً ${session.name}،
           </p>
           <p style="color: #333; font-size: 16px; line-height: 1.8;">
-            تم إرسال هذه الرسالة بنجاح من إعدادات منصة إتقان الأكاديمية.
+            تم إرسال هذه الرسالة بنجاح من إعدادات منصة متقن الأكاديمية.
           </p>
           <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0; color: #666; font-size: 14px;">
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
             </p>
           </div>
           <p style="color: #666; font-size: 14px; text-align: center;">
-            منصة إتقان التعليمية
+            منصة متقن التعليمية
           </p>
         </div>
       `,
@@ -60,9 +60,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, message: "تم إرسال البريد التجريبي بنجاح" })
   } catch (error: any) {
     console.error("[Test Email] Error:", error)
-    return NextResponse.json({ 
-      error: "فشل في إرسال البريد", 
-      details: error.message 
+    return NextResponse.json({
+      error: "فشل في إرسال البريد",
+      details: error.message
     }, { status: 500 })
   }
 }

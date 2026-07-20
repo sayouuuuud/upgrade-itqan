@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
               <strong>التاريخ:</strong> ${new Date().toLocaleString("ar-EG")}
             </p>
           </div>
-          <p style="color: #666; font-size: 14px; text-align: center;">منصة إتقان التعليمية</p>
+          <p style="color: #666; font-size: 14px; text-align: center;">منصة متقن التعليمية</p>
         </div>
       `,
     })

@@ -209,7 +209,7 @@ export function renderWeeklyReportHtml(opts: {
   return `
     <div dir="rtl" style="font-family: Tahoma, Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; color:#0f172a;">
       <div style="text-align:center; padding:24px 0; border-bottom: 2px solid #0B3D2E;">
-        <h1 style="margin:0; color:#0B3D2E; font-size:24px;">${" إتقان التعليمية"}</h1>
+        <h1 style="margin:0; color:#0B3D2E; font-size:24px;">${" متقن التعليمية"}</h1>
         <p style="margin:6px 0 0; color:#64748b; font-size:13px;">${"التقرير الأسبوعي"}</p>
       </div>
 
@@ -243,53 +243,48 @@ export function renderWeeklyReportHtml(opts: {
         </tr>
       </table>
 
-      ${
-        summary.current_level
-          ? `<div style="background:#0B3D2E; color:white; padding:18px; border-radius:12px; margin-bottom:24px; text-align:center;">
+      ${summary.current_level
+      ? `<div style="background:#0B3D2E; color:white; padding:18px; border-radius:12px; margin-bottom:24px; text-align:center;">
               <div style="font-size:13px; opacity:0.85;">${"المستوى الحالي"}</div>
               <div style="font-size:18px; font-weight:bold; margin-top:6px;">${summary.current_level}</div>
             </div>`
-          : ""
-      }
+      : ""
+    }
 
-      ${
-        recItems
-          ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${"📖 التلاوات"}</h3>
+      ${recItems
+      ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${"📖 التلاوات"}</h3>
             <table style="width:100%; border-collapse: collapse; background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;">
               ${recItems}
             </table>`
-          : `<p style="color:#94a3b8; font-size:14px;">${"لم يتم تقديم تلاوات هذا الأسبوع."}</p>`
-      }
+      : `<p style="color:#94a3b8; font-size:14px;">${"لم يتم تقديم تلاوات هذا الأسبوع."}</p>`
+    }
 
-      ${
-        sessItems
-          ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${"🎙️ الجلسات"}</h3>
+      ${sessItems
+      ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${"🎙️ الجلسات"}</h3>
             <table style="width:100%; border-collapse: collapse; background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;">
               ${sessItems}
             </table>`
-          : ""
-      }
+      : ""
+    }
 
-      ${
-        badgeItems
-          ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${"🏅 الشارات الجديدة"}</h3>
+      ${badgeItems
+      ? `<h3 style="color:#0B3D2E; margin: 24px 0 12px; font-size:16px;">${"🏅 الشارات الجديدة"}</h3>
              <ul style="padding-right:18px; margin: 0;">${badgeItems}</ul>`
-          : ""
-      }
+      : ""
+    }
 
-      ${
-        reportUrl
-          ? `<div style="text-align:center; margin: 28px 0;">
+      ${reportUrl
+      ? `<div style="text-align:center; margin: 28px 0;">
               <a href="${reportUrl}" style="display:inline-block; background:#0B3D2E; color:white; text-decoration:none; padding:12px 28px; border-radius:10px; font-weight:bold;">
                 ${"عرض التقرير الكامل في المنصة"}
               </a>
             </div>`
-          : ""
-      }
+      : ""
+    }
 
       <hr style="border:none; border-top:1px solid #e2e8f0; margin: 24px 0;" />
       <p style="font-size: 12px; color:#94a3b8; text-align:center;">
-        ${"منصة إتقان التعليمية — جميع الحقوق محفوظة"}
+        ${"منصة متقن التعليمية — جميع الحقوق محفوظة"}
       </p>
     </div>
   `
@@ -363,7 +358,7 @@ export async function sendWeeklyReport(opts: {
     summary,
   })
 
-  const subject = `${"تقرير "}${child.name}${" الأسبوعي — إتقان التعليمية"}`
+  const subject = `${"تقرير "}${child.name}${" الأسبوعي — متقن التعليمية"}`
   const text = `${"تقرير الأسبوع: "}${summary.recitations_count}${" تلاوة، "}${summary.sessions_attended}${" جلسة حضرها، "}${summary.badges_earned}${" شارة جديدة"}`
 
   let ok = false

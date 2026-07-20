@@ -171,7 +171,7 @@ export default function AdminBadgesPage() {
                 </span>
                 {b.points_reward > 0 && (
                   <span className="text-xs flex items-center gap-0.5 text-muted-foreground">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> {b.points_reward} {a.points}
+                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> {b.points_reward} {a.ptsPoints}
                   </span>
                 )}
               </div>

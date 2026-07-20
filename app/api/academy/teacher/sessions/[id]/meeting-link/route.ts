@@ -20,17 +20,25 @@ interface PatchBody {
 const URL_REGEX = /^https?:\/\/.+/i
 
 function buildAnnouncementTitle(title?: string, sessionTitle?: string) {
-  if (title && title.trim()) return title.trim().slice(0, 250)
-  return `رابط الجلسة: ${(sessionTitle || '').slice(0, 230)}`
+  if (title && title.trim()) return { ar: title.trim().slice(0, 250), en: title.trim().slice(0, 250) }
+  return {
+    ar: `رابط الجلسة: ${(sessionTitle || '').slice(0, 230)}`,
+    en: `Session Link: ${(sessionTitle || '').slice(0, 230)}`
+  }
 }
 
 function buildAnnouncementContent(content: string | undefined, link: string, password?: string | null) {
   if (content && content.trim()) {
-    return content.trim()
+    return { ar: content.trim(), en: content.trim() }
   }
-  return password
-    ? `تم إضافة رابط الانضمام للجلسة. اضغط على الرابط للدخول.\n\nالرابط: ${link}\nكلمة المرور: ${password}`
-    : `تم إضافة رابط الانضمام للجلسة. اضغط على الرابط للدخول.\n\nالرابط: ${link}`
+  return {
+    ar: password
+      ? `تم إضافة رابط الانضمام للجلسة. اضغط على الرابط للدخول.\n\nالرابط: ${link}\nكلمة المرور: ${password}`
+      : `تم إضافة رابط الانضمام للجلسة. اضغط على الرابط للدخول.\n\nالرابط: ${link}`,
+    en: password
+      ? `A meeting link has been added to the session. Click the link to join.\n\nLink: ${link}\nPassword: ${password}`
+      : `A meeting link has been added to the session. Click the link to join.\n\nLink: ${link}`
+  }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -153,9 +161,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       `INSERT INTO announcements
         (title_ar, title_en, content_ar, content_en, target_audience, priority,
          is_published, published_at, course_session_id, created_by, created_at)
-       VALUES ($1, $1, $2, $2, 'students', 'high', true, NOW(), $3, $4, NOW())
+       VALUES ($1, $2, $3, $4, 'students', 'high', true, NOW(), $5, $6, NOW())
        RETURNING id`,
-      [aTitle, aContent, id, session.sub]
+      [aTitle.ar, aTitle.en, aContent.ar, aContent.en, id, session.sub]
     )
     announcementId = ins[0]?.id ?? null
 
@@ -166,7 +174,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         userId: studentId,
         type: 'new_announcement',
         title: 'إعلان جديد 📢',
-        message: aTitle,
+        message: aTitle.ar,
         category: 'announcement',
         link: '/academy/student/sessions',
       })

@@ -31,9 +31,9 @@ async function run() {
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_failed_login_at TIMESTAMPTZ`,
 
         // SEO settings
-        `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES ('seo_site_title', '"إتقان الفاتحة | منصة تعلم القرآن الكريم"', 'seo', 'Site title for SEO', true) ON CONFLICT (setting_key) DO NOTHING`,
-        `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES ('seo_site_description', '"منصة إتقان الفاتحة - سجّل تلاوتك واحصل على تقييم مفصّل من مقرئين معتمدين. احتراف سورة الفاتحة خطوة بخطوة"', 'seo', 'Meta description', true) ON CONFLICT (setting_key) DO NOTHING`,
-        `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES ('seo_keywords', '"تلاوة القرآن, إتقان الفاتحة, تعلم القرآن, مقرئين معتمدين, تجويد"', 'seo', 'Keywords', true) ON CONFLICT (setting_key) DO NOTHING`,
+        `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES ('seo_site_title', '"متقن الفاتحة | منصة تعلم القرآن الكريم"', 'seo', 'Site title for SEO', true) ON CONFLICT (setting_key) DO NOTHING`,
+        `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES ('seo_site_description', '"منصة متقن الفاتحة - سجّل تلاوتك واحصل على تقييم مفصّل من مقرئين معتمدين. احتراف سورة الفاتحة خطوة بخطوة"', 'seo', 'Meta description', true) ON CONFLICT (setting_key) DO NOTHING`,
+        `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES ('seo_keywords', '"تلاوة القرآن, متقن الفاتحة, تعلم القرآن, مقرئين معتمدين, تجويد"', 'seo', 'Keywords', true) ON CONFLICT (setting_key) DO NOTHING`,
         `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES ('seo_og_image', '""', 'seo', 'OG Image URL', true) ON CONFLICT (setting_key) DO NOTHING`,
         `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES ('seo_robots', '"index, follow"', 'seo', 'Robots meta', false) ON CONFLICT (setting_key) DO NOTHING`,
         `INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES ('seo_google_verification', '""', 'seo', 'Google verification token', false) ON CONFLICT (setting_key) DO NOTHING`,

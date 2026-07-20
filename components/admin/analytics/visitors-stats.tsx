@@ -1,15 +1,16 @@
 "use client"
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from "recharts"
 import { Globe, Smartphone, Monitor, Tablet } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
+import { useState } from "react"
+import { DonutChart } from "@/components/ui/donut-chart"
+import { motion, AnimatePresence } from "framer-motion"
+import { cn } from "@/lib/utils"
 
 interface VisitorStatsProps {
     countryData: { country: string; count: number }[]
     deviceData: { device_type: string; count: number; percentage: number }[]
 }
-
-const COLORS = ["#0B3D2E", "#10b981", "#f59e0b", "#3b82f6", "#8884d8"]
 
 const DeviceIcon = ({ type }: { type: string }) => {
     switch (type.toLowerCase()) {
@@ -28,6 +29,7 @@ export function VisitorStats({ countryData, deviceData }: VisitorStatsProps) {
     const { t } = useI18n()
   const admin = (t as any).admin as Record<string, string> | undefined
     const isAr = t.locale === 'ar'
+    const [hoveredDevice, setHoveredDevice] = useState<string | null>(null)
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -91,7 +93,7 @@ export function VisitorStats({ countryData, deviceData }: VisitorStatsProps) {
                     <h3 className="font-bold">{t.admin.analytics.usedDevices}</h3>
                 </div>
 
-                <div className="h-[250px] w-full flex items-center">
+                <div className="flex flex-col md:flex-row items-center gap-6 justify-center mt-4 h-full min-h-[250px]">
                     {(() => {
                         // Pre-initialize allowed types to ensure they always show in legend
                         const allowedTypes = ['desktop', 'mobile', 'tablet'];
@@ -122,55 +124,77 @@ export function VisitorStats({ countryData, deviceData }: VisitorStatsProps) {
                             percentage: total > 0 ? Math.round((d.count / total) * 100) : 0
                         })).sort((a, b) => b.count - a.count);
                         
-                        // Ensure we only have data if there's at least one count, or keep them all if that's preferred.
-                        // User specifically asked "Where is the tablet", so keeping all three is better.
+                        const donutData = finalData.map((d, index) => ({
+                            value: d.count,
+                            label: d.device_type === 'desktop' ? t.admin.analytics.desktop : d.device_type === 'mobile' ? t.admin.analytics.mobile : d.device_type === 'tablet' ? t.admin.analytics.tablet : t.admin.analytics.unknown,
+                            color: `var(--chart-${(index % 5) + 1})`,
+                            percentage: d.percentage
+                        }));
+                        
+                        const activeSegment = donutData.find(s => s.label === hoveredDevice)
+                        const displayValue = activeSegment?.value ?? total
+                        const displayLabel = activeSegment?.label ?? t.admin.analytics.usedDevices
+                        const displayPercentage = activeSegment ? activeSegment.percentage : 100
 
                         return (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={finalData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={65}
-                                        outerRadius={85}
-                                        fill="#8884d8"
-                                        paddingAngle={5}
-                                        dataKey="count"
-                                        nameKey="device_type"
-                                        stroke="none"
-                                    >
-                                        {finalData.map((entry, index) => (
-                                            <Cell 
-                                                key={`cell-${index}`} 
-                                                fill={COLORS[index % COLORS.length]} 
-                                                className="hover:opacity-80 transition-opacity"
+                            <>
+                                <div className="relative flex items-center justify-center shrink-0">
+                                    <DonutChart
+                                        data={donutData}
+                                        size={180}
+                                        strokeWidth={20}
+                                        onSegmentHover={(segment) => setHoveredDevice(segment?.label ?? null)}
+                                        centerContent={
+                                            <AnimatePresence mode="wait">
+                                                <motion.div
+                                                    key={displayLabel}
+                                                    initial={{ opacity: 0, scale: 0.9 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.9 }}
+                                                    transition={{ duration: 0.2, ease: "circOut" }}
+                                                    className="flex flex-col items-center justify-center text-center"
+                                                >
+                                                    <p className="text-muted-foreground text-[10px] font-medium truncate max-w-[100px]">
+                                                        {displayLabel}
+                                                    </p>
+                                                    <p className="text-xl font-bold text-foreground">
+                                                        {displayValue.toLocaleString(isAr ? "ar-EG" : "en-US")}
+                                                    </p>
+                                                </motion.div>
+                                            </AnimatePresence>
+                                        }
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2 flex-1 w-full max-w-sm justify-center">
+                                    {donutData.map((segment, index) => (
+                                        <motion.div
+                                            key={segment.label}
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: 0.1 + index * 0.05, duration: 0.3 }}
+                                            className={cn(
+                                                "flex items-center gap-3 p-2 rounded-xl border transition-all duration-200 cursor-pointer",
+                                                hoveredDevice === segment.label 
+                                                    ? "bg-card border-primary/40 shadow-sm scale-[1.02]" 
+                                                    : "bg-muted/30 border-transparent hover:bg-muted/50 hover:border-border/50"
+                                            )}
+                                            onMouseEnter={() => setHoveredDevice(segment.label)}
+                                            onMouseLeave={() => setHoveredDevice(null)}
+                                        >
+                                            <div
+                                                className="h-3 w-3 shrink-0 rounded-full shadow-sm"
+                                                style={{ backgroundColor: segment.color }}
                                             />
-                                        ))}
-                                    </Pie>
-                                    <RechartsTooltip 
-                                        contentStyle={{ 
-                                            borderRadius: '16px', 
-                                            border: 'none', 
-                                            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
-                                            backgroundColor: 'hsl(var(--card))',
-                                            color: 'hsl(var(--foreground))',
-                                            fontWeight: 'bold'
-                                        }} 
-                                    />
-                                    <Legend
-                                        layout="vertical"
-                                        verticalAlign="middle"
-                                        align="right"
-                                        formatter={(value, entry: any) => {
-                                            const label = value === 'desktop' ? t.admin.analytics.desktop : value === 'mobile' ? t.admin.analytics.mobile : value === 'tablet' ? t.admin.analytics.tablet : t.admin.analytics.unknown;
-                                            return <span className={`text-xs font-bold text-foreground/70 ${isAr ? 'mr-3' : 'ml-3'}`}>{label} ({entry.payload.percentage || 0}%)</span>
-                                        }}
-                                        iconType="circle"
-                                        iconSize={8}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
+                                            <span className="text-sm font-medium text-foreground truncate flex-1">
+                                                {segment.label}
+                                            </span>
+                                            <span className="text-xs font-bold text-foreground bg-background px-2 py-1 rounded-md shadow-sm border border-border/50">
+                                                {segment.percentage}%
+                                            </span>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </>
                         )
                     })()}
                 </div>

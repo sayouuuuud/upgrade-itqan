@@ -19,6 +19,7 @@ export function StudentSupervisorDashboard({ name }: { name?: string }) {
   const { t } = useI18n()
   const admin = (t as any).admin as Record<string, string> | undefined
   const isAr = t.locale === "ar"
+  const sd = (t as any).supervisorDashboards as Record<string, string> | undefined
   const [data, setData] = useState<SupervisorDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -51,7 +52,7 @@ export function StudentSupervisorDashboard({ name }: { name?: string }) {
   if (data && (data as any).error) {
     return (
       <div className="flex flex-col items-center justify-center p-20 gap-4">
-        <div className="text-red-500 font-bold text-xl">حدث خطأ أثناء تحميل البيانات</div>
+        <div className="text-red-500 font-bold text-xl">{sd?.errorLoading || "حدث خطأ أثناء تحميل البيانات"}</div>
         <code className="bg-red-50 text-red-800 p-2 rounded text-sm">{(data as any).message}</code>
       </div>
     )
@@ -60,27 +61,27 @@ export function StudentSupervisorDashboard({ name }: { name?: string }) {
   if (!data) return null
 
   const { stats, latestRecitations } = data
-  const sd = stats.statusDistribution || {}
-  const pendingReview = (sd.pending || 0) + (sd.in_review || 0)
+  const statusDist = stats.statusDistribution || {}
+  const pendingReview = (statusDist.pending || 0) + (statusDist.in_review || 0)
 
   const statCards = [
     { label: t.admin.totalStudents, value: stats.totalStudents, icon: Users, color: "text-primary", bg: "bg-primary/10", href: "/admin/users" },
-    { label: "تسميعات تنتظر المراجعة", value: pendingReview, icon: Clock, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10", href: "/admin/recitations" },
+    { label: sd?.pendingRecitations || "تسميعات تنتظر المراجعة", value: pendingReview, icon: Clock, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10", href: "/admin/recitations" },
     { label: t.admin.todaysRecitations, value: stats.recitationsToday, icon: ClipboardList, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10", href: "/admin/recitations" },
-    { label: "تسميعات متقنة", value: sd.mastered || 0, icon: CheckCircle, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", href: "/admin/recitations" },
+    { label: sd?.masteredRecitations || "تسميعات متقنة", value: statusDist.mastered || 0, icon: CheckCircle, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", href: "/admin/recitations" },
   ]
 
   const quickLinks = [
-    { href: "/admin/users", label: t.admin.users, desc: "إدارة الطلاب ومتابعتهم", icon: Users },
-    { href: "/admin/recitations", label: t.admin.recitations, desc: "مراجعة تسميعات الطلاب", icon: ClipboardList },
-    { href: "/admin/conversations", label: t.admin.conversations, desc: "متابعة المحادثات", icon: MessagesSquare },
+    { href: "/admin/users", label: t.admin.users, desc: sd?.manageStudents || "إدارة الطلاب ومتابعتهم", icon: Users },
+    { href: "/admin/recitations", label: t.admin.recitations, desc: sd?.reviewRecitations || "مراجعة تسميعات الطلاب", icon: ClipboardList },
+    { href: "/admin/conversations", label: t.admin.conversations, desc: sd?.followConversations || "متابعة المحادثات", icon: MessagesSquare },
   ]
 
   return (
     <div className="space-y-6 pb-20 lg:pb-0 font-sans" dir={isAr ? "rtl" : "ltr"}>
       <div>
-        <h1 className="text-2xl font-black text-foreground">{name ? `مرحباً، ${name}` : "لوحة مشرف الطلاب"}</h1>
-        <p className="text-sm text-muted-foreground mt-1">متابعة الطلاب وتسميعاتهم — نظرة سريعة على ما يحتاج اهتمامك</p>
+        <h1 className="text-2xl font-black text-foreground">{name ? (sd?.studentWelcome || "مرحباً، {name}").replace("{name}", name) : (sd?.studentDashTitle || "لوحة مشرف الطلاب")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{sd?.studentDashDesc || "متابعة الطلاب وتسميعاتهم — نظرة سريعة على ما يحتاج اهتمامك"}</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

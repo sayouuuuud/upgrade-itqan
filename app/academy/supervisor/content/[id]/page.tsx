@@ -23,6 +23,7 @@ interface LessonDetail {
 export default function SupervisorContentDetailPage() {
   const { t } = useI18n();
   const academy = (t as any).academy as Record<string, string> | undefined
+  const sp = (t as any).supervisorPages?.contentDetails || {}
 
     const params = useParams()
     const searchParams = useSearchParams()
@@ -91,7 +92,7 @@ export default function SupervisorContentDetailPage() {
                     <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                     <Loader2 className="absolute inset-0 m-auto w-10 h-10 animate-spin text-primary opacity-50" />
                 </div>
-                <p className="text-xl font-black text-muted-foreground animate-pulse">{(t.addedTranslations_2026?.['جاري تحميل بيانات الدرس...'] || 'جاري تحميل بيانات الدرس...')}</p>
+                <p className="text-xl font-black text-muted-foreground animate-pulse">{sp.loadingLesson || 'جاري تحميل بيانات الدرس...'}</p>
             </div>
         )
     }
@@ -102,15 +103,15 @@ export default function SupervisorContentDetailPage() {
                 <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-border">
                     <AlertCircle className="w-10 h-10 text-muted-foreground opacity-50" />
                 </div>
-                <h3 className="text-2xl font-black text-foreground mb-2">{(t.addedTranslations_2026?.['الدرس غير موجود'] || 'الدرس غير موجود')}</h3>
-                <p className="text-muted-foreground font-bold mb-8">{(t.addedTranslations_2026?.['عذراً، لم نتمكن من العثور على الدرس المطلوب.'] || 'عذراً، لم نتمكن من العثور على الدرس المطلوب.')}</p>
+                <h3 className="text-2xl font-black text-foreground mb-2">{sp.lessonNotFound || 'الدرس غير موجود'}</h3>
+                <p className="text-muted-foreground font-bold mb-8">{sp.lessonNotFoundDesc || 'عذراً، لم نتمكن من العثور على الدرس المطلوب.'}</p>
                 <button 
                     onClick={() => router.back()} 
                     className="flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-2xl font-black shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all"
                 >
                     <ArrowRight className="w-5 h-5" />
-                    {(t.addedTranslations_2026?.['العودة لصندوق المحتوى'] || 'العودة لصندوق المحتوى')}
-                                    </button>
+                    {sp.backToInbox || 'العودة لصندوق المحتوى'}
+                </button>
             </div>
         )
     }
@@ -165,30 +166,30 @@ export default function SupervisorContentDetailPage() {
                         <div className="relative z-10">
                             <h3 className="text-xl font-black text-foreground mb-6 flex items-center gap-3">
                                 <PlayCircle className="w-6 h-6 text-primary" />
-                                {(t.addedTranslations_2026?.['استعراض المحتوى التعليمي'] || 'استعراض المحتوى التعليمي')}
-                                                            </h3>
+                                {sp.reviewContent || 'استعراض المحتوى التعليمي'}
+                            </h3>
                             
                             <div className="rounded-[24px] overflow-hidden border-2 border-white/10 shadow-inner bg-black/5 dark:bg-white/5">
                                 {lesson.content_url && lesson.type === 'video' && (
                                     <div className="aspect-video bg-black relative">
                                         <video controls className="w-full h-full object-contain outline-none" src={lesson.content_url}>
-                                            {(t.addedTranslations_2026?.['المتصفح لا يدعم تشغيل الفيديو'] || 'المتصفح لا يدعم تشغيل الفيديو')}
-                                                                                    </video>
+                                            {sp.browserNotSupportVideo || 'المتصفح لا يدعم تشغيل الفيديو'}
+                                        </video>
                                     </div>
                                 )}
                                 {lesson.content_url && lesson.type === 'audio' && (
                                     <div className="p-8 flex flex-col items-center justify-center bg-gradient-to-br from-purple-500/10 to-blue-500/10 min-h-[200px]">
                                         <Mic className="w-16 h-16 text-purple-500 mb-6 opacity-50" />
                                         <audio controls className="w-full max-w-md outline-none" src={lesson.content_url}>
-                                            {(t.addedTranslations_2026?.['المتصفح لا يدعم تشغيل الصوت'] || 'المتصفح لا يدعم تشغيل الصوت')}
-                                                                                    </audio>
+                                            {sp.browserNotSupportAudio || 'المتصفح لا يدعم تشغيل الصوت'}
+                                        </audio>
                                     </div>
                                 )}
                                 {!lesson.content_url && (
                                     <div className="aspect-video bg-muted/30 flex flex-col items-center justify-center text-center p-6">
                                         <FileText className="w-12 h-12 text-muted-foreground opacity-40 mb-4" />
-                                        <p className="text-muted-foreground font-bold text-lg">{(t.addedTranslations_2026?.['محتوى نصي فقط'] || 'محتوى نصي فقط')}</p>
-                                        <p className="text-sm text-muted-foreground/70 mt-1">{(t.addedTranslations_2026?.['لا يوجد ملف وسائط مرفق مع هذا الدرس'] || 'لا يوجد ملف وسائط مرفق مع هذا الدرس')}</p>
+                                        <p className="text-muted-foreground font-bold text-lg">{sp.textOnlyContent || 'محتوى نصي فقط'}</p>
+                                        <p className="text-sm text-muted-foreground/70 mt-1">{sp.noMediaAttached || 'لا يوجد ملف وسائط مرفق مع هذا الدرس'}</p>
                                     </div>
                                 )}
                             </div>
@@ -202,8 +203,8 @@ export default function SupervisorContentDetailPage() {
                             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
                                 <BookOpen className="w-5 h-5 text-primary" />
                             </div>
-                            {(t.addedTranslations_2026?.['الشرح التفصيلي للدرس'] || 'الشرح التفصيلي للدرس')}
-                                                    </h3>
+                            {sp.lessonDetailedDesc || 'الشرح التفصيلي للدرس'}
+                        </h3>
                         <div className="prose prose-sm dark:prose-invert max-w-none relative z-10">
                             {lesson.description ? (
                                 <p className="leading-loose text-muted-foreground font-medium text-base bg-background/50 p-6 rounded-3xl border border-white/5 shadow-inner whitespace-pre-wrap">
@@ -211,8 +212,8 @@ export default function SupervisorContentDetailPage() {
                                 </p>
                             ) : (
                                 <div className="flex items-center justify-center p-8 bg-muted/30 rounded-3xl border border-dashed border-border text-muted-foreground font-bold">
-                                    {(t.addedTranslations_2026?.['لا يوجد وصف مرفق مع هذا الدرس'] || 'لا يوجد وصف مرفق مع هذا الدرس')}
-                                                                        </div>
+                                    {sp.noDescAttached || 'لا يوجد وصف مرفق مع هذا الدرس'}
+                                </div>
                             )}
                         </div>
                     </div>
@@ -227,11 +228,11 @@ export default function SupervisorContentDetailPage() {
                         <div className="mb-6 pb-6 border-b border-white/10 dark:border-white/5">
                             <h3 className="font-black text-xl text-foreground flex items-center gap-3 mb-2">
                                 <ShieldCheck className="w-6 h-6 text-primary" />
-                                {(t.addedTranslations_2026?.['قرار الإشراف'] || 'قرار الإشراف')}
-                                                            </h3>
+                                {sp.supervisionDecision || 'قرار الإشراف'}
+                            </h3>
                             <p className="text-sm font-semibold text-muted-foreground">
-                                {(t.addedTranslations_2026?.['يرجى مراجعة محتوى الدرس بدقة قبل اتخاذ القرار بالاعتماد أو الرفض.'] || 'يرجى مراجعة محتوى الدرس بدقة قبل اتخاذ القرار بالاعتماد أو الرفض.')}
-                                                            </p>
+                                {sp.reviewInstruction || 'يرجى مراجعة محتوى الدرس بدقة قبل اتخاذ القرار بالاعتماد أو الرفض.'}
+                            </p>
                         </div>
 
                         {lesson.status === 'pending_review' ? (
@@ -242,16 +243,16 @@ export default function SupervisorContentDetailPage() {
                                     className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl transition-all shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0"
                                 >
                                     {actionLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-6 h-6" />}
-                                    {(t.addedTranslations_2026?.['اعتماد ونشر الدرس'] || 'اعتماد ونشر الدرس')}
-                                                                    </button>
+                                    {sp.approveAndPublish || 'اعتماد ونشر الدرس'}
+                                </button>
                                 <button
                                     onClick={() => setShowRejectModal(true)}
                                     disabled={actionLoading}
                                     className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white font-black rounded-2xl border border-rose-500/20 transition-all hover:shadow-lg hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0"
                                 >
                                     <XCircle className="w-6 h-6" />
-                                    {(t.addedTranslations_2026?.['رفض المحتوى'] || 'رفض المحتوى')}
-                                                                    </button>
+                                    {sp.rejectContent || 'رفض المحتوى'}
+                                </button>
                             </div>
                         ) : (
                             <div className="space-y-4">
@@ -260,14 +261,14 @@ export default function SupervisorContentDetailPage() {
                                         <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mb-3">
                                             <CheckCircle className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                                         </div>
-                                        <p className="font-black text-lg text-emerald-700 dark:text-emerald-400">{(t.addedTranslations_2026?.['الدرس معتمد مسبقاً'] || 'الدرس معتمد مسبقاً')}</p>
+                                        <p className="font-black text-lg text-emerald-700 dark:text-emerald-400">{sp.lessonAlreadyApproved || 'الدرس معتمد مسبقاً'}</p>
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-6 bg-rose-500/10 border border-rose-500/20 rounded-3xl">
                                         <div className="w-16 h-16 bg-rose-500/20 rounded-full flex items-center justify-center mb-3">
                                             <XCircle className="w-8 h-8 text-rose-600 dark:text-rose-400" />
                                         </div>
-                                        <p className="font-black text-lg text-rose-700 dark:text-rose-400">{(t.addedTranslations_2026?.['الدرس مرفوض مسبقاً'] || 'الدرس مرفوض مسبقاً')}</p>
+                                        <p className="font-black text-lg text-rose-700 dark:text-rose-400">{sp.lessonAlreadyRejected || 'الدرس مرفوض مسبقاً'}</p>
                                     </div>
                                 )}
                             </div>
@@ -278,8 +279,8 @@ export default function SupervisorContentDetailPage() {
                     {lesson.status === 'rejected' && lesson.rejection_reason && (
                         <div className="bg-rose-500/10 border border-rose-500/20 rounded-[32px] p-6 shadow-inner animate-in slide-in-from-top-4">
                             <h4 className="text-sm font-black uppercase text-rose-700 dark:text-rose-400 flex items-center gap-2 mb-3">
-                                <AlertCircle className="w-5 h-5" /> {(t.addedTranslations_2026?.['سبب الرفض'] || 'سبب الرفض')}
-                                                            </h4>
+                                <AlertCircle className="w-5 h-5" /> {sp.rejectReason || 'سبب الرفض'}
+                            </h4>
                             <p className="text-sm font-bold text-rose-800 dark:text-rose-300 leading-relaxed bg-white/40 dark:bg-black/20 p-4 rounded-2xl border border-rose-500/10">
                                 {lesson.rejection_reason}
                             </p>
@@ -291,8 +292,8 @@ export default function SupervisorContentDetailPage() {
                         <div className="bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[32px] p-6 shadow-lg shadow-black/5">
                             <h3 className="font-black text-lg text-foreground mb-4 flex items-center gap-2">
                                 <FileText className="w-5 h-5 text-primary" />
-                                {(t.addedTranslations_2026?.['المرفقات الإضافية'] || 'المرفقات الإضافية')}
-                                                            </h3>
+                                {sp.additionalAttachments || 'المرفقات الإضافية'}
+                            </h3>
                             <div className="space-y-3">
                                 {lesson.attachments.map((url, i) => (
                                     <a 
@@ -306,7 +307,7 @@ export default function SupervisorContentDetailPage() {
                                             <Download className="w-4 h-4 text-blue-500" />
                                         </div>
                                         <span className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
-                                            {(t.addedTranslations_2026?.['تحميل المرفق'] || 'تحميل المرفق')} {i + 1}
+                                            {sp.downloadAttachment || 'تحميل المرفق'} {i + 1}
                                         </span>
                                     </a>
                                 ))}
@@ -328,15 +329,15 @@ export default function SupervisorContentDetailPage() {
                                 <AlertCircle className="w-8 h-8 text-rose-500" />
                             </div>
                             
-                            <h3 className="text-2xl font-black text-foreground mb-2">{(t.addedTranslations_2026?.['توضيح سبب الرفض'] || 'توضيح سبب الرفض')}</h3>
+                            <h3 className="text-2xl font-black text-foreground mb-2">{sp.explainRejection || 'توضيح سبب الرفض'}</h3>
                             <p className="text-sm font-semibold text-muted-foreground mb-6">
-                                {(t.addedTranslations_2026?.['يرجى توضيح سبب رفض المحتوى بدقة ليتمكن الأستاذ من تدارك الأخطاء وتعديل الدرس.'] || 'يرجى توضيح سبب رفض المحتوى بدقة ليتمكن الأستاذ من تدارك الأخطاء وتعديل الدرس.')}
-                                                            </p>
+                                {sp.rejectionInstruction || 'يرجى توضيح سبب رفض المحتوى بدقة ليتمكن الأستاذ من تدارك الأخطاء وتعديل الدرس.'}
+                            </p>
                             
                             <textarea
                                 value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
-                                placeholder={(t.addedTranslations_2026?.['اكتب سبب الرفض هنا بوضوح...'] || 'اكتب سبب الرفض هنا بوضوح...')}
+                                placeholder={sp.rejectionPlaceholder || 'اكتب سبب الرفض هنا بوضوح...'}
                                 className="w-full p-5 bg-background border-2 border-border rounded-2xl text-sm font-bold text-foreground resize-none h-40 focus:outline-none focus:ring-4 focus:ring-rose-500/20 focus:border-rose-500 transition-all shadow-inner"
                                 required
                             />
@@ -346,15 +347,15 @@ export default function SupervisorContentDetailPage() {
                                     onClick={() => { setShowRejectModal(false); setRejectionReason('') }}
                                     className="flex-1 px-6 py-4 bg-muted text-foreground font-black rounded-2xl hover:bg-muted/80 transition-colors"
                                 >
-                                    {(t.addedTranslations_2026?.['تراجع وإلغاء'] || 'تراجع وإلغاء')}
-                                                                    </button>
+                                    {sp.cancelAndGoBack || 'تراجع وإلغاء'}
+                                </button>
                                 <button
                                     onClick={() => { handleAction('rejected'); setShowRejectModal(false) }}
                                     disabled={!rejectionReason.trim() || actionLoading}
                                     className="flex-1 px-6 py-4 bg-rose-600 text-white font-black rounded-2xl hover:bg-rose-700 transition-all disabled:opacity-50 shadow-lg shadow-rose-500/20 hover:shadow-xl hover:-translate-y-1 disabled:hover:translate-y-0"
                                 >
-                                    {(t.addedTranslations_2026?.['تأكيد الرفض'] || 'تأكيد الرفض')}
-                                                                    </button>
+                                    {sp.confirmRejectBtn || 'تأكيد الرفض'}
+                                </button>
                             </div>
                         </div>
                     </div>

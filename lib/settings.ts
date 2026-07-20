@@ -145,7 +145,7 @@ export async function getSmtpFromEmail(): Promise<string> {
         return settingsFrom
     }
 
-    return '"إتقان التعليمية" <itqaan69@gmail.com>' // New default fallback
+    return '"متقن التعليمية" <itqaan69@gmail.com>' // New default fallback
 }
 
 // Helper for App URL — used in invitation links etc.

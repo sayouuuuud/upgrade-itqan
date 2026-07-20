@@ -223,7 +223,7 @@ export default function AdminInvitationsPage() {
     { key: 'PENDING',   label: tr('معلقة', 'Pending'),  count: counts.PENDING },
     { key: 'ACCEPTED',  label: tr('مقبولة', 'Accepted'), count: counts.ACCEPTED },
     { key: 'EXPIRED',   label: tr('منتهية', 'Expired'), count: counts.EXPIRED },
-    { key: 'CANCELLED', label: 'ملغاة',  count: counts.CANCELLED },
+    { key: 'CANCELLED', label: tr('ملغاة', 'Cancelled'),  count: counts.CANCELLED },
   ]
 
   return (

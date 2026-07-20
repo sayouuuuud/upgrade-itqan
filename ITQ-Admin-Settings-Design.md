@@ -99,7 +99,7 @@
 | الحدث | النقاط الحالية | جديد |
 |------|---|---|
 | تسجيل تلاوة | 10 | [text input] |
-| تلاوة مقبولة بإتقان | 30 | [text input] |
+| تلاوة مقبولة بمتقن | 30 | [text input] |
 | إنهاء مهمة | 15 | [text input] |
 | حضور درس | 20 | [text input] |
 | يوم Streak جديد | 5 | [text input] |
@@ -313,7 +313,7 @@ id | key | value | type | last_modified_by | last_modified_at | description
 
 مثال:
 ```
-1 | academy_name | "إتقان الأكاديمية" | string | admin_1 | 2026-05-27 14:30 | اسم الأكاديمية
+1 | academy_name | "متقن الأكاديمية" | string | admin_1 | 2026-05-27 14:30 | اسم الأكاديمية
 2 | points_recitation | 10 | number | admin_1 | 2026-05-27 14:30 | نقاط تسجيل تلاوة
 ```
 

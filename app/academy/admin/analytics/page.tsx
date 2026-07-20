@@ -132,8 +132,40 @@ function CounterCard({ label, value, hint, icon: Icon, color }: CounterCardProps
 
 const COLORS = ['#3b82f6', '#ec4899', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#6366f1'];
 
+const nameTranslations: Record<string, { ar: string; en: string }> = {
+  'مدير الأكاديمية': { ar: 'مدير الأكاديمية', en: 'Academy Admin' },
+  'مدير المقرأة': { ar: 'مدير المقرأة', en: 'Maqraah Admin' },
+  'المدير العام': { ar: 'المدير العام', en: 'Super Admin' },
+  'مشرف': { ar: 'مشرف', en: 'Supervisor' },
+  'مدير': { ar: 'مدير', en: 'Admin' },
+  'طالب': { ar: 'طالب', en: 'Student' },
+  'معلم': { ar: 'معلم', en: 'Teacher' },
+  'مقرئ': { ar: 'مقرئ', en: 'Reader' },
+  'ولي أمر': { ar: 'ولي أمر', en: 'Parent' },
+}
+
+function formatLocation(val?: string | null, isAr?: boolean) {
+  if (!val || val === 'غير محدد' || val === 'unspecified' || val === 'Unspecified') {
+    return isAr ? 'غير محدد' : 'Unspecified'
+  }
+  return val
+}
+
+function formatUserName(name: string, isAr: boolean) {
+  if (nameTranslations[name]) {
+    return isAr ? nameTranslations[name].ar : nameTranslations[name].en
+  }
+  return name
+}
+
+function formatRole(role: string, t: any) {
+  const adminRoles = (t.adminRoles as Record<string, string>) || {}
+  return adminRoles[role] || role
+}
+
 export default function AdminAnalyticsPage() {
   const { t, locale } = useI18n()
+  const isAr = locale === 'ar'
   const a = t.academyAdmin
   const dateLocale = locale === 'ar' ? 'ar-SA' : 'en-US'
 
@@ -583,9 +615,9 @@ export default function AdminAnalyticsPage() {
                         style={{ opacity: intensity * 0.2 }} 
                       />
                       <div className="relative z-10">
-                        <p className="text-sm font-black truncate text-foreground group-hover:text-blue-500 transition-colors">{item.region}</p>
+                        <p className="text-sm font-black truncate text-foreground group-hover:text-blue-500 transition-colors">{formatLocation(item.region, isAr)}</p>
                         <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                          {item.country} • {item.city}
+                          {formatLocation(item.country, isAr)} • {formatLocation(item.city, isAr)}
                         </p>
                         <div className="mt-3 flex items-end justify-between">
                           <span className="text-2xl font-black text-foreground drop-shadow-sm">{item.count}</span>
@@ -638,9 +670,9 @@ export default function AdminAnalyticsPage() {
                 <div className="space-y-2">
                   {data.lastSignups.slice(0, 4).map((u) => (
                     <div key={u.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/40 transition-colors">
-                      <span className="font-bold text-sm truncate max-w-[150px] sm:max-w-[200px]">{u.name}</span>
+                      <span className="font-bold text-sm truncate max-w-[150px] sm:max-w-[200px]">{formatUserName(u.name, isAr)}</span>
                       <div className="flex items-center gap-3">
-                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">{u.role}</span>
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">{formatRole(u.role, t)}</span>
                         <span className="text-[11px] text-muted-foreground">
                           {new Date(u.created_at).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}
                         </span>

@@ -118,7 +118,7 @@ export default function AdminPointsPage() {
 
   const REASON_LABELS = useMemo<Record<string, string>>(() => ({
     recitation: tr('تسجيل تلاوة', 'Recitation Logged'),
-    mastered: tr('إتقان تلاوة', 'Recitation Mastered'),
+    mastered: tr('متقن تلاوة', 'Recitation Mastered'),
     task: tr('إنهاء مهمة', 'Task Completed'),
     lesson: tr('درس', 'Lesson'),
     streak: tr('يوم Streak', 'Streak Day'),
@@ -329,11 +329,10 @@ export default function AdminPointsPage() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
-                tab === t.key
+              className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${tab === t.key
                   ? 'bg-blue-600 text-white'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
+                }`}
             >
               <t.icon className="w-4 h-4" />
               {t.label}

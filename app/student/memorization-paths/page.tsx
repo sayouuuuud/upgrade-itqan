@@ -86,7 +86,7 @@ export default function StudentMemorizationPathsPage() {
         <div className="relative z-10 space-y-4 max-w-2xl text-center md:text-start mx-auto md:mx-0">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm mx-auto md:mx-0">
             <BookOpen className="w-4 h-4 text-emerald-200" />
-            <span className="text-emerald-50">{t.memorizationPathsPage.badgeTitle}</span>
+            <span className="text-emerald-50">{t.memorizationPathsPage?.badgeTitle}</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
             {isAr ? (
@@ -100,7 +100,7 @@ export default function StudentMemorizationPathsPage() {
             )}
           </h1>
           <p className="text-emerald-100/90 text-base sm:text-lg font-medium leading-relaxed max-w-xl mx-auto md:mx-0">
-            {t.memorizationPathsPage.description}
+            {t.memorizationPathsPage?.description}
           </p>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function StudentMemorizationPathsPage() {
             <Lock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
           <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
-            {t.memorizationPathsPage.migrationMissing}
+            {t.memorizationPathsPage?.migrationMissing}
           </p>
         </div>
       )}
@@ -123,13 +123,13 @@ export default function StudentMemorizationPathsPage() {
               value="enrolled" 
               className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl px-6 py-2.5 font-bold transition-all"
             >
-              {t.memorizationPathsPage.tabs.myPaths.replace('{count}', formatDigits(enrolled.length))}
+              {t.memorizationPathsPage?.tabs.myPaths.replace('{count}', formatDigits(enrolled.length))}
             </TabsTrigger>
             <TabsTrigger 
               value="browse"
               className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl px-6 py-2.5 font-bold transition-all"
             >
-              {t.memorizationPathsPage.tabs.browse.replace('{count}', formatDigits(paths.length))}
+              {t.memorizationPathsPage?.tabs.browse.replace('{count}', formatDigits(paths.length))}
             </TabsTrigger>
           </TabsList>
 
@@ -139,7 +139,7 @@ export default function StudentMemorizationPathsPage() {
               <Input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder={t.memorizationPathsPage.tabs.searchPlaceholder}
+                placeholder={t.memorizationPathsPage?.tabs.searchPlaceholder}
                 className={cn("bg-muted/50 border-transparent focus:bg-background focus:border-emerald-500 rounded-xl h-10 transition-all", isAr ? "pe-10" : "ps-10")}
               />
             </div>
@@ -154,9 +154,9 @@ export default function StudentMemorizationPathsPage() {
               <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
                 <BookOpen className="w-10 h-10 text-emerald-600/50 dark:text-emerald-400/50" />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">{t.memorizationPathsPage.emptyEnrolledTitle}</h3>
+              <h3 className="text-xl font-bold text-foreground mb-2">{t.memorizationPathsPage?.emptyEnrolledTitle}</h3>
               <p className="text-muted-foreground max-w-sm mx-auto">
-                {t.memorizationPathsPage.emptyEnrolledDesc}
+                {t.memorizationPathsPage?.emptyEnrolledDesc}
               </p>
             </div>
           ) : (
@@ -173,7 +173,7 @@ export default function StudentMemorizationPathsPage() {
             <Input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder={t.memorizationPathsPage.tabs.searchPlaceholder}
+              placeholder={t.memorizationPathsPage?.tabs.searchPlaceholder}
               className={cn("bg-card border-border focus:border-emerald-500 rounded-xl h-11 transition-all shadow-sm", isAr ? "pe-10" : "ps-10")}
             />
           </div>
@@ -185,7 +185,7 @@ export default function StudentMemorizationPathsPage() {
               <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-5">
                 <Search className="w-10 h-10 text-muted-foreground/40" />
               </div>
-              <p className="text-lg font-bold text-foreground">{t.memorizationPathsPage.emptyBrowseTitle}</p>
+              <p className="text-lg font-bold text-foreground">{t.memorizationPathsPage?.emptyBrowseTitle}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-start *:w-full">
@@ -237,11 +237,11 @@ function EnrolledCard({ path, formatDigits, t, locale }: { path: Path, formatDig
         </div>
         {e?.status === "completed" ? (
           <div className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-emerald-200 dark:border-emerald-500/20">
-            <CheckCircle2 className="w-3.5 h-3.5" /> {t.memorizationPathsPage.enrolledStatusCompleted}
+            <CheckCircle2 className="w-3.5 h-3.5" /> {t.memorizationPathsPage?.enrolledStatusCompleted}
           </div>
         ) : e?.status === "paused" ? (
           <div className="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-amber-200 dark:border-amber-500/20">
-            <Pause className="w-3.5 h-3.5" /> {t.memorizationPathsPage.enrolledStatusPaused}
+            <Pause className="w-3.5 h-3.5" /> {t.memorizationPathsPage?.enrolledStatusPaused}
           </div>
         ) : null}
       </div>
@@ -255,17 +255,17 @@ function EnrolledCard({ path, formatDigits, t, locale }: { path: Path, formatDig
 
       <div className="flex flex-wrap gap-2 mb-6">
         <span className="px-3 py-1 bg-muted rounded-lg text-xs font-bold text-muted-foreground border border-border/50">
-          {t.memorizationPathsPage.types[path.unit_type] || path.unit_type}
+          {t.memorizationPathsPage?.types[path.unit_type] || path.unit_type}
         </span>
         <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg text-xs font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
-          {t.memorizationPathsPage.levels[path.level] || path.level}
+          {t.memorizationPathsPage?.levels[path.level] || path.level}
         </span>
       </div>
 
       <div className="mt-auto pt-4 border-t border-border/50 space-y-3">
         <div className="flex justify-between items-end">
           <div>
-            <span className="block text-xs font-bold text-muted-foreground mb-1">{t.memorizationPathsPage.progressLabel}</span>
+            <span className="block text-xs font-bold text-muted-foreground mb-1">{t.memorizationPathsPage?.progressLabel}</span>
             <span className="text-2xl font-black text-foreground leading-none">{formatDigits(completed)}<span className="text-base text-muted-foreground font-bold">/{formatDigits(total)}</span></span>
           </div>
           <span className="text-emerald-600 dark:text-emerald-400 font-black bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-md text-sm">{formatDigits(pct)}%</span>
@@ -289,7 +289,7 @@ function EnrolledCard({ path, formatDigits, t, locale }: { path: Path, formatDig
             : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:shadow-emerald-600/30"
         )}
       >
-        {pct === 100 ? t.memorizationPathsPage.reviewBtn : pct > 0 ? t.memorizationPathsPage.continueBtn : t.memorizationPathsPage.startBtn}
+        {pct === 100 ? t.memorizationPathsPage?.reviewBtn : pct > 0 ? t.memorizationPathsPage?.continueBtn : t.memorizationPathsPage?.startBtn}
         <ChevronRight className="w-5 h-5 rtl:rotate-180" />
       </Link>
     </div>
@@ -315,13 +315,13 @@ function BrowseCard({ path, formatDigits, t, locale }: { path: Path, formatDigit
 
       <div className="flex flex-wrap gap-2 mb-4">
         <span className="px-2.5 py-1 bg-muted rounded-md text-xs font-bold text-muted-foreground">
-          {t.memorizationPathsPage.types[path.unit_type] || path.unit_type}
+          {t.memorizationPathsPage?.types[path.unit_type] || path.unit_type}
         </span>
         <span className="px-2.5 py-1 bg-muted rounded-md text-xs font-bold text-muted-foreground">
-          {t.memorizationPathsPage.unitsCount.replace('{count}', formatDigits(path.total_units))}
+          {t.memorizationPathsPage?.unitsCount.replace('{count}', formatDigits(path.total_units))}
         </span>
         <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 rounded-md text-xs font-bold text-emerald-700 dark:text-emerald-400">
-          {t.memorizationPathsPage.levels[path.level] || path.level}
+          {t.memorizationPathsPage?.levels[path.level] || path.level}
         </span>
       </div>
 
@@ -334,7 +334,7 @@ function BrowseCard({ path, formatDigits, t, locale }: { path: Path, formatDigit
       {path.estimated_days && (
         <div className="mt-auto mb-5 flex items-center gap-2 text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 rounded-lg border border-amber-100 dark:border-amber-500/20 w-fit">
           <div className="w-2 h-2 rounded-full bg-amber-500" />
-          {t.memorizationPathsPage.estimatedDays.replace('{days}', formatDigits(path.estimated_days))}
+          {t.memorizationPathsPage?.estimatedDays.replace('{days}', formatDigits(path.estimated_days))}
         </div>
       )}
 
@@ -342,7 +342,7 @@ function BrowseCard({ path, formatDigits, t, locale }: { path: Path, formatDigit
         href={`/student/memorization-paths/${path.id}`}
         className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold bg-muted/50 hover:bg-emerald-600 text-foreground hover:text-white transition-all duration-300 border border-border hover:border-transparent mt-auto"
       >
-        {path.enrollment ? t.memorizationPathsPage.continueBtn : t.memorizationPathsPage.startBtn}
+        {path.enrollment ? t.memorizationPathsPage?.continueBtn : t.memorizationPathsPage?.startBtn}
         <ChevronRight className="w-5 h-5 rtl:rotate-180" />
       </Link>
     </div>

@@ -108,7 +108,9 @@ export default function SupervisorTasksPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-2xl font-bold text-card-foreground">{task.count}</p>
-                  <p className="truncate text-sm text-muted-foreground">{task.label}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {(t as any).supervisorDashboards?.[`task_${task.key}`] || task.label}
+                  </p>
                 </div>
                 <Chevron className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
               </Link>
