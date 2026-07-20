@@ -63,7 +63,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir={locale === "ar" ? "rtl" : "ltr"}
-      className={`${cairo.variable} ${amiri.variable}`}
+      className={`${cairo.variable} ${amiri.variable} bg-background`}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased overflow-x-hidden" suppressHydrationWarning>
