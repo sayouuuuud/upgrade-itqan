@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { docsGroups, docsGuides, getGuide, type DocsGuide, type DocsLocale } from '@/lib/docs/content'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 const iconMap = {
   start: BookOpen,
@@ -96,7 +97,7 @@ function SearchBox({ locale, compact = false }: { locale: DocsLocale; compact?: 
 
 function Header({ locale, onLocaleChange, onMenu }: { locale: DocsLocale; onLocaleChange: (locale: DocsLocale) => void; onMenu?: () => void }) {
   const t = ui[locale]
-  return <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur"><div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 md:px-6"><Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenu} aria-label={t.menu}><Menu /></Button><Link href={`/docs?lang=${locale}`} className="flex items-center gap-3 font-heading text-lg font-bold"><span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground"><BookOpen className="size-5" /></span><span>{t.home}</span></Link><div className="ms-auto hidden w-full max-w-sm md:block"><SearchBox locale={locale} compact /></div><LanguageButton locale={locale} onChange={onLocaleChange} /><Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><Link href="/">{t.back}{locale === 'ar' ? <ArrowLeft data-icon="inline-end" /> : <ArrowRight data-icon="inline-end" />}</Link></Button></div></header>
+  return <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur"><div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 md:px-6"><Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenu} aria-label={t.menu}><Menu /></Button><Link href={`/docs?lang=${locale}`} className="flex items-center gap-3 font-heading text-lg font-bold"><span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground"><BookOpen className="size-5" /></span><span>{t.home}</span></Link><div className="ms-auto hidden w-full max-w-sm md:block"><SearchBox locale={locale} compact /></div><LanguageButton locale={locale} onChange={onLocaleChange} /><ThemeToggle className="border-border text-foreground hover:bg-muted" /><Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><Link href="/">{t.back}{locale === 'ar' ? <ArrowLeft data-icon="inline-end" /> : <ArrowRight data-icon="inline-end" />}</Link></Button></div></header>
 }
 
 function GuideCard({ guide, locale }: { guide: DocsGuide; locale: DocsLocale }) {
