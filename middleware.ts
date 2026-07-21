@@ -103,8 +103,8 @@ export default async function middleware(req: NextRequest) {
     }
     // ── End Maintenance Mode ─────────────────────────────────────────────────
 
-    // Allow public paths
-    if (publicPaths.includes(pathname)) {
+    // Allow public paths, including every help-center article.
+    if (publicPaths.includes(pathname) || pathname === "/docs" || pathname.startsWith("/docs/")) {
         return NextResponse.next()
     }
 
