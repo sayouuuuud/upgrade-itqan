@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
@@ -26,9 +26,22 @@ export default function HeaderNavClient({
   const isAr = locale === "ar"
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [isNavVisible, setIsNavVisible] = useState(true)
+  const lastScrollY = useRef(0)
 
   useEffect(() => {
     setMounted(true)
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const scrollingDown = currentScrollY > lastScrollY.current
+
+      setIsNavVisible(currentScrollY < 24 || !scrollingDown)
+      lastScrollY.current = currentScrollY
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
   const isDark = mounted && theme === "dark"
@@ -47,11 +60,14 @@ export default function HeaderNavClient({
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="fixed top-4 left-0 w-full z-50 px-4 sm:px-8 lg:px-12"
+      animate={{
+        opacity: isNavVisible || isMenuOpen ? 1 : 0,
+        y: isNavVisible || isMenuOpen ? 0 : -96,
+      }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="fixed top-3 left-0 w-full z-50 px-4 sm:px-8 lg:px-12"
     >
-      <div className="w-full mx-auto h-[80px] px-5 sm:px-7 lg:px-8 flex items-center justify-between gap-6 bg-hp-parchment/96 dark:bg-hp-dark/96 backdrop-blur-md border border-hp-ink/12 dark:border-hp-cream/12 rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.08)]">
+      <div className="w-full mx-auto h-[72px] px-5 sm:px-7 lg:px-8 flex items-center justify-between gap-6 bg-hp-parchment/58 dark:bg-hp-dark/55 backdrop-blur-xl supports-[backdrop-filter]:bg-hp-parchment/45 supports-[backdrop-filter]:dark:bg-hp-dark/45 border border-hp-ink/10 dark:border-hp-cream/15 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.12)]">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0 hover:opacity-80 transition-opacity z-10">
           <Image
@@ -60,7 +76,7 @@ export default function HeaderNavClient({
             width={160}
             height={64}
             priority
-            className="h-12 w-auto object-contain"
+            className="h-10 w-auto object-contain"
           />
         </Link>
 
@@ -159,7 +175,7 @@ export default function HeaderNavClient({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="lg:hidden absolute top-[calc(100%+8px)] left-0 right-0 bg-hp-parchment/96 dark:bg-hp-dark/96 backdrop-blur-md border border-hp-ink/12 dark:border-hp-cream/12 rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.08)] overflow-hidden"
+            className="lg:hidden absolute top-[calc(100%+8px)] left-0 right-0 bg-hp-parchment/70 dark:bg-hp-dark/65 backdrop-blur-xl border border-hp-ink/10 dark:border-hp-cream/15 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] overflow-hidden"
           >
             <div className="px-4 sm:px-6 py-4 space-y-3">
               {navItems.map((item) => (

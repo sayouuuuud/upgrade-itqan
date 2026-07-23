@@ -739,16 +739,18 @@ export default function Home() {
       </section>}
 
       {/* ============ JOURNEY ============ */}
-      <section id="journey" className="relative py-32 md:py-40 bg-hp-card dark:bg-hp-dark-3 border-y border-hp-navy/10 dark:border-hp-gold/15 overflow-hidden transition-colors duration-500">
-        <div className="container mx-auto px-6">
+      <section id="journey" className="relative py-32 md:py-40 bg-hp-navy text-hp-parchment overflow-hidden transition-colors duration-500">
+        <TessellatedBg className="absolute inset-0 size-full" color="var(--hp-gold)" opacity={0.04} id="journey-gold" />
+        <div className="absolute inset-0 bg-gradient-to-b from-hp-navy via-hp-navy to-hp-navy-deep" />
+        <div className="container mx-auto px-6 relative">
           <Reveal>
             <div className="text-center mb-20 max-w-2xl mx-auto">
               <span className="text-xs tracking-[0.35em] text-hp-bronze dark:text-hp-gold uppercase mb-4 block">{c.journeyEyebrow}</span>
               <OrnamentDivider className="w-48 h-8 mx-auto mb-6 text-hp-bronze dark:text-hp-gold" />
-              <h2 className="text-5xl md:text-6xl font-bold text-hp-navy dark:text-hp-cream leading-tight mb-6" style={{ fontFamily: "var(--font-heading)" }}>
+              <h2 className="text-5xl md:text-6xl font-bold text-hp-parchment leading-tight mb-6" style={{ fontFamily: "var(--font-heading)" }}>
                 {c.journeyTitle}
               </h2>
-              <p className="text-lg text-hp-ink/65 dark:text-hp-cream/65">
+              <p className="text-lg text-hp-parchment/70">
                 {c.journeySubtitle}
               </p>
             </div>
