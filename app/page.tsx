@@ -350,7 +350,7 @@ export default function Home() {
       <HomepageHeader />
 
       {/* ============ HERO ============ */}
-      <section ref={heroRef} className="relative min-h-[92svh] flex items-center pt-28 pb-12 overflow-hidden">
+      <section ref={heroRef} className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           {/* Ottoman carpet pattern — pure CSS, static opacity. */}
           <div
@@ -370,32 +370,6 @@ export default function Home() {
             transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
             className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60vw] h-[60vw] rounded-full blur-[140px] bg-hp-bronze/15 dark:bg-hp-gold/10"
           />
-
-          {/* Blue academy objects — quiet line-art that breaks up the dark field */}
-          <motion.div
-            animate={{ y: [0, -10, 0], rotate: [-7, -4, -7] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute left-[5%] top-[31%] opacity-[0.16] dark:opacity-[0.22]"
-            style={{ color: "color-mix(in srgb, var(--hp-navy) 40%, #64a9e8)" }}
-          >
-            <BookOpen className="size-32 md:size-44" strokeWidth={0.65} />
-          </motion.div>
-          <motion.div
-            animate={{ y: [0, 9, 0], rotate: [8, 5, 8] }}
-            transition={{ duration: 9.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="absolute right-[7%] top-[46%] opacity-[0.14] dark:opacity-[0.2]"
-            style={{ color: "color-mix(in srgb, var(--hp-navy) 35%, #64a9e8)" }}
-          >
-            <GraduationCap className="size-28 md:size-40" strokeWidth={0.65} />
-          </motion.div>
-          <motion.div
-            animate={{ y: [0, -7, 0], rotate: [-5, -2, -5] }}
-            transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            className="absolute bottom-[9%] right-[21%] hidden md:block opacity-[0.11] dark:opacity-[0.17]"
-            style={{ color: "color-mix(in srgb, var(--hp-navy) 45%, #64a9e8)" }}
-          >
-            <ScrollText className="size-24" strokeWidth={0.6} />
-          </motion.div>
 
           {/* Large rotating eight-stars */}
           <motion.div
@@ -482,9 +456,9 @@ export default function Home() {
         </div>
 
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-6 relative z-10">
-          <div className="max-w-5xl mx-auto text-center">
+          <div className="max-w-5xl mx-auto text-center pt-4 md:pt-8">
             <Reveal delay={0} y={20}>
-              <div className="inline-flex items-center gap-4 mb-9 md:mb-11">
+              <div className="inline-flex items-center gap-4 mb-16 md:mb-20">
                 <div className="h-px w-12 bg-hp-bronze" />
                 <span className="text-lg md:text-2xl tracking-[0.15em] text-hp-bronze font-semibold">
                   {c.bismillah}
@@ -495,7 +469,7 @@ export default function Home() {
 
             <Reveal delay={0.15}>
               <h1
-                className="text-[17vw] sm:text-[13vw] md:text-[8.5rem] lg:text-[10.5rem] font-normal leading-[0.9] tracking-tight text-hp-navy dark:text-hp-cream mb-7 md:mb-9"
+                className="text-[17vw] sm:text-[13vw] md:text-[10rem] lg:text-[13rem] font-normal leading-[0.9] tracking-tight text-hp-navy dark:text-hp-cream mb-10 md:mb-14"
                 style={{ fontFamily: "'BIXIE', serif" }}
               >
                 {c.heroTitle}
@@ -503,7 +477,7 @@ export default function Home() {
             </Reveal>
 
             <Reveal delay={0.28}>
-              <div className="flex items-center justify-center gap-5 mb-6 md:mb-7" aria-hidden>
+              <div className="flex items-center justify-center gap-5 mb-10 md:mb-12" aria-hidden>
                 <div className="h-px w-14 md:w-20 bg-hp-bronze/50 dark:bg-hp-gold/40" />
                 <span className="text-xs tracking-[0.5em] text-hp-bronze dark:text-hp-gold">٭</span>
                 <div className="h-px w-14 md:w-20 bg-hp-bronze/50 dark:bg-hp-gold/40" />
@@ -512,7 +486,7 @@ export default function Home() {
 
             <Reveal delay={0.38}>
               <h2
-                className="text-[7vw] sm:text-[5vw] md:text-4xl lg:text-5xl font-light text-hp-bronze dark:text-hp-gold mb-7 md:mb-8"
+                className="text-[7vw] sm:text-[5vw] md:text-4xl lg:text-5xl font-light text-hp-bronze dark:text-hp-gold mb-12 md:mb-14"
                 style={{ fontFamily: "var(--font-cairo), sans-serif" }}
               >
                 {c.heroSubtitle}
@@ -520,17 +494,17 @@ export default function Home() {
             </Reveal>
 
             <Reveal delay={0.5}>
-              <OrnamentDivider className="w-64 h-8 mx-auto mb-6 text-hp-bronze dark:text-hp-gold" />
+              <OrnamentDivider className="w-72 h-10 mx-auto mb-10 text-hp-bronze dark:text-hp-gold" />
             </Reveal>
 
             <Reveal delay={0.6}>
-              <p className="text-base md:text-lg text-hp-ink/70 dark:text-hp-cream/70 leading-relaxed max-w-2xl mx-auto mb-8 px-4 whitespace-pre-line">
+              <p className="text-base md:text-lg text-hp-ink/70 dark:text-hp-cream/70 leading-loose max-w-2xl mx-auto mb-14 px-4 whitespace-pre-line">
                 {c.heroDescription}
               </p>
             </Reveal>
 
             <Reveal delay={0.75}>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
                 <Link
                   href={c.ctaPrimaryLink}
                   className="group relative h-14 px-8 inline-flex items-center gap-3 bg-hp-navy text-hp-parchment dark:bg-hp-gold dark:text-hp-dark rounded-full overflow-hidden transition-all duration-500 hover:gap-5 shadow-lg shadow-hp-navy/20 dark:shadow-hp-gold/20 hover:shadow-2xl"
@@ -567,7 +541,7 @@ export default function Home() {
             <motion.div
               animate={{ y: [0, 12, 0] }}
               transition={{ duration: 2.5, repeat: Infinity }}
-              className="mt-9 text-hp-ink/40 dark:text-hp-cream/40 inline-flex flex-col items-center gap-2"
+              className="mt-16 text-hp-ink/40 dark:text-hp-cream/40 inline-flex flex-col items-center gap-2"
             >
               <span className="text-xs tracking-[0.3em]">{c.scrollText}</span>
               <ChevronDown className="w-4 h-4" />
