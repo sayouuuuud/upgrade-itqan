@@ -16,7 +16,6 @@ import {
   Trophy,
 } from 'lucide-react'
 import { AcademyInsights } from '@/components/admin/analytics/academy-insights'
-import { EnrollmentTrendChart } from '@/components/admin/analytics/enrollment-trend-chart'
 import { StatsGridSkeleton, StatsMiniGridSkeleton, ChartSkeleton } from "@/components/admin/skeletons"
 
 const fetcher = async (url: string) => {
@@ -227,16 +226,10 @@ export function DashboardAcademy() {
         })}
       </div>
 
-      {/* Enrollment trend chart (last 7 days) */}
-      <EnrollmentTrendChart data={stats.enrollment_trend} />
-
-      {/* Academy insights: community composition + enrollment pulse */}
+      {/* Academy insights: community composition */}
       <AcademyInsights
         totalStudents={stats.total_students}
         totalTeachers={stats.total_teachers}
-        enrollmentsToday={stats.enrollments_today}
-        enrollmentsWeek={stats.enrollments_week}
-        activeEnrollments={stats.active_enrollments}
       />
 
       {/* Engagement & Activity Banner */}

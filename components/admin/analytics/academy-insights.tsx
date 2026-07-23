@@ -1,41 +1,22 @@
 "use client"
 
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, Cell,
-} from "recharts"
 import { useState } from "react"
 import { DonutChart } from "@/components/ui/donut-chart"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
-import { Users, Activity } from "lucide-react"
+import { Users } from "lucide-react"
 import { useI18n } from "@/lib/i18n/context"
 
 interface AcademyInsightsProps {
   totalStudents: number
   totalTeachers: number
-  enrollmentsToday: number
-  enrollmentsWeek: number
-  activeEnrollments: number
-}
-
-const tooltipStyle = {
-  borderRadius: "16px",
-  border: "none",
-  boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)",
-  backgroundColor: "hsl(var(--card))",
-  color: "hsl(var(--foreground))",
-  fontWeight: "bold" as const,
 }
 
 export function AcademyInsights({
   totalStudents,
   totalTeachers,
-  enrollmentsToday,
-  enrollmentsWeek,
-  activeEnrollments,
 }: AcademyInsightsProps) {
   const { t } = useI18n()
-  const academy = (t as any).academy as Record<string, string> | undefined
   const isAr = t.locale === "ar"
   const nf = (n: number) => n.toLocaleString(isAr ? "ar-EG" : "en-US")
   const [hoveredRole, setHoveredRole] = useState<string | null>(null)
@@ -51,15 +32,8 @@ export function AcademyInsights({
   }))
   const ratio = totalTeachers > 0 ? Math.round(totalStudents / totalTeachers) : 0
 
-  const pulse = [
-    { name: isAr ? "اليوم" : "Today", value: enrollmentsToday },
-    { name: isAr ? "هذا الأسبوع" : "This week", value: enrollmentsWeek },
-    { name: isAr ? "نشطة" : "Active", value: activeEnrollments },
-  ]
-  const pulseMax = Math.max(...pulse.map((d) => d.value), 1)
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="w-full">
       {/* Community composition */}
       <div className="bg-card rounded-xl border border-border shadow-sm p-6">
         <div className="flex items-center gap-2 mb-4 text-foreground">
@@ -80,7 +54,6 @@ export function AcademyInsights({
           const activeSegment = donutData.find(s => s.label === hoveredRole)
           const displayValue = activeSegment?.value ?? compTotal
           const displayLabel = activeSegment?.label ?? (isAr ? "المجتمع" : "Community")
-          const displayPercentage = activeSegment ? activeSegment.percentage : 100
 
           return (
             <div className="flex flex-col md:flex-row items-center gap-6 justify-center mt-4 h-full min-h-[250px]">
@@ -151,32 +124,6 @@ export function AcademyInsights({
             {isAr ? `لكل مدرّس ~${nf(ratio)} طالب` : `~${nf(ratio)} students per teacher`}
           </p>
         )}
-      </div>
-
-      {/* Enrollment pulse */}
-      <div className="bg-card rounded-xl border border-border shadow-sm p-6">
-        <div className="flex items-center gap-2 mb-4 text-foreground">
-          <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
-            <Activity className="h-5 w-5" />
-          </div>
-          <h3 className="font-bold">{isAr ? "نبض التسجيلات" : "Enrollment pulse"}</h3>
-        </div>
-
-        <div className="h-[250px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={pulse} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barCategoryGap="30%">
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} reversed={isAr} />
-              <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} allowDecimals={false} domain={[0, pulseMax]} orientation={isAr ? "right" : "left"} />
-              <RechartsTooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }} formatter={(v: any) => nf(Number(v))} />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={64}>
-                {pulse.map((entry, index) => (
-                  <Cell key={entry.name} fill={["#f59e0b", "#3b82f6", "#10b981"][index % 3]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
       </div>
     </div>
   )
