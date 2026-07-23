@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import useSWR from 'swr'
 import { useI18n } from '@/lib/i18n/context'
 import {
   BookOpen,
@@ -13,10 +13,17 @@ import {
   TrendingUp,
   ClipboardList,
   Sparkles,
+  Trophy,
 } from 'lucide-react'
 import { AcademyInsights } from '@/components/admin/analytics/academy-insights'
+import { EnrollmentTrendChart } from '@/components/admin/analytics/enrollment-trend-chart'
 import { StatsGridSkeleton, StatsMiniGridSkeleton, ChartSkeleton } from "@/components/admin/skeletons"
-import { Skeleton } from "@/components/ui/skeleton"
+
+const fetcher = async (url: string) => {
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(await response.text())
+  return response.json()
+}
 
 interface AcademyStats {
   total_students: number
@@ -41,6 +48,10 @@ interface AcademyStats {
     avatar_url: string | null
     total_points: number
   }>
+  enrollment_trend: Array<{
+    date: string
+    count: number
+  }>
 }
 
 export function DashboardAcademy() {
@@ -48,46 +59,16 @@ export function DashboardAcademy() {
   const a = t.academyAdmin
   const dateLocale = locale === 'ar' ? 'ar-SA' : 'en-US'
 
-  const [stats, setStats] = useState<AcademyStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: stats, error, isLoading } = useSWR<AcademyStats>(
+    '/api/academy/admin/stats',
+    fetcher,
+  )
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const statsRes = await fetch('/api/academy/admin/stats')
-
-        if (statsRes.ok) {
-          setStats(await statsRes.json())
-        } else {
-          setError(await statsRes.text())
-        }
-      } catch (err) {
-        console.error('[academy-admin] load error:', err)
-        setError(String(err))
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6 pb-20 lg:pb-0 font-sans">
-        {/* Title */}
-        <div className="flex items-center gap-3 mb-6">
-          <Skeleton className="w-12 h-12 rounded-xl" />
-          <Skeleton className="h-8 w-60" />
-        </div>
-
-        {/* Quick Stats Summary */}
         <StatsGridSkeleton count={4} />
-
-        {/* Stats Grid */}
         <StatsMiniGridSkeleton count={5} />
-
-        {/* Views Chart */}
         <ChartSkeleton />
       </div>
     )
@@ -103,13 +84,56 @@ export function DashboardAcademy() {
           {a.dashRetryHint}
         </div>
         {error && (
-          <code className="bg-red-50 text-red-800 p-2 rounded text-sm">{error}</code>
+          <code className="rounded bg-destructive/10 p-2 text-sm text-destructive">
+            {error.message}
+          </code>
         )}
       </div>
     )
   }
 
   const fmt = (num: number) => num.toLocaleString(dateLocale)
+
+  const completionRate =
+    stats.active_enrollments + stats.certificates_issued > 0
+      ? Math.round(
+          (stats.certificates_issued /
+            (stats.active_enrollments + stats.certificates_issued)) *
+            100,
+        )
+      : 0
+
+  // Quick summary cards (academy-focused, replacing the removed traffic metrics)
+  const summaryCards = [
+    {
+      value: fmt(stats.total_students + stats.total_teachers),
+      label: a.dashTotalMembers,
+      icon: Users,
+      iconBg: 'bg-blue-500/10 border-blue-500/20',
+      iconColor: 'text-blue-600 dark:text-blue-400',
+    },
+    {
+      value: fmt(stats.active_enrollments),
+      label: a.dashActiveEnrollments,
+      icon: BookOpen,
+      iconBg: 'bg-purple-500/10 border-purple-500/20',
+      iconColor: 'text-purple-600 dark:text-purple-400',
+    },
+    {
+      value: fmt(stats.certificates_issued),
+      label: a.dashCertificates,
+      icon: Award,
+      iconBg: 'bg-emerald-500/10 border-emerald-500/20',
+      iconColor: 'text-emerald-600 dark:text-emerald-400',
+    },
+    {
+      value: fmt(stats.enrollments_today),
+      label: a.dashTodaysEnrollments,
+      icon: ClipboardList,
+      iconBg: 'bg-amber-500/10 border-amber-500/20',
+      iconColor: 'text-amber-600 dark:text-amber-400',
+    },
+  ]
 
   // Stats grid cards
   const statCards = [
@@ -149,73 +173,31 @@ export function DashboardAcademy() {
 
   return (
     <div className="space-y-6 pb-20 lg:pb-0 font-sans">
-      {/* Title */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 sm:p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
-          <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          {a.dashAcademyDashboard}
-        </h1>
-      </div>
-
-      {/* Quick Stats Summary (4 cards: views/visitors/total members/today's enrollments) */}
+      {/* Quick Stats Summary (academy-focused) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-card rounded-xl p-3 sm:p-4 border border-border shadow-sm flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 border border-blue-500/20">
-            <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xl sm:text-2xl font-bold text-foreground truncate">
-              {fmt(stats.active_enrollments)}
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {a.dashActiveEnrollments}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-card rounded-xl p-3 sm:p-4 border border-border shadow-sm flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-            <Award className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xl sm:text-2xl font-bold text-foreground truncate">
-              {fmt(stats.certificates_issued)}
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {a.dashCertificates}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-card rounded-xl p-3 sm:p-4 border border-border shadow-sm flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0 border border-purple-500/20">
-            <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xl sm:text-2xl font-bold text-foreground truncate">
-              {fmt(stats.total_students + stats.total_teachers)}
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {a.dashTotalMembers}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-card rounded-xl p-3 sm:p-4 border border-border shadow-sm flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-100/50 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0 border border-amber-200 dark:border-amber-900/50">
-            <ClipboardList className="h-5 w-5 sm:h-6 sm:w-6 text-amber-700 dark:text-amber-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xl sm:text-2xl font-bold text-foreground truncate">
-              {fmt(stats.enrollments_today)}
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {a.dashTodaysEnrollments}
-            </p>
-          </div>
-        </div>
+        {summaryCards.map((card) => {
+          const Icon = card.icon
+          return (
+            <div
+              key={card.label}
+              className="bg-card rounded-xl p-3 sm:p-4 border border-border shadow-sm flex items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow"
+            >
+              <div
+                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 border ${card.iconBg}`}
+              >
+                <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${card.iconColor}`} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-foreground truncate">
+                  {card.value}
+                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {card.label}
+                </p>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* Stats Grid (5 cards) */}
@@ -245,6 +227,9 @@ export function DashboardAcademy() {
         })}
       </div>
 
+      {/* Enrollment trend chart (last 7 days) */}
+      <EnrollmentTrendChart data={stats.enrollment_trend} />
+
       {/* Academy insights: community composition + enrollment pulse */}
       <AcademyInsights
         totalStudents={stats.total_students}
@@ -255,12 +240,14 @@ export function DashboardAcademy() {
       />
 
       {/* Engagement & Activity Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
           <div className="flex items-center gap-3">
-            <TrendingUp className="w-5 h-5 text-emerald-600" />
-            <div>
-              <p className="text-xs text-muted-foreground">
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground truncate">
                 {a.dashEnrollmentsThisWeek}
               </p>
               <p className="text-2xl font-bold">{fmt(stats.enrollments_week)}</p>
@@ -269,9 +256,11 @@ export function DashboardAcademy() {
         </div>
         <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
           <div className="flex items-center gap-3">
-            <BookOpen className="w-5 h-5 text-purple-600" />
-            <div>
-              <p className="text-xs text-muted-foreground">
+            <div className="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+              <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground truncate">
                 {a.dashActiveEnrollments}
               </p>
               <p className="text-2xl font-bold">{fmt(stats.active_enrollments)}</p>
@@ -280,14 +269,29 @@ export function DashboardAcademy() {
         </div>
         <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
           <div className="flex items-center gap-3">
-            <Award className="w-5 h-5 text-amber-600" />
-            <div>
-              <p className="text-xs text-muted-foreground">
+            <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+              <Award className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground truncate">
                 {a.dashTotalPointsDistributed}
               </p>
               <p className="text-2xl font-bold">
                 {fmt(stats.total_points_distributed)}
               </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+              <Trophy className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground truncate">
+                {a.dashCompletionRate}
+              </p>
+              <p className="text-2xl font-bold">{completionRate}%</p>
             </div>
           </div>
         </div>

@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
       certificatesIssued,
       latestCourses,
       topStudents,
+      enrollmentTrend,
     ] = await Promise.all([
       query<{ count: string }>(`
         SELECT COUNT(DISTINCT u.id)::text as count
@@ -109,6 +110,20 @@ export async function GET(req: NextRequest) {
         ORDER BY total_points DESC NULLS LAST
         LIMIT 5
       `).catch(() => []),
+
+      query<{ day: string; count: string }>(`
+        SELECT
+          days.day::date::text AS day,
+          COUNT(e.id)::text AS count
+        FROM generate_series(
+          CURRENT_DATE - INTERVAL '6 days',
+          CURRENT_DATE,
+          INTERVAL '1 day'
+        ) AS days(day)
+        LEFT JOIN enrollments e ON e.enrolled_at::date = days.day::date
+        GROUP BY days.day
+        ORDER BY days.day
+      `).catch(() => []),
     ])
 
     return NextResponse.json({
@@ -128,6 +143,10 @@ export async function GET(req: NextRequest) {
       top_students: topStudents.map((s) => ({
         ...s,
         total_points: parseInt(s.total_points || '0'),
+      })),
+      enrollment_trend: enrollmentTrend.map((day) => ({
+        date: day.day,
+        count: parseInt(day.count || '0'),
       })),
     })
   } catch (error) {

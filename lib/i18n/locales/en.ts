@@ -6170,6 +6170,10 @@ export const en = {
     dashEnrolled: 'enrolled',
     dashNoCoursesYet: 'No courses yet',
     dashNoDataYet: 'No data yet',
+    dashCompletionRate: 'Completion rate',
+    dashEnrollments: 'Enrollments',
+    dashEnrollmentTrend: 'Enrollment trend',
+    dashEnrollmentTrendDesc: 'New enrollments over the last 7 days',
 
     // Supervisors
     supvTitle: 'Supervisor Management',
@@ -7137,7 +7141,7 @@ export const en = {
       "اطرح سؤالاً": "Ask a Question",
       "مكتبة الفتاوى": "Fatwa Library",
       "المكتبة الفقهية": "Fiqh Library",
-      "تصفّح أسئلة فقهية أجاب عنها المسؤولون المتخصصون ووافق أصحابها على نشرها، أو اطرح سؤالك وسيصل إلى مسؤول مختص في التصنيف.": "Browse Fiqh questions answered by specialists, or ask your own.",
+      "تصفّح أسئلة فقهية أجاب عنها المسؤولون المتخصصون ووافق أصحابها على نشرها، أو اطرح سؤالك وسيصل إلى مسؤول مختص في ا��تصنيف.": "Browse Fiqh questions answered by specialists, or ask your own.",
       "سجّل الدخول لعرض أسئلتك.": "Sign in to view your questions.",
       "تسجيل الدخول": "Sign in",
       "ابحث في المكتبة الفقهية...": "Search Fiqh Library...",
@@ -7376,7 +7380,7 @@ export const en = {
       "إرسال الدورة للأدمن للمراجعة؟ تأكد أنك عدلت المحتوى والدروس بناءً على سبب الرفض.": "Submit course to admin for review? Make sure you modified the content based on rejection reason.",
       "حدث خطأ أثناء الإرسال.": "An error occurred during sending.",
       "اكتب عنواناً جذاباً للدرس": "Write an attractive title for the lesson",
-      "ماذا سيتعلم الطالب في هذا الدرس؟": "What will the student learn in this lesson?",
+      "ماذا سيتعلم الطالب في ه��ا الدرس؟": "What will the student learn in this lesson?",
       "تحديث الدرس": "Update Lesson",
       "حفظ الدرس": "Save Lesson",
       "تعديل الدرس": "Edit Lesson",
