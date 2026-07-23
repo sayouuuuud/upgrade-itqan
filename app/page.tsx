@@ -456,11 +456,11 @@ export default function Home() {
         </div>
 
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-6 relative z-10">
-          <div className="max-w-5xl mx-auto text-center pt-4 md:pt-8">
+          <div className="max-w-5xl mx-auto text-center">
             <Reveal delay={0} y={20}>
-              <div className="inline-flex items-center gap-4 mb-16 md:mb-20">
-                <div className="h-px w-12 bg-hp-bronze" />
-                <span className="text-lg md:text-2xl tracking-[0.15em] text-hp-bronze font-semibold">
+              <div className="inline-flex items-center gap-3 mb-10 md:mb-12">
+                <div className="h-px w-10 bg-hp-bronze" />
+                <span className="text-sm md:text-lg tracking-[0.12em] text-hp-bronze font-semibold">
                   {c.bismillah}
                 </span>
                 <div className="h-px w-12 bg-hp-bronze" />
@@ -469,7 +469,7 @@ export default function Home() {
 
             <Reveal delay={0.15}>
               <h1
-                className="text-[17vw] sm:text-[13vw] md:text-[10rem] lg:text-[13rem] font-normal leading-[0.9] tracking-tight text-hp-navy dark:text-hp-cream mb-10 md:mb-14"
+                className="text-[17vw] sm:text-[13vw] md:text-[10rem] lg:text-[13rem] font-normal leading-[0.9] tracking-tight text-hp-navy dark:text-hp-cream mb-7 md:mb-9"
                 style={{ fontFamily: "'BIXIE', serif" }}
               >
                 {c.heroTitle}
@@ -477,7 +477,7 @@ export default function Home() {
             </Reveal>
 
             <Reveal delay={0.28}>
-              <div className="flex items-center justify-center gap-5 mb-10 md:mb-12" aria-hidden>
+              <div className="flex items-center justify-center gap-5 mb-7 md:mb-8" aria-hidden>
                 <div className="h-px w-14 md:w-20 bg-hp-bronze/50 dark:bg-hp-gold/40" />
                 <span className="text-xs tracking-[0.5em] text-hp-bronze dark:text-hp-gold">٭</span>
                 <div className="h-px w-14 md:w-20 bg-hp-bronze/50 dark:bg-hp-gold/40" />
@@ -486,7 +486,7 @@ export default function Home() {
 
             <Reveal delay={0.38}>
               <h2
-                className="text-[7vw] sm:text-[5vw] md:text-4xl lg:text-5xl font-light text-hp-bronze dark:text-hp-gold mb-12 md:mb-14"
+                className="text-[6vw] sm:text-[4vw] md:text-3xl lg:text-4xl font-light text-hp-bronze dark:text-hp-gold mb-7 md:mb-8"
                 style={{ fontFamily: "var(--font-cairo), sans-serif" }}
               >
                 {c.heroSubtitle}
@@ -494,11 +494,11 @@ export default function Home() {
             </Reveal>
 
             <Reveal delay={0.5}>
-              <OrnamentDivider className="w-72 h-10 mx-auto mb-10 text-hp-bronze dark:text-hp-gold" />
+              <OrnamentDivider className="w-64 h-8 mx-auto mb-6 text-hp-bronze dark:text-hp-gold" />
             </Reveal>
 
             <Reveal delay={0.6}>
-              <p className="text-base md:text-lg text-hp-ink/70 dark:text-hp-cream/70 leading-loose max-w-2xl mx-auto mb-14 px-4 whitespace-pre-line">
+              <p className="text-sm md:text-base text-hp-ink/70 dark:text-hp-cream/70 leading-relaxed max-w-xl mx-auto mb-9 px-4 whitespace-pre-line">
                 {c.heroDescription}
               </p>
             </Reveal>
