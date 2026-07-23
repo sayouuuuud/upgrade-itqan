@@ -78,65 +78,6 @@ const TessellatedBg = ({ className = "", color = "var(--hp-navy)", opacity = 0.0
   )
 }
 
-/* Ruled-lines pattern — evokes a notebook / calligraphy page.
-   Horizontal rules with a single vertical margin line and small
-   diamond nibs where the margin meets each rule. */
-const RuledLinesBg = ({ className = "", color = "var(--hp-gold)", opacity = 0.07 }: { className?: string; color?: string; opacity?: number }) => {
-  const pid = "ruled-lines-pattern"
-  const lineOpacity = opacity
-  const accentOpacity = opacity * 1.8
-  const marginX = 32
-  const spacing = 28  // vertical space between rules
-  const rows = [0, 1, 2, 3] // 4 lines per tile, tile height = 4 * spacing = 112
-
-  return (
-    <svg className={className} aria-hidden xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id={pid} x="0" y="0" width="320" height="112" patternUnits="userSpaceOnUse">
-          <g fill="none" stroke={color}>
-            {/* Horizontal ruled lines */}
-            {rows.map((r) => (
-              <line
-                key={r}
-                x1="0" y1={r * spacing + 14}
-                x2="320" y2={r * spacing + 14}
-                strokeWidth="0.7"
-                strokeOpacity={lineOpacity}
-              />
-            ))}
-            {/* Vertical margin line */}
-            <line
-              x1={marginX} y1="0"
-              x2={marginX} y2="112"
-              strokeWidth="0.9"
-              strokeOpacity={accentOpacity}
-            />
-            {/* Small diamond nibs at margin × rule intersections */}
-            {rows.map((r) => (
-              <g key={`nib-${r}`} transform={`translate(${marginX}, ${r * spacing + 14})`}>
-                <polygon
-                  points="0,-3 3,0 0,3 -3,0"
-                  fill={color}
-                  fillOpacity={accentOpacity}
-                  strokeWidth="0"
-                />
-              </g>
-            ))}
-            {/* Calligraphy pen nib — top-left of each tile */}
-            <path
-              d="M6 2 L14 6 L10 14 L2 10 Z"
-              fill={color}
-              fillOpacity={opacity * 0.9}
-              strokeWidth="0"
-            />
-          </g>
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill={`url(#${pid})`} />
-    </svg>
-  )
-}
-
 /* ============================================================
    ANIMATION HELPERS
    ============================================================ */
@@ -799,8 +740,8 @@ export default function Home() {
 
       {/* ============ JOURNEY ============ */}
       <section id="journey" className="relative py-32 md:py-40 bg-hp-navy text-hp-parchment overflow-hidden transition-colors duration-500">
-        <RuledLinesBg className="absolute inset-0 size-full" color="var(--hp-gold)" opacity={0.1} />
-        <div className="absolute inset-0 bg-gradient-to-b from-hp-navy/80 via-transparent to-hp-navy-deep/60" />
+        <TessellatedBg className="absolute inset-0 size-full" color="var(--hp-gold)" opacity={0.04} id="journey-gold" />
+        <div className="absolute inset-0 bg-gradient-to-b from-hp-navy via-hp-navy to-hp-navy-deep" />
         <div className="container mx-auto px-6 relative">
           <Reveal>
             <div className="text-center mb-20 max-w-2xl mx-auto">
